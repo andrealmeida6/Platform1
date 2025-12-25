@@ -1,0 +1,1438 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portal do Colaborador</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      overflow-x: hidden;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #ffffff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+      width: 100%;
+    }
+
+    .page-wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      overflow-x: hidden;
+    }
+
+    .content-wrapper {
+      flex: 1;
+      padding: 24px 20px;
+      background: #f8f9fa;
+      width: 100%;
+      overflow-x: hidden;
+    }
+
+    .main-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    /* === PAGE TITLE === */
+    .page-title {
+      font-size: 1.75rem;
+      font-weight: 600;
+      color: #282a32;
+      margin-bottom: 1.5rem;
+    }
+
+    /* === PROFILE SECTION === */
+    .profile-section {
+      background: white;
+      border-radius: 16px;
+      padding: 1.5rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+    }
+
+    .profile-avatar {
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(135deg, #00b276 0%, #007a62 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 2rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .profile-info {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .profile-name {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #282a32;
+      margin-bottom: 0.5rem;
+    }
+
+    .profile-details {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.25rem;
+    }
+
+    .profile-detail-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .profile-detail-label {
+      font-size: 0.7rem;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .profile-detail-value {
+      font-size: 0.85rem;
+      color: #282a32;
+      font-weight: 500;
+    }
+
+    .profile-status {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .profile-status.active {
+      background: #dcfce7;
+      color: #16a34a;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    /* === QUICK ACTIONS === */
+    .quick-actions {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .quick-action-btn {
+      background: white;
+      border: 2px solid #e9ecf4;
+      border-radius: 12px;
+      padding: 1rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .quick-action-btn:hover {
+      border-color: #00b276;
+      transform: translateY(-3px);
+      box-shadow: 0 4px 12px rgba(0, 178, 118, 0.15);
+    }
+
+    .quick-action-icon {
+      width: 40px;
+      height: 40px;
+      margin: 0 auto 0.5rem;
+      background: linear-gradient(135deg, #00b276 0%, #007a62 100%);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .quick-action-icon svg {
+      width: 20px;
+      height: 20px;
+      color: white;
+    }
+
+    .quick-action-title {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #282a32;
+      margin-bottom: 0.15rem;
+    }
+
+    .quick-action-desc {
+      font-size: 0.65rem;
+      color: #94a3b8;
+    }
+
+    /* === CALENDAR SECTION === */
+    .calendar-section {
+      background: white;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      margin-bottom: 1.5rem;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .card-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #282a32;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .card-title svg {
+      width: 20px;
+      height: 20px;
+      color: #00b276;
+    }
+
+    .card-action {
+      font-size: 0.8rem;
+      color: #00b276;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .card-action:hover {
+      text-decoration: underline;
+    }
+
+    .calendar-cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .calendar-card {
+      border-radius: 12px;
+      padding: 1.25rem;
+      color: white;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .calendar-card::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -20%;
+      width: 150px;
+      height: 150px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+    }
+
+    .calendar-card.green {
+      background: linear-gradient(135deg, #00b276 0%, #007a62 100%);
+    }
+
+    .calendar-card.blue {
+      background: linear-gradient(135deg, #5b9cf5 0%, #4285f4 100%);
+    }
+
+    .calendar-card.orange {
+      background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+    }
+
+    .calendar-card-label {
+      font-size: 0.8rem;
+      opacity: 0.95;
+      margin-bottom: 0.5rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .calendar-card-number {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .calendar-card-info {
+      font-size: 0.75rem;
+      opacity: 0.9;
+      position: relative;
+      z-index: 1;
+    }
+
+    .calendar-toggle-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      width: 100%;
+      padding: 0.75rem 1rem;
+      background: white;
+      border: 2px solid #e9ecf4;
+      border-radius: 10px;
+      color: #00b276;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .calendar-toggle-btn:hover {
+      background: #f8f9fa;
+      border-color: #00b276;
+    }
+
+    .calendar-toggle-btn svg {
+      width: 16px;
+      height: 16px;
+      transition: transform 0.3s ease;
+    }
+
+    .calendar-toggle-btn.expanded svg {
+      transform: rotate(180deg);
+    }
+
+    .calendar-collapsible {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.5s ease, opacity 0.4s ease;
+      opacity: 0;
+    }
+
+    .calendar-collapsible.expanded {
+      max-height: 2000px;
+      opacity: 1;
+      transition: max-height 0.6s ease, opacity 0.4s ease;
+    }
+
+    /* === CALENDAR WRAPPER === */
+    .calendar-wrapper {
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 1.5rem;
+      align-items: start;
+      margin-top: 1rem;
+    }
+
+    .dual-calendar-container {
+      background: linear-gradient(135deg, #007a62 0%, #00b276 100%);
+      border-radius: 16px;
+      padding: 1.5rem;
+      box-shadow: 0 8px 24px rgba(0, 178, 118, 0.2);
+    }
+
+    .calendar-heading {
+      color: white;
+      text-align: center;
+      margin-bottom: 1rem;
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+
+    .months-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .calendar-month {
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 1rem;
+    }
+
+    .month-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+      color: white;
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+
+    .nav-arrow {
+      background: rgba(255, 255, 255, 0.15);
+      border: none;
+      color: white;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      flex-shrink: 0;
+      font-size: 0.8rem;
+    }
+
+    .nav-arrow:hover {
+      background: rgba(255, 255, 255, 0.25);
+      transform: scale(1.1);
+    }
+
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+    }
+
+    .calendar-grid.days {
+      margin-bottom: 6px;
+    }
+
+    .calendar-grid p {
+      color: white;
+      text-align: center;
+      padding: 4px 2px;
+      font-size: 0.65rem;
+      font-weight: 600;
+      opacity: 0.9;
+    }
+
+    .day-number {
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      min-height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      color: white;
+      font-weight: 500;
+    }
+
+    .day-number:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: scale(1.08);
+    }
+
+    .day-number.today {
+      background: rgba(255, 255, 255, 0.35);
+      font-weight: 700;
+      box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5);
+    }
+
+    .day-number.other-month {
+      opacity: 0.3;
+    }
+
+    .day-number.deslocacao {
+      background: #10b981 !important;
+      color: white !important;
+      font-weight: 700;
+    }
+
+    .day-number.medicina {
+      background: #3b82f6 !important;
+      color: white !important;
+      font-weight: 700;
+    }
+
+    .day-number.formacao {
+      background: #f59e0b !important;
+      color: white !important;
+      font-weight: 700;
+    }
+
+    .day-number.holiday {
+      background: #ef4444 !important;
+      color: white !important;
+      font-weight: 700;
+    }
+
+    /* === INFO PANEL === */
+    .info-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .info-card {
+      background: linear-gradient(135deg, #00b276 0%, #007a62 100%);
+      border-radius: 12px;
+      padding: 1.25rem;
+      color: white;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .info-card::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -20%;
+      width: 100px;
+      height: 100px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+    }
+
+    .info-card.blue {
+      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    }
+
+    .info-card.orange {
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    }
+
+    .info-card-title {
+      font-size: 0.75rem;
+      opacity: 0.95;
+      margin-bottom: 0.5rem;
+      position: relative;
+      z-index: 1;
+      font-weight: 600;
+    }
+
+    .info-card-value {
+      font-size: 1.75rem;
+      font-weight: 700;
+      position: relative;
+      z-index: 1;
+    }
+
+    .info-card-sub {
+      font-size: 0.7rem;
+      opacity: 0.85;
+      margin-top: 0.5rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .legend-card {
+      background: white;
+      border-radius: 12px;
+      padding: 1rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .legend-title {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #64748b;
+      margin-bottom: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 0.8rem;
+      color: #282a32;
+      margin-bottom: 0.5rem;
+    }
+
+    .legend-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .legend-color {
+      width: 16px;
+      height: 16px;
+      border-radius: 4px;
+      flex-shrink: 0;
+    }
+
+    .legend-color.deslocacao {
+      background: #10b981;
+    }
+
+    .legend-color.medicina {
+      background: #3b82f6;
+    }
+
+    .legend-color.formacao {
+      background: #f59e0b;
+    }
+
+    .legend-color.holiday {
+      background: #ef4444;
+    }
+
+    /* === RESPONSIVE CALENDAR === */
+    @media (max-width: 1200px) {
+      .calendar-wrapper {
+        grid-template-columns: 1fr;
+      }
+
+      .months-container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .dual-calendar-container {
+        padding: 1rem;
+      }
+
+      .calendar-month {
+        padding: 0.75rem;
+      }
+
+      .day-number {
+        min-height: 24px;
+        font-size: 0.65rem;
+      }
+    }
+
+    /* === NOTIFICATIONS === */
+    .notifications-section {
+      background: white;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      margin-bottom: 1.5rem;
+    }
+
+    .notification-item {
+      display: flex;
+      gap: 1rem;
+      padding: 1rem 0;
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    .notification-item:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .notification-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .notification-icon.info {
+      background: #dbeafe;
+      color: #2563eb;
+    }
+
+    .notification-icon.warning {
+      background: #fef3c7;
+      color: #d97706;
+    }
+
+    .notification-icon.success {
+      background: #dcfce7;
+      color: #16a34a;
+    }
+
+    .notification-icon svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .notification-content {
+      flex: 1;
+    }
+
+    .notification-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #282a32;
+      margin-bottom: 0.25rem;
+    }
+
+    .notification-desc {
+      font-size: 0.8rem;
+      color: #64748b;
+    }
+
+    .notification-time {
+      font-size: 0.75rem;
+      color: #94a3b8;
+    }
+
+    /* === INVENTORY & TRIPS SECTIONS === */
+    .inventory-section,
+    .trips-section {
+      background: white;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      margin-bottom: 1.5rem;
+    }
+
+    .mini-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+
+    .mini-table th,
+    .mini-table td {
+      padding: 0.75rem;
+      text-align: left;
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    .mini-table th {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      background: #f8f9fa;
+    }
+
+    .mini-table td {
+      color: #282a32;
+    }
+
+    .mini-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .mini-table tr:hover td {
+      background: #f8f9fa;
+    }
+
+    .item-code {
+      font-weight: 600;
+      color: #00b276;
+    }
+
+    .item-category {
+      display: inline-block;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      background: #e0f2fe;
+      color: #0369a1;
+    }
+
+    .item-category.economato {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .item-category.software {
+      background: #f3e8ff;
+      color: #7c3aed;
+    }
+
+    /* === STATUS BADGES === */
+    .status-badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.7rem;
+      font-weight: 600;
+    }
+
+    .status-badge.aprovado {
+      background: #dcfce7;
+      color: #16a34a;
+    }
+
+    .status-badge.pendente {
+      background: #fef3c7;
+      color: #d97706;
+    }
+
+    .status-badge.em-aprovacao {
+      background: #dbeafe;
+      color: #2563eb;
+    }
+
+    .status-badge.concluido {
+      background: #f1f5f9;
+      color: #64748b;
+    }
+
+    /* === MODAL STYLES === */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 10000;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .modal-overlay.show {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 16px;
+      width: 100%;
+      max-width: 600px;
+      max-height: 90vh;
+      overflow-y: auto;
+      transform: scale(0.9);
+      transition: transform 0.3s ease;
+    }
+
+    .modal-overlay.show .modal-content {
+      transform: scale(1);
+    }
+
+    .modal-header {
+      padding: 24px 32px;
+      border-bottom: 1px solid #e9ecf4;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .modal-title {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #282a32;
+    }
+
+    .modal-close {
+      width: 32px;
+      height: 32px;
+      border: none;
+      background: #f8f9fa;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      font-size: 20px;
+      color: #686b87;
+    }
+
+    .modal-close:hover {
+      background: #e9ecf4;
+      color: #282a32;
+    }
+
+    .modal-body {
+      padding: 32px;
+    }
+
+    .form-group {
+      margin-bottom: 24px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #282a32;
+      margin-bottom: 8px;
+    }
+
+    .form-input,
+    .form-select,
+    .form-textarea {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1px solid #e9ecf4;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-family: inherit;
+      transition: all 0.2s ease;
+    }
+
+    .form-input:focus,
+    .form-select:focus,
+    .form-textarea:focus {
+      outline: none;
+      border-color: #00b276;
+      box-shadow: 0 0 0 3px rgba(0, 178, 118, 0.1);
+    }
+
+    .form-textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    .form-file-input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px dashed #e9ecf4;
+      border-radius: 8px;
+      background: #f8f9fa;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .form-file-input:hover {
+      border-color: #00b276;
+      background: #d4f5ea;
+    }
+
+    .modal-footer {
+      padding: 20px 32px;
+      border-top: 1px solid #e9ecf4;
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+    }
+
+    .btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-primary {
+      background: #00b276;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #00945f;
+    }
+
+    .btn-secondary {
+      background: #f8f9fa;
+      color: #686b87;
+    }
+
+    .btn-secondary:hover {
+      background: #e9ecf4;
+    }
+
+    /* === TOAST NOTIFICATIONS === */
+    .toast-container {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .toast {
+      background: white;
+      border-radius: 12px;
+      padding: 1rem 1.5rem;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      min-width: 300px;
+      animation: slideIn 0.3s ease;
+      border-left: 4px solid #00b276;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .toast.show {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .toast.success {
+      border-left-color: #16a34a;
+    }
+
+    .toast-message {
+      font-size: 0.9rem;
+      color: #282a32;
+      font-weight: 500;
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    /* === RESPONSIVE === */
+    @media (max-width: 1024px) {
+      .quick-actions {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .calendar-cards {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .profile-section {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .profile-details {
+        justify-content: center;
+      }
+
+      .quick-actions {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .mini-table {
+        font-size: 0.75rem;
+      }
+
+      .mini-table th,
+      .mini-table td {
+        padding: 0.5rem 0.25rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .quick-actions {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-wrapper">
+    <div class="content-wrapper">
+      <div class="main-container">
+        <!-- Page Title -->
+        <h1 class="page-title">Portal do Colaborador</h1>
+
+        <!-- Profile Section -->
+        <div class="profile-section">
+          <div class="profile-avatar">KP</div>
+          <div class="profile-info">
+            <div class="profile-name">KPMG1 Recuperar Portugal</div>
+            <div class="profile-details">
+              <div class="profile-detail-item">
+                <span class="profile-detail-label">EMAIL</span>
+                <span class="profile-detail-value">kpmg1@recuperarportugal.gov.pt</span>
+              </div>
+              <div class="profile-detail-item">
+                <span class="profile-detail-label">TELEFONE</span>
+                <span class="profile-detail-value">-</span>
+              </div>
+              <div class="profile-detail-item">
+                <span class="profile-detail-label">UNIDADE ORGÂNICA</span>
+                <span class="profile-detail-value">IPD - Informática e Processos Digitais</span>
+              </div>
+            </div>
+          </div>
+          <div class="profile-status active">
+            <span class="status-dot"></span>
+            Ativo
+          </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+          <a href="#" class="quick-action-btn" onclick="openModal('modalInventario')">
+            <div class="quick-action-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/>
+              </svg>
+            </div>
+            <div class="quick-action-title">Pedir Inventário</div>
+            <div class="quick-action-desc">Economato e equipamentos</div>
+          </a>
+          <a href="#" class="quick-action-btn" onclick="openModal('modalDeslocacao')">
+            <div class="quick-action-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>
+              </svg>
+            </div>
+            <div class="quick-action-title">Pedir Deslocação</div>
+            <div class="quick-action-desc">Boletins de itinerário</div>
+          </a>
+          <a href="#" class="quick-action-btn" onclick="openModal('modalReembolso')">
+            <div class="quick-action-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+                <line x1="1" y1="10" x2="23" y2="10"/>
+              </svg>
+            </div>
+            <div class="quick-action-title">Pedir Reembolso</div>
+            <div class="quick-action-desc">Submeter despesas</div>
+          </a>
+          <a href="#" class="quick-action-btn" onclick="openModal('modalMedicina')">
+            <div class="quick-action-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+              </svg>
+            </div>
+            <div class="quick-action-title">Medicina no Trabalho</div>
+            <div class="quick-action-desc">Marcar consulta ou exame ocupacional</div>
+          </a>
+          <a href="#" class="quick-action-btn" onclick="openModal('modalFormacao')">
+            <div class="quick-action-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+                <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+              </svg>
+            </div>
+            <div class="quick-action-title">Formação</div>
+            <div class="quick-action-desc">Consultar cursos e certificações</div>
+          </a>
+        </div>
+
+        <!-- Calendar Section -->
+        <div class="calendar-section">
+          <div class="card-header">
+            <div class="card-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+              Calendário de Ocorrências
+            </div>
+          </div>
+
+          <div class="calendar-cards">
+            <div class="calendar-card green">
+              <div class="calendar-card-label">Deslocações</div>
+              <div class="calendar-card-number">18</div>
+              <div class="calendar-card-info">informação placeholder</div>
+            </div>
+
+            <div class="calendar-card blue">
+              <div class="calendar-card-label">Medicina no Trabalho</div>
+              <div class="calendar-card-number">2</div>
+              <div class="calendar-card-info">informação placeholder</div>
+            </div>
+
+            <div class="calendar-card orange">
+              <div class="calendar-card-label">Formações</div>
+              <div class="calendar-card-number">5</div>
+              <div class="calendar-card-info">informação placeholder</div>
+            </div>
+          </div>
+
+          <button class="calendar-toggle-btn" id="calendarToggleBtn" onclick="toggleCalendar()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+            Ver Calendário
+          </button>
+
+          <!-- Collapsible Calendar Section -->
+          <div class="calendar-collapsible" id="calendarCollapsible">
+            <div class="calendar-wrapper">
+              <!-- Dual Calendar -->
+              <div class="dual-calendar-container">
+                <h3 class="calendar-heading">Calendário de Ocorrências</h3>
+                
+                <div class="months-container">
+                  <!-- Current Month -->
+                  <div class="calendar-month">
+                    <div class="month-header">
+                      <button class="nav-arrow" id="prevMonth">◀</button>
+                      <span id="currentMonthName">Dezembro 2025</span>
+                      <span style="width: 28px;"></span>
+                    </div>
+                    
+                    <div class="calendar-grid days">
+                      <p>D</p><p>S</p><p>T</p><p>Q</p><p>Q</p><p>S</p><p>S</p>
+                    </div>
+                    
+                    <div class="calendar-grid" id="currentMonthGrid"></div>
+                  </div>
+
+                  <!-- Next Month -->
+                  <div class="calendar-month">
+                    <div class="month-header">
+                      <span style="width: 28px;"></span>
+                      <span id="nextMonthName">Janeiro 2026</span>
+                      <button class="nav-arrow" id="nextMonth">▶</button>
+                    </div>
+                    
+                    <div class="calendar-grid days">
+                      <p>D</p><p>S</p><p>T</p><p>Q</p><p>Q</p><p>S</p><p>S</p>
+                    </div>
+                    
+                    <div class="calendar-grid" id="nextMonthGrid"></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Info Panel -->
+              <div class="info-panel">
+                <!-- Total Ocorrências -->
+                <div class="info-card">
+                  <div class="info-card-title">Total de Ocorrências</div>
+                  <div class="info-card-value">25</div>
+                  <div class="info-card-sub">Este mês • 18 deslocações, 2 consultas, 5 formações</div>
+                </div>
+
+                <!-- Próxima Ocorrência -->
+                <div class="info-card blue">
+                  <div class="info-card-title">Próxima Ocorrência</div>
+                  <div class="info-card-value">28 Dez</div>
+                  <div class="info-card-sub">Exame Medicina no Trabalho</div>
+                </div>
+
+                <!-- Legend -->
+                <div class="legend-card">
+                  <div class="legend-title">Legenda</div>
+                  <div class="legend-item">
+                    <span class="legend-color deslocacao"></span>
+                    Deslocações
+                  </div>
+                  <div class="legend-item">
+                    <span class="legend-color medicina"></span>
+                    Medicina no Trabalho
+                  </div>
+                  <div class="legend-item">
+                    <span class="legend-color formacao"></span>
+                    Formações
+                  </div>
+                  <div class="legend-item">
+                    <span class="legend-color holiday"></span>
+                    Feriados
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Notifications -->
+        <div class="notifications-section">
+          <div class="card-header">
+            <div class="card-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                <path d="M13.73 21a2 2 0 01-3.46 0"/>
+              </svg>
+              Notificações
+            </div>
+            <a href="#" class="card-action">Ver todas</a>
+          </div>
+          <div class="notification-item">
+            <div class="notification-icon info">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="16" x2="12" y2="12"/>
+                <line x1="12" y1="8" x2="12.01" y2="8"/>
+              </svg>
+            </div>
+            <div class="notification-content">
+              <div class="notification-title">Formação Agendada</div>
+              <div class="notification-desc">A formação "Gestão de Projetos" está agendada para 15-17 Janeiro 2026.</div>
+            </div>
+            <div class="notification-time">Há 2h</div>
+          </div>
+          <div class="notification-item">
+            <div class="notification-icon warning">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+            </div>
+            <div class="notification-content">
+              <div class="notification-title">Exame de Medicina no Trabalho</div>
+              <div class="notification-desc">O seu exame periódico está marcado para 10/12/2025.</div>
+            </div>
+            <div class="notification-time">Há 1d</div>
+          </div>
+          <div class="notification-item">
+            <div class="notification-icon success">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
+              </svg>
+            </div>
+            <div class="notification-content">
+              <div class="notification-title">Reembolso Aprovado</div>
+              <div class="notification-desc">O seu pedido de reembolso no valor de €75,00 foi aprovado.</div>
+            </div>
+            <div class="notification-time">Há 3d</div>
+          </div>
+        </div>
+
+        <!-- Artigos Atribuídos -->
+        <div class="inventory-section">
+          <div class="card-header">
+            <div class="card-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/>
+              </svg>
+              Artigos Atribuídos
+            </div>
+            <a href="#" class="card-action" onclick="verTodoInventario()">Ver todos</a>
+          </div>
+          <table class="mini-table">
+            <thead>
+              <tr>
+                <th>Código</th>
+                <th>Descrição</th>
+                <th>Categoria</th>
+                <th>Qtd</th>
+                <th>Data Atribuição</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="item-code">EQ-2024-001</span></td>
+                <td>MacBook Pro 14" M3</td>
+                <td><span class="item-category">Equipamento</span></td>
+                <td>1</td>
+                <td>15/01/2025</td>
+              </tr>
+              <tr>
+                <td><span class="item-code">EQ-2024-045</span></td>
+                <td>Monitor Dell 27" 4K</td>
+                <td><span class="item-category">Equipamento</span></td>
+                <td>2</td>
+                <td>15/01/2025</td>
+              </tr>
+              <tr>
+                <td><span class="item-code">EC-2025-112</span></td>
+                <td>Caderno A5 Pautado</td>
+                <td><span class="item-category economato">Economato</span></td>
+                <td>3</td>
+                <td>01/11/2025</td>
+              </tr>
+              <tr>
+                <td><span class="item-code">SW-2024-008</span></td>
+                <td>Licença Microsoft 365</td>
+                <td><span class="item-category software">Software</span></td>
+                <td>1</td>
+                <td>15/01/2025</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Deslocações -->
+        <div class="trips-section">
+          <div class="card-header">
+            <div class="card-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>
+              </svg>
+              Deslocações
+            </div>
+            <a href="#" class="card-action" onclick="verTodasDeslocacoes()">Ver todas</a>
+          </div>
+          <table class="mini-table">
+            <thead>
+              <tr>
+                <th>Referência</th>
+                <th>Destino</th>
+                <th>Data Início</th>
+                <th>Data Fim</th>
+                <th>Km Previsto</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="item-code">BI-2025-0234</span></td>
+                <td>Coimbra - Reunião Cliente</td>
+                <td>22/11/2025</td>
+                <td>22/11/2025</td>
+                <td>420 km</td>
+                <td><span class="status-badge em-aprovacao">Em Aprovação</span></td>
+              </tr>
+              <tr>
+                <td><span class="item-code">BI-2025-0198</span></td>
+                <td>Porto - Formação</td>
+                <td>15/11/2025</td>
+                <td>16/11/2025</td>
+                <td>640 km</td>
+                <td><span class="status-badge aprovado">Aprovado</span></td>
+              </tr>
+              <tr>
+                <td><span class="item-code">BI-2025-0156</span></td>
+                <td>Évora - Workshop</td>
+                <td>05/11/2025</td>
+                <td>05/11/2025</td>
+                <td>280 km</td>
+                <td><span class="status-badge concluido">Concluído</span></td>
+              </tr>
+              <tr>
+                <td><span class="item-code">BI-2025-0089</span></td>
+                <td>Braga - Conferência</td>
+                <td>20/10/2025</td>
+                <td>21/10/2025</td>
+                <td>720 km</td>
+                <td><span class="status-badge concluido">Concluído</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Modals and JavaScript code continues... -->
+  <script>
+    // JavaScript code for calendar functionality and modals
+    // ... (rest of the JavaScript)
+  </script>
+</body>
+</html>
