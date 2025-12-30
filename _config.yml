@@ -1,23 +1,43 @@
-# Jekyll Configuration for Portal do Colaborador
-title: Portal do Colaborador
-description: Portal interno para gestão de colaboradores
+# Portal do Colaborador - Jekyll Configuration
+# Power Pages Ready Structure
+
+title: "Portal do Colaborador"
+description: "Portal interno para colaboradores - KPMG Portugal / Recuperar Portugal"
 baseurl: ""
 url: "https://andrealmeida6.github.io/Platform1"
 
-# Build settings
+# Jekyll Settings
 markdown: kramdown
 theme: null
 plugins: []
 
-# Exclude files from build
+# Build settings
 exclude:
   - README.md
   - .gitignore
+  - node_modules
+  - vendor
   - test_permissions.txt
+  - Gemfile
+  - Gemfile.lock
 
-# Default settings
+# Include settings
+include:
+  - _includes
+  - _layouts
+  - snippets
+  - web-files
+  - web-pages
+
+# Collections (opcional - para futuro)
+# collections:
+#   components:
+#     output: false
+
+# Defaults
 defaults:
   - scope:
       path: ""
+      type: "pages"
     values:
       layout: "default"
