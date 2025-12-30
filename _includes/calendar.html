@@ -1,0 +1,180 @@
+<!-- Calendar Section -->
+<div class="calendar-section">
+  <div class="calendar-cards">
+    <div class="calendar-card green">
+      <div class="calendar-card-label">Deslocações</div>
+      <div class="calendar-card-number">18</div>
+    </div>
+
+    <div class="calendar-card blue">
+      <div class="calendar-card-label">Medicina no Trabalho</div>
+      <div class="calendar-card-number">2</div>
+    </div>
+
+    <div class="calendar-card orange">
+      <div class="calendar-card-label">Formações</div>
+      <div class="calendar-card-number">5</div>
+    </div>
+
+    <div class="calendar-card purple">
+      <div class="calendar-card-label">Inventário Atribuído</div>
+      <div class="calendar-card-number">7</div>
+    </div>
+  </div>
+
+  <button class="calendar-toggle-btn" id="calendarToggleBtn" onclick="toggleCalendar()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <polyline points="6 9 12 15 18 9"/>
+    </svg>
+    Ver Calendário
+  </button>
+
+  <!-- Collapsible Calendar Section -->
+  <div class="calendar-collapsible" id="calendarCollapsible">
+    <div class="calendar-wrapper">
+      <!-- Dual Calendar -->
+      <div class="dual-calendar-container">
+        <h3 class="calendar-heading">Calendário de Ocorrências</h3>
+        
+        <!-- LEGEND CHIPS (COMPACT) - MOVED HERE -->
+        <div class="calendar-legend">
+          <div class="legend-chip">
+            <span class="legend-chip-color deslocacao"></span>
+            Deslocações
+          </div>
+          <div class="legend-chip">
+            <span class="legend-chip-color medicina"></span>
+            Medicina no Trabalho
+          </div>
+          <div class="legend-chip">
+            <span class="legend-chip-color formacao"></span>
+            Formações
+          </div>
+          <div class="legend-chip">
+            <span class="legend-chip-color holiday"></span>
+            Feriados
+          </div>
+        </div>
+        
+        <div class="months-container">
+          <!-- Current Month -->
+          <div class="calendar-month">
+            <div class="month-header">
+              <button class="nav-arrow" id="prevMonth">◀</button>
+              <span id="currentMonthName">Dezembro 2025</span>
+              <span style="width: 28px;"></span>
+            </div>
+            
+            <div class="calendar-grid days">
+              <p>D</p><p>S</p><p>T</p><p>Q</p><p>Q</p><p>S</p><p>S</p>
+            </div>
+            
+            <div class="calendar-grid" id="currentMonthGrid"></div>
+          </div>
+
+          <!-- Next Month -->
+          <div class="calendar-month">
+            <div class="month-header">
+              <span style="width: 28px;"></span>
+              <span id="nextMonthName">Janeiro 2026</span>
+              <button class="nav-arrow" id="nextMonth">▶</button>
+            </div>
+            
+            <div class="calendar-grid days">
+              <p>D</p><p>S</p><p>T</p><p>Q</p><p>Q</p><p>S</p><p>S</p>
+            </div>
+            
+            <div class="calendar-grid" id="nextMonthGrid"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Info Panel (ONLY EVENTS - LEGEND REMOVED) -->
+      <div class="info-panel">
+        <div class="events-panel">
+          <div class="events-header">
+            <div>
+              <h3 class="events-title" id="eventsTitle">Próximos Eventos</h3>
+              <span class="selected-date-info" id="selectedDateInfo" style="display: none;"></span>
+            </div>
+            <button class="clear-filter-btn" id="clearFilterBtn" aria-label="Limpar filtro">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+              Limpar filtro
+            </button>
+          </div>
+          
+          <div id="eventsContainer">
+            <div class="event-item" data-date="2025-10-24" data-month="OUT" style="--event-color: #3b82f6;">
+              <div class="event-date">
+                <div class="event-day">24</div>
+                <div class="event-month">OUT</div>
+              </div>
+              <div class="event-details">
+                <div class="event-title">Entrevistas - Eng. Software</div>
+                <div class="event-meta">14:00 - 17:00 • 3 candidatos</div>
+              </div>
+            </div>
+
+            <div class="event-item" data-date="2025-10-25" data-month="OUT" style="--event-color: #10b981;">
+              <div class="event-date">
+                <div class="event-day">25</div>
+                <div class="event-month">OUT</div>
+              </div>
+              <div class="event-details">
+                <div class="event-title">Onboarding - Marketing Team</div>
+                <div class="event-meta">09:00 - 12:00 • 2 novos colaboradores</div>
+              </div>
+            </div>
+
+            <div class="event-item" data-date="2025-10-28" data-month="OUT" style="--event-color: #f59e0b;">
+              <div class="event-date">
+                <div class="event-day">28</div>
+                <div class="event-month">OUT</div>
+              </div>
+              <div class="event-details">
+                <div class="event-title">Revisão de Probatório</div>
+                <div class="event-meta">10:00 • Ana Silva - Financeiro</div>
+              </div>
+            </div>
+
+            <div class="event-item" data-date="2025-10-30" data-month="OUT" style="--event-color: #8b5cf6;">
+              <div class="event-date">
+                <div class="event-day">30</div>
+                <div class="event-month">OUT</div>
+              </div>
+              <div class="event-details">
+                <div class="event-title">Final - Designer UX/UI</div>
+                <div class="event-meta">15:00 • Decisão final</div>
+              </div>
+            </div>
+
+            <div class="event-item" data-date="2025-11-02" data-month="NOV" style="--event-color: #ec4899;">
+              <div class="event-date">
+                <div class="event-day">2</div>
+                <div class="event-month">NOV</div>
+              </div>
+              <div class="event-details">
+                <div class="event-title">Triagem CVs - Gestor Produto</div>
+                <div class="event-meta">Toda a manhã • 12 candidaturas</div>
+              </div>
+            </div>
+
+            <div class="event-item" data-date="2025-11-05" data-month="NOV" style="--event-color: #06b6d4;">
+              <div class="event-date">
+                <div class="event-day">5</div>
+                <div class="event-month">NOV</div>
+              </div>
+              <div class="event-details">
+                <div class="event-title">Fim de Probatório - Dev Team</div>
+                <div class="event-meta">16:00 • 2 colaboradores</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
