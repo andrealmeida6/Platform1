@@ -1,0 +1,91 @@
+{% comment %}
+  Component: Info Panel (Events + Legend)
+  Power Pages: Web Template para painel lateral de eventos
+  Nota: LEGENDA MOVIDA PARA O CALENDÁRIO (layout otimizado)
+{% endcomment %}
+
+<div class="info-panel">
+  <div class="events-panel">
+    <div class="events-header">
+      <div>
+        <h3 class="events-title" id="eventsTitle">Próximos Eventos</h3>
+        <span class="selected-date-info" id="selectedDateInfo" style="display: none;"></span>
+      </div>
+      <button class="clear-filter-btn" id="clearFilterBtn" aria-label="Limpar filtro">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+        Limpar filtro
+      </button>
+    </div>
+    
+    <div id="eventsContainer">
+      <div class="event-item" data-date="2025-10-24" data-month="OUT" style="--event-color: #3b82f6;">
+        <div class="event-date">
+          <div class="event-day">24</div>
+          <div class="event-month">OUT</div>
+        </div>
+        <div class="event-details">
+          <div class="event-title">Entrevistas - Eng. Software</div>
+          <div class="event-meta">14:00 - 17:00 • 3 candidatos</div>
+        </div>
+      </div>
+
+      <div class="event-item" data-date="2025-10-25" data-month="OUT" style="--event-color: #10b981;">
+        <div class="event-date">
+          <div class="event-day">25</div>
+          <div class="event-month">OUT</div>
+        </div>
+        <div class="event-details">
+          <div class="event-title">Onboarding - Marketing Team</div>
+          <div class="event-meta">09:00 - 12:00 • 2 novos colaboradores</div>
+        </div>
+      </div>
+
+      <div class="event-item" data-date="2025-10-28" data-month="OUT" style="--event-color: #f59e0b;">
+        <div class="event-date">
+          <div class="event-day">28</div>
+          <div class="event-month">OUT</div>
+        </div>
+        <div class="event-details">
+          <div class="event-title">Revisão de Probatório</div>
+          <div class="event-meta">10:00 • Ana Silva - Financeiro</div>
+        </div>
+      </div>
+
+      <div class="event-item" data-date="2025-10-30" data-month="OUT" style="--event-color: #8b5cf6;">
+        <div class="event-date">
+          <div class="event-day">30</div>
+          <div class="event-month">OUT</div>
+        </div>
+        <div class="event-details">
+          <div class="event-title">Final - Designer UX/UI</div>
+          <div class="event-meta">15:00 • Decisão final</div>
+        </div>
+      </div>
+
+      <div class="event-item" data-date="2025-11-02" data-month="NOV" style="--event-color: #ec4899;">
+        <div class="event-date">
+          <div class="event-day">2</div>
+          <div class="event-month">NOV</div>
+        </div>
+        <div class="event-details">
+          <div class="event-title">Triagem CVs - Gestor Produto</div>
+          <div class="event-meta">Toda a manhã • 12 candidaturas</div>
+        </div>
+      </div>
+
+      <div class="event-item" data-date="2025-11-05" data-month="NOV" style="--event-color: #06b6d4;">
+        <div class="event-date">
+          <div class="event-day">5</div>
+          <div class="event-month">NOV</div>
+        </div>
+        <div class="event-details">
+          <div class="event-title">Fim de Probatório - Dev Team</div>
+          <div class="event-meta">16:00 • 2 colaboradores</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

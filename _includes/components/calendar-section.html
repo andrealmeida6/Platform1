@@ -1,0 +1,91 @@
+{% comment %}
+  Component: Calendar Section
+  Power Pages: Web Template para secção completa do calendário
+  Inclui: Cards resumo + Botão toggle + Calendário dual-month + Painel eventos
+{% endcomment %}
+
+<div class="calendar-section">
+  <!-- Cards Resumo -->
+  <div class="calendar-cards">
+    <div class="calendar-card green">
+      <div class="calendar-card-label">Deslocações</div>
+      <div class="calendar-card-number">18</div>
+    </div>
+
+    <div class="calendar-card blue">
+      <div class="calendar-card-label">Medicina no Trabalho</div>
+      <div class="calendar-card-number">2</div>
+    </div>
+
+    <div class="calendar-card orange">
+      <div class="calendar-card-label">Formações</div>
+      <div class="calendar-card-number">5</div>
+    </div>
+
+    <div class="calendar-card purple">
+      <div class="calendar-card-label">Inventário Atribuído</div>
+      <div class="calendar-card-number">7</div>
+    </div>
+  </div>
+
+  <!-- Botão Toggle -->
+  <button class="calendar-toggle-btn" id="calendarToggleBtn" onclick="toggleCalendar()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <polyline points="6 9 12 15 18 9"/>
+    </svg>
+    Ver Calendário
+  </button>
+
+  <!-- Calendário Collapsible -->
+  <div class="calendar-collapsible" id="calendarCollapsible">
+    <div class="calendar-wrapper">
+      <!-- Calendário Dual-Month -->
+      <div class="dual-calendar-container">
+        <h3 class="calendar-heading">Calendário de Ocorrências</h3>
+        
+        <!-- Legenda em Chips (LAYOUT OTIMIZADO) -->
+        <div class="calendar-legend">
+          {% include snippets/legend-chip.html type="deslocacao" label="Deslocações" %}
+          {% include snippets/legend-chip.html type="medicina" label="Medicina no Trabalho" %}
+          {% include snippets/legend-chip.html type="formacao" label="Formações" %}
+          {% include snippets/legend-chip.html type="holiday" label="Feriados" %}
+        </div>
+        
+        <div class="months-container">
+          <!-- Mês Atual -->
+          <div class="calendar-month">
+            <div class="month-header">
+              <button class="nav-arrow" id="prevMonth">◀</button>
+              <span id="currentMonthName">Dezembro 2025</span>
+              <span style="width: 28px;"></span>
+            </div>
+            
+            <div class="calendar-grid days">
+              <p>D</p><p>S</p><p>T</p><p>Q</p><p>Q</p><p>S</p><p>S</p>
+            </div>
+            
+            <div class="calendar-grid" id="currentMonthGrid"></div>
+          </div>
+
+          <!-- Próximo Mês -->
+          <div class="calendar-month">
+            <div class="month-header">
+              <span style="width: 28px;"></span>
+              <span id="nextMonthName">Janeiro 2026</span>
+              <button class="nav-arrow" id="nextMonth">▶</button>
+            </div>
+            
+            <div class="calendar-grid days">
+              <p>D</p><p>S</p><p>T</p><p>Q</p><p>Q</p><p>S</p><p>S</p>
+            </div>
+            
+            <div class="calendar-grid" id="nextMonthGrid"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Painel de Eventos -->
+      {% include components/info-panel.html %}
+    </div>
+  </div>
+</div>
