@@ -1,0 +1,19 @@
+/* ===================================================================
+   1. CSS VARIABLES
+   Power Pages: Web File - variables.css
+   =================================================================== */
+
+:root {
+  --primary-color: #00b276;
+  --primary-hover: #009661;
+  --secondary-color: #282a32;
+  --text-primary: #282a32;
+  --text-secondary: #686b87;
+  --border-color: #e9ecf4;
+  --bg-gray: #f8fafb;
+  --white: #ffffff;
+  --success: #00b276;
+  --warning: #ffc107;
+  --danger: #ef4444;
+  --info: #3b82f6;
+}
