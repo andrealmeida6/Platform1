@@ -1,0 +1,23 @@
+# Jekyll Configuration for Portal do Colaborador
+title: Portal do Colaborador
+description: Portal interno para gestão de colaboradores
+baseurl: ""
+url: "https://andrealmeida6.github.io/Platform1"
+
+# Build settings
+markdown: kramdown
+theme: null
+plugins: []
+
+# Exclude files from build
+exclude:
+  - README.md
+  - .gitignore
+  - test_permissions.txt
+
+# Default settings
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: "default"

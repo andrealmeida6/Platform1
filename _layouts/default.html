@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+{% include head.html %}
+<body>
+  <div class="page-wrapper">
+    <div class="content-wrapper">
+      <div class="main-container">
+        {{ content }}
+      </div>
+    </div>
+  </div>
+  
+  {% include modals.html %}
+  
+  <!-- Toast Container -->
+  <div class="toast-container">
+    <div id="toast" class="toast">
+      <span class="toast-message"></span>
+    </div>
+  </div>
+  
+  {% include scripts.html %}
+</body>
+</html>
