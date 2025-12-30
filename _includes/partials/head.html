@@ -1,0 +1,15 @@
+{% comment %}
+  Partial: HTML Head
+  Power Pages: Web Template para <head>
+{% endcomment %}
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ page.title | default: site.title }}</title>
+  
+  <!-- CSS Modular -->
+  <link rel="stylesheet" href="{{ '/web-files/css/main.css' | relative_url }}">
+  <link rel="stylesheet" href="{{ '/web-files/css/components.css' | relative_url }}">
+  <link rel="stylesheet" href="{{ '/web-files/css/responsive.css' | relative_url }}">
+</head>
