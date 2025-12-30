@@ -1,0 +1,10 @@
+{% comment %}
+  Snippet: Legend Chip
+  Usage: {% include snippets/legend-chip.html type="deslocacao" label="Deslocações" %}
+  Power Pages: Snippet reutilizável para chips de legenda
+{% endcomment %}
+
+<div class="legend-chip">
+  <span class="legend-chip-color {{ include.type }}"></span>
+  {{ include.label }}
+</div>

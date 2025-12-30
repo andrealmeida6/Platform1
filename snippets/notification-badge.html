@@ -1,0 +1,9 @@
+{% comment %}
+  Snippet: Notification Badge
+  Usage: {% include snippets/notification-badge.html count="5" %}
+  Power Pages: Badge de notificações
+{% endcomment %}
+
+{% if include.count and include.count > 0 %}
+<span class="notification-badge">{{ include.count }}</span>
+{% endif %}
