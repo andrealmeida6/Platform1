@@ -3,8 +3,8 @@
 
 title: "Portal do Colaborador"
 description: "Portal interno para colaboradores - KPMG Portugal / Recuperar Portugal"
-baseurl: ""
-url: "https://andrealmeida6.github.io/Platform1"
+baseurl: "/Platform1"
+url: "https://andrealmeida6.github.io"
 
 # Jekyll Settings
 markdown: kramdown
