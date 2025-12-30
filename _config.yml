@@ -11,6 +11,9 @@ markdown: kramdown
 theme: null
 plugins: []
 
+# IMPORTANTE: Desativar tema default do GitHub Pages
+remote_theme: null
+
 # Build settings
 exclude:
   - README.md
@@ -20,19 +23,15 @@ exclude:
   - test_permissions.txt
   - Gemfile
   - Gemfile.lock
+  - assets  # Ignorar qualquer pasta assets que possa existir
 
-# Include settings
+# Include settings  
 include:
   - _includes
   - _layouts
   - snippets
   - web-files
   - web-pages
-
-# Collections (opcional - para futuro)
-# collections:
-#   components:
-#     output: false
 
 # Defaults
 defaults:
