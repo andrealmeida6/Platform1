@@ -1,0 +1,9 @@
+{% comment %}
+  Snippet: Status Badge
+  Usage: {% include snippets/status-badge.html status="aprovado" label="Aprovado" %}
+  Power Pages: Badge de status genérico
+{% endcomment %}
+
+<span class="status-badge {{ include.status }}">
+  {{ include.label }}
+</span>
