@@ -1,0 +1,46 @@
+{% comment %}
+  Modal: Pedido de Inventário
+  Power Pages: Web Template para modal de inventário
+{% endcomment %}
+
+<div id="modalInventario" class="modal-overlay" onclick="if(event.target === this) closeModal('modalInventario')">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2 class="modal-title">Pedido de Inventário</h2>
+      <button class="modal-close" onclick="closeModal('modalInventario')">×</button>
+    </div>
+    <form id="formInventario" onsubmit="event.preventDefault(); submitInventario();">
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Tipo de Material *</label>
+          <select class="form-select" required>
+            <option value="">Selecione...</option>
+            <option value="informatico">Material Informático</option>
+            <option value="escritorio">Material de Escritório</option>
+            <option value="mobiliario">Mobiliário</option>
+            <option value="outro">Outro</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Descrição do Material *</label>
+          <textarea class="form-textarea" placeholder="Descreva o material necessário..." required></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Quantidade *</label>
+          <input type="number" class="form-input" min="1" value="1" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Justificação *</label>
+          <textarea class="form-textarea" placeholder="Justifique a necessidade..." required></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('modalInventario')">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Submeter Pedido</button>
+      </div>
+    </form>
+  </div>
+</div>

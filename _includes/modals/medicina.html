@@ -1,0 +1,50 @@
+{% comment %}
+  Modal: Medicina no Trabalho
+  Power Pages: Web Template para modal de medicina
+{% endcomment %}
+
+<div id="modalMedicina" class="modal-overlay" onclick="if(event.target === this) closeModal('modalMedicina')">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2 class="modal-title">Medicina no Trabalho</h2>
+      <button class="modal-close" onclick="closeModal('modalMedicina')">×</button>
+    </div>
+    <form id="formMedicina" onsubmit="event.preventDefault(); submitMedicina();">
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Tipo de Consulta *</label>
+          <select class="form-select" required>
+            <option value="">Selecione...</option>
+            <option value="periodica">Consulta Periódica</option>
+            <option value="ocasional">Consulta Ocasional</option>
+            <option value="admissao">Exame de Admissão</option>
+            <option value="mudanca">Exame de Mudança de Função</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Data Preferencial *</label>
+          <input type="date" class="form-input" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Período Preferencial *</label>
+          <select class="form-select" required>
+            <option value="">Selecione...</option>
+            <option value="manha">Manhã (09:00 - 13:00)</option>
+            <option value="tarde">Tarde (14:00 - 18:00)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Observações</label>
+          <textarea class="form-textarea" placeholder="Informações adicionais (opcional)..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('modalMedicina')">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Agendar Consulta</button>
+      </div>
+    </form>
+  </div>
+</div>
