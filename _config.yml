@@ -23,13 +23,13 @@ exclude:
   - test_permissions.txt
   - Gemfile
   - Gemfile.lock
-  - assets  # Ignorar qualquer pasta assets que possa existir
+  - assets
+  - snippets  # Agora em _includes/snippets
 
 # Include settings  
 include:
   - _includes
   - _layouts
-  - snippets
   - web-files
   - web-pages
 
