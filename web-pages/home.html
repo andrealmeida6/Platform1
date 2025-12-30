@@ -1,0 +1,184 @@
+---
+layout: default
+title: Portal do Colaborador
+permalink: /home/
+---
+
+<!-- Page Title -->
+<h1 class="page-title">Portal do Colaborador</h1>
+
+<!-- Profile + Quick Actions -->
+{% include components/profile-section.html %}
+{% include components/quick-actions.html %}
+
+<!-- Calendar Section -->
+{% include components/calendar-section.html %}
+
+<!-- Notifications -->
+<div class="notifications-section">
+  <div class="card-header">
+    <div class="card-title">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+        <path d="M13.73 21a2 2 0 01-3.46 0"/>
+      </svg>
+      Notificações
+    </div>
+    <a href="#" class="card-action">Ver todas</a>
+  </div>
+  <div class="notification-item">
+    <div class="notification-icon info">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="16" x2="12" y2="12"/>
+        <line x1="12" y1="8" x2="12.01" y2="8"/>
+      </svg>
+    </div>
+    <div class="notification-content">
+      <div class="notification-title">Formação Agendada</div>
+      <div class="notification-desc">A formação "Gestão de Projetos" está agendada para 15-17 Janeiro 2026.</div>
+    </div>
+    <div class="notification-time">Há 2h</div>
+  </div>
+  <div class="notification-item">
+    <div class="notification-icon warning">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+        <line x1="12" y1="9" x2="12" y2="13"/>
+        <line x1="12" y1="17" x2="12.01" y2="17"/>
+      </svg>
+    </div>
+    <div class="notification-content">
+      <div class="notification-title">Exame de Medicina no Trabalho</div>
+      <div class="notification-desc">O seu exame periódico está marcado para 10/12/2025.</div>
+    </div>
+    <div class="notification-time">Há 1d</div>
+  </div>
+  <div class="notification-item">
+    <div class="notification-icon success">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+        <polyline points="22 4 12 14.01 9 11.01"/>
+      </svg>
+    </div>
+    <div class="notification-content">
+      <div class="notification-title">Reembolso Aprovado</div>
+      <div class="notification-desc">O seu pedido de reembolso no valor de €75,00 foi aprovado.</div>
+    </div>
+    <div class="notification-time">Há 3d</div>
+  </div>
+</div>
+
+<!-- Artigos Atribuídos -->
+<div class="inventory-section">
+  <div class="card-header">
+    <div class="card-title">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/>
+      </svg>
+      Artigos Atribuídos
+    </div>
+    <a href="#" class="card-action" onclick="verTodoInventario()">Ver todos</a>
+  </div>
+  <table class="mini-table">
+    <thead>
+      <tr>
+        <th>Código</th>
+        <th>Descrição</th>
+        <th>Categoria</th>
+        <th>Qtd</th>
+        <th>Data Atribuição</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="item-code">EQ-2024-001</span></td>
+        <td>MacBook Pro 14" M3</td>
+        <td><span class="item-category">Equipamento</span></td>
+        <td>1</td>
+        <td>15/01/2025</td>
+      </tr>
+      <tr>
+        <td><span class="item-code">EQ-2024-045</span></td>
+        <td>Monitor Dell 27" 4K</td>
+        <td><span class="item-category">Equipamento</span></td>
+        <td>2</td>
+        <td>15/01/2025</td>
+      </tr>
+      <tr>
+        <td><span class="item-code">EC-2025-112</span></td>
+        <td>Caderno A5 Pautado</td>
+        <td><span class="item-category economato">Economato</span></td>
+        <td>3</td>
+        <td>01/11/2025</td>
+      </tr>
+      <tr>
+        <td><span class="item-code">SW-2024-008</span></td>
+        <td>Licença Microsoft 365</td>
+        <td><span class="item-category software">Software</span></td>
+        <td>1</td>
+        <td>15/01/2025</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Deslocações -->
+<div class="trips-section">
+  <div class="card-header">
+    <div class="card-title">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/>
+        <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>
+      </svg>
+      Deslocações
+    </div>
+    <a href="#" class="card-action" onclick="verTodasDeslocacoes()">Ver todas</a>
+  </div>
+  <table class="mini-table">
+    <thead>
+      <tr>
+        <th>Referência</th>
+        <th>Destino</th>
+        <th>Data Início</th>
+        <th>Data Fim</th>
+        <th>Km Previsto</th>
+        <th>Estado</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="item-code">BI-2025-0234</span></td>
+        <td>Coimbra - Reunião Cliente</td>
+        <td>22/11/2025</td>
+        <td>22/11/2025</td>
+        <td>420 km</td>
+        <td><span class="status-badge em-aprovacao">Em Aprovação</span></td>
+      </tr>
+      <tr>
+        <td><span class="item-code">BI-2025-0198</span></td>
+        <td>Porto - Formação</td>
+        <td>15/11/2025</td>
+        <td>16/11/2025</td>
+        <td>640 km</td>
+        <td><span class="status-badge aprovado">Aprovado</span></td>
+      </tr>
+      <tr>
+        <td><span class="item-code">BI-2025-0156</span></td>
+        <td>Évora - Workshop</td>
+        <td>05/11/2025</td>
+        <td>05/11/2025</td>
+        <td>280 km</td>
+        <td><span class="status-badge concluido">Concluído</span></td>
+      </tr>
+      <tr>
+        <td><span class="item-code">BI-2025-0089</span></td>
+        <td>Braga - Conferência</td>
+        <td>20/10/2025</td>
+        <td>21/10/2025</td>
+        <td>720 km</td>
+        <td><span class="status-badge concluido">Concluído</span></td>
+      </tr>
+    </tbody>
+  </table>
+</div>

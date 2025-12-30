@@ -1,0 +1,22 @@
+/* ===================================================================
+   PORTAL DO COLABORADOR - CSS COMPLETO
+   Power Pages Ready - CSS Modular
+   =================================================================== */
+
+/* Ficheiro muito grande - ver no repo */
+/* TODO: Este ficheiro será enviado via GitHub API */
+:root {
+  --primary-color: #00b276;
+  --primary-hover: #009661;
+  --secondary-color: #282a32;
+  --text-primary: #282a32;
+  --text-secondary: #686b87;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: var(--text-primary);
+  background: #f8fafb;
+}
+
+/* [PLACEHOLDER - CSS COMPLETO SERÁ ENVIADO NO PRÓXIMO COMMIT] */

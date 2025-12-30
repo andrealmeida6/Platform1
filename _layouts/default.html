@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-PT">
-{% include head.html %}
+{% include partials/head.html %}
 <body>
   <div class="page-wrapper">
     <div class="content-wrapper">
@@ -10,15 +10,13 @@
     </div>
   </div>
   
-  {% include modals.html %}
+  {% include modals/inventario.html %}
+  {% include modals/deslocacao.html %}
+  {% include modals/reembolso.html %}
+  {% include modals/medicina.html %}
+  {% include modals/formacao.html %}
   
-  <!-- Toast Container -->
-  <div class="toast-container">
-    <div id="toast" class="toast">
-      <span class="toast-message"></span>
-    </div>
-  </div>
-  
-  {% include scripts.html %}
+  {% include partials/toast.html %}
+  {% include partials/scripts.html %}
 </body>
 </html>
