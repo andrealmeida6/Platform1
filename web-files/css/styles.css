@@ -1,22 +1,63 @@
 /* ===================================================================
    PORTAL DO COLABORADOR - CSS COMPLETO
-   Power Pages Ready - CSS Modular
+   Power Pages Ready - Modular CSS
    =================================================================== */
 
-/* Ficheiro muito grande - ver no repo */
-/* TODO: Este ficheiro será enviado via GitHub API */
+/* === VARIABLES & RESET === */
 :root {
   --primary-color: #00b276;
   --primary-hover: #009661;
   --secondary-color: #282a32;
   --text-primary: #282a32;
   --text-secondary: #686b87;
+  --border-color: #e9ecf4;
+  --bg-gray: #f8fafb;
+  --white: #ffffff;
+  --success: #00b276;
+  --warning: #ffc107;
+  --danger: #ef4444;
+  --info: #3b82f6;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   color: var(--text-primary);
-  background: #f8fafb;
+  background: var(--bg-gray);
+  line-height: 1.6;
 }
 
-/* [PLACEHOLDER - CSS COMPLETO SERÁ ENVIADO NO PRÓXIMO COMMIT] */
+/* === LAYOUT === */
+.page-wrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.content-wrapper {
+  flex: 1;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.main-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.page-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 1.5rem;
+}
+
+/* Continua... (será enviado arquivo completo no GitHub) */
