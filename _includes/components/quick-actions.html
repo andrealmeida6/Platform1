@@ -1,10 +1,6 @@
-{% comment %}
-  Component: Quick Actions Grid
-  Power Pages: Web Template para ações rápidas
-{% endcomment %}
-
+<!-- Quick Actions -->
 <div class="quick-actions">
-  <a href="#" class="quick-action-btn" onclick="openModal('modalInventario')">
+  <a href="#" class="quick-action-btn" onclick="openModal('modalInventario'); return false;">
     <div class="quick-action-icon">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/>
@@ -13,8 +9,7 @@
     <div class="quick-action-title">Pedir Inventário</div>
     <div class="quick-action-desc">Economato e equipamentos</div>
   </a>
-  
-  <a href="#" class="quick-action-btn" onclick="openModal('modalDeslocacao')">
+  <a href="#" class="quick-action-btn" onclick="openModal('modalDeslocacao'); return false;">
     <div class="quick-action-icon">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <circle cx="12" cy="12" r="10"/>
@@ -24,8 +19,7 @@
     <div class="quick-action-title">Pedir Deslocação</div>
     <div class="quick-action-desc">Boletins de itinerário</div>
   </a>
-  
-  <a href="#" class="quick-action-btn" onclick="openModal('modalReembolso')">
+  <a href="#" class="quick-action-btn" onclick="openModal('modalReembolso'); return false;">
     <div class="quick-action-icon">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
@@ -35,18 +29,16 @@
     <div class="quick-action-title">Pedir Reembolso</div>
     <div class="quick-action-desc">Submeter despesas</div>
   </a>
-  
-  <a href="#" class="quick-action-btn" onclick="openModal('modalMedicina')">
+  <a href="#" class="quick-action-btn" onclick="openModal('modalMedicina'); return false;">
     <div class="quick-action-icon">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
       </svg>
     </div>
     <div class="quick-action-title">Medicina no Trabalho</div>
-    <div class="quick-action-desc">Marcar consulta ou exame ocupacional</div>
+    <div class="quick-action-desc">Marcar consulta ou exame</div>
   </a>
-  
-  <a href="#" class="quick-action-btn" onclick="openModal('modalFormacao')">
+  <a href="#" class="quick-action-btn" onclick="openModal('modalFormacao'); return false;">
     <div class="quick-action-icon">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
