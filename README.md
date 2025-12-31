@@ -101,5 +101,4 @@ web-files/js/
 
 ---
 
-**Desenvolvido para KPMG Portugal / Recuperar Portugal**  
 *Protótipo preparado para migração Power Pages*

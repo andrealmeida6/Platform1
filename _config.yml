@@ -2,7 +2,7 @@
 # Power Pages Ready Structure
 
 title: "Portal do Colaborador"
-description: "Portal interno para colaboradores - KPMG Portugal / Recuperar Portugal"
+description: "Portal interno para colaboradores"
 baseurl: "/Platform1"
 url: "https://andrealmeida6.github.io"
 
@@ -24,7 +24,7 @@ exclude:
   - Gemfile
   - Gemfile.lock
   - assets
-  - snippets  # Agora em _includes/snippets
+  - snippets
 
 # Include settings  
 include:

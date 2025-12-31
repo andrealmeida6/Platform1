@@ -40,6 +40,14 @@
       <div class="dual-calendar-container">
         <h3 class="calendar-heading">Calendário de Ocorrências</h3>
         
+        <!-- Legend Chips (inline) -->
+        <div class="calendar-legend-inline">
+          <span class="legend-chip"><span class="legend-chip-color deslocacao"></span>Deslocações</span>
+          <span class="legend-chip"><span class="legend-chip-color medicina"></span>Medicina</span>
+          <span class="legend-chip"><span class="legend-chip-color formacao"></span>Formações</span>
+          <span class="legend-chip"><span class="legend-chip-color holiday"></span>Feriados</span>
+        </div>
+        
         <div class="months-container">
           <!-- Current Month -->
           <div class="calendar-month">
@@ -73,9 +81,8 @@
         </div>
       </div>
 
-      <!-- Info Panel -->
+      <!-- Info Panel (Events Only) -->
       <div class="info-panel">
-        <!-- Events Panel -->
         <div class="events-panel">
           <div class="events-header">
             <div>
@@ -91,29 +98,8 @@
             </button>
           </div>
           
-          <div id="eventsContainer">
+          <div class="events-container-scroll" id="eventsContainer">
             <!-- Events will be populated by JavaScript -->
-          </div>
-        </div>
-
-        <!-- Legend -->
-        <div class="legend-card">
-          <div class="legend-title">Legenda</div>
-          <div class="legend-item">
-            <span class="legend-color deslocacao"></span>
-            Deslocações
-          </div>
-          <div class="legend-item">
-            <span class="legend-color medicina"></span>
-            Medicina no Trabalho
-          </div>
-          <div class="legend-item">
-            <span class="legend-color formacao"></span>
-            Formações
-          </div>
-          <div class="legend-item">
-            <span class="legend-color holiday"></span>
-            Feriados
           </div>
         </div>
       </div>
