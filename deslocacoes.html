@@ -1,0 +1,286 @@
+---
+layout: default
+title: Pedidos de Deslocação
+---
+
+<div class="page-header">
+  <h1 class="page-title">Pedidos de Deslocação</h1>
+  <p class="page-subtitle">Gerencie os seus pedidos de deslocação e acompanhe o estado</p>
+</div>
+
+<!-- Stats Cards -->
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-label">Total de Pedidos</div>
+    <div class="stat-value" id="statTotal">0</div>
+    <div class="stat-change positive">↑ Este mês</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Em Aprovação</div>
+    <div class="stat-value" id="statPending">0</div>
+    <div class="stat-change">Aguardando revisão</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Aprovados</div>
+    <div class="stat-value" id="statApproved">0</div>
+    <div class="stat-change positive">↑ 8 este mês</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Rascunhos</div>
+    <div class="stat-value" id="statDraft">0</div>
+    <div class="stat-change">Pendentes conclusão</div>
+  </div>
+</div>
+
+<!-- Table -->
+<div class="table-wrapper">
+  <div class="table-header-section">
+    <h3>Pedidos de Deslocação</h3>
+    <div class="table-actions">
+      <button class="table-create-btn" onclick="openCreateRequestModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 5v14M5 12h14"/>
+        </svg>
+        Novo Pedido
+      </button>
+      <div class="table-search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/>
+          <path d="m21 21-4.35-4.35"/>
+        </svg>
+        <input type="text" id="searchRequests" placeholder="Pesquisar..." oninput="searchTable()">
+      </div>
+    </div>
+  </div>
+
+  <div class="table-content">
+    <div class="table-grid table-grid-header">
+      <div class="table-sortable" onclick="sortTable('motivo')">Motivo</div>
+      <div class="table-sortable" onclick="sortTable('partida')">Partida</div>
+      <div class="table-sortable" onclick="sortTable('destino')">Destino</div>
+      <div class="table-sortable" onclick="sortTable('data')">Data</div>
+      <div class="table-sortable" onclick="sortTable('duracao')">Duração</div>
+      <div class="table-sortable" onclick="sortTable('viatura')">Viatura</div>
+      <div class="table-sortable" onclick="sortTable('status')">Estado</div>
+    </div>
+
+    <div id="requestsNoData" class="table-grid table-no-data" style="display: none;">
+      <p>Sem pedidos para exibir.</p>
+    </div>
+
+    <div id="requestsTableContainer" class="table-scroll">
+      <div id="requestsTable"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Criar/Editar Pedido -->
+<div id="createRequestModal" class="modal-overlay">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2 class="modal-title" id="modalTitle">Novo Pedido de Deslocação</h2>
+      <button class="modal-close" onclick="closeCreateRequestModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    <form id="createRequestForm" onsubmit="handleSubmitRequest(event)">
+      <div class="modal-body">
+        <!-- Process Tracker -->
+        <div class="process-tracker">
+          <div class="process-tracker-title">Estado do Processo</div>
+          <div class="process-tracker-steps">
+            <div class="process-tracker-line">
+              <div class="process-tracker-progress" id="trackerProgress"></div>
+            </div>
+            
+            <div class="process-step">
+              <div class="process-step-circle active" id="step1Circle">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                </svg>
+              </div>
+              <div class="process-step-label active" id="step1Label">Novo Pedido</div>
+            </div>
+            
+            <div class="process-step">
+              <div class="process-step-circle" id="step2Circle">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              </div>
+              <div class="process-step-label" id="step2Label">Aprovação</div>
+            </div>
+            
+            <div class="process-step">
+              <div class="process-step-circle" id="step3Circle">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              </div>
+              <div class="process-step-label" id="step3Label">Concluído</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Form Fields -->
+        <div class="form-group">
+          <label class="form-label">Motivo da Deslocação <span class="required">*</span></label>
+          <input type="text" class="form-input" id="motivoDeslocacao" required placeholder="Ex: Reunião com cliente, Visita técnica...">
+        </div>
+
+        <div class="date-counter-wrapper">
+          <div class="form-group">
+            <label class="form-label">Data de Partida <span class="required">*</span></label>
+            <input type="date" class="form-input" id="dataPartida" required onchange="updateDayCounter()">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Data de Chegada <span class="required">*</span></label>
+            <input type="date" class="form-input" id="dataChegada" required onchange="updateDayCounter()">
+          </div>
+          <div class="day-counter">
+            <div class="day-counter-label">Duração</div>
+            <div class="day-counter-value" id="dayCounterValue">0 dias</div>
+          </div>
+        </div>
+
+        <div class="time-inputs">
+          <div class="time-input-group">
+            <label>Hora de Partida</label>
+            <div class="time-input-wrapper">
+              <input type="number" id="horaPartida" min="0" max="23" value="09">
+              <span>:</span>
+              <input type="number" id="minutoPartida" min="0" max="59" value="00">
+            </div>
+          </div>
+          <div class="time-input-group">
+            <label>Hora de Chegada</label>
+            <div class="time-input-wrapper">
+              <input type="number" id="horaChegada" min="0" max="23" value="18">
+              <span>:</span>
+              <input type="number" id="minutoChegada" min="0" max="59" value="00">
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Número de Colaboradores <span class="required">*</span></label>
+          <input type="number" class="form-input" id="numeroColaboradores" required min="1" placeholder="Ex: 3">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Itinerário de Deslocação <span class="required">*</span></label>
+          <div class="location-flow" id="locationFlow">
+            <div class="location-item">
+              <div class="location-icon">A</div>
+              <div class="location-connector"></div>
+              <div class="location-content">
+                <label>Local de Partida</label>
+                <input type="text" id="localPartida" placeholder="Ex: Lisboa" required>
+              </div>
+            </div>
+            <div class="location-item" id="intermediateLocations"></div>
+            <div class="location-item">
+              <div class="location-icon">B</div>
+              <div class="location-content">
+                <label>Local de Chegada</label>
+                <input type="text" id="localChegada" placeholder="Ex: Porto" required>
+              </div>
+              <div class="location-actions">
+                <button type="button" class="btn-add-location" onclick="addIntermediateLocation()" title="Adicionar local intermédio">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 5v14M5 12h14"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Meio de Transporte</label>
+          <select class="form-select" id="meioTransporte">
+            <option value="viatura_propria">Viatura Própria</option>
+            <option value="viatura_empresa">Viatura da Empresa</option>
+            <option value="transporte_publico">Transporte Público</option>
+            <option value="outro">Outro</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Observações / Justificação</label>
+          <textarea class="form-textarea" id="observacoes" placeholder="Detalhes adicionais sobre a deslocação..."></textarea>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeCreateRequestModal()">Cancelar</button>
+        <button type="button" class="btn btn-draft" onclick="saveAsDraft()">Guardar Rascunho</button>
+        <button type="submit" class="btn btn-primary">Submeter Pedido</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Visualizar Pedido -->
+<div id="viewRequestModal" class="modal-overlay">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2 class="modal-title">Detalhes do Pedido</h2>
+      <button class="modal-close" onclick="closeViewRequestModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <!-- Process Tracker for View -->
+      <div class="process-tracker">
+        <div class="process-tracker-title">Estado do Processo</div>
+        <div class="process-tracker-steps">
+          <div class="process-tracker-line">
+            <div class="process-tracker-progress" id="viewTrackerProgress"></div>
+          </div>
+          
+          <div class="process-step">
+            <div class="process-step-circle" id="viewStep1Circle">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+              </svg>
+            </div>
+            <div class="process-step-label" id="viewStep1Label">Novo Pedido</div>
+          </div>
+          
+          <div class="process-step">
+            <div class="process-step-circle" id="viewStep2Circle">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+            </div>
+            <div class="process-step-label" id="viewStep2Label">Aprovação</div>
+          </div>
+          
+          <div class="process-step">
+            <div class="process-step-circle" id="viewStep3Circle">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+            </div>
+            <div class="process-step-label" id="viewStep3Label">Concluído</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="viewRequestDetails" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.25rem; margin-top: 1.5rem;">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" onclick="closeViewRequestModal()">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<script src="{{ site.baseurl }}/web-files/js/deslocacoes.js"></script>
