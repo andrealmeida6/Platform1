@@ -22,23 +22,23 @@ const calendarEvents = {
   '1-0-2025': 'holiday', '25-11-2025': 'holiday', '1-0-2026': 'holiday'
 };
 
-// Define event details for the events panel
+// Define event details for the events panel with type for color coding
 const eventDetails = [
-  { date: '2025-10-24', day: 24, month: 'OUT', title: 'Entrevistas - Eng. Software', meta: '14:00 - 17:00 • 3 candidatos', color: '#3b82f6' },
-  { date: '2025-10-25', day: 25, month: 'OUT', title: 'Onboarding - Marketing Team', meta: '09:00 - 12:00 • 2 novos colaboradores', color: '#10b981' },
-  { date: '2025-10-28', day: 28, month: 'OUT', title: 'Revisão de Probatório', meta: '10:00 • Ana Silva - Financeiro', color: '#f59e0b' },
-  { date: '2025-10-30', day: 30, month: 'OUT', title: 'Final - Designer UX/UI', meta: '15:00 • Decisão final', color: '#8b5cf6' },
-  { date: '2025-11-02', day: 2, month: 'NOV', title: 'Triagem CVs - Gestor Produto', meta: 'Toda a manhã • 12 candidaturas', color: '#ec4899' },
-  { date: '2025-11-05', day: 5, month: 'NOV', title: 'Fim de Probatório - Dev Team', meta: '16:00 • 2 colaboradores', color: '#06b6d4' },
-  { date: '2025-11-15', day: 15, month: 'NOV', title: 'Formação Porto', meta: 'Deslocação • 640 km', color: '#00b276' },
-  { date: '2025-11-16', day: 16, month: 'NOV', title: 'Formação Porto (cont.)', meta: 'Deslocação • Regresso', color: '#00b276' },
-  { date: '2025-11-22', day: 22, month: 'NOV', title: 'Reunião Cliente - Coimbra', meta: 'Deslocação • 420 km', color: '#00b276' },
-  { date: '2025-11-28', day: 28, month: 'NOV', title: 'Exame Medicina Trabalho', meta: '10:00 • Consulta periódica', color: '#3b82f6' },
-  { date: '2025-12-10', day: 10, month: 'DEZ', title: 'Check-up Medicina Trabalho', meta: '14:30 • Exames periódicos', color: '#3b82f6' },
-  { date: '2025-12-25', day: 25, month: 'DEZ', title: 'Natal', meta: 'Feriado Nacional', color: '#ef4444' },
-  { date: '2026-01-01', day: 1, month: 'JAN', title: 'Ano Novo', meta: 'Feriado Nacional', color: '#ef4444' },
-  { date: '2026-01-15', day: 15, month: 'JAN', title: 'Gestão de Projetos', meta: 'Formação • 3 dias', color: '#f59e0b' },
-  { date: '2026-01-22', day: 22, month: 'JAN', title: 'Excel Avançado', meta: 'Formação • 2 dias', color: '#f59e0b' }
+  { date: '2025-10-24', day: 24, month: 'OUT', title: 'Entrevistas - Eng. Software', meta: '14:00 - 17:00 • 3 candidatos', color: '#3b82f6', type: 'medicina' },
+  { date: '2025-10-25', day: 25, month: 'OUT', title: 'Onboarding - Marketing Team', meta: '09:00 - 12:00 • 2 novos colaboradores', color: '#10b981', type: 'deslocacao' },
+  { date: '2025-10-28', day: 28, month: 'OUT', title: 'Revisão de Probatório', meta: '10:00 • Ana Silva - Financeiro', color: '#f59e0b', type: 'formacao' },
+  { date: '2025-10-30', day: 30, month: 'OUT', title: 'Final - Designer UX/UI', meta: '15:00 • Decisão final', color: '#8b5cf6', type: 'formacao' },
+  { date: '2025-11-02', day: 2, month: 'NOV', title: 'Triagem CVs - Gestor Produto', meta: 'Toda a manhã • 12 candidaturas', color: '#ec4899', type: 'formacao' },
+  { date: '2025-11-05', day: 5, month: 'NOV', title: 'Fim de Probatório - Dev Team', meta: '16:00 • 2 colaboradores', color: '#06b6d4', type: 'medicina' },
+  { date: '2025-11-15', day: 15, month: 'NOV', title: 'Formação Porto', meta: 'Deslocação • 640 km', color: '#00b276', type: 'deslocacao' },
+  { date: '2025-11-16', day: 16, month: 'NOV', title: 'Formação Porto (cont.)', meta: 'Deslocação • Regresso', color: '#00b276', type: 'deslocacao' },
+  { date: '2025-11-22', day: 22, month: 'NOV', title: 'Reunião Cliente - Coimbra', meta: 'Deslocação • 420 km', color: '#00b276', type: 'deslocacao' },
+  { date: '2025-11-28', day: 28, month: 'NOV', title: 'Exame Medicina Trabalho', meta: '10:00 • Consulta periódica', color: '#3b82f6', type: 'medicina' },
+  { date: '2025-12-10', day: 10, month: 'DEZ', title: 'Check-up Medicina Trabalho', meta: '14:30 • Exames periódicos', color: '#3b82f6', type: 'medicina' },
+  { date: '2025-12-25', day: 25, month: 'DEZ', title: 'Natal', meta: 'Feriado Nacional', color: '#ef4444', type: 'holiday' },
+  { date: '2026-01-01', day: 1, month: 'JAN', title: 'Ano Novo', meta: 'Feriado Nacional', color: '#ef4444', type: 'holiday' },
+  { date: '2026-01-15', day: 15, month: 'JAN', title: 'Gestão de Projetos', meta: 'Formação • 3 dias', color: '#f59e0b', type: 'formacao' },
+  { date: '2026-01-22', day: 22, month: 'JAN', title: 'Excel Avançado', meta: 'Formação • 2 dias', color: '#f59e0b', type: 'formacao' }
 ];
 
 function generateCalendar(date, container) {
@@ -186,7 +186,7 @@ function renderEvents(events, emptyMessage = 'Nenhum evento encontrado') {
   }
   
   eventsContainer.innerHTML = events.map(event => `
-    <div class="event-item" data-date="${event.date}" style="--event-color: ${event.color};">
+    <div class="event-item" data-date="${event.date}" data-type="${event.type}" style="--event-color: ${event.color};">
       <div class="event-date">
         <div class="event-day">${event.day}</div>
         <div class="event-month">${event.month}</div>

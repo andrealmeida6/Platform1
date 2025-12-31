@@ -19,6 +19,12 @@
   --warning: #ffc107;
   --danger: #ef4444;
   --info: #3b82f6;
+  
+  /* Event colors */
+  --color-deslocacao: #00b276;
+  --color-medicina: #3b82f6;
+  --color-formacao: #f59e0b;
+  --color-holiday: #ef4444;
 }
 
 * {
@@ -375,89 +381,99 @@ body {
   transition: max-height 0.6s ease, opacity 0.4s ease;
 }
 
-/* === CALENDAR WRAPPER === */
+/* === CALENDAR WRAPPER - ALIGNED HEIGHTS === */
 .calendar-wrapper {
   display: grid;
   grid-template-columns: 1fr 280px;
   gap: 1.5rem;
-  align-items: start;
+  align-items: stretch;
   margin-top: 1.5rem;
 }
 
 .dual-calendar-container {
   background: var(--white);
   border-radius: 16px;
-  padding: 1.75rem;
+  padding: 1.25rem 1.5rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
   border: 1px solid #f1f3f5;
-}
-
-.calendar-heading {
-  color: #1e293b;
-  text-align: center;
-  margin-bottom: 1rem;
-  font-size: 1rem;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-}
-
-/* === CALENDAR LEGEND INLINE (CHIPS) === */
-.calendar-legend-inline {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
+  flex-direction: column;
+}
+
+/* === MINIMAL LEGEND (DOTS ONLY) === */
+.calendar-legend-minimal {
+  display: flex;
   justify-content: center;
-  margin-bottom: 1.25rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid var(--border-color);
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
 }
 
-.legend-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.375rem;
-  padding: 0.3rem 0.625rem;
-  background: var(--bg-gray);
-  border-radius: 16px;
-  font-size: 0.7rem;
-  font-weight: 500;
-  color: var(--text-secondary);
-  border: 1px solid var(--border-color);
+.legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  cursor: help;
 }
 
-.legend-chip-color {
-  width: 10px;
-  height: 10px;
-  border-radius: 3px;
-  flex-shrink: 0;
+.legend-dot.deslocacao {
+  background: var(--color-deslocacao);
 }
 
-.legend-chip-color.deslocacao {
-  background: #00b276;
+.legend-dot.medicina {
+  background: var(--color-medicina);
 }
 
-.legend-chip-color.medicina {
-  background: #3b82f6;
+.legend-dot.formacao {
+  background: var(--color-formacao);
 }
 
-.legend-chip-color.formacao {
-  background: #f59e0b;
+.legend-dot.holiday {
+  background: var(--color-holiday);
 }
 
-.legend-chip-color.holiday {
-  background: #ef4444;
+/* Tooltip on hover */
+.legend-dot.deslocacao::after { content: 'Deslocações'; }
+.legend-dot.medicina::after { content: 'Medicina'; }
+.legend-dot.formacao::after { content: 'Formações'; }
+.legend-dot.holiday::after { content: 'Feriados'; }
+
+.legend-dot::after {
+  position: absolute;
+  background: var(--text-primary);
+  color: white;
+  font-size: 0.6rem;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-100%) translateX(-50%);
+  left: 50%;
+  top: -4px;
+  transition: opacity 0.2s, visibility 0.2s;
+  pointer-events: none;
+}
+
+.legend-dot {
+  position: relative;
+}
+
+.legend-dot:hover::after {
+  opacity: 1;
+  visibility: visible;
 }
 
 .months-container {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
+  gap: 1.25rem;
+  flex: 1;
 }
 
 .calendar-month {
   background: var(--bg-light);
   border-radius: 12px;
-  padding: 1.25rem;
+  padding: 1rem;
   border: 1px solid #f0f2f4;
 }
 
@@ -465,10 +481,10 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
   color: #1e293b;
   font-weight: 600;
-  font-size: 0.875rem;
+  font-size: 0.8rem;
   letter-spacing: -0.01em;
 }
 
@@ -476,16 +492,16 @@ body {
   background: var(--white);
   border: 1px solid var(--border-color);
   color: #64748b;
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.2s ease;
   flex-shrink: 0;
-  font-size: 0.75rem;
+  font-size: 0.65rem;
 }
 
 .nav-arrow:hover {
@@ -499,34 +515,34 @@ body {
 .calendar-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 6px;
+  gap: 4px;
 }
 
 .calendar-grid.days {
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .calendar-grid.days p {
   color: var(--text-muted);
   text-align: center;
-  padding: 6px 4px;
-  font-size: 0.7rem;
+  padding: 4px 2px;
+  font-size: 0.6rem;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.02em;
 }
 
 .day-number {
   background: var(--white);
   border: 1px solid #f0f2f4;
-  border-radius: 8px;
+  border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s ease;
-  min-height: 36px;
+  min-height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   color: #1e293b;
   font-weight: 500;
 }
@@ -543,7 +559,7 @@ body {
   color: white;
   font-weight: 600;
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(0, 178, 118, 0.1);
+  box-shadow: 0 0 0 2px rgba(0, 178, 118, 0.1);
 }
 
 .day-number.other-month {
@@ -586,11 +602,10 @@ body {
   font-weight: 600;
 }
 
-/* === INFO PANEL (RIGHT SIDE) === */
+/* === INFO PANEL (RIGHT SIDE) - MATCHED HEIGHT === */
 .info-panel {
-  align-self: start;
-  position: relative;
-  max-height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 /* === EVENTS PANEL === */
@@ -602,7 +617,8 @@ body {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
   display: flex;
   flex-direction: column;
-  max-height: 420px;
+  flex: 1;
+  min-height: 0;
 }
 
 .events-header {
@@ -662,7 +678,6 @@ body {
   flex: 1;
   overflow-y: auto;
   min-height: 0;
-  max-height: 320px;
   padding-right: 4px;
 }
 
@@ -685,14 +700,16 @@ body {
   background: #a1a1a1;
 }
 
-/* Event Items */
+/* Event Items with Color Indicators */
 .event-item {
   display: flex;
-  gap: 0.75rem;
-  padding: 0.625rem;
+  gap: 0.625rem;
+  padding: 0.5rem 0.625rem;
   border-radius: 8px;
   transition: all 0.2s ease;
   margin-bottom: 0.375rem;
+  border-left: 3px solid var(--event-color, var(--primary-color));
+  background: var(--bg-light);
 }
 
 .event-item:last-child {
@@ -700,29 +717,51 @@ body {
 }
 
 .event-item:hover {
-  background: var(--bg-light);
+  background: #f0f4f8;
+  transform: translateX(2px);
+}
+
+/* Event type specific colors */
+.event-item[data-type="deslocacao"] {
+  --event-color: var(--color-deslocacao);
+  border-left-color: var(--color-deslocacao);
+}
+
+.event-item[data-type="medicina"] {
+  --event-color: var(--color-medicina);
+  border-left-color: var(--color-medicina);
+}
+
+.event-item[data-type="formacao"] {
+  --event-color: var(--color-formacao);
+  border-left-color: var(--color-formacao);
+}
+
+.event-item[data-type="holiday"] {
+  --event-color: var(--color-holiday);
+  border-left-color: var(--color-holiday);
 }
 
 .event-date {
   flex-shrink: 0;
-  width: 40px;
+  width: 36px;
   text-align: center;
 }
 
 .event-day {
-  font-size: 1.25rem;
+  font-size: 1.1rem;
   font-weight: 700;
   color: var(--event-color, var(--primary-color));
   line-height: 1;
 }
 
 .event-month {
-  font-size: 0.6rem;
+  font-size: 0.55rem;
   color: var(--text-secondary);
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-top: 0.15rem;
+  letter-spacing: 0.04em;
+  margin-top: 0.1rem;
 }
 
 .event-details {
@@ -731,88 +770,21 @@ body {
 }
 
 .event-title {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 600;
   color: var(--text-primary);
-  margin-bottom: 0.15rem;
+  margin-bottom: 0.1rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .event-meta {
-  font-size: 0.65rem;
+  font-size: 0.6rem;
   color: var(--text-secondary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-/* === LEGACY LEGEND CARD (keeping for compatibility) === */
-.legend-card {
-  background: var(--white);
-  border-radius: 12px;
-  padding: 1rem;
-  border: 1px solid #f0f2f4;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-  margin-top: 1rem;
-}
-
-.legend-title {
-  font-size: 0.65rem;
-  font-weight: 600;
-  color: #64748b;
-  margin-bottom: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-
-.legend-item {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.7rem;
-  color: #475569;
-  margin-bottom: 0.5rem;
-  padding: 0.25rem;
-  border-radius: 6px;
-  transition: all 0.2s ease;
-}
-
-.legend-item:hover {
-  background: var(--bg-light);
-}
-
-.legend-item:last-child {
-  margin-bottom: 0;
-}
-
-.legend-color {
-  width: 14px;
-  height: 14px;
-  border-radius: 4px;
-  flex-shrink: 0;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-}
-
-.legend-color.deslocacao {
-  background: #d1fae5;
-  border-color: #6ee7b7;
-}
-
-.legend-color.medicina {
-  background: #dbeafe;
-  border-color: #93c5fd;
-}
-
-.legend-color.formacao {
-  background: #fef3c7;
-  border-color: #fde68a;
-}
-
-.legend-color.holiday {
-  background: #fee2e2;
-  border-color: #fca5a5;
 }
 
 /* === INFO CARDS === */
@@ -1388,38 +1360,43 @@ body {
   }
 
   .calendar-cards {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
   }
 
   .calendar-wrapper {
     grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .dual-calendar-container {
+    order: 1;
   }
 
   .info-panel {
-    position: static;
-    max-height: none;
+    order: 2;
   }
 
   .events-panel {
-    max-height: 300px;
-  }
-
-  .events-container-scroll {
-    max-height: 200px;
+    max-height: 280px;
   }
 
   .months-container {
-    grid-template-columns: 1fr;
-  }
-  
-  .calendar-legend-inline {
-    justify-content: flex-start;
+    grid-template-columns: 1fr 1fr;
   }
 }
 
 @media (max-width: 768px) {
   .quick-actions {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .calendar-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .months-container {
+    grid-template-columns: 1fr;
+    gap: 1rem;
   }
 
   .profile-section {
@@ -1438,6 +1415,19 @@ body {
   .mini-table th,
   .mini-table td {
     padding: 0.5rem;
+  }
+
+  .events-panel {
+    max-height: 260px;
+  }
+
+  .calendar-legend-minimal {
+    gap: 0.75rem;
+  }
+
+  .legend-dot {
+    width: 10px;
+    height: 10px;
   }
 }
 
@@ -1459,13 +1449,39 @@ body {
     right: 10px;
     left: 10px;
   }
-  
-  .calendar-legend-inline {
-    gap: 0.375rem;
+
+  .calendar-section {
+    padding: 1rem;
   }
-  
-  .legend-chip {
-    font-size: 0.6rem;
-    padding: 0.25rem 0.5rem;
+
+  .dual-calendar-container {
+    padding: 1rem;
+  }
+
+  .calendar-month {
+    padding: 0.75rem;
+  }
+
+  .events-panel {
+    padding: 0.75rem;
+    max-height: 240px;
+  }
+
+  .event-item {
+    padding: 0.4rem 0.5rem;
+    gap: 0.5rem;
+  }
+
+  .event-day {
+    font-size: 1rem;
+  }
+
+  .event-date {
+    width: 32px;
+  }
+
+  .legend-dot {
+    width: 6px;
+    height: 6px;
   }
 }
