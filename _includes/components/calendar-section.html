@@ -1,34 +1,31 @@
-{% comment %}
-  Component: Calendar Section
-  Power Pages: Web Template para secção completa do calendário
-  Inclui: Cards resumo + Botão toggle + Calendário dual-month + Painel eventos
-{% endcomment %}
-
+<!-- Calendar Section -->
 <div class="calendar-section">
-  <!-- Cards Resumo -->
   <div class="calendar-cards">
     <div class="calendar-card green">
       <div class="calendar-card-label">Deslocações</div>
       <div class="calendar-card-number">18</div>
+      <div class="calendar-card-info">Próxima: 22/11</div>
     </div>
 
     <div class="calendar-card blue">
       <div class="calendar-card-label">Medicina no Trabalho</div>
       <div class="calendar-card-number">2</div>
+      <div class="calendar-card-info">Próxima: 28/11</div>
     </div>
 
     <div class="calendar-card orange">
       <div class="calendar-card-label">Formações</div>
       <div class="calendar-card-number">5</div>
+      <div class="calendar-card-info">Próxima: 15/01</div>
     </div>
 
     <div class="calendar-card purple">
-      <div class="calendar-card-label">Inventário Atribuído</div>
-      <div class="calendar-card-number">7</div>
+      <div class="calendar-card-label">Feriados/Férias</div>
+      <div class="calendar-card-number">3</div>
+      <div class="calendar-card-info">Próximo: 25/12</div>
     </div>
   </div>
 
-  <!-- Botão Toggle -->
   <button class="calendar-toggle-btn" id="calendarToggleBtn" onclick="toggleCalendar()">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
       <polyline points="6 9 12 15 18 9"/>
@@ -36,23 +33,15 @@
     Ver Calendário
   </button>
 
-  <!-- Calendário Collapsible -->
+  <!-- Collapsible Calendar Section -->
   <div class="calendar-collapsible" id="calendarCollapsible">
     <div class="calendar-wrapper">
-      <!-- Calendário Dual-Month -->
+      <!-- Dual Calendar -->
       <div class="dual-calendar-container">
         <h3 class="calendar-heading">Calendário de Ocorrências</h3>
         
-        <!-- Legenda em Chips (LAYOUT OTIMIZADO) -->
-        <div class="calendar-legend">
-          {% include snippets/legend-chip.html type="deslocacao" label="Deslocações" %}
-          {% include snippets/legend-chip.html type="medicina" label="Medicina no Trabalho" %}
-          {% include snippets/legend-chip.html type="formacao" label="Formações" %}
-          {% include snippets/legend-chip.html type="holiday" label="Feriados" %}
-        </div>
-        
         <div class="months-container">
-          <!-- Mês Atual -->
+          <!-- Current Month -->
           <div class="calendar-month">
             <div class="month-header">
               <button class="nav-arrow" id="prevMonth">◀</button>
@@ -67,7 +56,7 @@
             <div class="calendar-grid" id="currentMonthGrid"></div>
           </div>
 
-          <!-- Próximo Mês -->
+          <!-- Next Month -->
           <div class="calendar-month">
             <div class="month-header">
               <span style="width: 28px;"></span>
@@ -84,8 +73,50 @@
         </div>
       </div>
 
-      <!-- Painel de Eventos -->
-      {% include components/info-panel.html %}
+      <!-- Info Panel -->
+      <div class="info-panel">
+        <!-- Events Panel -->
+        <div class="events-panel">
+          <div class="events-header">
+            <div>
+              <h3 class="events-title" id="eventsTitle">Próximos Eventos</h3>
+              <span class="selected-date-info" id="selectedDateInfo" style="display: none;"></span>
+            </div>
+            <button class="clear-filter-btn" id="clearFilterBtn" aria-label="Limpar filtro">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+              Limpar
+            </button>
+          </div>
+          
+          <div id="eventsContainer">
+            <!-- Events will be populated by JavaScript -->
+          </div>
+        </div>
+
+        <!-- Legend -->
+        <div class="legend-card">
+          <div class="legend-title">Legenda</div>
+          <div class="legend-item">
+            <span class="legend-color deslocacao"></span>
+            Deslocações
+          </div>
+          <div class="legend-item">
+            <span class="legend-color medicina"></span>
+            Medicina no Trabalho
+          </div>
+          <div class="legend-item">
+            <span class="legend-color formacao"></span>
+            Formações
+          </div>
+          <div class="legend-item">
+            <span class="legend-color holiday"></span>
+            Feriados
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>

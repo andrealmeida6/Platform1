@@ -1,16 +1,6 @@
-{% comment %}
-  Partial: HTML Head
-  Power Pages: Web Template para <head>
-{% endcomment %}
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{{ page.title | default: site.title }}</title>
-  
-  <!-- CSS Modular - Ordem Importante -->
-  <link rel="stylesheet" href="{{ '/web-files/css/1-variables.css' | relative_url }}">
-  <link rel="stylesheet" href="{{ '/web-files/css/2-base.css' | relative_url }}">
-  <link rel="stylesheet" href="{{ '/web-files/css/3-components.css' | relative_url }}">
-  <link rel="stylesheet" href="{{ '/web-files/css/4567-combined.css' | relative_url }}">
+  <link rel="stylesheet" href="{{ '/web-files/css/styles.css' | relative_url }}">
 </head>

@@ -1,1 +1,86 @@
-Ly8gPT09IE1PREFMIEZVU0NUSU9OUyA9PT0KZnVuY3Rpb24gb3Blbk1vZGFsKG1vZGFsSWQpIHsKICBjb25zdCBtb2RhbCA9IGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKG1vZGFsSWQpOwogIGlmIChtb2RhbCkgewogICAgbW9kYWwuY2xhc3NMaXN0LmFkZCgnc2hvdycpOwogICAgZG9jdW1lbnQuYm9keS5zdHlsZS5vdmVyZmxvdyA9ICdoaWRkZW4nOwogIH0KfQoKZnVuY3Rpb24gY2xvc2VNb2RhbChtb2RhbElkKSB7CiAgY29uc3QgbW9kYWwgPSBkb2N1bWVudC5nZXRFbGVtZW50QnlJZChtb2RhbElkKTsKICBpZiAobW9kYWwpIHsKICAgIG1vZGFsLmNsYXNzTGlzdC5yZW1vdmUoJ3Nob3cnKTsKICAgIGRvY3VtZW50LmJvZHkuc3R5bGUub3ZlcmZsb3cgPSAnJzsKICAgIGNvbnN0IGZvcm0gPSBtb2RhbC5xdWVyeVNlbGVjdG9yKCdmb3JtJyk7CiAgICBpZiAoZm9ybSkgZm9ybS5yZXNldCgpOwogIH0KfQoKLy8gPT09IFRPQVNUIEZVU0NUSU9OID09PQpmdW5jdGlvbiBzaG93VG9hc3QobWVzc2FnZSwgdHlwZSA9ICdzdWNjZXNzJykgewogIGNvbnN0IHRvYXN0ID0gZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ3RvYXN0Jyk7CiAgY29uc3QgbWVzc2FnZUVsID0gdG9hc3QucXVlcnlTZWxlY3RvcignLnRvYXN0LW1lc3NhZ2UnKTsKICBtZXNzYWdlRWwudGV4dENvbnRlbnQgPSBtZXNzYWdlOwogIHRvYXN0LmNsYXNzTmFtZSA9IGB0b2FzdCAke3R5cGV9YDsKICB0b2FzdC5jbGFzc0xpc3QuYWRkKCdzaG93Jyk7CiAgCiAgc2V0VGltZW91dCgoKSA9PiB7CiAgICB0b2FzdC5jbGFzc0xpc3QucmVtb3ZlKCdzaG93Jyk7CiAgfSwgNDAwMCk7Cn0KCi8vID09PSBTVUJNSVQGVU5DVElPTlMgPT09CmZ1bmN0aW9uIHN1Ym1pdEludmVudGFyaW8oKSB7CiAgY2xvc2VNb2RhbCgnbW9kYWxJbnZlbnRhcmlvJyk7CiAgc2hvd1RvYXN0KCfinIUgUGVkaWRvIGRlIGludmVudMOhcmlvIHN1Ym1ldGlkbyBjb20gc3VjZXNzbyEgU2Vyw6Egbm90aWZpY2FkbyBxdWFuZG8gZm9yIHByb2Nlc3NhZG8uJywgJ3N1Y2Nlc3MnKTsKfQoKZnVuY3Rpb24gc3VibWl0RGVzbG9jYWNhbygpIHsKICBjbG9zZU1vZGFsKCdtb2RhbERlc2xvY2FjYW8nKTsKICBzaG93VG9hc3QoJ+KchSBCb2xldGltIGRlIGl0aW5lcsOhcmlvIHN1Ym1ldGlkbyBjb20gc3VjZXNzbyEgQWd1YXJkYSBhcHJvdmHDp8Ojby4nLCAnc3VjY2VzcycpOwp9CgpmdW5jdGlvbiBzdWJtaXRSZWVtYm9sc28oKSB7CiAgY2xvc2VNb2RhbCgnbW9kYWxSZWVtYm9sc28nKTsKICBzaG93VG9hc3QoJ+KchSBQZWRpZG8gZGUgcmVlbWJvbHNvIHN1Ym1ldGlkbyBjb20gc3VjZXNzbyEgU2Vyw6EgcHJvY2Vzc2FkbyBub3MgcHLDs3hpbW9zIDUgZGlhcyDDunRlaXMuJywgJ3N1Y2Nlc3MnKTsKfQoKZnVuY3Rpb24gc3VibWl0TWVkaWNpbmEoKSB7CiAgY2xvc2VNb2RhbCgnbW9kYWxNZWRpY2luYScpOwogIHNob3dUb2FzdCgn4pyFIENvbnN1bHRhIGFnZW5kYWRhIGNvbSBzdWNlc3NvISBSZWNlYmVyw6EgY29uZmlybWHDp8OjbyBwb3IgZW1haWwuJywgJ3N1Y2Nlc3MnKTsKfQoKZnVuY3Rpb24gaW5zY3JldmVyRm9ybWFjYW8obm9tZUZvcm1hY2FvKSB7CiAgY2xvc2VNb2RhbCgnbW9kYWxGb3JtYWNhbycpOwogIHNob3dUb2FzdChg4pyFIEluc2NyacOnw6NvIG5hIGZvcm1hw6fDo28gIiR7bm9tZUZvcm1hY2FvfSIgZWZldHVhZGEgY29tIHN1Y2Vzc28hYCwgJ3N1Y2Nlc3MnKTsKfQoKZnVuY3Rpb24gdmVyVG9kb0ludmVudGFyaW8oKSB7CiAgYWxlcnQoJ/Cfk6YgVmVyIFRvZG8gbyBJbnZlbnTDoXJpb1xuXG5TZXLDoSByZWRpcmVjaW9uYWRvIHBhcmEgYSBww6FnaW5hIGRlIEludmVudMOhcmlvIGNvbSBhIGxpc3RhIGNvbXBsZXRhIGRlIGFydGlnb3MgYXRyaWJ1w61kb3MuXG5cbihTZXLDoSBpbXBsZW1lbnRhZG8gbmEgcHLDs3hpbWEgZmFzZSknKTsKfQoKZnVuY3Rpb24gdmVyVG9kYXNEZXNsb2NhY29lcygpIHsKICBhbGVydCgn8J+Ht0lWZXIgVG9kYXMgYXMgRGVzbG9jYcOnw7VlcyBcblxuU2Vyw6EgcmVkaXJlY2lvbmFkbyBwYXJhIGEgcMOhZ2luYSBkZSBEZXNsb2Nhw6fDtWVzIGNvbSBvIGhpc3TDs3JpY28gY29tcGxldG8gZGUgYm9sZXRpbnMgZGUgaXRpbmVyw6FyaW8uXG5cbihTZXLDoSBpbXBsZW1lbnRhZG8gbmEgcHLDs3hpbWEgZmFzZSknKTsKfQoKLy8gQ2xvc2UgbW9kYWwgd2l0aCBFU0Mga2V5CmRvY3VtZW50LmFkZEV2ZW50TGlzdGVuZXIoJ2tleWRvd24nLCBmdW5jdGlvbihlKSB7CiAgaWYgKGUua2V5ID09PSAnRXNjYXBlJykgewogICAgY29uc3Qgb3Blbk1vZGFsID0gZG9jdW1lbnQucXVlcnlTZWxlY3RvcignLm1vZGFsLW92ZXJsYXkuc2hvdycpOwogICAgaWYgKG9wZW5Nb2RhbCkgewogICAgICBjbG9zZU1vZGFsKG9wZW5Nb2RhbC5pZCk7CiAgICB9CiAgfQp9KTs=
+// === MODAL FUNCTIONS ===
+function openModal(modalId) {
+  const modal = document.getElementById(modalId);
+  if (modal) {
+    modal.classList.add('show');
+    document.body.style.overflow = 'hidden';
+  }
+}
+
+function closeModal(modalId) {
+  const modal = document.getElementById(modalId);
+  if (modal) {
+    modal.classList.remove('show');
+    document.body.style.overflow = '';
+    const form = modal.querySelector('form');
+    if (form) form.reset();
+  }
+}
+
+// === TOAST FUNCTION ===
+function showToast(message, type = 'success') {
+  const toast = document.getElementById('toast');
+  if (!toast) return;
+  
+  const messageEl = toast.querySelector('.toast-message');
+  if (messageEl) {
+    messageEl.textContent = message;
+  }
+  toast.className = `toast ${type}`;
+  toast.classList.add('show');
+  
+  setTimeout(() => {
+    toast.classList.remove('show');
+  }, 4000);
+}
+
+// === SUBMIT FUNCTIONS ===
+function submitInventario() {
+  closeModal('modalInventario');
+  showToast('✅ Pedido de inventário submetido com sucesso! Será notificado quando for processado.', 'success');
+}
+
+function submitDeslocacao() {
+  closeModal('modalDeslocacao');
+  showToast('✅ Boletim de itinerário submetido com sucesso! Aguarda aprovação.', 'success');
+}
+
+function submitReembolso() {
+  closeModal('modalReembolso');
+  showToast('✅ Pedido de reembolso submetido com sucesso! Será processado nos próximos 5 dias úteis.', 'success');
+}
+
+function submitMedicina() {
+  closeModal('modalMedicina');
+  showToast('✅ Consulta agendada com sucesso! Receberá confirmação por email.', 'success');
+}
+
+function inscreverFormacao(nomeFormacao) {
+  closeModal('modalFormacao');
+  showToast(`✅ Inscrição na formação "${nomeFormacao}" efetuada com sucesso!`, 'success');
+}
+
+function verTodoInventario() {
+  alert('📦 Ver Todo o Inventário\n\nSerá redirecionado para a página de Inventário com a lista completa de artigos atribuídos.\n\n(Será implementado na próxima fase)');
+}
+
+function verTodasDeslocacoes() {
+  alert('🧭 Ver Todas as Deslocações\n\nSerá redirecionado para a página de Deslocações com o histórico completo de boletins de itinerário.\n\n(Será implementado na próxima fase)');
+}
+
+// Close modal with ESC key
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    const openModalEl = document.querySelector('.modal-overlay.show');
+    if (openModalEl) {
+      closeModal(openModalEl.id);
+    }
+  }
+});
+
+// Close modal by clicking outside
+document.addEventListener('click', function(e) {
+  if (e.target.classList.contains('modal-overlay')) {
+    closeModal(e.target.id);
+  }
+});
