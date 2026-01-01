@@ -1,246 +1,19 @@
 // ===================================================================
 // MÓDULO DE FORMAÇÃO - JAVASCRIPT COMPLETO
-// Gestão de Formação Profissional
+// Integração com Supabase via DataService
+// Estrutura compatível com Power Pages
 // ===================================================================
 
 // ==========================================
-// DATA & STATE
+// STATE & CACHE
 // ==========================================
 
-// Departamentos
-const departamentosDB = [
-  { id: 'IT', nome: 'Tecnologias de Informação' },
-  { id: 'RH', nome: 'Recursos Humanos' },
-  { id: 'Financeiro', nome: 'Financeiro' },
-  { id: 'Comercial', nome: 'Comercial' },
-  { id: 'Marketing', nome: 'Marketing' },
-  { id: 'Operações', nome: 'Operações' },
-  { id: 'Qualidade', nome: 'Qualidade' },
-  { id: 'Logística', nome: 'Logística' }
-];
+let formacoesCache = [];
+let colaboradoresCache = [];
+let departamentosCache = [];
+let formadoresCache = [];
+let entidadesCache = [];
 
-// Formadores
-const formadoresDB = [
-  { id: 1, nome: 'Dr. João Silva', especialidade: 'Gestão de Projetos', tipo: 'Interno' },
-  { id: 2, nome: 'Eng. Maria Santos', especialidade: 'Tecnologia', tipo: 'Interno' },
-  { id: 3, nome: 'Dr. Pedro Costa', especialidade: 'Liderança', tipo: 'Externo' },
-  { id: 4, nome: 'Dra. Ana Ferreira', especialidade: 'RH e Soft Skills', tipo: 'Externo' },
-  { id: 5, nome: 'Eng. Carlos Martins', especialidade: 'Excel Avançado', tipo: 'Interno' },
-  { id: 6, nome: 'Dra. Sofia Rodrigues', especialidade: 'Comunicação', tipo: 'Externo' }
-];
-
-// Colaboradores (para inscrições)
-const colaboradoresDB = [
-  { id: 1, nome: 'Ana Silva', email: 'ana.silva@empresa.pt', departamento: 'RH' },
-  { id: 2, nome: 'Bruno Costa', email: 'bruno.costa@empresa.pt', departamento: 'Financeiro' },
-  { id: 3, nome: 'Carla Santos', email: 'carla.santos@empresa.pt', departamento: 'IT' },
-  { id: 4, nome: 'David Ferreira', email: 'david.ferreira@empresa.pt', departamento: 'Comercial' },
-  { id: 5, nome: 'Eva Rodrigues', email: 'eva.rodrigues@empresa.pt', departamento: 'Marketing' },
-  { id: 6, nome: 'Fernando Almeida', email: 'fernando.almeida@empresa.pt', departamento: 'Operações' },
-  { id: 7, nome: 'Gabriela Martins', email: 'gabriela.martins@empresa.pt', departamento: 'Qualidade' },
-  { id: 8, nome: 'Hugo Pereira', email: 'hugo.pereira@empresa.pt', departamento: 'Logística' },
-  { id: 9, nome: 'Inês Oliveira', email: 'ines.oliveira@empresa.pt', departamento: 'IT' },
-  { id: 10, nome: 'Jorge Sousa', email: 'jorge.sousa@empresa.pt', departamento: 'Comercial' }
-];
-
-// Formações (dados de exemplo)
-let formacoesDB = [
-  {
-    id: 1,
-    titulo: 'Gestão de Projetos com Scrum',
-    tipo: 'Interna',
-    entidade: 'Interno',
-    formadorId: 1,
-    formador: 'Dr. João Silva',
-    objetivo: 'Capacitar os colaboradores nas metodologias ágeis, com foco no framework Scrum para gestão eficiente de projetos.',
-    conteudos: '1. Introdução ao Agile\n2. Framework Scrum\n3. Papéis e Responsabilidades\n4. Cerimoniais Scrum\n5. Ferramentas e Boas Práticas',
-    departamentosAlvo: ['IT', 'Marketing', 'Comercial'],
-    duracao: 16,
-    sessoes: [
-      { data: '2026-02-10', horaInicio: '09:00', horaFim: '13:00' },
-      { data: '2026-02-11', horaInicio: '09:00', horaFim: '13:00' },
-      { data: '2026-02-17', horaInicio: '09:00', horaFim: '13:00' },
-      { data: '2026-02-18', horaInicio: '09:00', horaFim: '13:00' }
-    ],
-    localTipo: 'Presencial',
-    localDetalhe: 'Sala de Formação A, Piso 2',
-    modalidade: 'Opcional',
-    minParticipantes: 5,
-    maxParticipantes: 15,
-    custoParticipante: 0,
-    custoTotal: 0,
-    justificacao: 'Melhoria da eficiência na gestão de projetos internos.',
-    estado: 'Agendada',
-    dataLimiteInscricao: '2026-02-05',
-    inscritos: [1, 3, 5, 9],
-    presencas: {},
-    resultados: {},
-    avaliacoes: [],
-    favoritos: []
-  },
-  {
-    id: 2,
-    titulo: 'Excel Avançado para Análise de Dados',
-    tipo: 'Interna',
-    entidade: 'Interno',
-    formadorId: 5,
-    formador: 'Eng. Carlos Martins',
-    objetivo: 'Dominar funcionalidades avançadas do Excel para análise e visualização de dados empresariais.',
-    conteudos: '1. Fórmulas Avançadas\n2. Tabelas Dinâmicas\n3. Power Query\n4. Dashboards\n5. Automação com Macros',
-    departamentosAlvo: ['Financeiro', 'RH', 'Operações'],
-    duracao: 8,
-    sessoes: [
-      { data: '2026-01-28', horaInicio: '14:00', horaFim: '18:00' },
-      { data: '2026-01-29', horaInicio: '14:00', horaFim: '18:00' }
-    ],
-    localTipo: 'Híbrido',
-    localDetalhe: 'Sala Informática + Teams',
-    modalidade: 'Obrigatória',
-    minParticipantes: 8,
-    maxParticipantes: 20,
-    custoParticipante: 0,
-    custoTotal: 0,
-    justificacao: 'Formação obrigatória para equipas financeiras.',
-    estado: 'Agendada',
-    dataLimiteInscricao: '2026-01-24',
-    inscritos: [1, 2, 6, 7, 8],
-    presencas: {},
-    resultados: {},
-    avaliacoes: [],
-    favoritos: [1]
-  },
-  {
-    id: 3,
-    titulo: 'Liderança e Gestão de Equipas',
-    tipo: 'Externa',
-    entidade: 'Cegoc',
-    formadorId: 3,
-    formador: 'Dr. Pedro Costa',
-    objetivo: 'Desenvolver competências de liderança para gestores e coordenadores de equipa.',
-    conteudos: '1. Estilos de Liderança\n2. Motivação de Equipas\n3. Feedback Construtivo\n4. Gestão de Conflitos\n5. Delegação Eficaz',
-    departamentosAlvo: ['RH', 'Comercial', 'Operações', 'IT'],
-    duracao: 24,
-    sessoes: [
-      { data: '2026-03-03', horaInicio: '09:00', horaFim: '17:00' },
-      { data: '2026-03-04', horaInicio: '09:00', horaFim: '17:00' },
-      { data: '2026-03-05', horaInicio: '09:00', horaFim: '17:00' }
-    ],
-    localTipo: 'Presencial',
-    localDetalhe: 'Hotel Lisboa Plaza - Sala Executiva',
-    modalidade: 'Opcional',
-    minParticipantes: 10,
-    maxParticipantes: 12,
-    custoParticipante: 450,
-    custoTotal: 5400,
-    justificacao: 'Desenvolvimento de liderança para gestores de primeira linha.',
-    estado: 'Pendente Aprovação',
-    dataLimiteInscricao: '2026-02-25',
-    inscritos: [],
-    presencas: {},
-    resultados: {},
-    avaliacoes: [],
-    favoritos: []
-  },
-  {
-    id: 4,
-    titulo: 'Segurança da Informação e RGPD',
-    tipo: 'Interna',
-    entidade: 'Interno',
-    formadorId: 2,
-    formador: 'Eng. Maria Santos',
-    objetivo: 'Sensibilizar todos os colaboradores para as boas práticas de segurança da informação e conformidade com RGPD.',
-    conteudos: '1. Princípios de Segurança\n2. RGPD - Obrigações\n3. Phishing e Ameaças\n4. Passwords Seguras\n5. Procedimentos Internos',
-    departamentosAlvo: ['IT', 'RH', 'Financeiro', 'Comercial', 'Marketing', 'Operações', 'Qualidade', 'Logística'],
-    duracao: 4,
-    sessoes: [
-      { data: '2025-12-15', horaInicio: '10:00', horaFim: '12:00' },
-      { data: '2025-12-15', horaInicio: '14:00', horaFim: '16:00' }
-    ],
-    localTipo: 'Online',
-    localDetalhe: 'Microsoft Teams',
-    modalidade: 'Obrigatória',
-    minParticipantes: 20,
-    maxParticipantes: 100,
-    custoParticipante: 0,
-    custoTotal: 0,
-    justificacao: 'Formação obrigatória anual de RGPD.',
-    estado: 'Concluída',
-    dataLimiteInscricao: '2025-12-10',
-    inscritos: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-    presencas: { 1: true, 2: true, 3: true, 4: true, 5: false, 6: true, 7: true, 8: true, 9: true, 10: true },
-    resultados: { 1: 'Aprovado', 2: 'Aprovado', 3: 'Aprovado', 4: 'Aprovado', 6: 'Aprovado', 7: 'Aprovado', 8: 'Aprovado', 9: 'Aprovado', 10: 'Aprovado' },
-    avaliacoes: [
-      { odId: 1, conteudo: 5, formador: 5, organizacao: 4, comentario: 'Muito útil e bem estruturada.', data: '2025-12-16' },
-      { odId: 3, conteudo: 4, formador: 5, organizacao: 5, comentario: 'Excelente formadora!', data: '2025-12-16' },
-      { odId: 6, conteudo: 4, formador: 4, organizacao: 4, comentario: '', data: '2025-12-17' }
-    ],
-    favoritos: [3, 9]
-  },
-  {
-    id: 5,
-    titulo: 'Técnicas de Negociação Comercial',
-    tipo: 'Externa',
-    entidade: 'IEFP',
-    formadorId: 6,
-    formador: 'Dra. Sofia Rodrigues',
-    objetivo: 'Aperfeiçoar técnicas de negociação para a equipa comercial.',
-    conteudos: '1. Preparação da Negociação\n2. Técnicas de Persuasão\n3. Gestão de Objeções\n4. Fecho de Negócio\n5. Pós-venda',
-    departamentosAlvo: ['Comercial'],
-    duracao: 12,
-    sessoes: [
-      { data: '2026-01-20', horaInicio: '09:00', horaFim: '13:00' },
-      { data: '2026-01-21', horaInicio: '09:00', horaFim: '13:00' },
-      { data: '2026-01-22', horaInicio: '09:00', horaFim: '13:00' }
-    ],
-    localTipo: 'Presencial',
-    localDetalhe: 'Centro IEFP Lisboa',
-    modalidade: 'Opcional',
-    minParticipantes: 6,
-    maxParticipantes: 10,
-    custoParticipante: 150,
-    custoTotal: 1500,
-    justificacao: 'Melhoria das competências comerciais da equipa de vendas.',
-    estado: 'Em Curso',
-    dataLimiteInscricao: '2026-01-15',
-    inscritos: [4, 10],
-    presencas: { 4: true, 10: true },
-    resultados: {},
-    avaliacoes: [],
-    favoritos: [4]
-  },
-  {
-    id: 6,
-    titulo: 'Inteligência Artificial para Negócios',
-    tipo: 'Externa',
-    entidade: 'Microsoft',
-    formadorId: 2,
-    formador: 'Eng. Maria Santos',
-    objetivo: 'Introduzir conceitos de IA e suas aplicações práticas no contexto empresarial.',
-    conteudos: '1. Fundamentos de IA\n2. Machine Learning Basics\n3. Copilot e Ferramentas IA\n4. Casos de Uso\n5. Ética e IA',
-    departamentosAlvo: ['IT', 'Marketing', 'Comercial', 'RH'],
-    duracao: 8,
-    sessoes: [
-      { data: '2026-04-15', horaInicio: '09:00', horaFim: '17:00' }
-    ],
-    localTipo: 'Online',
-    localDetalhe: 'Microsoft Learn Virtual',
-    modalidade: 'Opcional',
-    minParticipantes: 10,
-    maxParticipantes: 50,
-    custoParticipante: 200,
-    custoTotal: 10000,
-    justificacao: 'Preparação da organização para adoção de ferramentas IA.',
-    estado: 'Agendada',
-    dataLimiteInscricao: '2026-04-10',
-    inscritos: [3, 5, 9],
-    presencas: {},
-    resultados: {},
-    avaliacoes: [],
-    favoritos: [3, 5]
-  }
-];
-
-// State
 let currentView = 'cards';
 let currentFormacaoId = null;
 let editingFormacaoId = null;
@@ -248,29 +21,171 @@ let sessaoCount = 0;
 let currentCalendarMonth = new Date().getMonth();
 let currentCalendarYear = new Date().getFullYear();
 let currentRatings = { conteudo: 0, formador: 0, organizacao: 0 };
-let currentUserId = 3; // Simula utilizador atual (Carla Santos)
+
+// Utilizador atual (em produção viria da sessão/auth)
+// Para Power Pages: seria obtido via liquid {{ user.id }}
+let currentUserId = null;
+const CURRENT_USER_EMAIL = 'carla.santos@empresa.pt'; // Simulação
 
 // ==========================================
 // INITIALIZATION
 // ==========================================
 
-document.addEventListener('DOMContentLoaded', function() {
-  initializeFormadores();
-  initializeDepartamentos();
-  renderFormacoes();
-  updateStats();
-  addSessao(); // Adiciona primeira sessão por defeito
-  initializeStarRatings();
+document.addEventListener('DOMContentLoaded', async function() {
+  showLoadingState();
   
-  // Check URL params
-  const urlParams = new URLSearchParams(window.location.search);
-  if (urlParams.get('nova') === 'true') {
-    setTimeout(() => {
-      openNovaFormacao();
-      window.history.replaceState({}, document.title, window.location.pathname);
-    }, 300);
+  try {
+    // Carregar dados do Supabase
+    await loadInitialData();
+    
+    // Inicializar UI
+    initializeFormadores();
+    initializeDepartamentos();
+    initializeEntidades();
+    renderFormacoes();
+    updateStats();
+    addSessao();
+    initializeStarRatings();
+    
+    // Check URL params
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('nova') === 'true') {
+      setTimeout(() => {
+        openNovaFormacao();
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }, 300);
+    }
+  } catch (error) {
+    console.error('Erro ao inicializar:', error);
+    showToast('Erro ao carregar dados. Por favor recarregue a página.', 'danger');
+  } finally {
+    hideLoadingState();
   }
 });
+
+async function loadInitialData() {
+  // Carregar em paralelo para melhor performance
+  const [formacoes, colaboradores, departamentos, formadores, entidades] = await Promise.all([
+    DataService.getFormacoes(),
+    DataService.getColaboradores(),
+    DataService.getDepartamentos(),
+    DataService.getFormadores(),
+    DataService.getEntidadesFormadoras()
+  ]);
+  
+  formacoesCache = transformFormacoes(formacoes);
+  colaboradoresCache = colaboradores;
+  departamentosCache = departamentos;
+  formadoresCache = formadores;
+  entidadesCache = entidades;
+  
+  // Obter ID do utilizador atual
+  const currentUser = colaboradores.find(c => c.email === CURRENT_USER_EMAIL);
+  if (currentUser) {
+    currentUserId = currentUser.id;
+  }
+  
+  console.log('[Formação] Dados carregados:', {
+    formacoes: formacoesCache.length,
+    colaboradores: colaboradoresCache.length,
+    departamentos: departamentosCache.length,
+    formadores: formadoresCache.length
+  });
+}
+
+// Transforma dados do Supabase para formato compatível com a UI
+function transformFormacoes(formacoes) {
+  return formacoes.map(f => {
+    // Extrair sessões
+    const sessoes = (f.formacao_sessoes || []).map(s => ({
+      data: s.data,
+      horaInicio: s.hora_inicio,
+      horaFim: s.hora_fim
+    }));
+    
+    // Extrair inscrições ativas
+    const inscricoes = (f.formacao_inscricoes || [])
+      .filter(i => i.estado === 'Inscrito')
+      .map(i => i.colaborador_id);
+    
+    // Extrair presenças
+    const presencas = {};
+    (f.formacao_presencas || []).forEach(p => {
+      presencas[p.colaborador_id] = p.presente;
+    });
+    
+    // Extrair resultados
+    const resultados = {};
+    (f.formacao_resultados || []).forEach(r => {
+      resultados[r.colaborador_id] = r.resultado;
+    });
+    
+    // Extrair avaliações
+    const avaliacoes = (f.formacao_avaliacoes || []).map(a => ({
+      odId: a.colaborador_id,
+      conteudo: a.score_conteudo,
+      formador: a.score_formador,
+      organizacao: a.score_organizacao,
+      comentario: a.comentario,
+      data: a.created_at ? new Date(a.created_at).toISOString().split('T')[0] : null
+    }));
+    
+    // Extrair favoritos
+    const favoritos = (f.formacao_favoritos || []).map(fav => fav.colaborador_id);
+    
+    // Extrair departamentos alvo
+    const departamentosAlvo = (f.formacao_departamentos || [])
+      .map(fd => fd.departamentos?.codigo || fd.departamento_id);
+    
+    return {
+      id: f.id,
+      titulo: f.titulo,
+      tipo: f.tipo,
+      entidade: f.entidades_formadoras?.nome || 'Interno',
+      entidadeId: f.entidade_id,
+      formadorId: f.formador_id,
+      formador: f.formadores?.nome || '-',
+      objetivo: f.objetivo || '',
+      conteudos: f.conteudos || '',
+      departamentosAlvo,
+      duracao: f.duracao_horas || 0,
+      sessoes,
+      localTipo: f.local_tipo || 'Presencial',
+      localDetalhe: f.local_detalhe || '',
+      modalidade: f.modalidade || 'Opcional',
+      minParticipantes: f.min_participantes || 1,
+      maxParticipantes: f.max_participantes || 20,
+      custoParticipante: parseFloat(f.custo_participante) || 0,
+      custoTotal: parseFloat(f.custo_total) || 0,
+      justificacao: f.justificacao || '',
+      preRequisitos: f.pre_requisitos || '',
+      materiais: f.materiais || '',
+      estado: f.estado || 'Rascunho',
+      dataLimiteInscricao: f.data_limite_inscricao,
+      inscritos: inscricoes,
+      presencas,
+      resultados,
+      avaliacoes,
+      favoritos
+    };
+  });
+}
+
+function showLoadingState() {
+  const grid = document.getElementById('formacoesGrid');
+  if (grid) {
+    grid.innerHTML = `
+      <div class="loading-state" style="grid-column: 1/-1; text-align: center; padding: 4rem;">
+        <div class="loading-spinner"></div>
+        <p style="margin-top: 1rem; color: var(--text-secondary);">A carregar formações...</p>
+      </div>
+    `;
+  }
+}
+
+function hideLoadingState() {
+  // O render vai substituir o loading
+}
 
 // ==========================================
 // INITIALIZATION HELPERS
@@ -281,10 +196,10 @@ function initializeFormadores() {
   if (!select) return;
   
   select.innerHTML = '<option value="">Selecionar...</option>';
-  formadoresDB.forEach(f => {
+  formadoresCache.forEach(f => {
     const option = document.createElement('option');
     option.value = f.id;
-    option.textContent = `${f.nome} (${f.especialidade})`;
+    option.textContent = `${f.nome} (${f.especialidade || f.tipo})`;
     select.appendChild(option);
   });
 }
@@ -293,12 +208,31 @@ function initializeDepartamentos() {
   const container = document.getElementById('departamentosCheckboxes');
   if (!container) return;
   
-  container.innerHTML = departamentosDB.map(d => `
+  container.innerHTML = departamentosCache.map(d => `
     <label class="checkbox-item">
-      <input type="checkbox" name="departamentos" value="${d.id}">
+      <input type="checkbox" name="departamentos" value="${d.id}" data-codigo="${d.codigo}">
       <span>${d.nome}</span>
     </label>
   `).join('');
+}
+
+function initializeEntidades() {
+  const select = document.getElementById('formEntidade');
+  if (!select) return;
+  
+  select.innerHTML = '<option value="">Selecionar ou criar nova...</option>';
+  entidadesCache.forEach(e => {
+    const option = document.createElement('option');
+    option.value = e.id;
+    option.textContent = e.nome;
+    select.appendChild(option);
+  });
+  
+  // Adicionar opção "Outra"
+  const outraOption = document.createElement('option');
+  outraOption.value = 'outro';
+  outraOption.textContent = '+ Outra (especificar)';
+  select.appendChild(outraOption);
 }
 
 function initializeStarRatings() {
@@ -340,20 +274,32 @@ function updateStarDisplay(container, value) {
 // STATISTICS
 // ==========================================
 
-function updateStats() {
-  const agendadas = formacoesDB.filter(f => f.estado === 'Agendada' || f.estado === 'Em Curso').length;
-  const inscritos = formacoesDB.reduce((sum, f) => sum + f.inscritos.length, 0);
-  const concluidas = formacoesDB.filter(f => f.estado === 'Concluída').length;
-  const avaliacoesPendentes = formacoesDB.filter(f => 
-    f.estado === 'Concluída' && 
-    f.inscritos.includes(currentUserId) && 
-    !f.avaliacoes.find(a => a.odId === currentUserId)
-  ).length;
+async function updateStats() {
+  const stats = {
+    agendadas: 0,
+    inscritos: 0,
+    concluidas: 0,
+    avaliacoesPendentes: 0
+  };
   
-  animateCounter('statAgendadas', agendadas);
-  animateCounter('statInscritos', inscritos);
-  animateCounter('statConcluidas', concluidas);
-  animateCounter('statAvaliacoes', avaliacoesPendentes);
+  formacoesCache.forEach(f => {
+    if (f.estado === 'Agendada' || f.estado === 'Em Curso') stats.agendadas++;
+    if (f.estado === 'Concluída') stats.concluidas++;
+    stats.inscritos += f.inscritos.length;
+    
+    if (currentUserId) {
+      const estaInscrito = f.inscritos.includes(currentUserId);
+      const jaAvaliou = f.avaliacoes.some(a => a.odId === currentUserId);
+      if (f.estado === 'Concluída' && estaInscrito && !jaAvaliou) {
+        stats.avaliacoesPendentes++;
+      }
+    }
+  });
+  
+  animateCounter('statAgendadas', stats.agendadas);
+  animateCounter('statInscritos', stats.inscritos);
+  animateCounter('statConcluidas', stats.concluidas);
+  animateCounter('statAvaliacoes', stats.avaliacoesPendentes);
 }
 
 function animateCounter(elementId, targetValue) {
@@ -392,7 +338,7 @@ function getFilteredFormacoes() {
   const estado = document.getElementById('filterEstado')?.value || '';
   const search = document.getElementById('searchFormacao')?.value?.toLowerCase() || '';
   
-  return formacoesDB.filter(f => {
+  return formacoesCache.filter(f => {
     if (departamento && !f.departamentosAlvo.includes(departamento)) return false;
     if (tipo && f.tipo !== tipo) return false;
     if (estado && f.estado !== estado) return false;
@@ -428,11 +374,11 @@ function renderFormacoes() {
   if (formacoes.length === 0) {
     document.getElementById('formacoesGrid').innerHTML = '';
     document.getElementById('formacoesTableBody').innerHTML = '';
-    emptyState.style.display = 'block';
+    if (emptyState) emptyState.style.display = 'block';
     return;
   }
   
-  emptyState.style.display = 'none';
+  if (emptyState) emptyState.style.display = 'none';
   
   if (currentView === 'cards') {
     renderCardsView(formacoes);
@@ -447,8 +393,8 @@ function renderCardsView(formacoes) {
   container.innerHTML = formacoes.map((f, index) => {
     const vagas = f.maxParticipantes - f.inscritos.length;
     const vagasPercent = (f.inscritos.length / f.maxParticipantes) * 100;
-    const isFavorite = f.favoritos.includes(currentUserId);
-    const isInscrito = f.inscritos.includes(currentUserId);
+    const isFavorite = currentUserId && f.favoritos.includes(currentUserId);
+    const isInscrito = currentUserId && f.inscritos.includes(currentUserId);
     const proximaSessao = getProximaSessao(f);
     
     let vagasClass = '';
@@ -457,17 +403,17 @@ function renderCardsView(formacoes) {
     
     let actionButton = '';
     if (f.estado === 'Agendada' && !isInscrito && vagas > 0) {
-      actionButton = `<button class="formacao-card-action" onclick="event.stopPropagation(); openInscricao(${f.id})">Inscrever</button>`;
+      actionButton = `<button class="formacao-card-action" onclick="event.stopPropagation(); openInscricao('${f.id}')">Inscrever</button>`;
     } else if (f.estado === 'Agendada' && isInscrito) {
       actionButton = `<button class="formacao-card-action" style="background: var(--success)" onclick="event.stopPropagation();">Inscrito ✓</button>`;
     } else if (f.estado === 'Concluída' && isInscrito && !f.avaliacoes.find(a => a.odId === currentUserId)) {
-      actionButton = `<button class="formacao-card-action" style="background: var(--warning)" onclick="event.stopPropagation(); openAvaliacao(${f.id})">Avaliar</button>`;
+      actionButton = `<button class="formacao-card-action" style="background: var(--warning)" onclick="event.stopPropagation(); openAvaliacao('${f.id}')">Avaliar</button>`;
     } else {
-      actionButton = `<button class="formacao-card-action" onclick="event.stopPropagation(); openDetalhes(${f.id})">Ver mais</button>`;
+      actionButton = `<button class="formacao-card-action" onclick="event.stopPropagation(); openDetalhes('${f.id}')">Ver mais</button>`;
     }
     
     return `
-      <div class="formacao-card" onclick="openDetalhes(${f.id})" style="animation-delay: ${index * 0.1}s">
+      <div class="formacao-card" onclick="openDetalhes('${f.id}')" style="animation-delay: ${index * 0.1}s">
         <div class="formacao-card-inner">
           <div class="formacao-card-icon ${f.tipo.toLowerCase()}">
             ${f.tipo === 'Interna' ? `
@@ -484,7 +430,7 @@ function renderCardsView(formacoes) {
             `}
           </div>
           
-          <button class="formacao-card-favorite ${isFavorite ? 'active' : ''}" onclick="event.stopPropagation(); toggleFavorito(${f.id})">
+          <button class="formacao-card-favorite ${isFavorite ? 'active' : ''}" onclick="event.stopPropagation(); toggleFavorito('${f.id}')">
             <svg viewBox="0 0 24 24">
               <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
             </svg>
@@ -543,7 +489,7 @@ function renderTableView(formacoes) {
     const vagas = f.maxParticipantes - f.inscritos.length;
     
     return `
-      <div class="table-grid table-grid-formacao" style="cursor: pointer; animation-delay: ${index * 0.05}s" onclick="openDetalhes(${f.id})">
+      <div class="table-grid table-grid-formacao" style="cursor: pointer; animation-delay: ${index * 0.05}s" onclick="openDetalhes('${f.id}')">
         <div>
           <strong>${f.titulo}</strong>
           <div style="font-size: 0.7rem; color: var(--text-muted);">${f.modalidade}</div>
@@ -607,13 +553,9 @@ function openNovaFormacao() {
   document.getElementById('modalFormacaoTitle').textContent = 'Nova Formação';
   document.getElementById('formFormacao').reset();
   
-  // Reset tabs
   switchTab('info');
-  
-  // Reset departamentos
   document.querySelectorAll('input[name="departamentos"]').forEach(cb => cb.checked = false);
   
-  // Reset sessões
   document.getElementById('sessoesContainer').innerHTML = '';
   sessaoCount = 0;
   addSessao();
@@ -631,12 +573,10 @@ function closeModalFormacao() {
 }
 
 function switchTab(tabName) {
-  // Update tab buttons
   document.querySelectorAll('.form-tab').forEach(tab => {
     tab.classList.toggle('active', tab.dataset.tab === tabName);
   });
   
-  // Update tab content
   document.querySelectorAll('.form-tab-content').forEach(content => {
     content.classList.toggle('active', content.id === `tab${tabName.charAt(0).toUpperCase() + tabName.slice(1)}`);
   });
@@ -647,7 +587,11 @@ function onTipoChange() {
   const entidadeSelect = document.getElementById('formEntidade');
   
   if (tipo === 'Interna') {
-    entidadeSelect.value = 'Interno';
+    // Selecionar "Interno" se existir
+    const internoOption = Array.from(entidadeSelect.options).find(o => o.textContent.toLowerCase().includes('interno'));
+    if (internoOption) {
+      entidadeSelect.value = internoOption.value;
+    }
   }
 }
 
@@ -723,92 +667,87 @@ function collectSessoes() {
   return sessoes;
 }
 
-function handleSubmitFormacao(event) {
+async function handleSubmitFormacao(event) {
   event.preventDefault();
   
-  const formData = collectFormData();
-  formData.estado = 'Pendente Aprovação';
-  
-  if (editingFormacaoId) {
-    const index = formacoesDB.findIndex(f => f.id === editingFormacaoId);
-    if (index !== -1) {
-      formacoesDB[index] = { ...formacoesDB[index], ...formData };
-    }
-  } else {
-    formData.id = Date.now();
-    formData.inscritos = [];
-    formData.presencas = {};
-    formData.resultados = {};
-    formData.avaliacoes = [];
-    formData.favoritos = [];
-    formacoesDB.unshift(formData);
+  try {
+    const formData = collectFormData();
+    formData.estado = 'Pendente Aprovação';
+    formData.criado_por = currentUserId;
+    
+    // Criar no Supabase
+    await DataService.createFormacao(formData);
+    
+    // Recarregar dados
+    const formacoes = await DataService.getFormacoes();
+    formacoesCache = transformFormacoes(formacoes);
+    
+    renderFormacoes();
+    updateStats();
+    closeModalFormacao();
+    showToast('Formação submetida para aprovação!', 'success');
+  } catch (error) {
+    console.error('Erro ao submeter formação:', error);
+    showToast('Erro ao submeter formação. Tente novamente.', 'danger');
   }
-  
-  renderFormacoes();
-  updateStats();
-  closeModalFormacao();
-  showToast('Formação submetida para aprovação!', 'success');
 }
 
-function saveFormacaoRascunho() {
-  const formData = collectFormData();
-  formData.estado = 'Rascunho';
-  
-  if (editingFormacaoId) {
-    const index = formacoesDB.findIndex(f => f.id === editingFormacaoId);
-    if (index !== -1) {
-      formacoesDB[index] = { ...formacoesDB[index], ...formData };
-    }
-  } else {
-    formData.id = Date.now();
-    formData.inscritos = [];
-    formData.presencas = {};
-    formData.resultados = {};
-    formData.avaliacoes = [];
-    formData.favoritos = [];
-    formacoesDB.unshift(formData);
+async function saveFormacaoRascunho() {
+  try {
+    const formData = collectFormData();
+    formData.estado = 'Rascunho';
+    formData.criado_por = currentUserId;
+    
+    await DataService.createFormacao(formData);
+    
+    const formacoes = await DataService.getFormacoes();
+    formacoesCache = transformFormacoes(formacoes);
+    
+    renderFormacoes();
+    updateStats();
+    closeModalFormacao();
+    showToast('Rascunho guardado!', 'warning');
+  } catch (error) {
+    console.error('Erro ao guardar rascunho:', error);
+    showToast('Erro ao guardar rascunho. Tente novamente.', 'danger');
   }
-  
-  renderFormacoes();
-  updateStats();
-  closeModalFormacao();
-  showToast('Rascunho guardado!', 'warning');
 }
 
 function collectFormData() {
   const formadorId = document.getElementById('formFormador').value;
-  const formador = formadoresDB.find(f => f.id == formadorId);
+  const formador = formadoresCache.find(f => f.id === formadorId);
   
-  let entidade = document.getElementById('formEntidade').value;
-  if (entidade === 'outro') {
-    entidade = document.getElementById('formEntidadeOutra').value;
+  let entidadeId = document.getElementById('formEntidade').value;
+  if (entidadeId === 'outro') {
+    entidadeId = null; // Seria necessário criar a entidade primeiro
   }
   
-  const departamentosAlvo = [];
+  const departamentos_alvo = [];
   document.querySelectorAll('input[name="departamentos"]:checked').forEach(cb => {
-    departamentosAlvo.push(cb.value);
+    departamentos_alvo.push(cb.value);
   });
   
   return {
     titulo: document.getElementById('formTitulo').value,
     tipo: document.getElementById('formTipo').value,
-    entidade: entidade,
-    formadorId: formadorId,
-    formador: formador?.nome || '',
+    entidade_id: entidadeId || null,
+    formador_id: formadorId || null,
     objetivo: document.getElementById('formObjetivo').value,
     conteudos: document.getElementById('formConteudos').value,
-    departamentosAlvo: departamentosAlvo,
-    duracao: parseInt(document.getElementById('formDuracao').value) || 0,
+    departamentos_alvo,
+    duracao_horas: parseInt(document.getElementById('formDuracao').value) || 0,
     sessoes: collectSessoes(),
-    localTipo: document.getElementById('formLocalTipo').value,
-    localDetalhe: document.getElementById('formLocalDetalhe').value,
+    local_tipo: document.getElementById('formLocalTipo').value,
+    local_detalhe: document.getElementById('formLocalDetalhe').value,
     modalidade: document.getElementById('formModalidade').value,
-    minParticipantes: parseInt(document.getElementById('formMinParticipantes').value) || 1,
-    maxParticipantes: parseInt(document.getElementById('formMaxParticipantes').value) || 20,
-    custoParticipante: parseFloat(document.getElementById('formCustoParticipante').value) || 0,
-    custoTotal: parseFloat(document.getElementById('formCustoTotal').value) || 0,
+    min_participantes: parseInt(document.getElementById('formMinParticipantes').value) || 1,
+    max_participantes: parseInt(document.getElementById('formMaxParticipantes').value) || 20,
+    custo_participante: parseFloat(document.getElementById('formCustoParticipante').value) || 0,
+    custo_total: parseFloat(document.getElementById('formCustoTotal').value) || 0,
     justificacao: document.getElementById('formJustificacao').value,
-    dataLimiteInscricao: document.getElementById('formDataLimite').value
+    pre_requisitos: document.getElementById('formPreRequisitos')?.value || '',
+    materiais: document.getElementById('formMateriais')?.value || '',
+    data_limite_inscricao: document.getElementById('formDataLimite').value || null
   };
 }
 
@@ -817,7 +756,7 @@ function collectFormData() {
 // ==========================================
 
 function openDetalhes(id) {
-  const formacao = formacoesDB.find(f => f.id === id);
+  const formacao = formacoesCache.find(f => f.id === id);
   if (!formacao) return;
   
   currentFormacaoId = id;
@@ -827,17 +766,12 @@ function openDetalhes(id) {
   document.getElementById('detalhesTitulo').textContent = formacao.titulo;
   document.getElementById('detalhesFormador').textContent = formacao.formador;
   
-  // Update header gradient based on type
   const header = document.getElementById('modalDetalhesHeader');
-  if (formacao.tipo === 'Externa') {
-    header.style.background = 'var(--gradient-formacao-2)';
-  } else {
-    header.style.background = 'var(--gradient-formacao-1)';
-  }
+  header.style.background = formacao.tipo === 'Externa' ? 'var(--gradient-formacao-2)' : 'var(--gradient-formacao-1)';
   
   // Info tab
-  document.getElementById('detalhesObjetivo').textContent = formacao.objetivo;
-  document.getElementById('detalhesConteudos').innerHTML = formacao.conteudos.replace(/\n/g, '<br>');
+  document.getElementById('detalhesObjetivo').textContent = formacao.objetivo || '-';
+  document.getElementById('detalhesConteudos').innerHTML = (formacao.conteudos || '-').replace(/\n/g, '<br>');
   document.getElementById('detalhesEstado').innerHTML = `<span class="formacao-card-badge ${getEstadoClass(formacao.estado)}">${formacao.estado}</span>`;
   document.getElementById('detalhesDuracao').textContent = `${formacao.duracao} horas`;
   document.getElementById('detalhesModalidade').textContent = formacao.modalidade;
@@ -858,27 +792,27 @@ function openDetalhes(id) {
       </div>
       <div class="sessao-list-info">
         <div class="sessao-list-date">${new Date(s.data).toLocaleDateString('pt-PT', { weekday: 'long', day: 'numeric', month: 'long' })}</div>
-        <div class="sessao-list-time">${s.horaInicio} - ${s.horaFim}</div>
+        <div class="sessao-list-time">${s.horaInicio || '09:00'} - ${s.horaFim || '17:00'}</div>
       </div>
     </div>
-  `).join('');
+  `).join('') || '<p style="color: var(--text-muted);">Sem sessões definidas</p>';
   
   // Actions
   const actionsContainer = document.getElementById('detalhesActions');
-  const isInscrito = formacao.inscritos.includes(currentUserId);
+  const isInscrito = currentUserId && formacao.inscritos.includes(currentUserId);
   const vagas = formacao.maxParticipantes - formacao.inscritos.length;
   
   let actionsHTML = '';
   
   if (formacao.estado === 'Agendada') {
     if (!isInscrito && vagas > 0) {
-      actionsHTML += `<button class="btn btn-primary" onclick="openInscricao(${id})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>Inscrever-me</button>`;
+      actionsHTML += `<button class="btn btn-primary" onclick="openInscricao('${id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>Inscrever-me</button>`;
     } else if (isInscrito) {
-      actionsHTML += `<button class="btn btn-secondary" onclick="cancelarInscricao(${id})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 18L18 6M6 6l12 12"/></svg>Cancelar Inscrição</button>`;
+      actionsHTML += `<button class="btn btn-secondary" onclick="cancelarInscricao('${id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 18L18 6M6 6l12 12"/></svg>Cancelar Inscrição</button>`;
     }
   } else if (formacao.estado === 'Concluída' && isInscrito) {
     if (!formacao.avaliacoes.find(a => a.odId === currentUserId)) {
-      actionsHTML += `<button class="btn btn-primary" onclick="openAvaliacao(${id})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Avaliar Formação</button>`;
+      actionsHTML += `<button class="btn btn-primary" onclick="openAvaliacao('${id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Avaliar Formação</button>`;
     }
   }
   
@@ -906,12 +840,10 @@ function closeModalDetalhes() {
 }
 
 function switchDetalhesTab(tabName) {
-  // Update tab buttons
   document.querySelectorAll('.detalhes-tab').forEach(tab => {
     tab.classList.toggle('active', tab.dataset.tab === tabName);
   });
   
-  // Update tab content
   document.querySelectorAll('.detalhes-tab-content').forEach(content => {
     content.classList.toggle('active', content.id === `tab${tabName.charAt(0).toUpperCase() + tabName.slice(1)}`);
   });
@@ -930,12 +862,13 @@ function renderParticipantes(formacao) {
   }
   
   container.innerHTML = formacao.inscritos.map(colabId => {
-    const colab = colaboradoresDB.find(c => c.id === colabId);
+    const colab = colaboradoresCache.find(c => c.id === colabId);
     if (!colab) return '';
     
     const presenca = formacao.presencas[colabId];
     const resultado = formacao.resultados[colabId];
     const initials = colab.nome.split(' ').map(n => n[0]).join('').substring(0, 2);
+    const depNome = colab.departamentos?.nome || 'N/D';
     
     let presencaBadge = '<span class="presenca-badge pendente">Pendente</span>';
     if (presenca === true) presencaBadge = '<span class="presenca-badge presente">Presente</span>';
@@ -951,12 +884,12 @@ function renderParticipantes(formacao) {
           <div class="participante-avatar">${initials}</div>
           <span class="participante-nome">${colab.nome}</span>
         </div>
-        <div>${colab.departamento}</div>
+        <div>${depNome}</div>
         <div>${new Date().toLocaleDateString('pt-PT')}</div>
         <div>${presencaBadge}</div>
         <div>${resultadoBadge}</div>
         <div class="participante-actions">
-          <button class="participante-action-btn" title="Marcar presença" onclick="togglePresenca(${formacao.id}, ${colabId})">
+          <button class="participante-action-btn" title="Marcar presença" onclick="togglePresenca('${formacao.id}', '${colabId}')">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
               <path d="M22 4L12 14.01l-3-3"/>
@@ -974,7 +907,6 @@ function renderAvaliacoes(formacao) {
   if (formacao.avaliacoes.length === 0) {
     container.innerHTML = '<div style="padding: 2rem; text-align: center; color: var(--text-muted);">Ainda não existem avaliações.</div>';
     
-    // Reset scores
     updateScoreCircle('scoreConteudo', 0);
     updateScoreCircle('scoreFormador', 0);
     updateScoreCircle('scoreOrganizacao', 0);
@@ -986,13 +918,11 @@ function renderAvaliacoes(formacao) {
     return;
   }
   
-  // Calculate averages
-  const avgConteudo = formacao.avaliacoes.reduce((sum, a) => sum + a.conteudo, 0) / formacao.avaliacoes.length;
-  const avgFormador = formacao.avaliacoes.reduce((sum, a) => sum + a.formador, 0) / formacao.avaliacoes.length;
-  const avgOrganizacao = formacao.avaliacoes.reduce((sum, a) => sum + a.organizacao, 0) / formacao.avaliacoes.length;
+  const avgConteudo = formacao.avaliacoes.reduce((sum, a) => sum + (a.conteudo || 0), 0) / formacao.avaliacoes.length;
+  const avgFormador = formacao.avaliacoes.reduce((sum, a) => sum + (a.formador || 0), 0) / formacao.avaliacoes.length;
+  const avgOrganizacao = formacao.avaliacoes.reduce((sum, a) => sum + (a.organizacao || 0), 0) / formacao.avaliacoes.length;
   const avgGlobal = (avgConteudo + avgFormador + avgOrganizacao) / 3;
   
-  // Update score circles
   updateScoreCircle('scoreConteudo', avgConteudo / 5 * 100);
   updateScoreCircle('scoreFormador', avgFormador / 5 * 100);
   updateScoreCircle('scoreOrganizacao', avgOrganizacao / 5 * 100);
@@ -1003,11 +933,10 @@ function renderAvaliacoes(formacao) {
   document.getElementById('scoreOrganizacaoValue').textContent = avgOrganizacao.toFixed(1);
   document.getElementById('scoreGlobalValue').textContent = avgGlobal.toFixed(1);
   
-  // Render list
   container.innerHTML = formacao.avaliacoes.map(av => {
-    const colab = colaboradoresDB.find(c => c.id === av.odId);
+    const colab = colaboradoresCache.find(c => c.id === av.odId);
     const initials = colab ? colab.nome.split(' ').map(n => n[0]).join('').substring(0, 2) : '?';
-    const avgStar = (av.conteudo + av.formador + av.organizacao) / 3;
+    const avgStar = ((av.conteudo || 0) + (av.formador || 0) + (av.organizacao || 0)) / 3;
     const stars = '★'.repeat(Math.round(avgStar)) + '☆'.repeat(5 - Math.round(avgStar));
     
     return `
@@ -1017,7 +946,7 @@ function renderAvaliacoes(formacao) {
             <div class="avaliacao-item-avatar">${initials}</div>
             <div>
               <div class="avaliacao-item-name">${colab?.nome || 'Anónimo'}</div>
-              <div class="avaliacao-item-date">${av.data}</div>
+              <div class="avaliacao-item-date">${av.data || '-'}</div>
             </div>
           </div>
           <div class="avaliacao-item-stars">${stars}</div>
@@ -1035,33 +964,52 @@ function updateScoreCircle(id, percentage) {
   }
 }
 
-function togglePresenca(formacaoId, colabId) {
-  const formacao = formacoesDB.find(f => f.id === formacaoId);
+async function togglePresenca(formacaoId, colabId) {
+  const formacao = formacoesCache.find(f => f.id === formacaoId);
   if (!formacao) return;
   
-  if (formacao.presencas[colabId] === true) {
-    formacao.presencas[colabId] = false;
-  } else {
-    formacao.presencas[colabId] = true;
-  }
+  const novoEstado = formacao.presencas[colabId] !== true;
   
-  renderParticipantes(formacao);
+  try {
+    await DataService.registarPresenca(formacaoId, colabId, novoEstado);
+    
+    // Atualizar cache local
+    formacao.presencas[colabId] = novoEstado;
+    renderParticipantes(formacao);
+    showToast(novoEstado ? 'Presença registada!' : 'Presença removida', 'success');
+  } catch (error) {
+    console.error('Erro ao registar presença:', error);
+    showToast('Erro ao registar presença', 'danger');
+  }
 }
 
-function toggleFavorito(id) {
-  const formacao = formacoesDB.find(f => f.id === id);
-  if (!formacao) return;
-  
-  const index = formacao.favoritos.indexOf(currentUserId);
-  if (index === -1) {
-    formacao.favoritos.push(currentUserId);
-    showToast('Adicionado aos favoritos!', 'success');
-  } else {
-    formacao.favoritos.splice(index, 1);
-    showToast('Removido dos favoritos', 'warning');
+async function toggleFavorito(id) {
+  if (!currentUserId) {
+    showToast('Utilizador não identificado', 'warning');
+    return;
   }
   
-  renderFormacoes();
+  const formacao = formacoesCache.find(f => f.id === id);
+  if (!formacao) return;
+  
+  try {
+    const isFavorito = await DataService.toggleFavoritoFormacao(id, currentUserId);
+    
+    // Atualizar cache local
+    if (isFavorito) {
+      formacao.favoritos.push(currentUserId);
+      showToast('Adicionado aos favoritos!', 'success');
+    } else {
+      const index = formacao.favoritos.indexOf(currentUserId);
+      if (index !== -1) formacao.favoritos.splice(index, 1);
+      showToast('Removido dos favoritos', 'warning');
+    }
+    
+    renderFormacoes();
+  } catch (error) {
+    console.error('Erro ao alterar favorito:', error);
+    showToast('Erro ao alterar favorito', 'danger');
+  }
 }
 
 // ==========================================
@@ -1069,7 +1017,7 @@ function toggleFavorito(id) {
 // ==========================================
 
 function openInscricao(id) {
-  const formacao = formacoesDB.find(f => f.id === id);
+  const formacao = formacoesCache.find(f => f.id === id);
   if (!formacao) return;
   
   currentFormacaoId = id;
@@ -1079,7 +1027,6 @@ function openInscricao(id) {
   document.getElementById('inscricaoDuracao').textContent = `${formacao.duracao} horas`;
   document.getElementById('inscricaoLocal').textContent = `${formacao.localTipo} - ${formacao.localDetalhe}`;
   
-  const vagas = formacao.maxParticipantes - formacao.inscritos.length;
   const percent = (formacao.inscritos.length / formacao.maxParticipantes) * 100;
   
   document.getElementById('inscricaoVagasBar').style.width = `${percent}%`;
@@ -1101,38 +1048,65 @@ function closeModalInscricao() {
   document.body.style.overflow = '';
 }
 
-function confirmarInscricao() {
+async function confirmarInscricao() {
   if (!document.getElementById('inscricaoConfirm').checked) {
     showToast('Por favor confirme a sua disponibilidade', 'danger');
     return;
   }
   
-  const formacao = formacoesDB.find(f => f.id === currentFormacaoId);
-  if (!formacao) return;
-  
-  if (!formacao.inscritos.includes(currentUserId)) {
-    formacao.inscritos.push(currentUserId);
+  if (!currentUserId) {
+    showToast('Utilizador não identificado', 'danger');
+    return;
   }
   
-  closeModalInscricao();
-  renderFormacoes();
-  updateStats();
-  showToast('Inscrição confirmada com sucesso!', 'success');
+  const formacao = formacoesCache.find(f => f.id === currentFormacaoId);
+  if (!formacao) return;
+  
+  try {
+    const observacoes = document.getElementById('inscricaoObservacoes').value;
+    await DataService.inscreverFormacao(currentFormacaoId, currentUserId, observacoes);
+    
+    // Atualizar cache local
+    if (!formacao.inscritos.includes(currentUserId)) {
+      formacao.inscritos.push(currentUserId);
+    }
+    
+    closeModalInscricao();
+    renderFormacoes();
+    updateStats();
+    showToast('Inscrição confirmada com sucesso!', 'success');
+  } catch (error) {
+    console.error('Erro ao inscrever:', error);
+    showToast('Erro ao confirmar inscrição', 'danger');
+  }
 }
 
-function cancelarInscricao(id) {
-  const formacao = formacoesDB.find(f => f.id === id);
-  if (!formacao) return;
-  
-  const index = formacao.inscritos.indexOf(currentUserId);
-  if (index !== -1) {
-    formacao.inscritos.splice(index, 1);
+async function cancelarInscricao(id) {
+  if (!currentUserId) {
+    showToast('Utilizador não identificado', 'danger');
+    return;
   }
   
-  closeModalDetalhes();
-  renderFormacoes();
-  updateStats();
-  showToast('Inscrição cancelada', 'warning');
+  const formacao = formacoesCache.find(f => f.id === id);
+  if (!formacao) return;
+  
+  try {
+    await DataService.cancelarInscricaoFormacao(id, currentUserId);
+    
+    // Atualizar cache local
+    const index = formacao.inscritos.indexOf(currentUserId);
+    if (index !== -1) {
+      formacao.inscritos.splice(index, 1);
+    }
+    
+    closeModalDetalhes();
+    renderFormacoes();
+    updateStats();
+    showToast('Inscrição cancelada', 'warning');
+  } catch (error) {
+    console.error('Erro ao cancelar inscrição:', error);
+    showToast('Erro ao cancelar inscrição', 'danger');
+  }
 }
 
 // ==========================================
@@ -1143,7 +1117,6 @@ function openAvaliacao(id) {
   currentFormacaoId = id;
   currentRatings = { conteudo: 0, formador: 0, organizacao: 0 };
   
-  // Reset stars
   ['ratingConteudo', 'ratingFormador', 'ratingOrganizacao'].forEach(containerId => {
     const container = document.getElementById(containerId);
     if (container) {
@@ -1167,30 +1140,49 @@ function closeModalAvaliacao() {
   document.body.style.overflow = '';
 }
 
-function submitAvaliacao() {
+async function submitAvaliacao() {
   if (currentRatings.conteudo === 0 || currentRatings.formador === 0 || currentRatings.organizacao === 0) {
     showToast('Por favor avalie todas as categorias', 'danger');
     return;
   }
   
-  const formacao = formacoesDB.find(f => f.id === currentFormacaoId);
+  if (!currentUserId) {
+    showToast('Utilizador não identificado', 'danger');
+    return;
+  }
+  
+  const formacao = formacoesCache.find(f => f.id === currentFormacaoId);
   if (!formacao) return;
   
-  const avaliacao = {
-    odId: currentUserId,
-    conteudo: currentRatings.conteudo,
-    formador: currentRatings.formador,
-    organizacao: currentRatings.organizacao,
-    comentario: document.getElementById('avaliacaoComentarios').value,
-    data: new Date().toISOString().split('T')[0]
-  };
-  
-  formacao.avaliacoes.push(avaliacao);
-  
-  closeModalAvaliacao();
-  renderFormacoes();
-  updateStats();
-  showToast('Obrigado pela sua avaliação!', 'success');
+  try {
+    const recomendariaEl = document.querySelector('input[name="recomendaria"]:checked');
+    
+    await DataService.submeterAvaliacao(currentFormacaoId, currentUserId, {
+      conteudo: currentRatings.conteudo,
+      formador: currentRatings.formador,
+      organizacao: currentRatings.organizacao,
+      comentario: document.getElementById('avaliacaoComentarios').value,
+      recomendaria: recomendariaEl?.value || null
+    });
+    
+    // Atualizar cache local
+    formacao.avaliacoes.push({
+      odId: currentUserId,
+      conteudo: currentRatings.conteudo,
+      formador: currentRatings.formador,
+      organizacao: currentRatings.organizacao,
+      comentario: document.getElementById('avaliacaoComentarios').value,
+      data: new Date().toISOString().split('T')[0]
+    });
+    
+    closeModalAvaliacao();
+    renderFormacoes();
+    updateStats();
+    showToast('Obrigado pela sua avaliação!', 'success');
+  } catch (error) {
+    console.error('Erro ao submeter avaliação:', error);
+    showToast('Erro ao submeter avaliação', 'danger');
+  }
 }
 
 // ==========================================
@@ -1198,8 +1190,12 @@ function submitAvaliacao() {
 // ==========================================
 
 function openMeuHistorico() {
-  // Calculate stats
-  const minhasFormacoes = formacoesDB.filter(f => f.inscritos.includes(currentUserId));
+  if (!currentUserId) {
+    showToast('Utilizador não identificado', 'warning');
+    return;
+  }
+  
+  const minhasFormacoes = formacoesCache.filter(f => f.inscritos.includes(currentUserId));
   const concluidas = minhasFormacoes.filter(f => f.estado === 'Concluída');
   const totalHoras = concluidas.reduce((sum, f) => sum + f.duracao, 0);
   const certificados = concluidas.filter(f => f.resultados[currentUserId] === 'Aprovado').length;
@@ -1214,7 +1210,7 @@ function openMeuHistorico() {
   document.getElementById('historicoObrigatorias').textContent = `${percentObrigatorias}%`;
   
   // Obrigatórias pendentes
-  const pendentes = formacoesDB.filter(f => 
+  const pendentes = formacoesCache.filter(f => 
     f.modalidade === 'Obrigatória' && 
     (f.estado === 'Agendada' || f.estado === 'Em Curso') &&
     !f.inscritos.includes(currentUserId)
@@ -1239,7 +1235,7 @@ function openMeuHistorico() {
           </div>
         </div>
         <div class="historico-item-actions">
-          <button class="btn btn-sm btn-primary" onclick="closeModalHistorico(); openInscricao(${f.id})">Inscrever</button>
+          <button class="btn btn-sm btn-primary" onclick="closeModalHistorico(); openInscricao('${f.id}')">Inscrever</button>
         </div>
       </div>
     `).join('');
@@ -1335,9 +1331,8 @@ function renderCalendario() {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   
-  // Get events for this month
   const eventos = {};
-  formacoesDB.forEach(f => {
+  formacoesCache.forEach(f => {
     f.sessoes.forEach(s => {
       const date = new Date(s.data);
       if (date.getMonth() === currentCalendarMonth && date.getFullYear() === currentCalendarYear) {
@@ -1350,12 +1345,10 @@ function renderCalendario() {
   
   let html = '';
   
-  // Empty cells before first day
   for (let i = 0; i < startDay; i++) {
     html += '<div class="calendario-day other-month"></div>';
   }
   
-  // Days of month
   for (let day = 1; day <= daysInMonth; day++) {
     const currentDate = new Date(currentCalendarYear, currentCalendarMonth, day);
     const isToday = currentDate.getTime() === today.getTime();
@@ -1384,7 +1377,7 @@ function renderCalendario() {
 
 function showDayEvents(day) {
   const eventos = [];
-  formacoesDB.forEach(f => {
+  formacoesCache.forEach(f => {
     f.sessoes.forEach(s => {
       const date = new Date(s.data);
       if (date.getDate() === day && date.getMonth() === currentCalendarMonth && date.getFullYear() === currentCalendarYear) {
@@ -1398,14 +1391,8 @@ function showDayEvents(day) {
     return;
   }
   
-  if (eventos.length === 1) {
-    closeModalCalendario();
-    openDetalhes(eventos[0].id);
-  } else {
-    // Para simplificar, abre a primeira
-    closeModalCalendario();
-    openDetalhes(eventos[0].id);
-  }
+  closeModalCalendario();
+  openDetalhes(eventos[0].id);
 }
 
 // ==========================================
