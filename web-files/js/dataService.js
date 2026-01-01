@@ -1,687 +1,684 @@
-// =============================================
-// DATA SERVICE - CAMADA DE ABSTRAÇÃO DE DADOS
-// Compatibilidade: Supabase / Power Pages
-// =============================================
+// ===================================================================
+// DATA SERVICE - Camada de Abstração para Supabase/Power Pages
+// ===================================================================
+// Este ficheiro fornece uma interface unificada para acesso a dados
+// que pode ser facilmente adaptada para Power Pages (Dataverse)
+// ===================================================================
 
-/**
- * DataService - Serviço unificado de acesso a dados
- * 
- * Este serviço abstrai a fonte de dados (Supabase ou Power Pages/Dataverse)
- * permitindo que o mesmo código funcione em ambos os ambientes.
- * 
- * PADRÃO DE USO (similar ao Power Pages Web API):
- * 
- * // Buscar todos os registos
- * const dados = await DataService.getAll('tabela');
- * 
- * // Buscar com filtros
- * const dados = await DataService.getAll('tabela', {
- *   filter: { estado: 'Ativo', tipo: 'Interno' },
- *   orderBy: 'nome',
- *   orderDirection: 'asc',
- *   top: 10
- * });
- * 
- * // Buscar um registo por ID
- * const registo = await DataService.getById('tabela', 'uuid');
- * 
- * // Criar registo
- * const novo = await DataService.create('tabela', { campo1: 'valor' });
- * 
- * // Atualizar registo
- * await DataService.update('tabela', 'uuid', { campo1: 'novo valor' });
- * 
- * // Eliminar registo
- * await DataService.delete('tabela', 'uuid');
- */
+// ==========================================
+// CONFIGURAÇÃO
+// ==========================================
 
 const DataService = (function() {
-  'use strict';
+  
+  // Configuração Supabase
+  const SUPABASE_URL = 'https://yujhfscnnngaivwwunom.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl1amhmc2Nubm5nYWl2d3d1bm9tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUzODA5OTEsImV4cCI6MjA4MDk1Njk5MX0.wpWiNx6ck_gEujMoodbFTswjBjMbuEHeAO8lMtLes2c';
+  
+  // Headers padrão para Supabase
+  const headers = {
+    'apikey': SUPABASE_ANON_KEY,
+    'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+    'Content-Type': 'application/json',
+    'Prefer': 'return=representation'
+  };
   
   // ==========================================
-  // CACHE LOCAL
+  // FUNÇÕES AUXILIARES (Compatíveis com Power Pages)
   // ==========================================
-  const cache = new Map();
   
-  function getCacheKey(table, options) {
-    return `${table}:${JSON.stringify(options || {})}`;
-  }
-  
-  function getFromCache(key) {
-    const cached = cache.get(key);
-    if (cached && Date.now() - cached.timestamp < CONFIG.APP.CACHE_TTL) {
-      if (CONFIG.DEBUG.LOG_API_CALLS) console.log('[DataService] Cache hit:', key);
-      return cached.data;
-    }
-    return null;
-  }
-  
-  function setCache(key, data) {
-    cache.set(key, { data, timestamp: Date.now() });
-  }
-  
-  function clearCache(table) {
-    if (table) {
-      // Limpar cache específico da tabela
-      for (const key of cache.keys()) {
-        if (key.startsWith(table + ':')) {
-          cache.delete(key);
-        }
-      }
-    } else {
-      cache.clear();
-    }
-  }
-  
-  // ==========================================
-  // SUPABASE ADAPTER
-  // ==========================================
-  const SupabaseAdapter = {
-    /**
-     * Constrói os headers para a API do Supabase
-     */
-    getHeaders() {
-      return {
-        'apikey': CONFIG.SUPABASE.ANON_KEY,
-        'Authorization': `Bearer ${CONFIG.SUPABASE.ANON_KEY}`,
-        'Content-Type': 'application/json',
-        'Prefer': 'return=representation'
-      };
-    },
-    
-    /**
-     * Constrói a URL com query params para filtros
-     */
-    buildUrl(table, options = {}) {
-      let url = `${CONFIG.SUPABASE.URL}/rest/v1/${table}`;
+  /**
+   * Executa uma query GET - Similar a webapi.safeAjax do Power Pages
+   * @param {string} entityName - Nome da tabela/entidade
+   * @param {object} options - Opções de query (select, filter, orderby, top)
+   * @returns {Promise<Array>} - Array de registos
+   */
+  async function retrieveMultipleRecords(entityName, options = {}) {
+    try {
+      let url = `${SUPABASE_URL}/rest/v1/${entityName}`;
       const params = new URLSearchParams();
       
-      // Select (colunas e relações)
+      // Select (equivalente a $select do OData)
       if (options.select) {
         params.append('select', options.select);
-      } else {
-        params.append('select', '*');
       }
       
-      // Filtros (formato: coluna=eq.valor)
+      // Filter (equivalente a $filter do OData)
+      // Nota: Supabase usa sintaxe diferente, mas mapeamos para compatibilidade
       if (options.filter) {
-        for (const [key, value] of Object.entries(options.filter)) {
-          if (value !== null && value !== undefined && value !== '') {
-            // Suporta operadores: eq, neq, gt, gte, lt, lte, like, ilike, in
-            if (typeof value === 'object' && value.operator) {
-              params.append(key, `${value.operator}.${value.value}`);
-            } else {
-              params.append(key, `eq.${value}`);
-            }
+        // Adiciona filtros como query params do Supabase
+        Object.keys(options.filter).forEach(key => {
+          const value = options.filter[key];
+          if (typeof value === 'object') {
+            // Operadores especiais: eq, neq, gt, gte, lt, lte, like, in
+            Object.keys(value).forEach(op => {
+              params.append(key, `${op}.${value[op]}`);
+            });
+          } else {
+            params.append(key, `eq.${value}`);
           }
-        }
+        });
       }
       
-      // Ordenação
-      if (options.orderBy) {
-        const direction = options.orderDirection === 'desc' ? '.desc' : '.asc';
-        params.append('order', `${options.orderBy}${direction}`);
+      // OrderBy (equivalente a $orderby do OData)
+      if (options.orderby) {
+        params.append('order', options.orderby);
       }
       
-      // Limitar resultados
+      // Top/Limit (equivalente a $top do OData)
       if (options.top) {
-        params.append('limit', options.top.toString());
-      }
-      
-      // Paginação
-      if (options.skip) {
-        params.append('offset', options.skip.toString());
+        params.append('limit', options.top);
       }
       
       const queryString = params.toString();
-      return queryString ? `${url}?${queryString}` : url;
-    },
-    
-    /**
-     * GET - Buscar registos
-     */
-    async getAll(table, options = {}) {
-      const url = this.buildUrl(table, options);
-      
-      if (CONFIG.DEBUG.LOG_API_CALLS) {
-        console.log('[Supabase] GET:', url);
+      if (queryString) {
+        url += `?${queryString}`;
       }
       
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: this.getHeaders()
-      });
+      const response = await fetch(url, { headers });
       
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || `Error fetching ${table}`);
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
       
-      return response.json();
-    },
-    
-    /**
-     * GET by ID - Buscar um registo
-     */
-    async getById(table, id) {
-      const url = `${CONFIG.SUPABASE.URL}/rest/v1/${table}?id=eq.${id}&select=*`;
-      
-      if (CONFIG.DEBUG.LOG_API_CALLS) {
-        console.log('[Supabase] GET by ID:', url);
-      }
-      
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: this.getHeaders()
-      });
+      return await response.json();
+    } catch (error) {
+      console.error(`[DataService] Erro ao buscar ${entityName}:`, error);
+      throw error;
+    }
+  }
+  
+  /**
+   * Obtém um único registo por ID - Similar a webapi.retrieveRecord do Power Pages
+   * @param {string} entityName - Nome da tabela/entidade
+   * @param {string} id - ID do registo (UUID)
+   * @param {string} select - Campos a retornar
+   * @returns {Promise<Object>} - Registo
+   */
+  async function retrieveRecord(entityName, id, select = '*') {
+    try {
+      const url = `${SUPABASE_URL}/rest/v1/${entityName}?id=eq.${id}&select=${select}`;
+      const response = await fetch(url, { headers });
       
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || `Error fetching ${table}/${id}`);
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
       
       const data = await response.json();
       return data.length > 0 ? data[0] : null;
-    },
-    
-    /**
-     * POST - Criar registo
-     */
-    async create(table, data) {
-      const url = `${CONFIG.SUPABASE.URL}/rest/v1/${table}`;
-      
-      if (CONFIG.DEBUG.LOG_API_CALLS) {
-        console.log('[Supabase] POST:', url, data);
-      }
-      
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: this.getHeaders(),
-        body: JSON.stringify(data)
-      });
-      
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || `Error creating ${table}`);
-      }
-      
-      const result = await response.json();
-      return result.length > 0 ? result[0] : result;
-    },
-    
-    /**
-     * PATCH - Atualizar registo
-     */
-    async update(table, id, data) {
-      const url = `${CONFIG.SUPABASE.URL}/rest/v1/${table}?id=eq.${id}`;
-      
-      if (CONFIG.DEBUG.LOG_API_CALLS) {
-        console.log('[Supabase] PATCH:', url, data);
-      }
-      
-      const response = await fetch(url, {
-        method: 'PATCH',
-        headers: this.getHeaders(),
-        body: JSON.stringify(data)
-      });
-      
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || `Error updating ${table}/${id}`);
-      }
-      
-      const result = await response.json();
-      return result.length > 0 ? result[0] : result;
-    },
-    
-    /**
-     * DELETE - Eliminar registo
-     */
-    async delete(table, id) {
-      const url = `${CONFIG.SUPABASE.URL}/rest/v1/${table}?id=eq.${id}`;
-      
-      if (CONFIG.DEBUG.LOG_API_CALLS) {
-        console.log('[Supabase] DELETE:', url);
-      }
-      
-      const response = await fetch(url, {
-        method: 'DELETE',
-        headers: this.getHeaders()
-      });
-      
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || `Error deleting ${table}/${id}`);
-      }
-      
-      return true;
-    },
-    
-    /**
-     * RPC - Chamar função PostgreSQL
-     */
-    async rpc(functionName, params = {}) {
-      const url = `${CONFIG.SUPABASE.URL}/rest/v1/rpc/${functionName}`;
-      
-      if (CONFIG.DEBUG.LOG_API_CALLS) {
-        console.log('[Supabase] RPC:', url, params);
-      }
-      
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: this.getHeaders(),
-        body: JSON.stringify(params)
-      });
-      
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || `Error calling ${functionName}`);
-      }
-      
-      return response.json();
-    }
-  };
-  
-  // ==========================================
-  // POWER PAGES ADAPTER (para migração futura)
-  // ==========================================
-  const PowerPagesAdapter = {
-    /**
-     * Mapeia nome da tabela Supabase para Dataverse
-     */
-    mapTable(table) {
-      if (CONFIG.POWERPAGES && CONFIG.POWERPAGES.TABLE_MAP) {
-        return CONFIG.POWERPAGES.TABLE_MAP[table] || table;
-      }
-      return table;
-    },
-    
-    /**
-     * GET - Buscar registos via Web API do Dataverse
-     */
-    async getAll(table, options = {}) {
-      const entitySet = this.mapTable(table);
-      let url = `${CONFIG.POWERPAGES.API_URL}/${entitySet}`;
-      const params = new URLSearchParams();
-      
-      // $select
-      if (options.select) {
-        params.append('$select', options.select.replace(/,/g, ','));
-      }
-      
-      // $filter
-      if (options.filter) {
-        const filters = [];
-        for (const [key, value] of Object.entries(options.filter)) {
-          if (value !== null && value !== undefined && value !== '') {
-            filters.push(`${key} eq '${value}'`);
-          }
-        }
-        if (filters.length > 0) {
-          params.append('$filter', filters.join(' and '));
-        }
-      }
-      
-      // $orderby
-      if (options.orderBy) {
-        const direction = options.orderDirection === 'desc' ? ' desc' : ' asc';
-        params.append('$orderby', `${options.orderBy}${direction}`);
-      }
-      
-      // $top
-      if (options.top) {
-        params.append('$top', options.top.toString());
-      }
-      
-      const queryString = params.toString();
-      if (queryString) url += `?${queryString}`;
-      
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/json',
-          'OData-MaxVersion': '4.0',
-          'OData-Version': '4.0'
-        }
-      });
-      
-      if (!response.ok) {
-        throw new Error(`Error fetching ${table}`);
-      }
-      
-      const result = await response.json();
-      return result.value || result;
-    },
-    
-    async getById(table, id) {
-      const entitySet = this.mapTable(table);
-      const url = `${CONFIG.POWERPAGES.API_URL}/${entitySet}(${id})`;
-      
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/json',
-          'OData-MaxVersion': '4.0',
-          'OData-Version': '4.0'
-        }
-      });
-      
-      if (!response.ok) {
-        if (response.status === 404) return null;
-        throw new Error(`Error fetching ${table}/${id}`);
-      }
-      
-      return response.json();
-    },
-    
-    async create(table, data) {
-      const entitySet = this.mapTable(table);
-      const url = `${CONFIG.POWERPAGES.API_URL}/${entitySet}`;
-      
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-          'OData-MaxVersion': '4.0',
-          'OData-Version': '4.0'
-        },
-        body: JSON.stringify(data)
-      });
-      
-      if (!response.ok) {
-        throw new Error(`Error creating ${table}`);
-      }
-      
-      return response.json();
-    },
-    
-    async update(table, id, data) {
-      const entitySet = this.mapTable(table);
-      const url = `${CONFIG.POWERPAGES.API_URL}/${entitySet}(${id})`;
-      
-      const response = await fetch(url, {
-        method: 'PATCH',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-          'OData-MaxVersion': '4.0',
-          'OData-Version': '4.0'
-        },
-        body: JSON.stringify(data)
-      });
-      
-      if (!response.ok) {
-        throw new Error(`Error updating ${table}/${id}`);
-      }
-      
-      return true;
-    },
-    
-    async delete(table, id) {
-      const entitySet = this.mapTable(table);
-      const url = `${CONFIG.POWERPAGES.API_URL}/${entitySet}(${id})`;
-      
-      const response = await fetch(url, {
-        method: 'DELETE',
-        headers: {
-          'OData-MaxVersion': '4.0',
-          'OData-Version': '4.0'
-        }
-      });
-      
-      if (!response.ok) {
-        throw new Error(`Error deleting ${table}/${id}`);
-      }
-      
-      return true;
-    }
-  };
-  
-  // ==========================================
-  // MOCK ADAPTER (para testes offline)
-  // ==========================================
-  const MockAdapter = {
-    mockData: {},
-    
-    setMockData(table, data) {
-      this.mockData[table] = data;
-    },
-    
-    async getAll(table, options = {}) {
-      let data = this.mockData[table] || [];
-      
-      // Aplicar filtros
-      if (options.filter) {
-        data = data.filter(item => {
-          for (const [key, value] of Object.entries(options.filter)) {
-            if (item[key] !== value) return false;
-          }
-          return true;
-        });
-      }
-      
-      // Ordenar
-      if (options.orderBy) {
-        const dir = options.orderDirection === 'desc' ? -1 : 1;
-        data.sort((a, b) => {
-          if (a[options.orderBy] < b[options.orderBy]) return -1 * dir;
-          if (a[options.orderBy] > b[options.orderBy]) return 1 * dir;
-          return 0;
-        });
-      }
-      
-      // Limitar
-      if (options.top) {
-        data = data.slice(0, options.top);
-      }
-      
-      return Promise.resolve(data);
-    },
-    
-    async getById(table, id) {
-      const data = this.mockData[table] || [];
-      return Promise.resolve(data.find(item => item.id === id) || null);
-    },
-    
-    async create(table, data) {
-      if (!this.mockData[table]) this.mockData[table] = [];
-      const newItem = { ...data, id: crypto.randomUUID() };
-      this.mockData[table].push(newItem);
-      return Promise.resolve(newItem);
-    },
-    
-    async update(table, id, data) {
-      const items = this.mockData[table] || [];
-      const index = items.findIndex(item => item.id === id);
-      if (index !== -1) {
-        items[index] = { ...items[index], ...data };
-        return Promise.resolve(items[index]);
-      }
-      throw new Error('Not found');
-    },
-    
-    async delete(table, id) {
-      const items = this.mockData[table] || [];
-      const index = items.findIndex(item => item.id === id);
-      if (index !== -1) {
-        items.splice(index, 1);
-        return Promise.resolve(true);
-      }
-      throw new Error('Not found');
-    }
-  };
-  
-  // ==========================================
-  // SELECIONAR ADAPTER BASEADO NA CONFIG
-  // ==========================================
-  function getAdapter() {
-    switch (CONFIG.ENVIRONMENT) {
-      case 'powerpages':
-        return PowerPagesAdapter;
-      case 'mock':
-        return MockAdapter;
-      case 'supabase':
-      default:
-        return SupabaseAdapter;
+    } catch (error) {
+      console.error(`[DataService] Erro ao buscar registo ${entityName}/${id}:`, error);
+      throw error;
     }
   }
   
-  // ==========================================
-  // API PÚBLICA DO DATASERVICE
-  // ==========================================
-  return {
-    /**
-     * Buscar todos os registos de uma tabela
-     * @param {string} table - Nome da tabela
-     * @param {object} options - Opções de query
-     * @param {string} options.select - Colunas a selecionar (ex: 'id,nome,email')
-     * @param {object} options.filter - Filtros (ex: { estado: 'Ativo' })
-     * @param {string} options.orderBy - Coluna para ordenar
-     * @param {string} options.orderDirection - 'asc' ou 'desc'
-     * @param {number} options.top - Limitar número de resultados
-     * @param {number} options.skip - Saltar N registos (paginação)
-     * @param {boolean} options.useCache - Usar cache (default: true)
-     * @returns {Promise<Array>}
-     */
-    async getAll(table, options = {}) {
-      try {
-        // Verificar cache
-        if (options.useCache !== false) {
-          const cacheKey = getCacheKey(table, options);
-          const cached = getFromCache(cacheKey);
-          if (cached) return cached;
-        }
-        
-        const adapter = getAdapter();
-        const data = await adapter.getAll(table, options);
-        
-        // Guardar em cache
-        if (options.useCache !== false) {
-          const cacheKey = getCacheKey(table, options);
-          setCache(cacheKey, data);
-        }
-        
-        return data;
-      } catch (error) {
-        if (CONFIG.DEBUG.LOG_ERRORS) {
-          console.error(`[DataService] Error in getAll(${table}):`, error);
-        }
-        throw error;
+  /**
+   * Cria um novo registo - Similar a webapi.createRecord do Power Pages
+   * @param {string} entityName - Nome da tabela/entidade
+   * @param {object} data - Dados do registo
+   * @returns {Promise<Object>} - Registo criado
+   */
+  async function createRecord(entityName, data) {
+    try {
+      const url = `${SUPABASE_URL}/rest/v1/${entityName}`;
+      const response = await fetch(url, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(data)
+      });
+      
+      if (!response.ok) {
+        const error = await response.text();
+        throw new Error(`HTTP error! status: ${response.status}, message: ${error}`);
       }
-    },
-    
-    /**
-     * Buscar um registo por ID
-     * @param {string} table - Nome da tabela
-     * @param {string} id - ID do registo
-     * @returns {Promise<object|null>}
-     */
-    async getById(table, id) {
-      try {
-        const adapter = getAdapter();
-        return await adapter.getById(table, id);
-      } catch (error) {
-        if (CONFIG.DEBUG.LOG_ERRORS) {
-          console.error(`[DataService] Error in getById(${table}, ${id}):`, error);
-        }
-        throw error;
-      }
-    },
-    
-    /**
-     * Criar um novo registo
-     * @param {string} table - Nome da tabela
-     * @param {object} data - Dados a inserir
-     * @returns {Promise<object>}
-     */
-    async create(table, data) {
-      try {
-        const adapter = getAdapter();
-        const result = await adapter.create(table, data);
-        clearCache(table); // Invalidar cache da tabela
-        return result;
-      } catch (error) {
-        if (CONFIG.DEBUG.LOG_ERRORS) {
-          console.error(`[DataService] Error in create(${table}):`, error);
-        }
-        throw error;
-      }
-    },
-    
-    /**
-     * Atualizar um registo existente
-     * @param {string} table - Nome da tabela
-     * @param {string} id - ID do registo
-     * @param {object} data - Dados a atualizar
-     * @returns {Promise<object>}
-     */
-    async update(table, id, data) {
-      try {
-        const adapter = getAdapter();
-        const result = await adapter.update(table, id, data);
-        clearCache(table);
-        return result;
-      } catch (error) {
-        if (CONFIG.DEBUG.LOG_ERRORS) {
-          console.error(`[DataService] Error in update(${table}, ${id}):`, error);
-        }
-        throw error;
-      }
-    },
-    
-    /**
-     * Eliminar um registo
-     * @param {string} table - Nome da tabela
-     * @param {string} id - ID do registo
-     * @returns {Promise<boolean>}
-     */
-    async delete(table, id) {
-      try {
-        const adapter = getAdapter();
-        const result = await adapter.delete(table, id);
-        clearCache(table);
-        return result;
-      } catch (error) {
-        if (CONFIG.DEBUG.LOG_ERRORS) {
-          console.error(`[DataService] Error in delete(${table}, ${id}):`, error);
-        }
-        throw error;
-      }
-    },
-    
-    /**
-     * Limpar cache
-     * @param {string} table - Nome da tabela (opcional, limpa tudo se omitido)
-     */
-    clearCache(table) {
-      clearCache(table);
-    },
-    
-    /**
-     * Definir dados mock (para testes)
-     */
-    setMockData(table, data) {
-      MockAdapter.setMockData(table, data);
-    },
-    
-    /**
-     * Obter ID do utilizador atual
-     */
-    getCurrentUserId() {
-      return CONFIG.APP.CURRENT_USER_ID;
-    },
-    
-    /**
-     * Executar RPC/Função (apenas Supabase)
-     */
-    async rpc(functionName, params = {}) {
-      if (CONFIG.ENVIRONMENT === 'supabase') {
-        return SupabaseAdapter.rpc(functionName, params);
-      }
-      throw new Error('RPC not available in this environment');
+      
+      const result = await response.json();
+      return result.length > 0 ? result[0] : result;
+    } catch (error) {
+      console.error(`[DataService] Erro ao criar ${entityName}:`, error);
+      throw error;
     }
+  }
+  
+  /**
+   * Atualiza um registo - Similar a webapi.updateRecord do Power Pages
+   * @param {string} entityName - Nome da tabela/entidade
+   * @param {string} id - ID do registo
+   * @param {object} data - Dados a atualizar
+   * @returns {Promise<Object>} - Registo atualizado
+   */
+  async function updateRecord(entityName, id, data) {
+    try {
+      const url = `${SUPABASE_URL}/rest/v1/${entityName}?id=eq.${id}`;
+      const response = await fetch(url, {
+        method: 'PATCH',
+        headers,
+        body: JSON.stringify(data)
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const result = await response.json();
+      return result.length > 0 ? result[0] : result;
+    } catch (error) {
+      console.error(`[DataService] Erro ao atualizar ${entityName}/${id}:`, error);
+      throw error;
+    }
+  }
+  
+  /**
+   * Elimina um registo - Similar a webapi.deleteRecord do Power Pages
+   * @param {string} entityName - Nome da tabela/entidade
+   * @param {string} id - ID do registo
+   * @returns {Promise<boolean>} - Sucesso
+   */
+  async function deleteRecord(entityName, id) {
+    try {
+      const url = `${SUPABASE_URL}/rest/v1/${entityName}?id=eq.${id}`;
+      const response = await fetch(url, {
+        method: 'DELETE',
+        headers
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      return true;
+    } catch (error) {
+      console.error(`[DataService] Erro ao eliminar ${entityName}/${id}:`, error);
+      throw error;
+    }
+  }
+  
+  /**
+   * Executa uma query customizada com joins - Específico Supabase
+   * Para Power Pages, isto seria feito com FetchXML
+   * @param {string} entityName - Nome da tabela principal
+   * @param {string} select - Select com joins (sintaxe Supabase)
+   * @param {object} filter - Filtros
+   * @returns {Promise<Array>}
+   */
+  async function retrieveWithRelations(entityName, select, filter = {}) {
+    try {
+      let url = `${SUPABASE_URL}/rest/v1/${entityName}?select=${encodeURIComponent(select)}`;
+      
+      // Adicionar filtros
+      Object.keys(filter).forEach(key => {
+        const value = filter[key];
+        if (value !== null && value !== undefined) {
+          url += `&${key}=eq.${value}`;
+        }
+      });
+      
+      const response = await fetch(url, { headers });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error(`[DataService] Erro ao buscar ${entityName} com relações:`, error);
+      throw error;
+    }
+  }
+  
+  /**
+   * Executa operações em lote - Similar a batch do OData
+   * @param {Array} operations - Array de operações {method, entity, data, id}
+   * @returns {Promise<Array>}
+   */
+  async function executeBatch(operations) {
+    const results = [];
+    
+    for (const op of operations) {
+      try {
+        let result;
+        switch (op.method) {
+          case 'POST':
+            result = await createRecord(op.entity, op.data);
+            break;
+          case 'PATCH':
+            result = await updateRecord(op.entity, op.id, op.data);
+            break;
+          case 'DELETE':
+            result = await deleteRecord(op.entity, op.id);
+            break;
+          default:
+            result = await retrieveMultipleRecords(op.entity, op.options);
+        }
+        results.push({ success: true, data: result });
+      } catch (error) {
+        results.push({ success: false, error: error.message });
+      }
+    }
+    
+    return results;
+  }
+  
+  // ==========================================
+  // FUNÇÕES ESPECÍFICAS POR ENTIDADE
+  // (Facilitam o uso e são mais compatíveis com Power Pages)
+  // ==========================================
+  
+  // --- COLABORADORES ---
+  async function getColaboradores() {
+    return retrieveWithRelations('colaboradores', 
+      '*, departamentos(id, codigo, nome)',
+      { ativo: true }
+    );
+  }
+  
+  async function getColaboradorById(id) {
+    const result = await retrieveWithRelations('colaboradores',
+      '*, departamentos(id, codigo, nome), roles(id, codigo, nome)',
+      { id }
+    );
+    return result.length > 0 ? result[0] : null;
+  }
+  
+  // --- DEPARTAMENTOS ---
+  async function getDepartamentos() {
+    return retrieveMultipleRecords('departamentos', {
+      filter: { ativo: true },
+      orderby: 'nome.asc'
+    });
+  }
+  
+  // --- FORMADORES ---
+  async function getFormadores() {
+    return retrieveWithRelations('formadores',
+      '*, entidades_formadoras(id, nome)',
+      { ativo: true }
+    );
+  }
+  
+  // --- ENTIDADES FORMADORAS ---
+  async function getEntidadesFormadoras() {
+    return retrieveMultipleRecords('entidades_formadoras', {
+      filter: { ativo: true },
+      orderby: 'nome.asc'
+    });
+  }
+  
+  // --- FROTA ---
+  async function getFrota() {
+    return retrieveMultipleRecords('frota', {
+      orderby: 'modelo.asc'
+    });
+  }
+  
+  async function getFrotaDisponivel() {
+    return retrieveMultipleRecords('frota', {
+      filter: { disponivel: true },
+      orderby: 'modelo.asc'
+    });
+  }
+  
+  // --- TIPOS DE TRANSPORTE ---
+  async function getTiposTransporte() {
+    return retrieveMultipleRecords('tipos_transporte', {
+      filter: { ativo: true },
+      orderby: 'nome.asc'
+    });
+  }
+  
+  async function getTiposTransportePublico() {
+    return retrieveMultipleRecords('tipos_transporte_publico', {
+      filter: { ativo: true },
+      orderby: 'nome.asc'
+    });
+  }
+  
+  // --- FORMAÇÕES ---
+  async function getFormacoes() {
+    return retrieveWithRelations('formacoes',
+      `*,
+       entidades_formadoras(id, codigo, nome),
+       formadores(id, nome, especialidade, tipo),
+       formacao_sessoes(id, data, hora_inicio, hora_fim),
+       formacao_inscricoes(id, colaborador_id, estado),
+       formacao_departamentos(id, departamento_id, departamentos(id, codigo, nome)),
+       formacao_favoritos(id, colaborador_id),
+       formacao_presencas(id, colaborador_id, presente),
+       formacao_resultados(id, colaborador_id, resultado),
+       formacao_avaliacoes(id, colaborador_id, score_conteudo, score_formador, score_organizacao, comentario, created_at)`
+    );
+  }
+  
+  async function getFormacaoById(id) {
+    const result = await retrieveWithRelations('formacoes',
+      `*,
+       entidades_formadoras(id, codigo, nome),
+       formadores(id, nome, especialidade, tipo),
+       formacao_sessoes(id, data, hora_inicio, hora_fim),
+       formacao_inscricoes(id, colaborador_id, estado, colaboradores(id, nome, email, departamento_id)),
+       formacao_departamentos(id, departamento_id, departamentos(id, codigo, nome)),
+       formacao_favoritos(id, colaborador_id),
+       formacao_presencas(id, colaborador_id, presente),
+       formacao_resultados(id, colaborador_id, resultado),
+       formacao_avaliacoes(id, colaborador_id, score_conteudo, score_formador, score_organizacao, comentario, created_at)`,
+      { id }
+    );
+    return result.length > 0 ? result[0] : null;
+  }
+  
+  async function createFormacao(data) {
+    // Extrair dados relacionados
+    const { sessoes, departamentos_alvo, ...formacaoData } = data;
+    
+    // Criar formação
+    const formacao = await createRecord('formacoes', formacaoData);
+    
+    // Criar sessões
+    if (sessoes && sessoes.length > 0) {
+      for (const sessao of sessoes) {
+        await createRecord('formacao_sessoes', {
+          formacao_id: formacao.id,
+          data: sessao.data,
+          hora_inicio: sessao.horaInicio,
+          hora_fim: sessao.horaFim
+        });
+      }
+    }
+    
+    // Associar departamentos
+    if (departamentos_alvo && departamentos_alvo.length > 0) {
+      for (const depId of departamentos_alvo) {
+        await createRecord('formacao_departamentos', {
+          formacao_id: formacao.id,
+          departamento_id: depId
+        });
+      }
+    }
+    
+    return formacao;
+  }
+  
+  async function updateFormacao(id, data) {
+    return updateRecord('formacoes', id, data);
+  }
+  
+  async function inscreverFormacao(formacaoId, colaboradorId, observacoes = null) {
+    return createRecord('formacao_inscricoes', {
+      formacao_id: formacaoId,
+      colaborador_id: colaboradorId,
+      observacoes,
+      estado: 'Inscrito'
+    });
+  }
+  
+  async function cancelarInscricaoFormacao(formacaoId, colaboradorId) {
+    // Buscar inscrição
+    const inscricoes = await retrieveMultipleRecords('formacao_inscricoes', {
+      filter: {
+        formacao_id: formacaoId,
+        colaborador_id: colaboradorId
+      }
+    });
+    
+    if (inscricoes.length > 0) {
+      return updateRecord('formacao_inscricoes', inscricoes[0].id, {
+        estado: 'Cancelada',
+        cancelada_em: new Date().toISOString()
+      });
+    }
+    return null;
+  }
+  
+  async function toggleFavoritoFormacao(formacaoId, colaboradorId) {
+    // Verificar se já é favorito
+    const favoritos = await retrieveMultipleRecords('formacao_favoritos', {
+      filter: {
+        formacao_id: formacaoId,
+        colaborador_id: colaboradorId
+      }
+    });
+    
+    if (favoritos.length > 0) {
+      // Remover
+      await deleteRecord('formacao_favoritos', favoritos[0].id);
+      return false;
+    } else {
+      // Adicionar
+      await createRecord('formacao_favoritos', {
+        formacao_id: formacaoId,
+        colaborador_id: colaboradorId
+      });
+      return true;
+    }
+  }
+  
+  async function registarPresenca(formacaoId, colaboradorId, presente) {
+    // Verificar se já existe registo
+    const presencas = await retrieveMultipleRecords('formacao_presencas', {
+      filter: {
+        formacao_id: formacaoId,
+        colaborador_id: colaboradorId
+      }
+    });
+    
+    if (presencas.length > 0) {
+      return updateRecord('formacao_presencas', presencas[0].id, { presente });
+    } else {
+      return createRecord('formacao_presencas', {
+        formacao_id: formacaoId,
+        colaborador_id: colaboradorId,
+        presente
+      });
+    }
+  }
+  
+  async function submeterAvaliacao(formacaoId, colaboradorId, avaliacao) {
+    return createRecord('formacao_avaliacoes', {
+      formacao_id: formacaoId,
+      colaborador_id: colaboradorId,
+      score_conteudo: avaliacao.conteudo,
+      score_formador: avaliacao.formador,
+      score_organizacao: avaliacao.organizacao,
+      comentario: avaliacao.comentario,
+      recomendaria: avaliacao.recomendaria
+    });
+  }
+  
+  // --- DESLOCAÇÕES ---
+  async function getDeslocacoes() {
+    return retrieveWithRelations('deslocacoes',
+      `*,
+       criador:colaboradores!deslocacoes_criado_por_fkey(id, nome),
+       deslocacao_colaboradores(id, colaborador_id, ordem, colaboradores(id, nome, departamento_id)),
+       deslocacao_transportes(id, tipo_transporte_id, viatura_id, tipo_publico_id, motorista_id, ordem,
+         tipos_transporte(id, codigo, nome, requer_motorista, requer_viatura),
+         frota(id, matricula, modelo, tipo, lugares),
+         tipos_transporte_publico(id, codigo, nome),
+         motorista:colaboradores(id, nome))`
+    );
+  }
+  
+  async function getDeslocacaoById(id) {
+    const result = await retrieveWithRelations('deslocacoes',
+      `*,
+       criador:colaboradores!deslocacoes_criado_por_fkey(id, nome),
+       deslocacao_colaboradores(id, colaborador_id, ordem, colaboradores(id, nome, departamento_id, departamentos(nome))),
+       deslocacao_transportes(id, tipo_transporte_id, viatura_id, tipo_publico_id, motorista_id, ordem,
+         tipos_transporte(id, codigo, nome, requer_motorista, requer_viatura),
+         frota(id, matricula, modelo, tipo, lugares),
+         tipos_transporte_publico(id, codigo, nome),
+         motorista:colaboradores(id, nome)),
+       deslocacao_anexos(id, nome_ficheiro, url, tipo_ficheiro, tamanho_bytes)`,
+      { id }
+    );
+    return result.length > 0 ? result[0] : null;
+  }
+  
+  async function createDeslocacao(data) {
+    const { colaboradores, transportes, anexos, ...deslocacaoData } = data;
+    
+    // Criar deslocação
+    const deslocacao = await createRecord('deslocacoes', deslocacaoData);
+    
+    // Adicionar colaboradores
+    if (colaboradores && colaboradores.length > 0) {
+      for (let i = 0; i < colaboradores.length; i++) {
+        await createRecord('deslocacao_colaboradores', {
+          deslocacao_id: deslocacao.id,
+          colaborador_id: colaboradores[i],
+          ordem: i + 1
+        });
+      }
+    }
+    
+    // Adicionar transportes
+    if (transportes && transportes.length > 0) {
+      for (let i = 0; i < transportes.length; i++) {
+        const t = transportes[i];
+        await createRecord('deslocacao_transportes', {
+          deslocacao_id: deslocacao.id,
+          tipo_transporte_id: t.tipo_transporte_id,
+          viatura_id: t.viatura_id || null,
+          tipo_publico_id: t.tipo_publico_id || null,
+          motorista_id: t.motorista_id || null,
+          ordem: i + 1,
+          observacoes: t.observacoes || null
+        });
+      }
+    }
+    
+    return deslocacao;
+  }
+  
+  async function updateDeslocacao(id, data) {
+    return updateRecord('deslocacoes', id, data);
+  }
+  
+  async function deleteDeslocacao(id) {
+    // Eliminar registos relacionados primeiro
+    const colaboradores = await retrieveMultipleRecords('deslocacao_colaboradores', {
+      filter: { deslocacao_id: id }
+    });
+    for (const c of colaboradores) {
+      await deleteRecord('deslocacao_colaboradores', c.id);
+    }
+    
+    const transportes = await retrieveMultipleRecords('deslocacao_transportes', {
+      filter: { deslocacao_id: id }
+    });
+    for (const t of transportes) {
+      await deleteRecord('deslocacao_transportes', t.id);
+    }
+    
+    const anexos = await retrieveMultipleRecords('deslocacao_anexos', {
+      filter: { deslocacao_id: id }
+    });
+    for (const a of anexos) {
+      await deleteRecord('deslocacao_anexos', a.id);
+    }
+    
+    // Eliminar deslocação
+    return deleteRecord('deslocacoes', id);
+  }
+  
+  // ==========================================
+  // ESTATÍSTICAS
+  // ==========================================
+  
+  async function getFormacaoStats(colaboradorId = null) {
+    const formacoes = await getFormacoes();
+    
+    let agendadas = 0;
+    let inscritos = 0;
+    let concluidas = 0;
+    let avaliacoesPendentes = 0;
+    
+    formacoes.forEach(f => {
+      if (f.estado === 'Agendada' || f.estado === 'Em Curso') agendadas++;
+      if (f.estado === 'Concluída') concluidas++;
+      
+      const inscricoesAtivas = (f.formacao_inscricoes || []).filter(i => i.estado === 'Inscrito');
+      inscritos += inscricoesAtivas.length;
+      
+      if (colaboradorId) {
+        const estaInscrito = inscricoesAtivas.some(i => i.colaborador_id === colaboradorId);
+        const jaAvaliou = (f.formacao_avaliacoes || []).some(a => a.colaborador_id === colaboradorId);
+        if (f.estado === 'Concluída' && estaInscrito && !jaAvaliou) {
+          avaliacoesPendentes++;
+        }
+      }
+    });
+    
+    return { agendadas, inscritos, concluidas, avaliacoesPendentes };
+  }
+  
+  async function getDeslocacaoStats(colaboradorId = null) {
+    const deslocacoes = await getDeslocacoes();
+    
+    let total = deslocacoes.length;
+    let pendentes = deslocacoes.filter(d => d.estado === 'Pendente Aprovação').length;
+    let aprovadas = deslocacoes.filter(d => d.estado === 'Aprovada').length;
+    let rascunhos = deslocacoes.filter(d => d.estado === 'Rascunho').length;
+    
+    return { total, pendentes, aprovadas, rascunhos };
+  }
+  
+  // ==========================================
+  // API PÚBLICA
+  // ==========================================
+  
+  return {
+    // Funções genéricas (compatíveis com Power Pages webapi)
+    retrieveMultipleRecords,
+    retrieveRecord,
+    createRecord,
+    updateRecord,
+    deleteRecord,
+    retrieveWithRelations,
+    executeBatch,
+    
+    // Colaboradores
+    getColaboradores,
+    getColaboradorById,
+    
+    // Departamentos
+    getDepartamentos,
+    
+    // Formadores
+    getFormadores,
+    
+    // Entidades Formadoras
+    getEntidadesFormadoras,
+    
+    // Frota
+    getFrota,
+    getFrotaDisponivel,
+    
+    // Tipos de Transporte
+    getTiposTransporte,
+    getTiposTransportePublico,
+    
+    // Formações
+    getFormacoes,
+    getFormacaoById,
+    createFormacao,
+    updateFormacao,
+    inscreverFormacao,
+    cancelarInscricaoFormacao,
+    toggleFavoritoFormacao,
+    registarPresenca,
+    submeterAvaliacao,
+    getFormacaoStats,
+    
+    // Deslocações
+    getDeslocacoes,
+    getDeslocacaoById,
+    createDeslocacao,
+    updateDeslocacao,
+    deleteDeslocacao,
+    getDeslocacaoStats
   };
+  
 })();
 
 // Exportar para uso global
