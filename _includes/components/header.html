@@ -50,10 +50,10 @@
         </svg>
         <span>Ver como:</span>
       </div>
-      <select class="view-as-select" id="viewAsSelect" onchange="handleViewAsChange(this.value)">
+      <select class="view-as-select" id="viewAsSelect">
         <option value="">-- Eu mesmo --</option>
       </select>
-      <button class="view-as-clear" id="viewAsClear" onclick="handleClearViewAs()" title="Voltar à minha conta" style="display: none;">
+      <button class="view-as-clear" id="viewAsClear" title="Voltar à minha conta" style="display: none;">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M6 18L18 6M6 6l12 12"/>
         </svg>
@@ -78,7 +78,7 @@
         </svg>
       </div>
       <div class="user-info">
-        <span class="user-name" id="userName">Carregando...</span>
+        <span class="user-name" id="userName">A carregar...</span>
         <span class="user-role" id="userRole"></span>
       </div>
     </div>
@@ -88,20 +88,31 @@
 <script>
 // Popula o seletor "Ver como"
 async function initViewAsSelector() {
+  // Aguardar que DataService esteja disponível
+  if (typeof DataService === 'undefined' || typeof AuthService === 'undefined') {
+    console.log('[Header] Aguardando serviços...');
+    setTimeout(initViewAsSelector, 100);
+    return;
+  }
+  
   try {
+    console.log('[Header] Inicializando...');
+    
     const realUser = await AuthService.getRealUser();
     const currentUser = await AuthService.getCurrentUser();
     
+    console.log('[Header] Utilizador atual:', currentUser?.nome);
+    
     // Atualizar info do utilizador no header
     if (currentUser) {
-      document.getElementById('userName').textContent = currentUser.nome;
+      document.getElementById('userName').textContent = currentUser.nome || 'Utilizador';
       const roles = currentUser.roles || [];
       const roleNames = roles.map(r => r.nome).join(', ');
       document.getElementById('userRole').textContent = roleNames || 'Sem role';
       
       // Iniciais no avatar
-      const initials = currentUser.nome.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
-      document.getElementById('userAvatar').innerHTML = `<span>${initials}</span>`;
+      const initials = (currentUser.nome || 'U').split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
+      document.getElementById('userAvatar').innerHTML = '<span>' + initials + '</span>';
     }
     
     // Verificar se utilizador real pode usar "Ver como" (apenas admin)
@@ -115,15 +126,28 @@ async function initViewAsSelector() {
         
         // Carregar colaboradores
         const colaboradores = await AuthService.getColaboradoresComRoles();
+        console.log('[Header] Colaboradores carregados:', colaboradores.length);
         
-        colaboradores.forEach(c => {
-          const option = document.createElement('option');
+        // Limpar opções existentes (exceto a primeira)
+        while (select.options.length > 1) {
+          select.remove(1);
+        }
+        
+        colaboradores.forEach(function(c) {
+          var option = document.createElement('option');
           option.value = c.id;
-          const roleNames = (c.roles || []).map(r => r.codigo).join(', ');
-          option.textContent = `${c.nome} (${roleNames || 'sem role'})`;
-          option.selected = (AuthService.isViewAsActive() && currentUser && c.id === currentUser.id);
+          var roleNames = (c.roles || []).map(function(r) { return r.codigo; }).join(', ');
+          option.textContent = c.nome + ' (' + (roleNames || 'sem role') + ')';
+          if (AuthService.isViewAsActive() && currentUser && c.id === currentUser.id) {
+            option.selected = true;
+          }
           select.appendChild(option);
         });
+        
+        // Adicionar event listener
+        select.onchange = function() {
+          handleViewAsChange(this.value);
+        };
         
         // Mostrar indicador se "Ver como" está ativo
         updateViewAsIndicator();
@@ -137,11 +161,19 @@ async function initViewAsSelector() {
     
     // Mostrar backoffice se utilizador atual tem permissão
     if (currentUser && AuthService.canAccessBackoffice(currentUser)) {
-      const navBackoffice = document.getElementById('navBackoffice');
+      var navBackoffice = document.getElementById('navBackoffice');
       if (navBackoffice) {
         navBackoffice.style.display = 'flex';
       }
     }
+    
+    // Setup do botão clear
+    var clearBtn = document.getElementById('viewAsClear');
+    if (clearBtn) {
+      clearBtn.onclick = handleClearViewAs;
+    }
+    
+    console.log('[Header] Inicializado com sucesso');
     
   } catch (error) {
     console.error('[Header] Erro ao inicializar:', error);
@@ -149,12 +181,12 @@ async function initViewAsSelector() {
 }
 
 function updateViewAsIndicator() {
-  const indicator = document.getElementById('viewAsIndicator');
-  const clearBtn = document.getElementById('viewAsClear');
-  const viewAsName = document.getElementById('viewAsName');
+  var indicator = document.getElementById('viewAsIndicator');
+  var clearBtn = document.getElementById('viewAsClear');
+  var viewAsName = document.getElementById('viewAsName');
   
   if (AuthService.isViewAsActive()) {
-    const viewAsUser = AuthService.getViewAsUser();
+    var viewAsUser = AuthService.getViewAsUser();
     if (viewAsUser && indicator && viewAsName) {
       indicator.style.display = 'flex';
       viewAsName.textContent = viewAsUser.nome;
