@@ -3,135 +3,186 @@ layout: default
 title: Centro de Formação
 ---
 
+<link rel="stylesheet" href="{{ '/web-files/css/formacao.css' | relative_url }}">
+
 <div class="learning-platform">
 
-  <!-- Hero Section -->
-  <section class="learning-hero">
-    <div class="hero-inner">
-      <div class="hero-content">
-        <span class="hero-eyebrow">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
-            <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+  <!-- Hero Section (Simplificado) -->
+  <section class="learning-hero" style="padding: 2rem 3rem;">
+    <div class="hero-inner" style="grid-template-columns: 1fr; text-align: center;">
+      <div class="hero-content" style="max-width: 100%;">
+        <h1 class="hero-title" style="font-size: 2rem; margin-bottom: 0;">Desenvolve as tuas <span>competências</span></h1>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats + Calendário -->
+  <section class="content-grid">
+    <!-- Stats Cards (Esquerda) -->
+    <div class="stats-column">
+      <!-- Card Principal -->
+      <div class="stat-card-main">
+        <div class="stat-card-main-content">
+          <h3>Total de Formações</h3>
+          <p id="statTotal">0</p>
+        </div>
+        <div class="stat-card-main-sub">
+          <h4>Horas de formação</h4>
+          <p id="statHoras">0h</p>
+        </div>
+      </div>
+
+      <!-- Secção: O Meu Progresso -->
+      <div class="stats-section-title">
+        <span></span>
+        O Meu Progresso
+      </div>
+      <div class="stats-row">
+        <div class="stat-card-small">
+          <h4>Concluídas</h4>
+          <p class="green" id="statConcluidas">0</p>
+        </div>
+        <div class="stat-card-small">
+          <h4>Em Curso</h4>
+          <p class="blue" id="statEmCurso">0</p>
+        </div>
+      </div>
+
+      <!-- Secção: Ações Pendentes -->
+      <div class="stats-section-title">
+        <span></span>
+        Ações Pendentes
+      </div>
+      <div class="stats-row">
+        <div class="stat-card-small">
+          <h4>Avaliações</h4>
+          <p class="orange" id="statAvaliacoes">0</p>
+        </div>
+        <div class="stat-card-small">
+          <h4>Próximas</h4>
+          <p class="purple" id="statProximas">0</p>
+        </div>
+      </div>
+
+      <!-- Secção: Obrigatórias -->
+      <div class="stats-section-title">
+        <span></span>
+        Formações Obrigatórias
+      </div>
+      <div class="stats-row">
+        <div class="stat-card-small">
+          <h4>Pendentes</h4>
+          <p class="red" id="statObrigatoriasPendentes">0</p>
+        </div>
+        <div class="stat-card-small">
+          <h4>Concluídas</h4>
+          <p class="green" id="statObrigatoriasFeitas">0</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Calendário (Direita) -->
+    <div class="calendar-column">
+      <div class="calendar-wrapper">
+        <h3 class="calendar-title">Calendário de Formações</h3>
+        
+        <div class="calendar-months">
+          <!-- Mês Anterior -->
+          <div class="calendar-month">
+            <div class="calendar-month-header">
+              <button class="calendar-nav" id="prevMonthBtn">◀</button>
+              <span id="prevMonthName">Dezembro 2025</span>
+              <span style="width: 28px;"></span>
+            </div>
+            <div class="calendar-weekdays">
+              <span>Dom</span><span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span>
+            </div>
+            <div class="calendar-days" id="prevMonthDays"></div>
+          </div>
+
+          <!-- Mês Atual -->
+          <div class="calendar-month">
+            <div class="calendar-month-header">
+              <span style="width: 28px;"></span>
+              <span id="currentMonthName">Janeiro 2026</span>
+              <button class="calendar-nav" id="nextMonthBtn">▶</button>
+            </div>
+            <div class="calendar-weekdays">
+              <span>Dom</span><span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span>
+            </div>
+            <div class="calendar-days" id="currentMonthDays"></div>
+          </div>
+        </div>
+
+        <!-- Eventos do Dia Selecionado -->
+        <div class="calendar-events">
+          <div class="calendar-events-header" onclick="toggleCalendarEvents()">
+            <div class="calendar-events-title">
+              <p id="selectedDateText">Selecione uma data</p>
+              <p id="selectedDateInfo">Clique num dia para ver eventos</p>
+            </div>
+            <svg class="calendar-expand-icon" id="calendarExpandIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M19 9l-7 7-7-7"/>
+            </svg>
+          </div>
+          <div class="calendar-events-content" id="calendarEventsContent">
+            <div id="calendarEventsList"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tabela: Minhas Formações -->
+  <section class="my-courses-section">
+    <div class="table-wrapper">
+      <div class="table-header-section">
+        <h3>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 24px; height: 24px; vertical-align: middle; margin-right: 8px;">
+            <path d="M4 19.5A2.5 2.5 0 016.5 17H20"/>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>
           </svg>
-          Centro de Formação
-        </span>
-        <h1 class="hero-title">Desenvolve as tuas <span>competências</span></h1>
-        <p class="hero-description">Explora o nosso catálogo de formações, inscreve-te nos cursos que te interessam e acompanha o teu progresso de aprendizagem.</p>
-        <div class="hero-cta">
-          <button class="hero-btn hero-btn-primary" onclick="scrollToCatalog()">
+          As Minhas Formações
+        </h3>
+        <div class="table-actions">
+          <div class="table-tabs">
+            <button class="table-tab active" data-filter="all" onclick="filterMyFormacoes('all')">Todas</button>
+            <button class="table-tab" data-filter="enrolled" onclick="filterMyFormacoes('enrolled')">Inscritas</button>
+            <button class="table-tab" data-filter="completed" onclick="filterMyFormacoes('completed')">Concluídas</button>
+          </div>
+          <div class="table-search">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <circle cx="11" cy="11" r="8"/>
               <path d="M21 21l-4.35-4.35"/>
             </svg>
-            Explorar Catálogo
-          </button>
-          <button class="hero-btn hero-btn-secondary" onclick="openMeuHistorico()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-            O Meu Histórico
-          </button>
+            <input type="text" id="searchMyFormacoes" placeholder="Pesquisar..." oninput="searchMyFormacoes()">
+          </div>
         </div>
       </div>
-      <div class="hero-stats">
-        <div class="hero-stat">
-          <div class="hero-stat-value" id="heroTotal">-</div>
-          <div class="hero-stat-label">Formações Disponíveis</div>
+
+      <div class="table-content">
+        <div class="formacoes-table-header">
+          <div>Formação</div>
+          <div>Tipo</div>
+          <div>Formador</div>
+          <div>Data</div>
+          <div>Duração</div>
+          <div>Progresso</div>
+          <div>Estado</div>
+          <div>Ações</div>
         </div>
-        <div class="hero-stat">
-          <div class="hero-stat-value" id="heroHoras">-</div>
-          <div class="hero-stat-label">Horas de Conteúdo</div>
-        </div>
-        <div class="hero-stat">
-          <div class="hero-stat-value" id="heroFormadores">-</div>
-          <div class="hero-stat-label">Formadores</div>
+        <div class="formacoes-table-body" id="myFormacoesTable">
+          <div class="table-loading">
+            <div class="spinner"></div>
+            <p>A carregar formações...</p>
+          </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Quick Stats -->
-  <section class="quick-stats">
-    <div class="quick-stat-card">
-      <div class="quick-stat-icon green">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
-          <path d="M22 4L12 14.01l-3-3"/>
-        </svg>
-      </div>
-      <div class="quick-stat-content">
-        <h3 id="statConcluidas">0</h3>
-        <p>Formações Concluídas</p>
-      </div>
-    </div>
-    <div class="quick-stat-card">
-      <div class="quick-stat-icon blue">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M4 19.5A2.5 2.5 0 016.5 17H20"/>
-          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>
-        </svg>
-      </div>
-      <div class="quick-stat-content">
-        <h3 id="statEmCurso">0</h3>
-        <p>Em Progresso</p>
-      </div>
-    </div>
-    <div class="quick-stat-card">
-      <div class="quick-stat-icon orange">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-        </svg>
-      </div>
-      <div class="quick-stat-content">
-        <h3 id="statPendentes">0</h3>
-        <p>Avaliações Pendentes</p>
-      </div>
-    </div>
-    <div class="quick-stat-card">
-      <div class="quick-stat-icon purple">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-          <line x1="16" y1="2" x2="16" y2="6"/>
-          <line x1="8" y1="2" x2="8" y2="6"/>
-          <line x1="3" y1="10" x2="21" y2="10"/>
-        </svg>
-      </div>
-      <div class="quick-stat-content">
-        <h3 id="statAgendadas">0</h3>
-        <p>Próximas Formações</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- My Learning Section -->
-  <section class="my-learning" id="myLearning">
-    <div class="section-header">
-      <h2 class="section-title">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M4 19.5A2.5 2.5 0 016.5 17H20"/>
-          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>
-        </svg>
-        A Minha Formação
-      </h2>
-      <a href="#" class="section-link" onclick="openMeuHistorico(); return false;">
-        Ver histórico completo
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M5 12h14M12 5l7 7-7 7"/>
-        </svg>
-      </a>
-    </div>
-    <div class="enrolled-scroll" id="enrolledCourses">
-      <!-- Loading state -->
-      <div class="loading-spinner">
-        <div class="spinner"></div>
-        <span class="loading-text">A carregar formações...</span>
-      </div>
-    </div>
-  </section>
-
-  <!-- Course Catalog -->
-  <section class="course-catalog" id="courseCatalog">
+  <!-- Catálogo de Formações Disponíveis -->
+  <section class="catalog-section">
     <div class="section-header">
       <h2 class="section-title">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -144,43 +195,34 @@ title: Centro de Formação
       </h2>
     </div>
 
-    <!-- Controls -->
+    <!-- Filtros -->
     <div class="catalog-controls">
       <div class="catalog-search">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="11" cy="11" r="8"/>
           <path d="M21 21l-4.35-4.35"/>
         </svg>
-        <input type="text" id="searchInput" placeholder="Pesquisar formações..." oninput="filterCourses()">
+        <input type="text" id="searchCatalog" placeholder="Pesquisar formações..." oninput="filterCatalog()">
       </div>
       <div class="catalog-filters">
-        <select class="filter-dropdown" id="filterCategoria" onchange="filterCourses()">
-          <option value="">Todas as Categorias</option>
-          <option value="Técnica">Técnica</option>
-          <option value="Soft Skills">Soft Skills</option>
-          <option value="Compliance">Compliance</option>
-          <option value="Liderança">Liderança</option>
-          <option value="Ferramentas">Ferramentas</option>
-        </select>
-        <select class="filter-dropdown" id="filterTipo" onchange="filterCourses()">
+        <select class="filter-dropdown" id="filterTipo" onchange="filterCatalog()">
           <option value="">Todos os Tipos</option>
           <option value="Interna">Interna</option>
           <option value="Externa">Externa</option>
         </select>
-        <select class="filter-dropdown" id="filterEstado" onchange="filterCourses()">
-          <option value="">Todos os Estados</option>
-          <option value="Agendada">Agendada</option>
-          <option value="Em Curso">Em Curso</option>
+        <select class="filter-dropdown" id="filterModalidade" onchange="filterCatalog()">
+          <option value="">Todas as Modalidades</option>
+          <option value="Obrigatória">Obrigatória</option>
+          <option value="Opcional">Opcional</option>
         </select>
       </div>
     </div>
 
-    <!-- Course Grid -->
+    <!-- Grid de Cursos -->
     <div class="course-grid" id="courseGrid">
-      <!-- Loading state -->
-      <div class="loading-spinner">
+      <div class="table-loading">
         <div class="spinner"></div>
-        <span class="loading-text">A carregar catálogo...</span>
+        <p>A carregar catálogo...</p>
       </div>
     </div>
 
@@ -206,28 +248,10 @@ title: Centro de Formação
       <h3 class="modal-title" id="modalCourseTitle">Detalhes da Formação</h3>
       <button class="modal-close" onclick="closeModal('modalCourse')">&times;</button>
     </div>
-    <div class="modal-body" id="modalCourseBody">
-      <!-- Populated by JS -->
-    </div>
+    <div class="modal-body" id="modalCourseBody"></div>
     <div class="modal-footer" id="modalCourseFooter">
       <button class="btn btn-secondary" onclick="closeModal('modalCourse')">Fechar</button>
       <button class="btn btn-primary" id="btnInscrever" onclick="inscreverFormacao()">Inscrever-me</button>
-    </div>
-  </div>
-</div>
-
-<!-- Modal: Histórico -->
-<div class="modal-overlay" id="modalHistorico">
-  <div class="modal-content" style="max-width: 800px;">
-    <div class="modal-header">
-      <h3 class="modal-title">O Meu Histórico de Formação</h3>
-      <button class="modal-close" onclick="closeModal('modalHistorico')">&times;</button>
-    </div>
-    <div class="modal-body" id="modalHistoricoBody">
-      <!-- Populated by JS -->
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="closeModal('modalHistorico')">Fechar</button>
     </div>
   </div>
 </div>
@@ -238,27 +262,13 @@ title: Centro de Formação
 // ==========================================
 
 let allFormacoes = [];
+let myFormacoes = [];
 let currentUser = null;
 let selectedFormacao = null;
+let currentCalendarDate = new Date();
+let formacaoEvents = {};
 
-// Inicialização
-document.addEventListener('DOMContentLoaded', async function() {
-  try {
-    // Aguardar serviços
-    await waitForServices();
-    
-    // Obter utilizador atual
-    currentUser = await AuthService.getCurrentUser();
-    console.log('[Formação] Utilizador:', currentUser?.nome);
-    
-    // Carregar dados
-    await loadFormacoes();
-    
-  } catch (error) {
-    console.error('[Formação] Erro na inicialização:', error);
-  }
-});
-
+// Aguardar serviços
 async function waitForServices() {
   return new Promise((resolve) => {
     const check = () => {
@@ -272,122 +282,200 @@ async function waitForServices() {
   });
 }
 
+// Inicialização
+document.addEventListener('DOMContentLoaded', async function() {
+  try {
+    await waitForServices();
+    currentUser = await AuthService.getCurrentUser();
+    console.log('[Formação] Utilizador:', currentUser?.nome);
+    
+    await loadFormacoes();
+    initCalendar();
+    
+  } catch (error) {
+    console.error('[Formação] Erro na inicialização:', error);
+  }
+});
+
 async function loadFormacoes() {
   try {
     allFormacoes = await DataService.getFormacoes();
     console.log('[Formação] Carregadas:', allFormacoes.length, 'formações');
     
-    // Atualizar estatísticas
+    // Filtrar minhas formações
+    if (currentUser) {
+      myFormacoes = allFormacoes.filter(f => 
+        (f.formacao_inscricoes || []).some(i => i.colaborador_id === currentUser.id && i.estado === 'Inscrito')
+      );
+    }
+    
+    // Construir eventos do calendário
+    buildCalendarEvents();
+    
+    // Atualizar UI
     updateStats();
-    
-    // Renderizar "Minha Formação" (inscrições do utilizador)
-    renderMyLearning();
-    
-    // Renderizar catálogo
+    renderMyFormacoes(myFormacoes);
     renderCatalog(allFormacoes);
+    renderCalendar();
     
   } catch (error) {
     console.error('[Formação] Erro ao carregar:', error);
-    document.getElementById('courseGrid').innerHTML = `
-      <div class="empty-state">
-        <div class="empty-state-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"/>
-            <path d="M12 8v4M12 16h.01"/>
-          </svg>
-        </div>
-        <h3>Erro ao carregar formações</h3>
-        <p>Por favor, tenta novamente mais tarde.</p>
-      </div>
-    `;
   }
 }
+
+// ==========================================
+// ESTATÍSTICAS
+// ==========================================
 
 function updateStats() {
-  const agendadas = allFormacoes.filter(f => f.estado === 'Agendada' || f.estado === 'Em Curso').length;
-  const totalHoras = allFormacoes.reduce((sum, f) => sum + (f.duracao_horas || 0), 0);
+  const total = myFormacoes.length;
+  const concluidas = myFormacoes.filter(f => f.estado === 'Concluída').length;
+  const emCurso = myFormacoes.filter(f => f.estado === 'Em Curso' || f.estado === 'Agendada').length;
+  const horas = myFormacoes.reduce((sum, f) => sum + (f.duracao_horas || 0), 0);
   
-  // Hero stats
-  document.getElementById('heroTotal').textContent = allFormacoes.length;
-  document.getElementById('heroHoras').textContent = totalHoras + 'h';
-  document.getElementById('heroFormadores').textContent = [...new Set(allFormacoes.map(f => f.formador_id).filter(Boolean))].length;
+  const avaliacoesPendentes = myFormacoes.filter(f => {
+    const jaAvaliou = (f.formacao_avaliacoes || []).some(a => a.colaborador_id === currentUser?.id);
+    return f.estado === 'Concluída' && !jaAvaliou;
+  }).length;
   
-  // User stats
-  if (currentUser) {
-    const minhasInscricoes = allFormacoes.filter(f => 
-      (f.formacao_inscricoes || []).some(i => i.colaborador_id === currentUser.id && i.estado === 'Inscrito')
-    );
-    const concluidas = minhasInscricoes.filter(f => f.estado === 'Concluída').length;
-    const emCurso = minhasInscricoes.filter(f => f.estado === 'Em Curso' || f.estado === 'Agendada').length;
-    const pendentes = minhasInscricoes.filter(f => {
-      const jaAvaliou = (f.formacao_avaliacoes || []).some(a => a.colaborador_id === currentUser.id);
-      return f.estado === 'Concluída' && !jaAvaliou;
-    }).length;
-    
-    document.getElementById('statConcluidas').textContent = concluidas;
-    document.getElementById('statEmCurso').textContent = emCurso;
-    document.getElementById('statPendentes').textContent = pendentes;
-    document.getElementById('statAgendadas').textContent = agendadas;
-  }
+  const proximas = myFormacoes.filter(f => {
+    const sessoes = f.formacao_sessoes || [];
+    const proximaSessao = sessoes.find(s => new Date(s.data) >= new Date());
+    return proximaSessao && (f.estado === 'Agendada' || f.estado === 'Em Curso');
+  }).length;
+  
+  // Obrigatórias
+  const obrigatorias = allFormacoes.filter(f => f.modalidade === 'Obrigatória');
+  const obrigatoriasFeitas = myFormacoes.filter(f => f.modalidade === 'Obrigatória' && f.estado === 'Concluída').length;
+  const obrigatoriasPendentes = obrigatorias.length - obrigatoriasFeitas;
+  
+  document.getElementById('statTotal').textContent = total;
+  document.getElementById('statHoras').textContent = horas + 'h';
+  document.getElementById('statConcluidas').textContent = concluidas;
+  document.getElementById('statEmCurso').textContent = emCurso;
+  document.getElementById('statAvaliacoes').textContent = avaliacoesPendentes;
+  document.getElementById('statProximas').textContent = proximas;
+  document.getElementById('statObrigatoriasPendentes').textContent = obrigatoriasPendentes > 0 ? obrigatoriasPendentes : 0;
+  document.getElementById('statObrigatoriasFeitas').textContent = obrigatoriasFeitas;
 }
 
-function renderMyLearning() {
-  const container = document.getElementById('enrolledCourses');
+// ==========================================
+// TABELA MINHAS FORMAÇÕES
+// ==========================================
+
+function renderMyFormacoes(formacoes) {
+  const tbody = document.getElementById('myFormacoesTable');
   
   if (!currentUser) {
-    container.innerHTML = '<p style="color: #64748b; padding: 2rem;">Faça login para ver as suas formações.</p>';
+    tbody.innerHTML = '<div class="table-empty"><p>Faça login para ver as suas formações.</p></div>';
     return;
   }
   
-  const minhasFormacoes = allFormacoes.filter(f => 
-    (f.formacao_inscricoes || []).some(i => i.colaborador_id === currentUser.id && i.estado === 'Inscrito')
-  );
-  
-  if (minhasFormacoes.length === 0) {
-    container.innerHTML = `
-      <div style="padding: 2rem; text-align: center; color: #64748b; width: 100%;">
-        <p>Ainda não estás inscrito em nenhuma formação.</p>
-        <button class="hero-btn hero-btn-primary" onclick="scrollToCatalog()" style="margin-top: 1rem;">Explorar Catálogo</button>
+  if (formacoes.length === 0) {
+    tbody.innerHTML = `
+      <div class="table-empty">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 48px; height: 48px; color: #94a3b8; margin-bottom: 1rem;">
+          <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+          <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+        </svg>
+        <p>Ainda não está inscrito em nenhuma formação.</p>
+        <button class="btn btn-primary" onclick="document.getElementById('courseGrid').scrollIntoView({behavior:'smooth'})">Explorar Catálogo</button>
       </div>
     `;
     return;
   }
   
-  container.innerHTML = minhasFormacoes.map(f => {
-    const categoria = getCategoriaClass(f.titulo);
-    const progresso = f.estado === 'Concluída' ? 100 : (f.estado === 'Em Curso' ? 50 : 0);
+  tbody.innerHTML = formacoes.map(f => {
     const formador = f.formadores?.nome || 'Formador interno';
+    const sessoes = (f.formacao_sessoes || []).sort((a, b) => new Date(a.data) - new Date(b.data));
+    const primeiraSessao = sessoes[0];
+    const dataStr = primeiraSessao ? formatDate(primeiraSessao.data) : 'A definir';
+    
+    // Progresso
+    let progresso = 0;
+    let progressoClass = '';
+    if (f.estado === 'Concluída') {
+      progresso = 100;
+      progressoClass = 'complete';
+    } else if (f.estado === 'Em Curso') {
+      progresso = 50;
+      progressoClass = 'in-progress';
+    }
+    
+    // Estado badge
+    const estadoClass = getEstadoClass(f.estado);
     
     return `
-      <div class="enrolled-card" onclick="openCourseDetails('${f.id}')">
-        <div class="enrolled-card-image ${categoria}">
-          ${getCategoriaIcon(categoria)}
+      <div class="formacoes-table-row" onclick="openCourseDetails('${f.id}')">
+        <div class="formacao-title-cell">
+          <strong>${f.titulo}</strong>
+          ${f.modalidade === 'Obrigatória' ? '<span class="badge-mandatory">Obrigatória</span>' : ''}
         </div>
-        <div class="enrolled-card-content">
-          <span class="enrolled-card-category">${f.tipo || 'Formação'}</span>
-          <h3 class="enrolled-card-title">${f.titulo}</h3>
-          <p class="enrolled-card-meta">${formador}</p>
-          <div class="enrolled-card-progress">
-            <div class="progress-header">
-              <span class="progress-label">${f.estado}</span>
-              <span class="progress-value">${progresso}%</span>
-            </div>
-            <div class="progress-bar">
-              <div class="progress-fill" style="width: ${progresso}%"></div>
-            </div>
+        <div>${f.tipo || '-'}</div>
+        <div>${formador}</div>
+        <div>${dataStr}</div>
+        <div>${f.duracao_horas || 0}h</div>
+        <div>
+          <div class="progress-mini">
+            <div class="progress-mini-bar ${progressoClass}" style="width: ${progresso}%"></div>
           </div>
-          <button class="enrolled-card-action">Continuar</button>
+          <span class="progress-text">${progresso}%</span>
+        </div>
+        <div><span class="status-badge ${estadoClass}">${f.estado}</span></div>
+        <div>
+          <button class="btn-action" onclick="event.stopPropagation(); openCourseDetails('${f.id}')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          </button>
         </div>
       </div>
     `;
   }).join('');
 }
 
+function filterMyFormacoes(filter) {
+  document.querySelectorAll('.table-tab').forEach(t => t.classList.remove('active'));
+  document.querySelector(`[data-filter="${filter}"]`).classList.add('active');
+  
+  let filtered = myFormacoes;
+  if (filter === 'enrolled') {
+    filtered = myFormacoes.filter(f => f.estado === 'Agendada' || f.estado === 'Em Curso');
+  } else if (filter === 'completed') {
+    filtered = myFormacoes.filter(f => f.estado === 'Concluída');
+  }
+  
+  renderMyFormacoes(filtered);
+}
+
+function searchMyFormacoes() {
+  const term = document.getElementById('searchMyFormacoes').value.toLowerCase();
+  const filtered = myFormacoes.filter(f => 
+    f.titulo.toLowerCase().includes(term) ||
+    (f.formadores?.nome || '').toLowerCase().includes(term)
+  );
+  renderMyFormacoes(filtered);
+}
+
+function getEstadoClass(estado) {
+  const classes = {
+    'Agendada': 'status-scheduled',
+    'Em Curso': 'status-progress',
+    'Concluída': 'status-complete',
+    'Cancelada': 'status-cancelled'
+  };
+  return classes[estado] || '';
+}
+
+// ==========================================
+// CATÁLOGO
+// ==========================================
+
 function renderCatalog(formacoes) {
   const grid = document.getElementById('courseGrid');
   const empty = document.getElementById('emptyState');
   
-  // Filtrar apenas formações disponíveis para inscrição
   const disponiveis = formacoes.filter(f => f.estado === 'Agendada' || f.estado === 'Em Curso');
   
   if (disponiveis.length === 0) {
@@ -404,23 +492,18 @@ function renderCatalog(formacoes) {
     const formador = f.formadores?.nome || 'Formador interno';
     const inscritos = (f.formacao_inscricoes || []).filter(i => i.estado === 'Inscrito').length;
     const vagas = f.max_participantes || 20;
-    const vagasDisponiveis = vagas - inscritos;
     
-    // Verificar se utilizador já está inscrito
     const jaInscrito = currentUser && (f.formacao_inscricoes || []).some(
       i => i.colaborador_id === currentUser.id && i.estado === 'Inscrito'
     );
     
-    // Verificar se é favorito
     const favorito = currentUser && (f.formacao_favoritos || []).some(
       fav => fav.colaborador_id === currentUser.id
     );
     
-    // Primeira sessão
     const primeiraSessao = (f.formacao_sessoes || []).sort((a, b) => new Date(a.data) - new Date(b.data))[0];
     const dataInicio = primeiraSessao ? formatDate(primeiraSessao.data) : 'A definir';
     
-    // Badges
     let badges = '';
     if (f.modalidade === 'Obrigatória') badges += '<span class="course-badge mandatory">Obrigatória</span>';
     if (isNew(f.created_at)) badges += '<span class="course-badge new">Nova</span>';
@@ -440,36 +523,24 @@ function renderCatalog(formacoes) {
           <span class="course-card-category">${f.tipo || 'Formação'}</span>
           <h3 class="course-card-title">${f.titulo}</h3>
           <p class="course-card-instructor">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
-              <circle cx="12" cy="7" r="4"/>
-            </svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
             ${formador}
           </p>
           <div class="course-card-meta">
             <span class="course-meta-item">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="10"/>
-                <polyline points="12 6 12 12 16 14"/>
-              </svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
               ${f.duracao_horas || 0}h
             </span>
             <span class="course-meta-item">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
-                <circle cx="9" cy="7" r="4"/>
-              </svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
               ${inscritos}/${vagas}
             </span>
-            ${getAverageRating(f)}
           </div>
           <div class="course-card-footer">
-            <span class="course-card-date">
-              <strong>${dataInicio}</strong>
-            </span>
+            <span class="course-card-date"><strong>${dataInicio}</strong></span>
             ${jaInscrito 
               ? '<button class="course-card-cta enrolled">Inscrito</button>'
-              : vagasDisponiveis <= 0
+              : inscritos >= vagas
                 ? '<button class="course-card-cta full">Esgotado</button>'
                 : '<button class="course-card-cta enroll">Inscrever</button>'
             }
@@ -480,30 +551,148 @@ function renderCatalog(formacoes) {
   }).join('');
 }
 
-function filterCourses() {
-  const search = document.getElementById('searchInput').value.toLowerCase();
-  const categoria = document.getElementById('filterCategoria').value;
+function filterCatalog() {
+  const search = document.getElementById('searchCatalog').value.toLowerCase();
   const tipo = document.getElementById('filterTipo').value;
-  const estado = document.getElementById('filterEstado').value;
+  const modalidade = document.getElementById('filterModalidade').value;
   
   let filtered = allFormacoes;
   
   if (search) {
-    filtered = filtered.filter(f => 
-      f.titulo.toLowerCase().includes(search) ||
-      (f.objetivo || '').toLowerCase().includes(search)
-    );
+    filtered = filtered.filter(f => f.titulo.toLowerCase().includes(search));
   }
-  
   if (tipo) {
     filtered = filtered.filter(f => f.tipo === tipo);
   }
-  
-  if (estado) {
-    filtered = filtered.filter(f => f.estado === estado);
+  if (modalidade) {
+    filtered = filtered.filter(f => f.modalidade === modalidade);
   }
   
   renderCatalog(filtered);
+}
+
+// ==========================================
+// CALENDÁRIO
+// ==========================================
+
+function buildCalendarEvents() {
+  formacaoEvents = {};
+  
+  allFormacoes.forEach(f => {
+    const sessoes = f.formacao_sessoes || [];
+    sessoes.forEach(s => {
+      if (s.data) {
+        const dateKey = s.data.split('T')[0];
+        if (!formacaoEvents[dateKey]) {
+          formacaoEvents[dateKey] = [];
+        }
+        formacaoEvents[dateKey].push({
+          formacaoId: f.id,
+          titulo: f.titulo,
+          hora: s.hora_inicio || '09:00',
+          tipo: f.tipo
+        });
+      }
+    });
+  });
+}
+
+function initCalendar() {
+  document.getElementById('prevMonthBtn').addEventListener('click', () => {
+    currentCalendarDate.setMonth(currentCalendarDate.getMonth() - 1);
+    renderCalendar();
+  });
+  
+  document.getElementById('nextMonthBtn').addEventListener('click', () => {
+    currentCalendarDate.setMonth(currentCalendarDate.getMonth() + 1);
+    renderCalendar();
+  });
+}
+
+function renderCalendar() {
+  const months = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 
+                  'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+  
+  const currentMonth = currentCalendarDate.getMonth();
+  const currentYear = currentCalendarDate.getFullYear();
+  
+  // Mês anterior
+  const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+  const prevYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+  document.getElementById('prevMonthName').textContent = `${months[prevMonth]} ${prevYear}`;
+  renderMonthDays('prevMonthDays', prevYear, prevMonth);
+  
+  // Mês atual
+  document.getElementById('currentMonthName').textContent = `${months[currentMonth]} ${currentYear}`;
+  renderMonthDays('currentMonthDays', currentYear, currentMonth);
+}
+
+function renderMonthDays(containerId, year, month) {
+  const container = document.getElementById(containerId);
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const today = new Date();
+  
+  let html = '';
+  
+  // Dias vazios no início
+  for (let i = 0; i < firstDay; i++) {
+    html += '<div class="calendar-day other-month"></div>';
+  }
+  
+  // Dias do mês
+  for (let day = 1; day <= daysInMonth; day++) {
+    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    const hasEvents = formacaoEvents[dateStr] && formacaoEvents[dateStr].length > 0;
+    const isToday = day === today.getDate() && month === today.getMonth() && year === today.getFullYear();
+    
+    let classes = 'calendar-day';
+    if (isToday) classes += ' today';
+    if (hasEvents) classes += ' has-events';
+    
+    html += `<div class="${classes}" onclick="selectCalendarDate('${dateStr}')" data-date="${dateStr}">${day}</div>`;
+  }
+  
+  container.innerHTML = html;
+}
+
+function selectCalendarDate(dateStr) {
+  // Remover seleção anterior
+  document.querySelectorAll('.calendar-day.active').forEach(el => el.classList.remove('active'));
+  
+  // Adicionar seleção
+  document.querySelectorAll(`[data-date="${dateStr}"]`).forEach(el => el.classList.add('active'));
+  
+  // Mostrar eventos
+  const events = formacaoEvents[dateStr] || [];
+  const dateParts = dateStr.split('-');
+  const dateObj = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
+  const formattedDate = dateObj.toLocaleDateString('pt-PT', { day: 'numeric', month: 'long' });
+  
+  document.getElementById('selectedDateText').textContent = formattedDate;
+  document.getElementById('selectedDateInfo').textContent = events.length > 0 ? `${events.length} formação(ões)` : 'Sem formações neste dia';
+  
+  const eventsList = document.getElementById('calendarEventsList');
+  if (events.length === 0) {
+    eventsList.innerHTML = '<div class="no-events">Sem formações agendadas para este dia.</div>';
+  } else {
+    eventsList.innerHTML = events.map(e => `
+      <div class="event-item" onclick="openCourseDetails('${e.formacaoId}')">
+        <div class="event-time">${e.hora}</div>
+        <div class="event-title">${e.titulo}</div>
+        <div class="event-type">${e.tipo || 'Formação'}</div>
+      </div>
+    `).join('');
+  }
+  
+  // Expandir
+  document.getElementById('calendarEventsContent').classList.add('expanded');
+  document.getElementById('calendarExpandIcon').classList.add('expanded');
+}
+
+function toggleCalendarEvents() {
+  document.getElementById('calendarEventsContent').classList.toggle('expanded');
+  document.getElementById('calendarExpandIcon').classList.toggle('expanded');
 }
 
 // ==========================================
@@ -512,22 +701,19 @@ function filterCourses() {
 
 function getCategoriaClass(titulo) {
   titulo = (titulo || '').toLowerCase();
-  if (titulo.includes('excel') || titulo.includes('power') || titulo.includes('python') || titulo.includes('sql')) return 'tech';
+  if (titulo.includes('excel') || titulo.includes('power') || titulo.includes('python')) return 'tech';
   if (titulo.includes('liderança') || titulo.includes('gestão')) return 'leadership';
   if (titulo.includes('comunicação') || titulo.includes('soft')) return 'soft';
-  if (titulo.includes('segurança') || titulo.includes('compliance') || titulo.includes('rgpd')) return 'compliance';
-  if (titulo.includes('negociação') || titulo.includes('vendas')) return 'business';
+  if (titulo.includes('segurança') || titulo.includes('compliance')) return 'compliance';
   return 'tech';
 }
 
 function getCategoriaIcon(categoria) {
   const icons = {
     tech: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>',
-    business: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>',
-    soft: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>',
-    compliance: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
     leadership: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
-    security: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>'
+    soft: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>',
+    compliance: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>'
   };
   return icons[categoria] || icons.tech;
 }
@@ -541,37 +727,13 @@ function formatDate(dateStr) {
 function isNew(createdAt) {
   if (!createdAt) return false;
   const created = new Date(createdAt);
-  const now = new Date();
-  const diffDays = (now - created) / (1000 * 60 * 60 * 24);
+  const diffDays = (new Date() - created) / (1000 * 60 * 60 * 24);
   return diffDays < 30;
-}
-
-function getAverageRating(formacao) {
-  const avaliacoes = formacao.formacao_avaliacoes || [];
-  if (avaliacoes.length === 0) return '';
-  
-  const avg = avaliacoes.reduce((sum, a) => {
-    return sum + ((a.score_conteudo + a.score_formador + a.score_organizacao) / 3);
-  }, 0) / avaliacoes.length;
-  
-  return `
-    <span class="course-card-rating">
-      <svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2">
-        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-      </svg>
-      <span>${avg.toFixed(1)}</span>
-      <small>(${avaliacoes.length})</small>
-    </span>
-  `;
 }
 
 // ==========================================
 // ACTIONS
 // ==========================================
-
-function scrollToCatalog() {
-  document.getElementById('courseCatalog').scrollIntoView({ behavior: 'smooth' });
-}
 
 async function openCourseDetails(formacaoId) {
   selectedFormacao = allFormacoes.find(f => f.id === formacaoId);
@@ -622,28 +784,21 @@ async function openCourseDetails(formacaoId) {
     ${sessoes.length > 0 ? `
       <div>
         <h4 style="font-size: 0.875rem; font-weight: 600; color: #1e293b; margin-bottom: 0.75rem;">Sessões</h4>
-        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-          ${sessoes.map(s => `
-            <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem; background: #f8fafc; border-radius: 8px;">
-              <div style="width: 40px; height: 40px; background: #00b276; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white;">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px;">
-                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                  <line x1="16" y1="2" x2="16" y2="6"/>
-                  <line x1="8" y1="2" x2="8" y2="6"/>
-                </svg>
-              </div>
-              <div>
-                <div style="font-weight: 600; color: #1e293b;">${new Date(s.data).toLocaleDateString('pt-PT', { weekday: 'long', day: 'numeric', month: 'long' })}</div>
-                <div style="font-size: 0.75rem; color: #64748b;">${s.hora_inicio || '09:00'} - ${s.hora_fim || '18:00'}</div>
-              </div>
+        ${sessoes.map(s => `
+          <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem; background: #f8fafc; border-radius: 8px; margin-bottom: 0.5rem;">
+            <div style="width: 40px; height: 40px; background: #00b276; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
             </div>
-          `).join('')}
-        </div>
+            <div>
+              <div style="font-weight: 600; color: #1e293b;">${new Date(s.data).toLocaleDateString('pt-PT', { weekday: 'long', day: 'numeric', month: 'long' })}</div>
+              <div style="font-size: 0.75rem; color: #64748b;">${s.hora_inicio || '09:00'} - ${s.hora_fim || '18:00'}</div>
+            </div>
+          </div>
+        `).join('')}
       </div>
     ` : ''}
   `;
   
-  // Atualizar botão de inscrição
   const btnInscrever = document.getElementById('btnInscrever');
   if (jaInscrito) {
     btnInscrever.textContent = 'Já Inscrito';
@@ -688,58 +843,6 @@ async function toggleFavorite(event, formacaoId) {
   }
 }
 
-function openMeuHistorico() {
-  if (!currentUser) {
-    showToast('Faça login para ver o histórico', 'warning');
-    return;
-  }
-  
-  const minhasFormacoes = allFormacoes.filter(f => 
-    (f.formacao_inscricoes || []).some(i => i.colaborador_id === currentUser.id)
-  );
-  
-  const concluidas = minhasFormacoes.filter(f => f.estado === 'Concluída');
-  const totalHoras = concluidas.reduce((sum, f) => sum + (f.duracao_horas || 0), 0);
-  
-  document.getElementById('modalHistoricoBody').innerHTML = `
-    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem;">
-      <div style="text-align: center; padding: 1.5rem; background: #f8fafc; border-radius: 12px;">
-        <div style="font-size: 2rem; font-weight: 700; color: #00b276;">${minhasFormacoes.length}</div>
-        <div style="font-size: 0.875rem; color: #64748b;">Total Formações</div>
-      </div>
-      <div style="text-align: center; padding: 1.5rem; background: #f8fafc; border-radius: 12px;">
-        <div style="font-size: 2rem; font-weight: 700; color: #3b82f6;">${totalHoras}h</div>
-        <div style="font-size: 0.875rem; color: #64748b;">Horas de Formação</div>
-      </div>
-      <div style="text-align: center; padding: 1.5rem; background: #f8fafc; border-radius: 12px;">
-        <div style="font-size: 2rem; font-weight: 700; color: #8b5cf6;">${concluidas.length}</div>
-        <div style="font-size: 0.875rem; color: #64748b;">Certificados</div>
-      </div>
-    </div>
-    
-    <h4 style="font-size: 1rem; font-weight: 600; margin-bottom: 1rem;">As Minhas Formações</h4>
-    ${minhasFormacoes.length > 0 ? `
-      <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-        ${minhasFormacoes.map(f => `
-          <div style="display: flex; align-items: center; justify-content: space-between; padding: 1rem; background: #f8fafc; border-radius: 10px;">
-            <div>
-              <div style="font-weight: 600; color: #1e293b;">${f.titulo}</div>
-              <div style="font-size: 0.75rem; color: #64748b;">${f.duracao_horas || 0}h • ${f.tipo || 'Formação'}</div>
-            </div>
-            <span style="padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.7rem; font-weight: 600; background: ${f.estado === 'Concluída' ? '#d1fae5' : '#dbeafe'}; color: ${f.estado === 'Concluída' ? '#065f46' : '#1e40af'};">${f.estado}</span>
-          </div>
-        `).join('')}
-      </div>
-    ` : '<p style="color: #64748b; text-align: center;">Ainda não tem formações registadas.</p>'}
-  `;
-  
-  document.getElementById('modalHistorico').classList.add('show');
-}
-
-// ==========================================
-// MODALS & UTILS
-// ==========================================
-
 function closeModal(modalId) {
   document.getElementById(modalId).classList.remove('show');
 }
@@ -764,12 +867,9 @@ function showToast(message, type = 'success') {
   }, 3000);
 }
 
-// Close modals on overlay click
 document.querySelectorAll('.modal-overlay').forEach(modal => {
   modal.addEventListener('click', function(e) {
-    if (e.target === this) {
-      this.classList.remove('show');
-    }
+    if (e.target === this) this.classList.remove('show');
   });
 });
 </script>
