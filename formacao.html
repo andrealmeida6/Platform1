@@ -7,134 +7,249 @@ title: Centro de Formação
 
 <div class="learning-platform">
 
-  <!-- Hero Section (Simplificado) -->
-  <section class="learning-hero" style="padding: 2rem 3rem;">
-    <div class="hero-inner" style="grid-template-columns: 1fr; text-align: center;">
-      <div class="hero-content" style="max-width: 100%;">
-        <h1 class="hero-title" style="font-size: 2rem; margin-bottom: 0;">Desenvolve as tuas <span>competências</span></h1>
-      </div>
-    </div>
-  </section>
-
-  <!-- Stats + Calendário -->
-  <section class="content-grid">
-    <!-- Stats Cards (Esquerda) -->
-    <div class="stats-column">
-      <!-- Card Principal -->
-      <div class="stat-card-main">
-        <div class="stat-card-main-content">
-          <h3>Total de Formações</h3>
-          <p id="statTotal">0</p>
-        </div>
-        <div class="stat-card-main-sub">
-          <h4>Horas de formação</h4>
-          <p id="statHoras">0h</p>
-        </div>
-      </div>
-
-      <!-- Secção: O Meu Progresso -->
-      <div class="stats-section-title">
-        <span></span>
-        O Meu Progresso
-      </div>
-      <div class="stats-row">
-        <div class="stat-card-small">
-          <h4>Concluídas</h4>
-          <p class="green" id="statConcluidas">0</p>
-        </div>
-        <div class="stat-card-small">
-          <h4>Em Curso</h4>
-          <p class="blue" id="statEmCurso">0</p>
-        </div>
-      </div>
-
-      <!-- Secção: Ações Pendentes -->
-      <div class="stats-section-title">
-        <span></span>
-        Ações Pendentes
-      </div>
-      <div class="stats-row">
-        <div class="stat-card-small">
-          <h4>Avaliações</h4>
-          <p class="orange" id="statAvaliacoes">0</p>
-        </div>
-        <div class="stat-card-small">
-          <h4>Próximas</h4>
-          <p class="purple" id="statProximas">0</p>
-        </div>
-      </div>
-
-      <!-- Secção: Obrigatórias -->
-      <div class="stats-section-title">
-        <span></span>
-        Formações Obrigatórias
-      </div>
-      <div class="stats-row">
-        <div class="stat-card-small">
-          <h4>Pendentes</h4>
-          <p class="red" id="statObrigatoriasPendentes">0</p>
-        </div>
-        <div class="stat-card-small">
-          <h4>Concluídas</h4>
-          <p class="green" id="statObrigatoriasFeitas">0</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- Calendário (Direita) -->
-    <div class="calendar-column">
-      <div class="calendar-wrapper">
-        <h3 class="calendar-title">Calendário de Formações</h3>
-        
-        <div class="calendar-months">
-          <!-- Mês Anterior -->
-          <div class="calendar-month">
-            <div class="calendar-month-header">
-              <button class="calendar-nav" id="prevMonthBtn">◀</button>
-              <span id="prevMonthName">Dezembro 2025</span>
-              <span style="width: 28px;"></span>
-            </div>
-            <div class="calendar-weekdays">
-              <span>Dom</span><span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span>
-            </div>
-            <div class="calendar-days" id="prevMonthDays"></div>
-          </div>
-
-          <!-- Mês Atual -->
-          <div class="calendar-month">
-            <div class="calendar-month-header">
-              <span style="width: 28px;"></span>
-              <span id="currentMonthName">Janeiro 2026</span>
-              <button class="calendar-nav" id="nextMonthBtn">▶</button>
-            </div>
-            <div class="calendar-weekdays">
-              <span>Dom</span><span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span>
-            </div>
-            <div class="calendar-days" id="currentMonthDays"></div>
-          </div>
-        </div>
-
-        <!-- Eventos do Dia Selecionado -->
-        <div class="calendar-events">
-          <div class="calendar-events-header" onclick="toggleCalendarEvents()">
-            <div class="calendar-events-title">
-              <p id="selectedDateText">Selecione uma data</p>
-              <p id="selectedDateInfo">Clique num dia para ver eventos</p>
-            </div>
-            <svg class="calendar-expand-icon" id="calendarExpandIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M19 9l-7 7-7-7"/>
+  <!-- Hero Section (Original layout, sem badge/descrição/counters) -->
+  <section class="learning-hero">
+    <div class="hero-inner">
+      <div class="hero-content">
+        <h1 class="hero-title">Desenvolve as tuas <span>competências</span></h1>
+        <div class="hero-cta">
+          <button class="hero-btn hero-btn-primary" onclick="scrollToCatalog()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"/>
+              <path d="M21 21l-4.35-4.35"/>
             </svg>
+            Explorar Catálogo
+          </button>
+          <button class="hero-btn hero-btn-secondary" onclick="scrollToMinhasFormacoes()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            As Minhas Formações
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Quick Stats -->
+  <section class="quick-stats">
+    <div class="quick-stat-card">
+      <div class="quick-stat-icon green">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+          <path d="M22 4L12 14.01l-3-3"/>
+        </svg>
+      </div>
+      <div class="quick-stat-content">
+        <h3 id="statConcluidas">0</h3>
+        <p>Formações Concluídas</p>
+      </div>
+    </div>
+    <div class="quick-stat-card">
+      <div class="quick-stat-icon blue">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M4 19.5A2.5 2.5 0 016.5 17H20"/>
+          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>
+        </svg>
+      </div>
+      <div class="quick-stat-content">
+        <h3 id="statEmCurso">0</h3>
+        <p>Em Progresso</p>
+      </div>
+    </div>
+    <div class="quick-stat-card">
+      <div class="quick-stat-icon orange">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+        </svg>
+      </div>
+      <div class="quick-stat-content">
+        <h3 id="statPendentes">0</h3>
+        <p>Avaliações Pendentes</p>
+      </div>
+    </div>
+    <div class="quick-stat-card">
+      <div class="quick-stat-icon purple">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+          <line x1="16" y1="2" x2="16" y2="6"/>
+          <line x1="8" y1="2" x2="8" y2="6"/>
+          <line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>
+      </div>
+      <div class="quick-stat-content">
+        <h3 id="statAgendadas">0</h3>
+        <p>Próximas Formações</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Calendário de Formações (mesmo estilo da homepage) -->
+  <section class="calendar-section" id="formacaoCalendarSection">
+    <div class="calendar-cards">
+      <div class="calendar-card green">
+        <div class="calendar-card-label">Total Disponíveis</div>
+        <div class="calendar-card-number" id="calCardTotal">0</div>
+        <div class="calendar-card-info" id="calCardTotalInfo">formações ativas</div>
+      </div>
+
+      <div class="calendar-card blue">
+        <div class="calendar-card-label">Minhas Inscrições</div>
+        <div class="calendar-card-number" id="calCardInscritas">0</div>
+        <div class="calendar-card-info" id="calCardInscritasInfo">formações inscritas</div>
+      </div>
+
+      <div class="calendar-card orange">
+        <div class="calendar-card-label">Próxima Formação</div>
+        <div class="calendar-card-number" id="calCardProxima">-</div>
+        <div class="calendar-card-info" id="calCardProximaInfo">a definir</div>
+      </div>
+
+      <div class="calendar-card purple">
+        <div class="calendar-card-label">Horas Totais</div>
+        <div class="calendar-card-number" id="calCardHoras">0h</div>
+        <div class="calendar-card-info" id="calCardHorasInfo">de formação</div>
+      </div>
+    </div>
+
+    <button class="calendar-toggle-btn" id="calendarToggleBtn" onclick="toggleFormacaoCalendar()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="6 9 12 15 18 9"/>
+      </svg>
+      Ver Calendário de Formações
+    </button>
+
+    <!-- Collapsible Calendar Section -->
+    <div class="calendar-collapsible" id="formacaoCalendarCollapsible">
+      <div class="calendar-wrapper">
+        <!-- Dual Calendar -->
+        <div class="dual-calendar-container">
+          <!-- Minimal Legend -->
+          <div class="calendar-legend-minimal">
+            <span class="legend-dot formacao" title="Formação"></span>
+            <span class="legend-text">Formações agendadas</span>
           </div>
-          <div class="calendar-events-content" id="calendarEventsContent">
-            <div id="calendarEventsList"></div>
+          
+          <div class="months-container">
+            <!-- Current Month -->
+            <div class="calendar-month">
+              <div class="month-header">
+                <button class="nav-arrow" id="formacaoPrevMonth">◀</button>
+                <span id="formacaoCurrentMonthName">Janeiro 2026</span>
+                <span style="width: 28px;"></span>
+              </div>
+              
+              <div class="calendar-grid days">
+                <p>D</p><p>S</p><p>T</p><p>Q</p><p>Q</p><p>S</p><p>S</p>
+              </div>
+              
+              <div class="calendar-grid" id="formacaoCurrentMonthGrid"></div>
+            </div>
+
+            <!-- Next Month -->
+            <div class="calendar-month">
+              <div class="month-header">
+                <span style="width: 28px;"></span>
+                <span id="formacaoNextMonthName">Fevereiro 2026</span>
+                <button class="nav-arrow" id="formacaoNextMonth">▶</button>
+              </div>
+              
+              <div class="calendar-grid days">
+                <p>D</p><p>S</p><p>T</p><p>Q</p><p>Q</p><p>S</p><p>S</p>
+              </div>
+              
+              <div class="calendar-grid" id="formacaoNextMonthGrid"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Info Panel (Events Only) -->
+        <div class="info-panel">
+          <div class="events-panel">
+            <div class="events-header">
+              <div>
+                <h3 class="events-title" id="formacaoEventsTitle">Próximas Formações</h3>
+                <span class="selected-date-info" id="formacaoSelectedDateInfo" style="display: none;"></span>
+              </div>
+              <button class="clear-filter-btn" id="formacaoClearFilterBtn" aria-label="Limpar filtro" style="display: none;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+                Limpar
+              </button>
+            </div>
+            
+            <div class="events-container-scroll" id="formacaoEventsContainer">
+              <!-- Events will be populated by JavaScript -->
+            </div>
           </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Tabela: Minhas Formações -->
-  <section class="my-courses-section">
+  <!-- Course Catalog -->
+  <section class="course-catalog" id="courseCatalog">
+    <div class="section-header">
+      <h2 class="section-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="7"/>
+          <rect x="14" y="3" width="7" height="7"/>
+          <rect x="14" y="14" width="7" height="7"/>
+          <rect x="3" y="14" width="7" height="7"/>
+        </svg>
+        Catálogo de Formações
+      </h2>
+    </div>
+
+    <!-- Controls -->
+    <div class="catalog-controls">
+      <div class="catalog-search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/>
+          <path d="M21 21l-4.35-4.35"/>
+        </svg>
+        <input type="text" id="searchInput" placeholder="Pesquisar formações..." oninput="filterCourses()">
+      </div>
+      <div class="catalog-filters">
+        <select class="filter-dropdown" id="filterTipo" onchange="filterCourses()">
+          <option value="">Todos os Tipos</option>
+          <option value="Interna">Interna</option>
+          <option value="Externa">Externa</option>
+        </select>
+        <select class="filter-dropdown" id="filterModalidade" onchange="filterCourses()">
+          <option value="">Todas as Modalidades</option>
+          <option value="Obrigatória">Obrigatória</option>
+          <option value="Opcional">Opcional</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Course Grid -->
+    <div class="course-grid" id="courseGrid">
+      <!-- Loading state -->
+      <div class="loading-spinner">
+        <div class="spinner"></div>
+        <span class="loading-text">A carregar catálogo...</span>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" id="emptyState" style="display: none;">
+      <div class="empty-state-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/>
+          <path d="M21 21l-4.35-4.35"/>
+        </svg>
+      </div>
+      <h3>Nenhuma formação encontrada</h3>
+      <p>Tenta ajustar os filtros de pesquisa</p>
+    </div>
+  </section>
+
+  <!-- Tabela: Minhas Formações (depois do catálogo) -->
+  <section class="my-courses-section" id="minhasFormacoes">
     <div class="table-wrapper">
       <div class="table-header-section">
         <h3>
@@ -181,64 +296,6 @@ title: Centro de Formação
     </div>
   </section>
 
-  <!-- Catálogo de Formações Disponíveis -->
-  <section class="catalog-section">
-    <div class="section-header">
-      <h2 class="section-title">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <rect x="3" y="3" width="7" height="7"/>
-          <rect x="14" y="3" width="7" height="7"/>
-          <rect x="14" y="14" width="7" height="7"/>
-          <rect x="3" y="14" width="7" height="7"/>
-        </svg>
-        Catálogo de Formações
-      </h2>
-    </div>
-
-    <!-- Filtros -->
-    <div class="catalog-controls">
-      <div class="catalog-search">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="11" cy="11" r="8"/>
-          <path d="M21 21l-4.35-4.35"/>
-        </svg>
-        <input type="text" id="searchCatalog" placeholder="Pesquisar formações..." oninput="filterCatalog()">
-      </div>
-      <div class="catalog-filters">
-        <select class="filter-dropdown" id="filterTipo" onchange="filterCatalog()">
-          <option value="">Todos os Tipos</option>
-          <option value="Interna">Interna</option>
-          <option value="Externa">Externa</option>
-        </select>
-        <select class="filter-dropdown" id="filterModalidade" onchange="filterCatalog()">
-          <option value="">Todas as Modalidades</option>
-          <option value="Obrigatória">Obrigatória</option>
-          <option value="Opcional">Opcional</option>
-        </select>
-      </div>
-    </div>
-
-    <!-- Grid de Cursos -->
-    <div class="course-grid" id="courseGrid">
-      <div class="table-loading">
-        <div class="spinner"></div>
-        <p>A carregar catálogo...</p>
-      </div>
-    </div>
-
-    <!-- Empty State -->
-    <div class="empty-state" id="emptyState" style="display: none;">
-      <div class="empty-state-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="11" cy="11" r="8"/>
-          <path d="M21 21l-4.35-4.35"/>
-        </svg>
-      </div>
-      <h3>Nenhuma formação encontrada</h3>
-      <p>Tenta ajustar os filtros de pesquisa</p>
-    </div>
-  </section>
-
 </div>
 
 <!-- Modal: Detalhes do Curso -->
@@ -265,7 +322,7 @@ let allFormacoes = [];
 let myFormacoes = [];
 let currentUser = null;
 let selectedFormacao = null;
-let currentCalendarDate = new Date();
+let formacaoCalendarDate = new Date();
 let formacaoEvents = {};
 
 // Aguardar serviços
@@ -290,7 +347,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     console.log('[Formação] Utilizador:', currentUser?.nome);
     
     await loadFormacoes();
-    initCalendar();
+    initFormacaoCalendar();
     
   } catch (error) {
     console.error('[Formação] Erro na inicialização:', error);
@@ -310,13 +367,14 @@ async function loadFormacoes() {
     }
     
     // Construir eventos do calendário
-    buildCalendarEvents();
+    buildFormacaoEvents();
     
     // Atualizar UI
     updateStats();
-    renderMyFormacoes(myFormacoes);
+    updateCalendarCards();
     renderCatalog(allFormacoes);
-    renderCalendar();
+    renderMyFormacoes(myFormacoes);
+    renderFormacaoCalendar();
     
   } catch (error) {
     console.error('[Formação] Erro ao carregar:', error);
@@ -328,144 +386,244 @@ async function loadFormacoes() {
 // ==========================================
 
 function updateStats() {
-  const total = myFormacoes.length;
-  const concluidas = myFormacoes.filter(f => f.estado === 'Concluída').length;
-  const emCurso = myFormacoes.filter(f => f.estado === 'Em Curso' || f.estado === 'Agendada').length;
-  const horas = myFormacoes.reduce((sum, f) => sum + (f.duracao_horas || 0), 0);
+  const agendadas = allFormacoes.filter(f => f.estado === 'Agendada' || f.estado === 'Em Curso').length;
   
-  const avaliacoesPendentes = myFormacoes.filter(f => {
-    const jaAvaliou = (f.formacao_avaliacoes || []).some(a => a.colaborador_id === currentUser?.id);
-    return f.estado === 'Concluída' && !jaAvaliou;
-  }).length;
+  if (currentUser) {
+    const concluidas = myFormacoes.filter(f => f.estado === 'Concluída').length;
+    const emCurso = myFormacoes.filter(f => f.estado === 'Em Curso' || f.estado === 'Agendada').length;
+    const pendentes = myFormacoes.filter(f => {
+      const jaAvaliou = (f.formacao_avaliacoes || []).some(a => a.colaborador_id === currentUser?.id);
+      return f.estado === 'Concluída' && !jaAvaliou;
+    }).length;
+    
+    document.getElementById('statConcluidas').textContent = concluidas;
+    document.getElementById('statEmCurso').textContent = emCurso;
+    document.getElementById('statPendentes').textContent = pendentes;
+    document.getElementById('statAgendadas').textContent = agendadas;
+  }
+}
+
+function updateCalendarCards() {
+  const disponiveis = allFormacoes.filter(f => f.estado === 'Agendada' || f.estado === 'Em Curso');
+  const totalHoras = myFormacoes.reduce((sum, f) => sum + (f.duracao_horas || 0), 0);
   
-  const proximas = myFormacoes.filter(f => {
+  document.getElementById('calCardTotal').textContent = disponiveis.length;
+  document.getElementById('calCardInscritas').textContent = myFormacoes.length;
+  document.getElementById('calCardHoras').textContent = totalHoras + 'h';
+  
+  // Próxima formação
+  const proximas = myFormacoes
+    .filter(f => f.estado === 'Agendada' || f.estado === 'Em Curso')
+    .map(f => {
+      const sessoes = (f.formacao_sessoes || []).sort((a, b) => new Date(a.data) - new Date(b.data));
+      const proximaSessao = sessoes.find(s => new Date(s.data) >= new Date());
+      return { ...f, proximaSessao };
+    })
+    .filter(f => f.proximaSessao)
+    .sort((a, b) => new Date(a.proximaSessao.data) - new Date(b.proximaSessao.data));
+  
+  if (proximas.length > 0) {
+    const prox = proximas[0];
+    const dataProx = new Date(prox.proximaSessao.data);
+    document.getElementById('calCardProxima').textContent = dataProx.toLocaleDateString('pt-PT', { day: '2-digit', month: '2-digit' });
+    document.getElementById('calCardProximaInfo').textContent = prox.titulo.substring(0, 25) + (prox.titulo.length > 25 ? '...' : '');
+  }
+}
+
+// ==========================================
+// CALENDÁRIO
+// ==========================================
+
+function buildFormacaoEvents() {
+  formacaoEvents = {};
+  
+  allFormacoes.forEach(f => {
     const sessoes = f.formacao_sessoes || [];
-    const proximaSessao = sessoes.find(s => new Date(s.data) >= new Date());
-    return proximaSessao && (f.estado === 'Agendada' || f.estado === 'Em Curso');
-  }).length;
-  
-  // Obrigatórias
-  const obrigatorias = allFormacoes.filter(f => f.modalidade === 'Obrigatória');
-  const obrigatoriasFeitas = myFormacoes.filter(f => f.modalidade === 'Obrigatória' && f.estado === 'Concluída').length;
-  const obrigatoriasPendentes = obrigatorias.length - obrigatoriasFeitas;
-  
-  document.getElementById('statTotal').textContent = total;
-  document.getElementById('statHoras').textContent = horas + 'h';
-  document.getElementById('statConcluidas').textContent = concluidas;
-  document.getElementById('statEmCurso').textContent = emCurso;
-  document.getElementById('statAvaliacoes').textContent = avaliacoesPendentes;
-  document.getElementById('statProximas').textContent = proximas;
-  document.getElementById('statObrigatoriasPendentes').textContent = obrigatoriasPendentes > 0 ? obrigatoriasPendentes : 0;
-  document.getElementById('statObrigatoriasFeitas').textContent = obrigatoriasFeitas;
+    sessoes.forEach(s => {
+      if (s.data) {
+        const dateKey = s.data.split('T')[0];
+        if (!formacaoEvents[dateKey]) {
+          formacaoEvents[dateKey] = [];
+        }
+        formacaoEvents[dateKey].push({
+          formacaoId: f.id,
+          titulo: f.titulo,
+          hora: s.hora_inicio || '09:00',
+          tipo: f.tipo,
+          estado: f.estado
+        });
+      }
+    });
+  });
 }
 
-// ==========================================
-// TABELA MINHAS FORMAÇÕES
-// ==========================================
+function initFormacaoCalendar() {
+  document.getElementById('formacaoPrevMonth').addEventListener('click', () => {
+    formacaoCalendarDate.setMonth(formacaoCalendarDate.getMonth() - 1);
+    renderFormacaoCalendar();
+  });
+  
+  document.getElementById('formacaoNextMonth').addEventListener('click', () => {
+    formacaoCalendarDate.setMonth(formacaoCalendarDate.getMonth() + 1);
+    renderFormacaoCalendar();
+  });
+  
+  document.getElementById('formacaoClearFilterBtn').addEventListener('click', () => {
+    clearFormacaoDateFilter();
+  });
+}
 
-function renderMyFormacoes(formacoes) {
-  const tbody = document.getElementById('myFormacoesTable');
+function toggleFormacaoCalendar() {
+  const collapsible = document.getElementById('formacaoCalendarCollapsible');
+  const btn = document.getElementById('calendarToggleBtn');
   
-  if (!currentUser) {
-    tbody.innerHTML = '<div class="table-empty"><p>Faça login para ver as suas formações.</p></div>';
-    return;
-  }
+  collapsible.classList.toggle('expanded');
   
-  if (formacoes.length === 0) {
-    tbody.innerHTML = `
-      <div class="table-empty">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 48px; height: 48px; color: #94a3b8; margin-bottom: 1rem;">
-          <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
-          <path d="M6 12v5c3 3 9 3 12 0v-5"/>
-        </svg>
-        <p>Ainda não está inscrito em nenhuma formação.</p>
-        <button class="btn btn-primary" onclick="document.getElementById('courseGrid').scrollIntoView({behavior:'smooth'})">Explorar Catálogo</button>
-      </div>
+  if (collapsible.classList.contains('expanded')) {
+    btn.innerHTML = `
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="18 15 12 9 6 15"/>
+      </svg>
+      Esconder Calendário
     `;
-    return;
+  } else {
+    btn.innerHTML = `
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="6 9 12 15 18 9"/>
+      </svg>
+      Ver Calendário de Formações
+    `;
+  }
+}
+
+function renderFormacaoCalendar() {
+  const months = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 
+                  'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+  
+  const currentMonth = formacaoCalendarDate.getMonth();
+  const currentYear = formacaoCalendarDate.getFullYear();
+  
+  // Mês atual
+  document.getElementById('formacaoCurrentMonthName').textContent = `${months[currentMonth]} ${currentYear}`;
+  renderFormacaoMonthDays('formacaoCurrentMonthGrid', currentYear, currentMonth);
+  
+  // Próximo mês
+  const nextMonth = currentMonth === 11 ? 0 : currentMonth + 1;
+  const nextYear = currentMonth === 11 ? currentYear + 1 : currentYear;
+  document.getElementById('formacaoNextMonthName').textContent = `${months[nextMonth]} ${nextYear}`;
+  renderFormacaoMonthDays('formacaoNextMonthGrid', nextYear, nextMonth);
+  
+  // Renderizar eventos próximos
+  renderFormacaoUpcomingEvents();
+}
+
+function renderFormacaoMonthDays(containerId, year, month) {
+  const container = document.getElementById(containerId);
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const today = new Date();
+  
+  let html = '';
+  
+  // Dias vazios no início
+  for (let i = 0; i < firstDay; i++) {
+    html += '<p class="day-number other-month"></p>';
   }
   
-  tbody.innerHTML = formacoes.map(f => {
-    const formador = f.formadores?.nome || 'Formador interno';
-    const sessoes = (f.formacao_sessoes || []).sort((a, b) => new Date(a.data) - new Date(b.data));
-    const primeiraSessao = sessoes[0];
-    const dataStr = primeiraSessao ? formatDate(primeiraSessao.data) : 'A definir';
+  // Dias do mês
+  for (let day = 1; day <= daysInMonth; day++) {
+    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    const hasEvents = formacaoEvents[dateStr] && formacaoEvents[dateStr].length > 0;
+    const isToday = day === today.getDate() && month === today.getMonth() && year === today.getFullYear();
     
-    // Progresso
-    let progresso = 0;
-    let progressoClass = '';
-    if (f.estado === 'Concluída') {
-      progresso = 100;
-      progressoClass = 'complete';
-    } else if (f.estado === 'Em Curso') {
-      progresso = 50;
-      progressoClass = 'in-progress';
+    let classes = 'day-number';
+    if (isToday) classes += ' today';
+    if (hasEvents) classes += ' has-event formacao';
+    
+    html += `<p class="${classes}" onclick="selectFormacaoDate('${dateStr}')" data-date="${dateStr}">${day}</p>`;
+  }
+  
+  container.innerHTML = html;
+}
+
+function selectFormacaoDate(dateStr) {
+  // Remover seleção anterior
+  document.querySelectorAll('.calendar-grid .day-number.active').forEach(el => el.classList.remove('active'));
+  
+  // Adicionar seleção
+  document.querySelectorAll(`[data-date="${dateStr}"]`).forEach(el => el.classList.add('active'));
+  
+  // Mostrar eventos do dia
+  const events = formacaoEvents[dateStr] || [];
+  const dateParts = dateStr.split('-');
+  const dateObj = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
+  const formattedDate = dateObj.toLocaleDateString('pt-PT', { day: 'numeric', month: 'long', year: 'numeric' });
+  
+  document.getElementById('formacaoEventsTitle').textContent = 'Formações em ' + formattedDate;
+  document.getElementById('formacaoSelectedDateInfo').style.display = 'block';
+  document.getElementById('formacaoSelectedDateInfo').textContent = events.length > 0 ? `${events.length} formação(ões)` : 'Sem formações';
+  document.getElementById('formacaoClearFilterBtn').style.display = 'flex';
+  
+  const container = document.getElementById('formacaoEventsContainer');
+  if (events.length === 0) {
+    container.innerHTML = '<div class="no-events">Sem formações agendadas para este dia.</div>';
+  } else {
+    container.innerHTML = events.map(e => `
+      <div class="event-item formacao" onclick="openCourseDetails('${e.formacaoId}')">
+        <div class="event-time">${e.hora}</div>
+        <div class="event-details">
+          <div class="event-title">${e.titulo}</div>
+          <div class="event-meta">${e.tipo || 'Formação'} • ${e.estado}</div>
+        </div>
+      </div>
+    `).join('');
+  }
+}
+
+function clearFormacaoDateFilter() {
+  document.querySelectorAll('.calendar-grid .day-number.active').forEach(el => el.classList.remove('active'));
+  document.getElementById('formacaoEventsTitle').textContent = 'Próximas Formações';
+  document.getElementById('formacaoSelectedDateInfo').style.display = 'none';
+  document.getElementById('formacaoClearFilterBtn').style.display = 'none';
+  renderFormacaoUpcomingEvents();
+}
+
+function renderFormacaoUpcomingEvents() {
+  const container = document.getElementById('formacaoEventsContainer');
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  // Obter próximos eventos
+  const upcomingEvents = [];
+  Object.keys(formacaoEvents).sort().forEach(dateStr => {
+    const eventDate = new Date(dateStr);
+    if (eventDate >= today) {
+      formacaoEvents[dateStr].forEach(e => {
+        upcomingEvents.push({ ...e, date: dateStr });
+      });
     }
-    
-    // Estado badge
-    const estadoClass = getEstadoClass(f.estado);
-    
-    return `
-      <div class="formacoes-table-row" onclick="openCourseDetails('${f.id}')">
-        <div class="formacao-title-cell">
-          <strong>${f.titulo}</strong>
-          ${f.modalidade === 'Obrigatória' ? '<span class="badge-mandatory">Obrigatória</span>' : ''}
-        </div>
-        <div>${f.tipo || '-'}</div>
-        <div>${formador}</div>
-        <div>${dataStr}</div>
-        <div>${f.duracao_horas || 0}h</div>
-        <div>
-          <div class="progress-mini">
-            <div class="progress-mini-bar ${progressoClass}" style="width: ${progresso}%"></div>
+  });
+  
+  // Limitar a 5 eventos
+  const eventsToShow = upcomingEvents.slice(0, 5);
+  
+  if (eventsToShow.length === 0) {
+    container.innerHTML = '<div class="no-events">Sem formações agendadas próximas.</div>';
+  } else {
+    container.innerHTML = eventsToShow.map(e => {
+      const dateObj = new Date(e.date);
+      const dateFormatted = dateObj.toLocaleDateString('pt-PT', { day: 'numeric', month: 'short' });
+      return `
+        <div class="event-item formacao" onclick="openCourseDetails('${e.formacaoId}')">
+          <div class="event-time">${dateFormatted}</div>
+          <div class="event-details">
+            <div class="event-title">${e.titulo}</div>
+            <div class="event-meta">${e.hora} • ${e.tipo || 'Formação'}</div>
           </div>
-          <span class="progress-text">${progresso}%</span>
         </div>
-        <div><span class="status-badge ${estadoClass}">${f.estado}</span></div>
-        <div>
-          <button class="btn-action" onclick="event.stopPropagation(); openCourseDetails('${f.id}')">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-              <circle cx="12" cy="12" r="3"/>
-            </svg>
-          </button>
-        </div>
-      </div>
-    `;
-  }).join('');
-}
-
-function filterMyFormacoes(filter) {
-  document.querySelectorAll('.table-tab').forEach(t => t.classList.remove('active'));
-  document.querySelector(`[data-filter="${filter}"]`).classList.add('active');
-  
-  let filtered = myFormacoes;
-  if (filter === 'enrolled') {
-    filtered = myFormacoes.filter(f => f.estado === 'Agendada' || f.estado === 'Em Curso');
-  } else if (filter === 'completed') {
-    filtered = myFormacoes.filter(f => f.estado === 'Concluída');
+      `;
+    }).join('');
   }
-  
-  renderMyFormacoes(filtered);
-}
-
-function searchMyFormacoes() {
-  const term = document.getElementById('searchMyFormacoes').value.toLowerCase();
-  const filtered = myFormacoes.filter(f => 
-    f.titulo.toLowerCase().includes(term) ||
-    (f.formadores?.nome || '').toLowerCase().includes(term)
-  );
-  renderMyFormacoes(filtered);
-}
-
-function getEstadoClass(estado) {
-  const classes = {
-    'Agendada': 'status-scheduled',
-    'Em Curso': 'status-progress',
-    'Concluída': 'status-complete',
-    'Cancelada': 'status-cancelled'
-  };
-  return classes[estado] || '';
 }
 
 // ==========================================
@@ -551,8 +709,8 @@ function renderCatalog(formacoes) {
   }).join('');
 }
 
-function filterCatalog() {
-  const search = document.getElementById('searchCatalog').value.toLowerCase();
+function filterCourses() {
+  const search = document.getElementById('searchInput').value.toLowerCase();
   const tipo = document.getElementById('filterTipo').value;
   const modalidade = document.getElementById('filterModalidade').value;
   
@@ -572,127 +730,110 @@ function filterCatalog() {
 }
 
 // ==========================================
-// CALENDÁRIO
+// TABELA MINHAS FORMAÇÕES
 // ==========================================
 
-function buildCalendarEvents() {
-  formacaoEvents = {};
+function renderMyFormacoes(formacoes) {
+  const tbody = document.getElementById('myFormacoesTable');
   
-  allFormacoes.forEach(f => {
-    const sessoes = f.formacao_sessoes || [];
-    sessoes.forEach(s => {
-      if (s.data) {
-        const dateKey = s.data.split('T')[0];
-        if (!formacaoEvents[dateKey]) {
-          formacaoEvents[dateKey] = [];
-        }
-        formacaoEvents[dateKey].push({
-          formacaoId: f.id,
-          titulo: f.titulo,
-          hora: s.hora_inicio || '09:00',
-          tipo: f.tipo
-        });
-      }
-    });
-  });
-}
-
-function initCalendar() {
-  document.getElementById('prevMonthBtn').addEventListener('click', () => {
-    currentCalendarDate.setMonth(currentCalendarDate.getMonth() - 1);
-    renderCalendar();
-  });
-  
-  document.getElementById('nextMonthBtn').addEventListener('click', () => {
-    currentCalendarDate.setMonth(currentCalendarDate.getMonth() + 1);
-    renderCalendar();
-  });
-}
-
-function renderCalendar() {
-  const months = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 
-                  'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
-  
-  const currentMonth = currentCalendarDate.getMonth();
-  const currentYear = currentCalendarDate.getFullYear();
-  
-  // Mês anterior
-  const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1;
-  const prevYear = currentMonth === 0 ? currentYear - 1 : currentYear;
-  document.getElementById('prevMonthName').textContent = `${months[prevMonth]} ${prevYear}`;
-  renderMonthDays('prevMonthDays', prevYear, prevMonth);
-  
-  // Mês atual
-  document.getElementById('currentMonthName').textContent = `${months[currentMonth]} ${currentYear}`;
-  renderMonthDays('currentMonthDays', currentYear, currentMonth);
-}
-
-function renderMonthDays(containerId, year, month) {
-  const container = document.getElementById(containerId);
-  const firstDay = new Date(year, month, 1).getDay();
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const today = new Date();
-  
-  let html = '';
-  
-  // Dias vazios no início
-  for (let i = 0; i < firstDay; i++) {
-    html += '<div class="calendar-day other-month"></div>';
+  if (!currentUser) {
+    tbody.innerHTML = '<div class="table-empty"><p>Faça login para ver as suas formações.</p></div>';
+    return;
   }
   
-  // Dias do mês
-  for (let day = 1; day <= daysInMonth; day++) {
-    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    const hasEvents = formacaoEvents[dateStr] && formacaoEvents[dateStr].length > 0;
-    const isToday = day === today.getDate() && month === today.getMonth() && year === today.getFullYear();
-    
-    let classes = 'calendar-day';
-    if (isToday) classes += ' today';
-    if (hasEvents) classes += ' has-events';
-    
-    html += `<div class="${classes}" onclick="selectCalendarDate('${dateStr}')" data-date="${dateStr}">${day}</div>`;
-  }
-  
-  container.innerHTML = html;
-}
-
-function selectCalendarDate(dateStr) {
-  // Remover seleção anterior
-  document.querySelectorAll('.calendar-day.active').forEach(el => el.classList.remove('active'));
-  
-  // Adicionar seleção
-  document.querySelectorAll(`[data-date="${dateStr}"]`).forEach(el => el.classList.add('active'));
-  
-  // Mostrar eventos
-  const events = formacaoEvents[dateStr] || [];
-  const dateParts = dateStr.split('-');
-  const dateObj = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
-  const formattedDate = dateObj.toLocaleDateString('pt-PT', { day: 'numeric', month: 'long' });
-  
-  document.getElementById('selectedDateText').textContent = formattedDate;
-  document.getElementById('selectedDateInfo').textContent = events.length > 0 ? `${events.length} formação(ões)` : 'Sem formações neste dia';
-  
-  const eventsList = document.getElementById('calendarEventsList');
-  if (events.length === 0) {
-    eventsList.innerHTML = '<div class="no-events">Sem formações agendadas para este dia.</div>';
-  } else {
-    eventsList.innerHTML = events.map(e => `
-      <div class="event-item" onclick="openCourseDetails('${e.formacaoId}')">
-        <div class="event-time">${e.hora}</div>
-        <div class="event-title">${e.titulo}</div>
-        <div class="event-type">${e.tipo || 'Formação'}</div>
+  if (formacoes.length === 0) {
+    tbody.innerHTML = `
+      <div class="table-empty">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 48px; height: 48px; color: #94a3b8; margin-bottom: 1rem;">
+          <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+          <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+        </svg>
+        <p>Ainda não está inscrito em nenhuma formação.</p>
+        <button class="btn btn-primary" onclick="scrollToCatalog()">Explorar Catálogo</button>
       </div>
-    `).join('');
+    `;
+    return;
   }
   
-  // Expandir
-  document.getElementById('calendarEventsContent').classList.add('expanded');
-  document.getElementById('calendarExpandIcon').classList.add('expanded');
+  tbody.innerHTML = formacoes.map(f => {
+    const formador = f.formadores?.nome || 'Formador interno';
+    const sessoes = (f.formacao_sessoes || []).sort((a, b) => new Date(a.data) - new Date(b.data));
+    const primeiraSessao = sessoes[0];
+    const dataStr = primeiraSessao ? formatDate(primeiraSessao.data) : 'A definir';
+    
+    let progresso = 0;
+    let progressoClass = '';
+    if (f.estado === 'Concluída') {
+      progresso = 100;
+      progressoClass = 'complete';
+    } else if (f.estado === 'Em Curso') {
+      progresso = 50;
+      progressoClass = 'in-progress';
+    }
+    
+    const estadoClass = getEstadoClass(f.estado);
+    
+    return `
+      <div class="formacoes-table-row" onclick="openCourseDetails('${f.id}')">
+        <div class="formacao-title-cell">
+          <strong>${f.titulo}</strong>
+          ${f.modalidade === 'Obrigatória' ? '<span class="badge-mandatory">Obrigatória</span>' : ''}
+        </div>
+        <div>${f.tipo || '-'}</div>
+        <div>${formador}</div>
+        <div>${dataStr}</div>
+        <div>${f.duracao_horas || 0}h</div>
+        <div>
+          <div class="progress-mini">
+            <div class="progress-mini-bar ${progressoClass}" style="width: ${progresso}%"></div>
+          </div>
+          <span class="progress-text">${progresso}%</span>
+        </div>
+        <div><span class="status-badge ${estadoClass}">${f.estado}</span></div>
+        <div>
+          <button class="btn-action" onclick="event.stopPropagation(); openCourseDetails('${f.id}')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
 }
 
-function toggleCalendarEvents() {
-  document.getElementById('calendarEventsContent').classList.toggle('expanded');
-  document.getElementById('calendarExpandIcon').classList.toggle('expanded');
+function filterMyFormacoes(filter) {
+  document.querySelectorAll('.table-tab').forEach(t => t.classList.remove('active'));
+  document.querySelector(`[data-filter="${filter}"]`).classList.add('active');
+  
+  let filtered = myFormacoes;
+  if (filter === 'enrolled') {
+    filtered = myFormacoes.filter(f => f.estado === 'Agendada' || f.estado === 'Em Curso');
+  } else if (filter === 'completed') {
+    filtered = myFormacoes.filter(f => f.estado === 'Concluída');
+  }
+  
+  renderMyFormacoes(filtered);
+}
+
+function searchMyFormacoes() {
+  const term = document.getElementById('searchMyFormacoes').value.toLowerCase();
+  const filtered = myFormacoes.filter(f => 
+    f.titulo.toLowerCase().includes(term) ||
+    (f.formadores?.nome || '').toLowerCase().includes(term)
+  );
+  renderMyFormacoes(filtered);
+}
+
+function getEstadoClass(estado) {
+  const classes = {
+    'Agendada': 'status-scheduled',
+    'Em Curso': 'status-progress',
+    'Concluída': 'status-complete',
+    'Cancelada': 'status-cancelled'
+  };
+  return classes[estado] || '';
 }
 
 // ==========================================
@@ -729,6 +870,18 @@ function isNew(createdAt) {
   const created = new Date(createdAt);
   const diffDays = (new Date() - created) / (1000 * 60 * 60 * 24);
   return diffDays < 30;
+}
+
+// ==========================================
+// NAVIGATION
+// ==========================================
+
+function scrollToCatalog() {
+  document.getElementById('courseCatalog').scrollIntoView({ behavior: 'smooth' });
+}
+
+function scrollToMinhasFormacoes() {
+  document.getElementById('minhasFormacoes').scrollIntoView({ behavior: 'smooth' });
 }
 
 // ==========================================
