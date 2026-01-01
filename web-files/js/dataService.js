@@ -240,18 +240,18 @@ const DataService = (function() {
   
   // --- FORMAÇÕES ---
   async function getFormacoes() {
-    const select = '*,entidades_formadoras(id,codigo,nome),formadores(id,nome,especialidade,tipo),formacao_sessoes(id,data,hora_inicio,hora_fim),formacao_inscricoes(id,colaborador_id,estado),formacao_departamentos(id,departamento_id,departamentos(id,codigo,nome)),formacao_favoritos(id,colaborador_id),formacao_presencas(id,colaborador_id,presente),formacao_resultados(id,colaborador_id,resultado),formacao_avaliacoes(id,colaborador_id,score_conteudo,score_formador,score_organizacao,comentario,created_at)';
+    const select = '*,entidades_formadoras(id,codigo,nome),formadores(id,nome,especialidade,tipo),formacao_sessoes(id,data,hora_inicio,hora_fim),formacao_inscricoes(id,colaborador_id,estado),formacao_departamentos(id,departamento_id,departamentos(id,codigo,nome)),formacao_favoritos(id,colaborador_id),formacao_presencas(id,colaborador_id,presente),formacao_resultados(id,colaborador_id,resultado),formacao_avaliacoes(id,colaborador_id,score_conteudo,score_formador,score_organizacao,comentario,created_at),formacao_formadores(id,formador_id,entidade_id,principal,formadores(id,nome),entidades_formadoras(id,nome))';
     return retrieveWithRelations('formacoes', select);
   }
   
   async function getFormacaoById(id) {
-    const select = '*,entidades_formadoras(id,codigo,nome),formadores(id,nome,especialidade,tipo),formacao_sessoes(id,data,hora_inicio,hora_fim),formacao_inscricoes(id,colaborador_id,estado,colaboradores(id,nome,email,departamento_id)),formacao_departamentos(id,departamento_id,departamentos(id,codigo,nome)),formacao_favoritos(id,colaborador_id),formacao_presencas(id,colaborador_id,presente),formacao_resultados(id,colaborador_id,resultado),formacao_avaliacoes(id,colaborador_id,score_conteudo,score_formador,score_organizacao,comentario,created_at)';
+    const select = '*,entidades_formadoras(id,codigo,nome),formadores(id,nome,especialidade,tipo),formacao_sessoes(id,data,hora_inicio,hora_fim),formacao_inscricoes(id,colaborador_id,estado,colaboradores(id,nome,email,departamento_id)),formacao_departamentos(id,departamento_id,departamentos(id,codigo,nome)),formacao_favoritos(id,colaborador_id),formacao_presencas(id,colaborador_id,presente),formacao_resultados(id,colaborador_id,resultado),formacao_avaliacoes(id,colaborador_id,score_conteudo,score_formador,score_organizacao,comentario,created_at),formacao_formadores(id,formador_id,entidade_id,principal,formadores(id,nome),entidades_formadoras(id,nome))';
     const result = await retrieveWithRelations('formacoes', select, { id });
     return result.length > 0 ? result[0] : null;
   }
   
   async function createFormacao(data) {
-    const { sessoes, departamentos_alvo, ...formacaoData } = data;
+    const { sessoes, departamentos_alvo, formadores_ids, entidades_ids, ...formacaoData } = data;
     const formacao = await createRecord('formacoes', formacaoData);
     
     if (sessoes && sessoes.length > 0) {
@@ -259,8 +259,8 @@ const DataService = (function() {
         await createRecord('formacao_sessoes', {
           formacao_id: formacao.id,
           data: sessao.data,
-          hora_inicio: sessao.horaInicio,
-          hora_fim: sessao.horaFim
+          hora_inicio: sessao.hora_inicio || sessao.horaInicio,
+          hora_fim: sessao.hora_fim || sessao.horaFim
         });
       }
     }
@@ -270,6 +270,28 @@ const DataService = (function() {
         await createRecord('formacao_departamentos', {
           formacao_id: formacao.id,
           departamento_id: depId
+        });
+      }
+    }
+    
+    // Múltiplos formadores
+    if (formadores_ids && formadores_ids.length > 0) {
+      for (let i = 0; i < formadores_ids.length; i++) {
+        await createRecord('formacao_formadores', {
+          formacao_id: formacao.id,
+          formador_id: formadores_ids[i],
+          principal: i === 0
+        });
+      }
+    }
+    
+    // Múltiplas entidades
+    if (entidades_ids && entidades_ids.length > 0) {
+      for (let i = 0; i < entidades_ids.length; i++) {
+        await createRecord('formacao_formadores', {
+          formacao_id: formacao.id,
+          entidade_id: entidades_ids[i],
+          principal: !formadores_ids?.length && i === 0
         });
       }
     }
@@ -346,6 +368,98 @@ const DataService = (function() {
       score_organizacao: avaliacao.organizacao,
       comentario: avaliacao.comentario,
       recomendaria: avaliacao.recomendaria
+    });
+  }
+  
+  // --- PEDIDOS DE FORMAÇÃO ---
+  async function getPedidosFormacao() {
+    const select = '*,solicitante:colaboradores!pedidos_formacao_solicitante_id_fkey(id,nome,email,departamento_id,departamentos(id,codigo,nome)),departamentos(id,codigo,nome),dirigente:colaboradores!pedidos_formacao_dirigente_id_fkey(id,nome),rh_aprovador:colaboradores!pedidos_formacao_rh_aprovador_id_fkey(id,nome),pedidos_formacao_historico(id,acao,estado_anterior,estado_novo,comentario,user_id,user_nome,created_at)';
+    return retrieveWithRelations('pedidos_formacao', select);
+  }
+  
+  async function getPedidoFormacaoById(id) {
+    const select = '*,solicitante:colaboradores!pedidos_formacao_solicitante_id_fkey(id,nome,email,departamento_id,departamentos(id,codigo,nome)),departamentos(id,codigo,nome),dirigente:colaboradores!pedidos_formacao_dirigente_id_fkey(id,nome),rh_aprovador:colaboradores!pedidos_formacao_rh_aprovador_id_fkey(id,nome),pedidos_formacao_historico(id,acao,estado_anterior,estado_novo,comentario,user_id,user_nome,created_at)';
+    const result = await retrieveWithRelations('pedidos_formacao', select, { id });
+    return result.length > 0 ? result[0] : null;
+  }
+  
+  async function createPedidoFormacao(data) {
+    return createRecord('pedidos_formacao', data);
+  }
+  
+  async function updatePedidoFormacao(id, data) {
+    return updateRecord('pedidos_formacao', id, data);
+  }
+  
+  async function aprovarPedidoDirigente(pedidoId, dirigenteId, comentario = '') {
+    return updateRecord('pedidos_formacao', pedidoId, {
+      estado: 'pendente_rh',
+      dirigente_id: dirigenteId,
+      dirigente_decisao: 'aprovado',
+      dirigente_comentario: comentario,
+      dirigente_data: new Date().toISOString()
+    });
+  }
+  
+  async function rejeitarPedidoDirigente(pedidoId, dirigenteId, comentario) {
+    return updateRecord('pedidos_formacao', pedidoId, {
+      estado: 'rejeitado',
+      dirigente_id: dirigenteId,
+      dirigente_decisao: 'rejeitado',
+      dirigente_comentario: comentario,
+      dirigente_data: new Date().toISOString()
+    });
+  }
+  
+  async function devolverPedidoDirigente(pedidoId, dirigenteId, comentario) {
+    return updateRecord('pedidos_formacao', pedidoId, {
+      estado: 'devolvido',
+      dirigente_id: dirigenteId,
+      dirigente_decisao: 'devolvido',
+      dirigente_comentario: comentario,
+      dirigente_data: new Date().toISOString()
+    });
+  }
+  
+  async function aprovarPedidoRH(pedidoId, rhId, comentario = '') {
+    return updateRecord('pedidos_formacao', pedidoId, {
+      estado: 'aprovado',
+      rh_aprovador_id: rhId,
+      rh_decisao: 'aprovado',
+      rh_comentario: comentario,
+      rh_data: new Date().toISOString()
+    });
+  }
+  
+  async function rejeitarPedidoRH(pedidoId, rhId, comentario) {
+    return updateRecord('pedidos_formacao', pedidoId, {
+      estado: 'rejeitado',
+      rh_aprovador_id: rhId,
+      rh_decisao: 'rejeitado',
+      rh_comentario: comentario,
+      rh_data: new Date().toISOString()
+    });
+  }
+  
+  async function devolverPedidoRH(pedidoId, rhId, comentario) {
+    return updateRecord('pedidos_formacao', pedidoId, {
+      estado: 'devolvido',
+      rh_aprovador_id: rhId,
+      rh_decisao: 'devolvido',
+      rh_comentario: comentario,
+      rh_data: new Date().toISOString()
+    });
+  }
+  
+  async function addHistoricoPedido(pedidoId, acao, userId, userName, comentario = '', estadoAnterior = null, estadoNovo = null) {
+    return createRecord('pedidos_formacao_historico', {
+      pedido_id: pedidoId,
+      acao,
+      user_id: userId,
+      user_nome: userName,
+      comentario,
+      estado_anterior: estadoAnterior,
+      estado_novo: estadoNovo
     });
   }
   
@@ -458,6 +572,12 @@ const DataService = (function() {
     return { total, pendentes, aprovadas, rascunhos };
   }
   
+  // Função auxiliar para limpar prefixos de nomes
+  function cleanFormadorName(nome) {
+    if (!nome) return '';
+    return nome.replace(/^(Dra?\.?|Eng\.?|Prof\.?|Sr\.?a?)\s*/gi, '').trim();
+  }
+  
   // ==========================================
   // API PÚBLICA
   // ==========================================
@@ -508,13 +628,29 @@ const DataService = (function() {
     submeterAvaliacao,
     getFormacaoStats,
     
+    // Pedidos de Formação
+    getPedidosFormacao,
+    getPedidoFormacaoById,
+    createPedidoFormacao,
+    updatePedidoFormacao,
+    aprovarPedidoDirigente,
+    rejeitarPedidoDirigente,
+    devolverPedidoDirigente,
+    aprovarPedidoRH,
+    rejeitarPedidoRH,
+    devolverPedidoRH,
+    addHistoricoPedido,
+    
     // Deslocações
     getDeslocacoes,
     getDeslocacaoById,
     createDeslocacao,
     updateDeslocacao,
     deleteDeslocacao,
-    getDeslocacaoStats
+    getDeslocacaoStats,
+    
+    // Utilitários
+    cleanFormadorName
   };
   
 })();
