@@ -1,105 +1,19 @@
-// === DESLOCAÇÕES PAGE - COMPLETE REWRITE ===
+// ===================================================================
+// DESLOCAÇÕES PAGE - INTEGRAÇÃO SUPABASE
 // Implements RF1-RF6 requirements
+// Estrutura compatível com Power Pages
+// ===================================================================
 
 // ==========================================
-// DATA & STATE
+// STATE & CACHE
 // ==========================================
 
-// Sample collaborators database
-const colaboradoresDB = [
-  { id: 1, nome: 'Ana Silva', email: 'ana.silva@empresa.pt', departamento: 'Recursos Humanos' },
-  { id: 2, nome: 'Bruno Costa', email: 'bruno.costa@empresa.pt', departamento: 'Financeiro' },
-  { id: 3, nome: 'Carla Santos', email: 'carla.santos@empresa.pt', departamento: 'IT' },
-  { id: 4, nome: 'David Ferreira', email: 'david.ferreira@empresa.pt', departamento: 'Comercial' },
-  { id: 5, nome: 'Eva Rodrigues', email: 'eva.rodrigues@empresa.pt', departamento: 'Marketing' },
-  { id: 6, nome: 'Fernando Almeida', email: 'fernando.almeida@empresa.pt', departamento: 'Operações' },
-  { id: 7, nome: 'Gabriela Martins', email: 'gabriela.martins@empresa.pt', departamento: 'Qualidade' },
-  { id: 8, nome: 'Hugo Pereira', email: 'hugo.pereira@empresa.pt', departamento: 'Logística' }
-];
-
-// Sample fleet database (RF4)
-const frotaDB = [
-  { id: 1, matricula: '00-AA-00', modelo: 'VW Golf', tipo: 'Ligeiro', lugares: 5, disponivel: true },
-  { id: 2, matricula: '11-BB-11', modelo: 'Renault Megane', tipo: 'Ligeiro', lugares: 5, disponivel: true },
-  { id: 3, matricula: '22-CC-22', modelo: 'Ford Transit', tipo: 'Comercial', lugares: 9, disponivel: true },
-  { id: 4, matricula: '33-DD-33', modelo: 'Peugeot 308', tipo: 'Ligeiro', lugares: 5, disponivel: false },
-  { id: 5, matricula: '44-EE-44', modelo: 'Mercedes Vito', tipo: 'Comercial', lugares: 8, disponivel: true },
-  { id: 6, matricula: '55-FF-55', modelo: 'BMW Serie 3', tipo: 'Executivo', lugares: 5, disponivel: true }
-];
-
-// Transport types (RF4, RF5)
-const transportTypes = [
-  { id: 'frota', label: 'Viatura EMRP (Frota)', requiresDriver: true, requiresVehicle: true },
-  { id: 'propria', label: 'Viatura Própria', requiresDriver: true, requiresVehicle: false },
-  { id: 'aluguer', label: 'Viatura de Aluguer', requiresDriver: true, requiresVehicle: false },
-  { id: 'publico', label: 'Transporte Público', requiresDriver: false, requiresVehicle: false }
-];
-
-// Public transport subtypes (RF5)
-const publicTransportTypes = [
-  { id: 'uber', label: 'Uber / TVDE' },
-  { id: 'taxi', label: 'Táxi' },
-  { id: 'comboio', label: 'Comboio' },
-  { id: 'autocarro', label: 'Autocarro' },
-  { id: 'metro', label: 'Metro' },
-  { id: 'aviao', label: 'Avião' },
-  { id: 'outro', label: 'Outro' }
-];
-
-// Sample requests data
-let requestsData = [
-  { 
-    id: 1, 
-    motivo: 'Reunião com Cliente ABC', 
-    colaboradores: ['Ana Silva', 'Bruno Costa'],
-    numColaboradores: 2,
-    origem: 'Lisboa',
-    pontoIntermedio: '',
-    destino: 'Porto', 
-    data: '15/01/2026', 
-    duracao: '2 dias', 
-    transportes: [{ tipo: 'Viatura EMRP', viatura: 'VW Golf (00-AA-00)', motorista: 'Bruno Costa' }],
-    status: 'Em Aprovação', 
-    horaPartida: '09:00', 
-    horaChegada: '18:00',
-    justificacao: 'Apresentação de proposta comercial'
-  },
-  { 
-    id: 2, 
-    motivo: 'Formação Técnica', 
-    colaboradores: ['Carla Santos'],
-    numColaboradores: 1,
-    origem: 'Lisboa',
-    pontoIntermedio: '',
-    destino: 'Coimbra', 
-    data: '20/01/2026', 
-    duracao: '1 dia', 
-    transportes: [{ tipo: 'Transporte Público', subtipo: 'Comboio' }],
-    status: 'Aprovado', 
-    horaPartida: '08:00', 
-    horaChegada: '19:00',
-    justificacao: 'Curso de atualização profissional'
-  },
-  { 
-    id: 3, 
-    motivo: 'Visita a Obra', 
-    colaboradores: ['David Ferreira', 'Eva Rodrigues', 'Fernando Almeida'],
-    numColaboradores: 3,
-    origem: 'Lisboa',
-    pontoIntermedio: 'Albufeira',
-    destino: 'Faro', 
-    data: '25/01/2026', 
-    duracao: '3 dias', 
-    transportes: [
-      { tipo: 'Viatura EMRP', viatura: 'Ford Transit (22-CC-22)', motorista: 'Fernando Almeida' },
-      { tipo: 'Transporte Público', subtipo: 'Táxi' }
-    ],
-    status: 'Draft', 
-    horaPartida: '07:00', 
-    horaChegada: '20:00',
-    justificacao: 'Inspeção de qualidade'
-  }
-];
+let deslocacoesCache = [];
+let colaboradoresCache = [];
+let departamentosCache = [];
+let frotaCache = [];
+let tiposTransporteCache = [];
+let tiposTransportePublicoCache = [];
 
 let currentSortField = null;
 let currentSortOrder = 'asc';
@@ -108,38 +22,197 @@ let currentViewingId = null;
 let transportCount = 0;
 let selectedFiles = [];
 
+// Utilizador atual (em produção viria da sessão/auth)
+// Para Power Pages: seria obtido via liquid {{ user.id }}
+let currentUserId = null;
+const CURRENT_USER_EMAIL = 'carla.santos@empresa.pt';
+
 // ==========================================
 // INITIALIZATION
 // ==========================================
 
-document.addEventListener('DOMContentLoaded', function() {
-  renderTable();
-  updateStats();
-  initializeCollaboratorsList();
-  addTransportMethod(); // Add first transport by default
+document.addEventListener('DOMContentLoaded', async function() {
+  showLoadingState();
   
-  // Check URL params for auto-open modal
-  const urlParams = new URLSearchParams(window.location.search);
-  if (urlParams.get('novo') === 'true') {
-    setTimeout(() => {
-      openCreateRequestModal();
-      window.history.replaceState({}, document.title, window.location.pathname);
-    }, 300);
+  try {
+    await loadInitialData();
+    
+    renderTable();
+    updateStats();
+    initializeCollaboratorsList();
+    initializeTransportTypes();
+    addTransportMethod();
+    populateOnBehalfDropdown();
+    
+    // Check URL params for auto-open modal
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('novo') === 'true') {
+      setTimeout(() => {
+        openCreateRequestModal();
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }, 300);
+    }
+  } catch (error) {
+    console.error('Erro ao inicializar:', error);
+    showToast('Erro ao carregar dados. Por favor recarregue a página.', 'danger');
+  } finally {
+    hideLoadingState();
+  }
+});
+
+async function loadInitialData() {
+  const [deslocacoes, colaboradores, departamentos, frota, tiposTransporte, tiposPublico] = await Promise.all([
+    DataService.getDeslocacoes(),
+    DataService.getColaboradores(),
+    DataService.getDepartamentos(),
+    DataService.getFrota(),
+    DataService.getTiposTransporte(),
+    DataService.getTiposTransportePublico()
+  ]);
+  
+  deslocacoesCache = transformDeslocacoes(deslocacoes);
+  colaboradoresCache = colaboradores;
+  departamentosCache = departamentos;
+  frotaCache = frota;
+  tiposTransporteCache = tiposTransporte;
+  tiposTransportePublicoCache = tiposPublico;
+  
+  // Obter ID do utilizador atual
+  const currentUser = colaboradores.find(c => c.email === CURRENT_USER_EMAIL);
+  if (currentUser) {
+    currentUserId = currentUser.id;
   }
   
-  // Populate "submit on behalf" dropdown
-  populateOnBehalfDropdown();
-});
+  console.log('[Deslocações] Dados carregados:', {
+    deslocacoes: deslocacoesCache.length,
+    colaboradores: colaboradoresCache.length,
+    frota: frotaCache.length,
+    tiposTransporte: tiposTransporteCache.length
+  });
+}
+
+function transformDeslocacoes(deslocacoes) {
+  return deslocacoes.map(d => {
+    // Extrair colaboradores
+    const colaboradores = (d.deslocacao_colaboradores || [])
+      .sort((a, b) => a.ordem - b.ordem)
+      .map(dc => ({
+        id: dc.colaborador_id,
+        nome: dc.colaboradores?.nome || 'N/D',
+        departamento: dc.colaboradores?.departamentos?.nome || 'N/D'
+      }));
+    
+    // Extrair transportes
+    const transportes = (d.deslocacao_transportes || [])
+      .sort((a, b) => a.ordem - b.ordem)
+      .map(dt => {
+        const tipo = dt.tipos_transporte?.nome || 'N/D';
+        const tipoCodigo = dt.tipos_transporte?.codigo || '';
+        
+        return {
+          tipo,
+          tipoCodigo,
+          tipoId: dt.tipo_transporte_id,
+          viatura: dt.frota ? `${dt.frota.modelo} (${dt.frota.matricula})` : null,
+          viaturaId: dt.viatura_id,
+          subtipo: dt.tipos_transporte_publico?.nome || null,
+          subtipoId: dt.tipo_publico_id,
+          motorista: dt.motorista?.nome || null,
+          motoristaId: dt.motorista_id,
+          observacoes: dt.observacoes
+        };
+      });
+    
+    // Calcular duração
+    let duracao = '1 dia';
+    if (d.data_partida && d.data_chegada) {
+      const start = new Date(d.data_partida);
+      const end = new Date(d.data_chegada);
+      const diffDays = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
+      duracao = `${diffDays} dia(s)`;
+    }
+    
+    return {
+      id: d.id,
+      motivo: d.motivo || '',
+      origem: d.origem || '',
+      pontoIntermedio: d.ponto_intermedio || '',
+      destino: d.destino || '',
+      dataPartida: d.data_partida,
+      horaPartida: d.hora_partida || '09:00',
+      dataChegada: d.data_chegada,
+      horaChegada: d.hora_chegada || '18:00',
+      data: d.data_partida ? new Date(d.data_partida).toLocaleDateString('pt-PT') : '-',
+      duracao,
+      colaboradores: colaboradores.map(c => c.nome),
+      colaboradoresData: colaboradores,
+      numColaboradores: colaboradores.length,
+      transportes,
+      status: mapEstadoToStatus(d.estado),
+      estado: d.estado,
+      observacoes: d.observacoes || '',
+      criador: d.criador?.nome || 'N/D',
+      criadoPor: d.criado_por,
+      anexos: (d.deslocacao_anexos || []).map(a => a.nome_ficheiro)
+    };
+  });
+}
+
+function mapEstadoToStatus(estado) {
+  const map = {
+    'Rascunho': 'Draft',
+    'Pendente Aprovação': 'Em Aprovação',
+    'Aprovada': 'Aprovado',
+    'Rejeitada': 'Rejeitado',
+    'Concluída': 'Concluído',
+    'Cancelada': 'Cancelado'
+  };
+  return map[estado] || estado;
+}
+
+function mapStatusToEstado(status) {
+  const map = {
+    'Draft': 'Rascunho',
+    'Em Aprovação': 'Pendente Aprovação',
+    'Aprovado': 'Aprovada',
+    'Rejeitado': 'Rejeitada',
+    'Concluído': 'Concluída',
+    'Cancelado': 'Cancelada'
+  };
+  return map[status] || status;
+}
+
+function showLoadingState() {
+  const container = document.getElementById('requestsTable');
+  if (container) {
+    container.innerHTML = `
+      <div class="loading-state" style="grid-column: 1/-1; text-align: center; padding: 3rem;">
+        <div class="loading-spinner"></div>
+        <p style="margin-top: 1rem; color: var(--text-secondary);">A carregar deslocações...</p>
+      </div>
+    `;
+  }
+}
+
+function hideLoadingState() {
+  // O render vai substituir o loading
+}
+
+function initializeTransportTypes() {
+  // Os tipos já foram carregados do Supabase
+  console.log('[Deslocações] Tipos de transporte:', tiposTransporteCache);
+  console.log('[Deslocações] Tipos públicos:', tiposTransportePublicoCache);
+}
 
 // ==========================================
 // STATISTICS
 // ==========================================
 
 function updateStats() {
-  const total = requestsData.length;
-  const pending = requestsData.filter(r => r.status === 'Em Aprovação').length;
-  const approved = requestsData.filter(r => r.status === 'Aprovado').length;
-  const draft = requestsData.filter(r => r.status === 'Draft').length;
+  const total = deslocacoesCache.length;
+  const pending = deslocacoesCache.filter(r => r.estado === 'Pendente Aprovação').length;
+  const approved = deslocacoesCache.filter(r => r.estado === 'Aprovada').length;
+  const draft = deslocacoesCache.filter(r => r.estado === 'Rascunho').length;
   
   animateCounter('statTotal', total);
   animateCounter('statPending', pending);
@@ -149,6 +222,8 @@ function updateStats() {
 
 function animateCounter(elementId, targetValue) {
   const element = document.getElementById(elementId);
+  if (!element) return;
+  
   const duration = 500;
   const startValue = parseInt(element.textContent) || 0;
   const startTime = performance.now();
@@ -175,23 +250,23 @@ function renderTable() {
   const container = document.getElementById('requestsTable');
   const noData = document.getElementById('requestsNoData');
   
-  if (requestsData.length === 0) {
+  if (deslocacoesCache.length === 0) {
     container.innerHTML = '';
-    noData.style.display = 'grid';
+    if (noData) noData.style.display = 'grid';
     return;
   }
   
-  noData.style.display = 'none';
+  if (noData) noData.style.display = 'none';
   
-  container.innerHTML = requestsData.map((request, index) => {
+  container.innerHTML = deslocacoesCache.map((request, index) => {
     const percurso = request.pontoIntermedio 
       ? `${request.origem} → ${request.pontoIntermedio} → ${request.destino}`
       : `${request.origem} → ${request.destino}`;
     
-    const transporteDisplay = request.transportes.map(t => t.tipo).join(', ');
+    const transporteDisplay = request.transportes.map(t => t.tipo).join(', ') || '-';
     
     return `
-      <div class="table-grid table-grid-deslocacoes" style="animation-delay: ${index * 0.05}s; cursor: pointer;" onclick="openViewRequestModal(${request.id})">
+      <div class="table-grid table-grid-deslocacoes" style="animation-delay: ${index * 0.05}s; cursor: pointer;" onclick="openViewRequestModal('${request.id}')">
         <div class="cell-with-icon" title="${request.motivo}">
           <span class="cell-text">${request.motivo}</span>
         </div>
@@ -209,21 +284,15 @@ function renderTable() {
 }
 
 function getStatusClass(status) {
-  switch(status.toLowerCase()) {
-    case 'draft':
-    case 'rascunho':
-      return 'table-status-draft';
-    case 'em aprovação':
-      return 'table-status-em-aprovacao';
-    case 'aprovado':
-      return 'table-status-aprovado';
-    default:
-      return 'table-status-draft';
-  }
+  const s = status.toLowerCase();
+  if (s.includes('draft') || s.includes('rascunho')) return 'table-status-draft';
+  if (s.includes('aprovação')) return 'table-status-em-aprovacao';
+  if (s.includes('aprovado') || s.includes('aprovada')) return 'table-status-aprovado';
+  return 'table-status-draft';
 }
 
 function searchTable() {
-  const searchTerm = document.getElementById('searchRequests').value.toLowerCase();
+  const searchTerm = document.getElementById('searchRequests')?.value?.toLowerCase() || '';
   const rows = document.querySelectorAll('#requestsTable .table-grid');
   
   rows.forEach(row => {
@@ -240,7 +309,7 @@ function sortTable(field) {
     currentSortOrder = 'asc';
   }
   
-  requestsData.sort((a, b) => {
+  deslocacoesCache.sort((a, b) => {
     let valA = a[field] || '';
     let valB = b[field] || '';
     
@@ -279,26 +348,21 @@ function closeCreateRequestModal() {
 }
 
 function resetForm() {
-  // Reset collaborators
   document.getElementById('numColaboradores').value = 1;
   initializeCollaboratorsList();
   
-  // Reset times
   document.getElementById('horaPartida').value = '09';
   document.getElementById('minutoPartida').value = '00';
   document.getElementById('horaChegada').value = '18';
   document.getElementById('minutoChegada').value = '00';
   document.getElementById('dayCounterValue').textContent = '0';
   
-  // Reset intermediate point
   removeIntermediatePoint();
   
-  // Reset transport
   document.getElementById('transportesContainer').innerHTML = '';
   transportCount = 0;
   addTransportMethod();
   
-  // Reset files
   selectedFiles = [];
   document.getElementById('fileList').innerHTML = '';
 }
@@ -310,12 +374,12 @@ function resetTracker() {
     const circle = document.getElementById(`${step}Circle`);
     const label = document.getElementById(`${step}Label`);
     
-    circle.classList.remove('active', 'completed');
-    label.classList.remove('active', 'completed');
+    if (circle) circle.classList.remove('active', 'completed');
+    if (label) label.classList.remove('active', 'completed');
     
     if (index === 0) {
-      circle.classList.add('active');
-      label.classList.add('active');
+      if (circle) circle.classList.add('active');
+      if (label) label.classList.add('active');
     }
   });
 }
@@ -326,7 +390,10 @@ function resetTracker() {
 
 function populateOnBehalfDropdown() {
   const select = document.getElementById('submitOnBehalf');
-  colaboradoresDB.forEach(colab => {
+  if (!select) return;
+  
+  select.innerHTML = '<option value="">Selecione (opcional)</option>';
+  colaboradoresCache.forEach(colab => {
     const option = document.createElement('option');
     option.value = colab.id;
     option.textContent = colab.nome;
@@ -347,8 +414,10 @@ function initializeCollaboratorsList() {
 }
 
 function updateCollaboratorsList() {
-  const num = parseInt(document.getElementById('numColaboradores').value) || 1;
+  const num = parseInt(document.getElementById('numColaboradores')?.value) || 1;
   const container = document.getElementById('colaboradoresContainer');
+  if (!container) return;
+  
   const currentSelections = getCurrentCollaboratorSelections();
   
   let html = '';
@@ -359,8 +428,8 @@ function updateCollaboratorsList() {
         <div class="colaborador-number">${i + 1}</div>
         <select class="form-select colaborador-select" id="colaborador_${i}" onchange="onCollaboratorChange()" required>
           <option value="">Selecionar colaborador...</option>
-          ${colaboradoresDB.map(c => `
-            <option value="${c.id}" ${selectedValue == c.id ? 'selected' : ''}>${c.nome} - ${c.departamento}</option>
+          ${colaboradoresCache.map(c => `
+            <option value="${c.id}" ${selectedValue == c.id ? 'selected' : ''}>${c.nome} - ${c.departamentos?.nome || 'N/D'}</option>
           `).join('')}
         </select>
       </div>
@@ -381,7 +450,7 @@ function getSelectedCollaborators() {
   const selected = [];
   selects.forEach(select => {
     if (select.value) {
-      const colab = colaboradoresDB.find(c => c.id == select.value);
+      const colab = colaboradoresCache.find(c => c.id === select.value);
       if (colab) selected.push(colab);
     }
   });
@@ -400,9 +469,9 @@ function toggleIntermediatePoint() {
   const fields = document.getElementById('intermediatePointFields');
   const btn = document.getElementById('btnToggleIntermediate');
   
-  if (fields.style.display === 'none') {
+  if (fields && fields.style.display === 'none') {
     fields.style.display = 'flex';
-    btn.style.display = 'none';
+    if (btn) btn.style.display = 'none';
   }
 }
 
@@ -411,9 +480,9 @@ function removeIntermediatePoint() {
   const btn = document.getElementById('btnToggleIntermediate');
   const input = document.getElementById('localIntermedio');
   
-  fields.style.display = 'none';
-  btn.style.display = 'inline-flex';
-  input.value = '';
+  if (fields) fields.style.display = 'none';
+  if (btn) btn.style.display = 'inline-flex';
+  if (input) input.value = '';
 }
 
 // ==========================================
@@ -423,6 +492,22 @@ function removeIntermediatePoint() {
 function addTransportMethod() {
   transportCount++;
   const container = document.getElementById('transportesContainer');
+  if (!container) return;
+  
+  // Gerar opções de tipos de transporte
+  const tiposOptions = tiposTransporteCache.map(t => 
+    `<option value="${t.id}" data-codigo="${t.codigo}" data-requer-motorista="${t.requer_motorista}" data-requer-viatura="${t.requer_viatura}">${t.nome}</option>`
+  ).join('');
+  
+  // Gerar opções de frota
+  const frotaOptions = frotaCache.filter(v => v.disponivel).map(v => 
+    `<option value="${v.id}">${v.modelo} (${v.matricula}) - ${v.tipo || 'Ligeiro'}, ${v.lugares} lugares</option>`
+  ).join('');
+  
+  // Gerar opções de transporte público
+  const publicoOptions = tiposTransportePublicoCache.map(t => 
+    `<option value="${t.id}">${t.nome}</option>`
+  ).join('');
   
   const transportDiv = document.createElement('div');
   transportDiv.className = 'transport-item';
@@ -445,7 +530,7 @@ function addTransportMethod() {
           <label class="form-label">Tipo de Transporte <span class="required">*</span></label>
           <select class="form-select" id="tipoTransporte_${transportCount}" onchange="onTransportTypeChange(${transportCount})" required>
             <option value="">Selecionar...</option>
-            ${transportTypes.map(t => `<option value="${t.id}">${t.label}</option>`).join('')}
+            ${tiposOptions}
           </select>
         </div>
         
@@ -454,9 +539,7 @@ function addTransportMethod() {
           <label class="form-label">Viatura da Frota <span class="required">*</span></label>
           <select class="form-select" id="viaturaFrota_${transportCount}">
             <option value="">Selecionar viatura...</option>
-            ${frotaDB.filter(v => v.disponivel).map(v => `
-              <option value="${v.id}">${v.modelo} (${v.matricula}) - ${v.tipo}, ${v.lugares} lugares</option>
-            `).join('')}
+            ${frotaOptions}
           </select>
         </div>
         
@@ -465,7 +548,7 @@ function addTransportMethod() {
           <label class="form-label">Tipo de Transporte Público</label>
           <select class="form-select" id="publicoSubtipo_${transportCount}">
             <option value="">Selecionar...</option>
-            ${publicTransportTypes.map(t => `<option value="${t.id}">${t.label}</option>`).join('')}
+            ${publicoOptions}
           </select>
         </div>
       </div>
@@ -516,8 +599,11 @@ function updateTransportNumbers() {
 }
 
 function onTransportTypeChange(id) {
-  const tipo = document.getElementById(`tipoTransporte_${id}`).value;
-  const transportType = transportTypes.find(t => t.id === tipo);
+  const select = document.getElementById(`tipoTransporte_${id}`);
+  const selectedOption = select.options[select.selectedIndex];
+  const codigo = selectedOption?.dataset?.codigo || '';
+  const requerMotorista = selectedOption?.dataset?.requerMotorista === 'true';
+  const requerViatura = selectedOption?.dataset?.requerViatura === 'true';
   
   // Hide all conditional fields first
   document.getElementById(`viaturaFrotaGroup_${id}`).style.display = 'none';
@@ -526,10 +612,10 @@ function onTransportTypeChange(id) {
   document.getElementById(`viaturaPropriaGroup_${id}`).style.display = 'none';
   document.getElementById(`aluguerGroup_${id}`).style.display = 'none';
   
-  if (!tipo) return;
+  if (!select.value) return;
   
   // Show relevant fields based on type
-  switch(tipo) {
+  switch(codigo) {
     case 'frota':
       document.getElementById(`viaturaFrotaGroup_${id}`).style.display = 'block';
       document.getElementById(`motoristaGroup_${id}`).style.display = 'block';
@@ -547,7 +633,7 @@ function onTransportTypeChange(id) {
       break;
   }
   
-  if (transportType && transportType.requiresDriver) {
+  if (requerMotorista) {
     updateDriverDropdown(id);
   }
 }
@@ -556,9 +642,13 @@ function updateDriverDropdowns() {
   const transportItems = document.querySelectorAll('.transport-item');
   transportItems.forEach(item => {
     const id = item.id.replace('transport_', '');
-    const tipo = document.getElementById(`tipoTransporte_${id}`)?.value;
-    if (tipo && ['frota', 'propria', 'aluguer'].includes(tipo)) {
-      updateDriverDropdown(id);
+    const select = document.getElementById(`tipoTransporte_${id}`);
+    if (select && select.value) {
+      const selectedOption = select.options[select.selectedIndex];
+      const codigo = selectedOption?.dataset?.codigo || '';
+      if (['frota', 'propria', 'aluguer'].includes(codigo)) {
+        updateDriverDropdown(id);
+      }
     }
   });
 }
@@ -570,15 +660,15 @@ function updateDriverDropdown(transportId) {
   
   if (!select) return;
   
-  // Save current selection
   const currentValue = select.value;
   
-  // Clear and rebuild options
   select.innerHTML = '<option value="">Selecionar motorista...</option>';
   
   if (selectedCollaborators.length === 0) {
-    hint.textContent = 'Selecione primeiro os colaboradores';
-    hint.style.color = 'var(--warning)';
+    if (hint) {
+      hint.textContent = 'Selecione primeiro os colaboradores';
+      hint.style.color = 'var(--warning)';
+    }
     return;
   }
   
@@ -593,15 +683,16 @@ function updateDriverDropdown(transportId) {
   if (selectedCollaborators.length === 1) {
     select.value = selectedCollaborators[0].id;
     select.disabled = true;
-    hint.textContent = 'Único colaborador selecionado automaticamente como motorista';
-    hint.style.color = 'var(--text-secondary)';
+    if (hint) {
+      hint.textContent = 'Único colaborador selecionado automaticamente como motorista';
+      hint.style.color = 'var(--text-secondary)';
+    }
   } else {
     select.disabled = false;
-    // Restore previous selection if still valid
-    if (currentValue && selectedCollaborators.find(c => c.id == currentValue)) {
+    if (currentValue && selectedCollaborators.find(c => c.id === currentValue)) {
       select.value = currentValue;
     }
-    hint.textContent = '';
+    if (hint) hint.textContent = '';
   }
 }
 
@@ -629,6 +720,7 @@ function handleFileSelect(event) {
 
 function renderFileList() {
   const container = document.getElementById('fileList');
+  if (!container) return;
   
   if (selectedFiles.length === 0) {
     container.innerHTML = '';
@@ -672,18 +764,20 @@ function formatFileSize(bytes) {
 // ==========================================
 
 function updateDayCounter() {
-  const startDate = document.getElementById('dataPartida').value;
-  const endDate = document.getElementById('dataChegada').value;
+  const startDate = document.getElementById('dataPartida')?.value;
+  const endDate = document.getElementById('dataChegada')?.value;
+  const counter = document.getElementById('dayCounterValue');
+  
+  if (!counter) return;
   
   if (startDate && endDate) {
     const start = new Date(startDate);
     const end = new Date(endDate);
     const diffTime = Math.abs(end - start);
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-    
-    document.getElementById('dayCounterValue').textContent = diffDays;
+    counter.textContent = diffDays;
   } else {
-    document.getElementById('dayCounterValue').textContent = '0';
+    counter.textContent = '0';
   }
 }
 
@@ -697,48 +791,59 @@ function formatDateDisplay(dateStr) {
 // FORM SUBMISSION
 // ==========================================
 
-function handleSubmitRequest(event) {
+async function handleSubmitRequest(event) {
   event.preventDefault();
   
   if (!validateForm()) return;
   
-  const formData = collectFormData('Em Aprovação');
-  
-  if (editingRequestId) {
-    const index = requestsData.findIndex(r => r.id === editingRequestId);
-    if (index !== -1) {
-      requestsData[index] = formData;
+  try {
+    const formData = collectFormData('Pendente Aprovação');
+    
+    if (editingRequestId) {
+      await DataService.updateDeslocacao(editingRequestId, formData);
+    } else {
+      await DataService.createDeslocacao(formData);
     }
-  } else {
-    requestsData.unshift(formData);
+    
+    // Recarregar dados
+    const deslocacoes = await DataService.getDeslocacoes();
+    deslocacoesCache = transformDeslocacoes(deslocacoes);
+    
+    renderTable();
+    updateStats();
+    closeCreateRequestModal();
+    showToast('Pedido submetido com sucesso!', 'success');
+  } catch (error) {
+    console.error('Erro ao submeter pedido:', error);
+    showToast('Erro ao submeter pedido. Tente novamente.', 'danger');
   }
-  
-  renderTable();
-  updateStats();
-  closeCreateRequestModal();
-  showToast('Pedido submetido com sucesso!', 'success');
 }
 
-function saveAsDraft() {
-  const formData = collectFormData('Draft');
-  
-  if (editingRequestId) {
-    const index = requestsData.findIndex(r => r.id === editingRequestId);
-    if (index !== -1) {
-      requestsData[index] = formData;
+async function saveAsDraft() {
+  try {
+    const formData = collectFormData('Rascunho');
+    
+    if (editingRequestId) {
+      await DataService.updateDeslocacao(editingRequestId, formData);
+    } else {
+      await DataService.createDeslocacao(formData);
     }
-  } else {
-    requestsData.unshift(formData);
+    
+    const deslocacoes = await DataService.getDeslocacoes();
+    deslocacoesCache = transformDeslocacoes(deslocacoes);
+    
+    renderTable();
+    updateStats();
+    closeCreateRequestModal();
+    showToast('Rascunho guardado!', 'warning');
+  } catch (error) {
+    console.error('Erro ao guardar rascunho:', error);
+    showToast('Erro ao guardar rascunho. Tente novamente.', 'danger');
   }
-  
-  renderTable();
-  updateStats();
-  closeCreateRequestModal();
-  showToast('Rascunho guardado!', 'warning');
 }
 
 function validateForm() {
-  const numColabs = parseInt(document.getElementById('numColaboradores').value);
+  const numColabs = parseInt(document.getElementById('numColaboradores')?.value) || 0;
   const selectedColabs = getSelectedCollaborators();
   
   if (selectedColabs.length < numColabs) {
@@ -746,27 +851,30 @@ function validateForm() {
     return false;
   }
   
-  // Validate transports
   const transportItems = document.querySelectorAll('.transport-item');
   for (const item of transportItems) {
     const id = item.id.replace('transport_', '');
-    const tipo = document.getElementById(`tipoTransporte_${id}`).value;
+    const tipoSelect = document.getElementById(`tipoTransporte_${id}`);
+    const tipo = tipoSelect?.value;
     
     if (!tipo) {
       showToast('Selecione o tipo de transporte', 'danger');
       return false;
     }
     
-    if (['frota', 'propria', 'aluguer'].includes(tipo)) {
-      const motorista = document.getElementById(`motorista_${id}`).value;
+    const selectedOption = tipoSelect.options[tipoSelect.selectedIndex];
+    const codigo = selectedOption?.dataset?.codigo || '';
+    
+    if (['frota', 'propria', 'aluguer'].includes(codigo)) {
+      const motorista = document.getElementById(`motorista_${id}`)?.value;
       if (!motorista) {
         showToast('Selecione o motorista para cada transporte', 'danger');
         return false;
       }
     }
     
-    if (tipo === 'frota') {
-      const viatura = document.getElementById(`viaturaFrota_${id}`).value;
+    if (codigo === 'frota') {
+      const viatura = document.getElementById(`viaturaFrota_${id}`)?.value;
       if (!viatura) {
         showToast('Selecione a viatura da frota', 'danger');
         return false;
@@ -777,27 +885,28 @@ function validateForm() {
   return true;
 }
 
-function collectFormData(status) {
+function collectFormData(estado) {
   const selectedColabs = getSelectedCollaborators();
   const transportes = collectTransportData();
-  const pontoIntermedio = document.getElementById('localIntermedio').value.trim();
+  const pontoIntermedio = document.getElementById('localIntermedio')?.value?.trim() || null;
+  
+  const horaPartida = `${(document.getElementById('horaPartida')?.value || '09').padStart(2, '0')}:${(document.getElementById('minutoPartida')?.value || '00').padStart(2, '0')}`;
+  const horaChegada = `${(document.getElementById('horaChegada')?.value || '18').padStart(2, '0')}:${(document.getElementById('minutoChegada')?.value || '00').padStart(2, '0')}`;
   
   return {
-    id: editingRequestId || Date.now(),
-    motivo: document.getElementById('motivoDeslocacao').value,
-    colaboradores: selectedColabs.map(c => c.nome),
-    numColaboradores: selectedColabs.length,
-    origem: document.getElementById('localOrigem').value,
-    pontoIntermedio: pontoIntermedio,
-    destino: document.getElementById('localDestino').value,
-    data: formatDateDisplay(document.getElementById('dataPartida').value),
-    duracao: document.getElementById('dayCounterValue').textContent + ' dia(s)',
-    transportes: transportes,
-    status: status,
-    horaPartida: `${(document.getElementById('horaPartida').value || '09').padStart(2, '0')}:${(document.getElementById('minutoPartida').value || '00').padStart(2, '0')}`,
-    horaChegada: `${(document.getElementById('horaChegada').value || '18').padStart(2, '0')}:${(document.getElementById('minutoChegada').value || '00').padStart(2, '0')}`,
-    justificacao: document.getElementById('observacoes').value || '-',
-    anexos: selectedFiles.map(f => f.name)
+    motivo: document.getElementById('motivoDeslocacao')?.value || '',
+    origem: document.getElementById('localOrigem')?.value || '',
+    ponto_intermedio: pontoIntermedio,
+    destino: document.getElementById('localDestino')?.value || '',
+    data_partida: document.getElementById('dataPartida')?.value || null,
+    hora_partida: horaPartida,
+    data_chegada: document.getElementById('dataChegada')?.value || null,
+    hora_chegada: horaChegada,
+    observacoes: document.getElementById('observacoes')?.value || null,
+    estado: estado,
+    criado_por: currentUserId,
+    colaboradores: selectedColabs.map(c => c.id),
+    transportes: transportes
   };
 }
 
@@ -805,38 +914,40 @@ function collectTransportData() {
   const transportes = [];
   const transportItems = document.querySelectorAll('.transport-item');
   
-  transportItems.forEach(item => {
+  transportItems.forEach((item, index) => {
     const id = item.id.replace('transport_', '');
-    const tipo = document.getElementById(`tipoTransporte_${id}`).value;
+    const tipoSelect = document.getElementById(`tipoTransporte_${id}`);
+    const tipoId = tipoSelect?.value;
     
-    if (!tipo) return;
+    if (!tipoId) return;
+    
+    const selectedOption = tipoSelect.options[tipoSelect.selectedIndex];
+    const codigo = selectedOption?.dataset?.codigo || '';
     
     const transport = {
-      tipo: transportTypes.find(t => t.id === tipo)?.label || tipo
+      tipo_transporte_id: tipoId,
+      viatura_id: null,
+      tipo_publico_id: null,
+      motorista_id: null,
+      observacoes: null
     };
     
-    switch(tipo) {
+    switch(codigo) {
       case 'frota':
-        const viaturaId = document.getElementById(`viaturaFrota_${id}`).value;
-        const viatura = frotaDB.find(v => v.id == viaturaId);
-        transport.viatura = viatura ? `${viatura.modelo} (${viatura.matricula})` : '';
+        transport.viatura_id = document.getElementById(`viaturaFrota_${id}`)?.value || null;
+        transport.motorista_id = document.getElementById(`motorista_${id}`)?.value || null;
         break;
       case 'propria':
-        transport.viatura = document.getElementById(`viaturaPropria_${id}`).value;
+        transport.observacoes = document.getElementById(`viaturaPropria_${id}`)?.value || null;
+        transport.motorista_id = document.getElementById(`motorista_${id}`)?.value || null;
         break;
       case 'aluguer':
-        transport.aluguer = document.getElementById(`aluguerInfo_${id}`).value;
+        transport.observacoes = document.getElementById(`aluguerInfo_${id}`)?.value || null;
+        transport.motorista_id = document.getElementById(`motorista_${id}`)?.value || null;
         break;
       case 'publico':
-        const subtipo = document.getElementById(`publicoSubtipo_${id}`).value;
-        transport.subtipo = publicTransportTypes.find(t => t.id === subtipo)?.label || '';
+        transport.tipo_publico_id = document.getElementById(`publicoSubtipo_${id}`)?.value || null;
         break;
-    }
-    
-    if (['frota', 'propria', 'aluguer'].includes(tipo)) {
-      const motoristaId = document.getElementById(`motorista_${id}`).value;
-      const motorista = colaboradoresDB.find(c => c.id == motoristaId);
-      transport.motorista = motorista?.nome || '';
     }
     
     transportes.push(transport);
@@ -850,7 +961,7 @@ function collectTransportData() {
 // ==========================================
 
 function openViewRequestModal(id) {
-  const request = requestsData.find(r => r.id === id);
+  const request = deslocacoesCache.find(r => r.id === id);
   if (!request) return;
   
   currentViewingId = id;
@@ -867,12 +978,12 @@ function openViewRequestModal(id) {
     if (t.subtipo) info += ` - ${t.subtipo}`;
     if (t.motorista) info += ` (Motorista: ${t.motorista})`;
     return `<div class="transport-detail-item">${info}</div>`;
-  }).join('');
+  }).join('') || '<div class="transport-detail-item">Sem transportes definidos</div>';
   
   detailsContainer.innerHTML = `
     <div class="detail-card">
       <div class="detail-label">Motivo</div>
-      <div class="detail-value">${request.motivo}</div>
+      <div class="detail-value">${request.motivo || '-'}</div>
     </div>
     <div class="detail-card">
       <div class="detail-label">Data</div>
@@ -888,7 +999,7 @@ function openViewRequestModal(id) {
     </div>
     <div class="detail-card detail-card-wide">
       <div class="detail-label">Colaboradores (${request.numColaboradores})</div>
-      <div class="detail-value">${request.colaboradores.join(', ')}</div>
+      <div class="detail-value">${request.colaboradores.join(', ') || '-'}</div>
     </div>
     <div class="detail-card detail-card-wide">
       <div class="detail-label">Percurso</div>
@@ -903,8 +1014,8 @@ function openViewRequestModal(id) {
       <div class="detail-value"><span class="${getStatusClass(request.status)}">${request.status}</span></div>
     </div>
     <div class="detail-card detail-card-wide">
-      <div class="detail-label">Justificação</div>
-      <div class="detail-value">${request.justificacao}</div>
+      <div class="detail-label">Observações</div>
+      <div class="detail-value">${request.observacoes || '-'}</div>
     </div>
     ${request.anexos && request.anexos.length > 0 ? `
       <div class="detail-card detail-card-wide">
@@ -927,27 +1038,35 @@ function updateViewTracker(status) {
   ['viewStep1', 'viewStep2', 'viewStep3'].forEach(step => {
     const circle = document.getElementById(`${step}Circle`);
     const label = document.getElementById(`${step}Label`);
-    circle.classList.remove('active', 'completed');
-    label.classList.remove('active', 'completed');
+    if (circle) circle.classList.remove('active', 'completed');
+    if (label) label.classList.remove('active', 'completed');
   });
   
   const statusLower = status.toLowerCase();
   
   if (statusLower.includes('draft') || statusLower.includes('rascunho')) {
-    progress.style.width = '0%';
-    document.getElementById('viewStep1Circle').classList.add('active');
-    document.getElementById('viewStep1Label').classList.add('active');
+    if (progress) progress.style.width = '0%';
+    const c1 = document.getElementById('viewStep1Circle');
+    const l1 = document.getElementById('viewStep1Label');
+    if (c1) c1.classList.add('active');
+    if (l1) l1.classList.add('active');
   } else if (statusLower.includes('aprovação')) {
-    progress.style.width = '50%';
-    document.getElementById('viewStep1Circle').classList.add('completed');
-    document.getElementById('viewStep1Label').classList.add('completed');
-    document.getElementById('viewStep2Circle').classList.add('active');
-    document.getElementById('viewStep2Label').classList.add('active');
-  } else if (statusLower.includes('aprovado') || statusLower.includes('concluído')) {
-    progress.style.width = '100%';
+    if (progress) progress.style.width = '50%';
+    const c1 = document.getElementById('viewStep1Circle');
+    const l1 = document.getElementById('viewStep1Label');
+    const c2 = document.getElementById('viewStep2Circle');
+    const l2 = document.getElementById('viewStep2Label');
+    if (c1) c1.classList.add('completed');
+    if (l1) l1.classList.add('completed');
+    if (c2) c2.classList.add('active');
+    if (l2) l2.classList.add('active');
+  } else if (statusLower.includes('aprovado') || statusLower.includes('aprovada') || statusLower.includes('concluído')) {
+    if (progress) progress.style.width = '100%';
     ['viewStep1', 'viewStep2', 'viewStep3'].forEach(step => {
-      document.getElementById(`${step}Circle`).classList.add('completed');
-      document.getElementById(`${step}Label`).classList.add('completed');
+      const c = document.getElementById(`${step}Circle`);
+      const l = document.getElementById(`${step}Label`);
+      if (c) c.classList.add('completed');
+      if (l) l.classList.add('completed');
     });
   }
 }
@@ -962,7 +1081,6 @@ function closeViewRequestModal() {
 function editCurrentRequest() {
   if (!currentViewingId) return;
   closeViewRequestModal();
-  // TODO: Implement edit functionality
   showToast('Funcionalidade de edição em desenvolvimento', 'warning');
 }
 
@@ -1041,7 +1159,8 @@ if (fileUploadArea) {
   
   fileUploadArea.addEventListener('drop', (e) => {
     const files = e.dataTransfer.files;
-    document.getElementById('anexos').files = files;
+    const input = document.getElementById('anexos');
+    if (input) input.files = files;
     handleFileSelect({ target: { files: files } });
   }, false);
 }
