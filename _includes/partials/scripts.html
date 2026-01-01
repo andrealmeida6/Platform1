@@ -1,2 +1,22 @@
+<!-- Serviços Base (devem carregar primeiro) -->
+<script src="{{ '/web-files/js/dataService.js' | relative_url }}"></script>
+<script src="{{ '/web-files/js/authService.js' | relative_url }}"></script>
+
+<!-- Scripts da Aplicação -->
 <script src="{{ '/web-files/js/app.js' | relative_url }}"></script>
 <script src="{{ '/web-files/js/calendar.js' | relative_url }}"></script>
+
+<!-- Inicialização Global -->
+<script>
+document.addEventListener('DOMContentLoaded', async function() {
+  // Inicializar AuthService
+  if (window.AuthService) {
+    await AuthService.init();
+    
+    // Inicializar componente View As se existir
+    if (window.initViewAsSelector) {
+      window.initViewAsSelector();
+    }
+  }
+});
+</script>
