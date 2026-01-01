@@ -1,5 +1,5 @@
 // ===================================================================
-// AUTH SERVICE - Gestão de Autenticação e Permissões
+// AUTH SERVICE - Gestão de Autenticação e Permissões (v2)
 // ===================================================================
 
 const AuthService = (function() {
@@ -19,10 +19,10 @@ const AuthService = (function() {
     if (rolesCache) return rolesCache;
     
     try {
-      rolesCache = await DataService.retrieveMultipleRecords('roles', {
-        filter: { ativo: true },
-        orderby: 'nivel.desc'
-      });
+      const url = `${DataService.getBaseUrl()}/rest/v1/roles?ativo=eq.true&order=nivel.desc`;
+      const response = await fetch(url, { headers: DataService.getHeaders() });
+      if (!response.ok) throw new Error('Erro ao buscar roles');
+      rolesCache = await response.json();
       return rolesCache;
     } catch (error) {
       console.error('[AuthService] Erro ao buscar roles:', error);
@@ -32,28 +32,39 @@ const AuthService = (function() {
   
   async function getColaboradoresComRoles() {
     try {
-      // Query simples sem nested joins complexos
-      const select = '*,departamentos(id,codigo,nome),colaborador_roles(id,role_id,ativo)';
-      const colaboradores = await DataService.retrieveWithRelations('colaboradores', select, { ativo: true });
+      // Buscar colaboradores
+      const urlColab = `${DataService.getBaseUrl()}/rest/v1/colaboradores?ativo=eq.true&select=*,departamentos(id,codigo,nome)`;
+      const respColab = await fetch(urlColab, { headers: DataService.getHeaders() });
+      if (!respColab.ok) throw new Error('Erro ao buscar colaboradores');
+      const colaboradores = await respColab.json();
       
-      // Buscar todas as roles uma vez
+      // Buscar colaborador_roles
+      const urlCR = `${DataService.getBaseUrl()}/rest/v1/colaborador_roles?ativo=eq.true&select=colaborador_id,role_id`;
+      const respCR = await fetch(urlCR, { headers: DataService.getHeaders() });
+      if (!respCR.ok) throw new Error('Erro ao buscar colaborador_roles');
+      const colaboradorRoles = await respCR.json();
+      
+      // Buscar roles
       const roles = await getRoles();
       const rolesMap = {};
       roles.forEach(r => rolesMap[r.id] = r);
       
-      // Processar para adicionar roles completas
-      return colaboradores.map(c => {
-        const userRoles = (c.colaborador_roles || [])
-          .filter(cr => cr.ativo && rolesMap[cr.role_id])
-          .map(cr => rolesMap[cr.role_id])
-          .sort((a, b) => (b.nivel || 0) - (a.nivel || 0));
-        
-        return {
-          ...c,
-          roles: userRoles,
-          colaborador_roles: undefined // limpar
-        };
+      // Criar mapa de roles por colaborador
+      const rolesByColaborador = {};
+      colaboradorRoles.forEach(cr => {
+        if (!rolesByColaborador[cr.colaborador_id]) {
+          rolesByColaborador[cr.colaborador_id] = [];
+        }
+        if (rolesMap[cr.role_id]) {
+          rolesByColaborador[cr.colaborador_id].push(rolesMap[cr.role_id]);
+        }
       });
+      
+      // Combinar dados
+      return colaboradores.map(c => ({
+        ...c,
+        roles: (rolesByColaborador[c.id] || []).sort((a, b) => (b.nivel || 0) - (a.nivel || 0))
+      }));
     } catch (error) {
       console.error('[AuthService] Erro ao buscar colaboradores com roles:', error);
       return [];
@@ -62,25 +73,33 @@ const AuthService = (function() {
   
   async function getColaboradorComRoles(colaboradorId) {
     try {
-      const select = '*,departamentos(id,codigo,nome),colaborador_roles(id,role_id,ativo)';
-      const result = await DataService.retrieveWithRelations('colaboradores', select, { id: colaboradorId });
+      // Buscar colaborador
+      const urlColab = `${DataService.getBaseUrl()}/rest/v1/colaboradores?id=eq.${colaboradorId}&select=*,departamentos(id,codigo,nome)`;
+      const respColab = await fetch(urlColab, { headers: DataService.getHeaders() });
+      if (!respColab.ok) throw new Error('Erro ao buscar colaborador');
+      const colaboradores = await respColab.json();
+      if (colaboradores.length === 0) return null;
       
-      if (result.length === 0) return null;
+      // Buscar roles do colaborador
+      const urlCR = `${DataService.getBaseUrl()}/rest/v1/colaborador_roles?colaborador_id=eq.${colaboradorId}&ativo=eq.true&select=role_id`;
+      const respCR = await fetch(urlCR, { headers: DataService.getHeaders() });
+      if (!respCR.ok) throw new Error('Erro ao buscar roles do colaborador');
+      const colaboradorRoles = await respCR.json();
       
+      // Buscar roles
       const roles = await getRoles();
       const rolesMap = {};
       roles.forEach(r => rolesMap[r.id] = r);
       
-      const c = result[0];
-      const userRoles = (c.colaborador_roles || [])
-        .filter(cr => cr.ativo && rolesMap[cr.role_id])
+      // Combinar
+      const userRoles = colaboradorRoles
         .map(cr => rolesMap[cr.role_id])
+        .filter(r => r)
         .sort((a, b) => (b.nivel || 0) - (a.nivel || 0));
       
       return {
-        ...c,
-        roles: userRoles,
-        colaborador_roles: undefined
+        ...colaboradores[0],
+        roles: userRoles
       };
     } catch (error) {
       console.error('[AuthService] Erro ao buscar colaborador:', error);
@@ -88,14 +107,23 @@ const AuthService = (function() {
     }
   }
   
-  async function atribuirRole(colaboradorId, roleId, atribuidoPor = null) {
+  async function atribuirRole(colaboradorId, roleId) {
     try {
-      return await DataService.createRecord('colaborador_roles', {
-        colaborador_id: colaboradorId,
-        role_id: roleId,
-        atribuido_por: atribuidoPor,
-        ativo: true
+      const url = `${DataService.getBaseUrl()}/rest/v1/colaborador_roles`;
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: DataService.getHeaders(),
+        body: JSON.stringify({
+          colaborador_id: colaboradorId,
+          role_id: roleId,
+          ativo: true
+        })
       });
+      if (!response.ok) {
+        const error = await response.text();
+        throw new Error(error);
+      }
+      return await response.json();
     } catch (error) {
       console.error('[AuthService] Erro ao atribuir role:', error);
       throw error;
@@ -104,15 +132,18 @@ const AuthService = (function() {
   
   async function removerRole(colaboradorId, roleId) {
     try {
-      const registos = await DataService.retrieveMultipleRecords('colaborador_roles', {
-        filter: {
-          colaborador_id: colaboradorId,
-          role_id: roleId
-        }
-      });
+      // Buscar o registo
+      const urlGet = `${DataService.getBaseUrl()}/rest/v1/colaborador_roles?colaborador_id=eq.${colaboradorId}&role_id=eq.${roleId}`;
+      const respGet = await fetch(urlGet, { headers: DataService.getHeaders() });
+      const registos = await respGet.json();
       
       if (registos.length > 0) {
-        return await DataService.deleteRecord('colaborador_roles', registos[0].id);
+        const urlDelete = `${DataService.getBaseUrl()}/rest/v1/colaborador_roles?id=eq.${registos[0].id}`;
+        const respDelete = await fetch(urlDelete, {
+          method: 'DELETE',
+          headers: DataService.getHeaders()
+        });
+        return respDelete.ok;
       }
       return false;
     } catch (error) {
@@ -150,7 +181,7 @@ const AuthService = (function() {
       if (currentUserCache) return currentUserCache;
     }
     
-    // Default: primeiro utilizador com role Núcleo, ou primeiro colaborador
+    // Default: primeiro utilizador com role Núcleo
     try {
       const colaboradores = await getColaboradoresComRoles();
       if (colaboradores.length === 0) return null;
@@ -191,11 +222,6 @@ const AuthService = (function() {
       localStorage.removeItem(VIEW_AS_KEY);
       viewAsUserCache = null;
     }
-    
-    window.dispatchEvent(new CustomEvent('viewAsChanged', { 
-      detail: { viewAsUser: viewAsUserCache }
-    }));
-    
     return viewAsUserCache;
   }
   
@@ -210,10 +236,6 @@ const AuthService = (function() {
   function clearViewAs() {
     localStorage.removeItem(VIEW_AS_KEY);
     viewAsUserCache = null;
-    
-    window.dispatchEvent(new CustomEvent('viewAsChanged', { 
-      detail: { viewAsUser: null }
-    }));
   }
   
   // ==========================================
@@ -225,50 +247,12 @@ const AuthService = (function() {
     return user.roles.some(r => r.codigo === roleCode);
   }
   
-  function hasPermission(user, permission) {
-    if (!user || !user.roles) return false;
-    
-    return user.roles.some(r => {
-      const perms = r.permissoes || {};
-      return perms[permission] === true || perms.ver_tudo === true;
-    });
-  }
-  
-  function getMaxLevel(user) {
-    if (!user || !user.roles || user.roles.length === 0) return 0;
-    return Math.max(...user.roles.map(r => r.nivel || 0));
-  }
-  
   function isAdmin(user) {
     return hasRole(user, 'nucleo');
   }
   
   function canAccessBackoffice(user) {
-    return isAdmin(user) || hasPermission(user, 'backoffice') || hasPermission(user, 'gerir_utilizadores');
-  }
-  
-  function canApprove(user) {
-    return hasPermission(user, 'aprovar') || hasPermission(user, 'aprovar_afr') || isAdmin(user);
-  }
-  
-  function filterByPermissions(data, user, ownerField = 'criado_por') {
-    if (!user || !data) return [];
-    
-    if (isAdmin(user)) return data;
-    if (hasRole(user, 'afr_dirigente')) return data;
-    
-    return data.filter(item => {
-      if (item[ownerField] === user.id) return true;
-      
-      if (item.deslocacao_colaboradores) {
-        return item.deslocacao_colaboradores.some(dc => dc.colaborador_id === user.id);
-      }
-      if (item.formacao_inscricoes) {
-        return item.formacao_inscricoes.some(fi => fi.colaborador_id === user.id);
-      }
-      
-      return false;
-    });
+    return isAdmin(user);
   }
   
   // ==========================================
@@ -277,6 +261,7 @@ const AuthService = (function() {
   
   async function init() {
     try {
+      console.log('[AuthService] A inicializar...');
       await getCurrentUser();
       
       const viewAsId = localStorage.getItem(VIEW_AS_KEY);
@@ -285,8 +270,10 @@ const AuthService = (function() {
       }
       
       console.log('[AuthService] Inicializado com sucesso');
+      return true;
     } catch (error) {
       console.error('[AuthService] Erro na inicialização:', error);
+      return false;
     }
   }
   
@@ -308,12 +295,8 @@ const AuthService = (function() {
     isViewAsActive,
     clearViewAs,
     hasRole,
-    hasPermission,
-    getMaxLevel,
     isAdmin,
     canAccessBackoffice,
-    canApprove,
-    filterByPermissions,
     init
   };
   
