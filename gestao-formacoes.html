@@ -138,6 +138,7 @@ title: Gestão de Formações
             <option value="pendente_rh">Aguarda AFR-RH</option>
             <option value="aprovado">Aprovado</option>
             <option value="rejeitado">Rejeitado</option>
+            <option value="devolvido">Devolvido</option>
           </select>
           <div class="search-box">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -203,98 +204,6 @@ title: Gestão de Formações
   </div>
 </div>
 
-<!-- Modal: Novo Pedido de Formação -->
-<div class="modal-overlay" id="modalNovoPedido">
-  <div class="modal-content modal-large">
-    <div class="modal-header">
-      <h3>Propor Nova Formação</h3>
-      <button class="modal-close" onclick="closeModal('modalNovoPedido')">&times;</button>
-    </div>
-    <div class="modal-body">
-      <form id="formNovoPedido">
-        <div class="form-row">
-          <div class="form-group">
-            <label>Título da Formação *</label>
-            <input type="text" id="pedidoTitulo" required placeholder="Ex: Excel Avançado para Análise de Dados">
-          </div>
-        </div>
-        
-        <div class="form-row two-cols">
-          <div class="form-group">
-            <label>Tipo</label>
-            <select id="pedidoTipo">
-              <option value="Externa">Externa</option>
-              <option value="Interna">Interna</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Modalidade</label>
-            <select id="pedidoModalidade">
-              <option value="Opcional">Opcional</option>
-              <option value="Obrigatória">Obrigatória</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="form-row two-cols">
-          <div class="form-group">
-            <label>Entidade Formadora</label>
-            <input type="text" id="pedidoEntidade" placeholder="Ex: CEGOC, IEFP, Empresa XYZ">
-          </div>
-          <div class="form-group">
-            <label>Duração (horas)</label>
-            <input type="number" id="pedidoDuracao" min="1" placeholder="Ex: 16">
-          </div>
-        </div>
-
-        <div class="form-row two-cols">
-          <div class="form-group">
-            <label>Data Prevista Início</label>
-            <input type="date" id="pedidoDataInicio">
-          </div>
-          <div class="form-group">
-            <label>Data Prevista Fim</label>
-            <input type="date" id="pedidoDataFim">
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label>Objetivo / Descrição *</label>
-          <textarea id="pedidoObjetivo" rows="3" required placeholder="Descreva os objetivos e conteúdo da formação..."></textarea>
-        </div>
-
-        <div class="form-group">
-          <label>Justificação do Pedido *</label>
-          <textarea id="pedidoJustificacao" rows="3" required placeholder="Explique porque esta formação é necessária..."></textarea>
-        </div>
-
-        <div class="form-group">
-          <label>Documento de Suporte (opcional)</label>
-          <div class="file-upload-area" onclick="document.getElementById('pedidoDocumento').click()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-              <polyline points="17 8 12 3 7 8"/>
-              <line x1="12" y1="3" x2="12" y2="15"/>
-            </svg>
-            <span id="fileUploadText">Clique para carregar documento (PDF, DOC)</span>
-            <input type="file" id="pedidoDocumento" accept=".pdf,.doc,.docx" style="display:none" onchange="handleFileSelect(this)">
-          </div>
-        </div>
-      </form>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="closeModal('modalNovoPedido')">Cancelar</button>
-      <button class="btn btn-primary" onclick="submeterPedido()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="22" y1="2" x2="11" y2="13"/>
-          <polygon points="22 2 15 22 11 13 2 9 22 2"/>
-        </svg>
-        Submeter Pedido
-      </button>
-    </div>
-  </div>
-</div>
-
 <!-- Modal: Nova Formação (Admin) -->
 <div class="modal-overlay" id="modalNovaFormacao">
   <div class="modal-content modal-large">
@@ -332,6 +241,7 @@ title: Gestão de Formações
           <div class="form-group">
             <label>Formador(es) / Entidade *</label>
             <input type="text" id="formacaoFormador" required placeholder="Ex: João Silva, Maria Costa">
+            <small style="color: #64748b; font-size: 0.75rem;">Separe múltiplos nomes por vírgula</small>
           </div>
           <div class="form-group">
             <label>Duração (horas) *</label>
@@ -432,7 +342,7 @@ title: Gestão de Formações
 
 <script>
 // ==========================================
-// GESTÃO DE FORMAÇÕES
+// GESTÃO DE FORMAÇÕES - JavaScript
 // ==========================================
 
 let currentUser = null;
@@ -461,7 +371,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     await waitForServices();
     currentUser = await AuthService.getCurrentUser();
     
-    // Verificar acesso
+    // Verificar acesso (AFR-RH ou Núcleo)
     if (!AuthService.canAccessFormacaoManagement(currentUser)) {
       document.getElementById('accessDenied').style.display = 'flex';
       return;
@@ -490,76 +400,25 @@ async function loadData() {
 
 async function loadPedidos() {
   try {
-    // Simular dados de pedidos (em produção viria do Supabase)
-    allPedidos = await DataService.getPedidosFormacao?.() || getMockPedidos();
+    allPedidos = await DataService.getPedidosFormacao();
+    console.log('[GestaoFormacoes] Pedidos carregados:', allPedidos.length);
     renderPedidos(allPedidos);
-    document.getElementById('badgePedidos').textContent = allPedidos.filter(p => 
+    
+    const pendentes = allPedidos.filter(p => 
       p.estado === 'pendente_dirigente' || p.estado === 'pendente_rh'
     ).length;
+    document.getElementById('badgePedidos').textContent = pendentes;
+    
   } catch (error) {
     console.error('Erro ao carregar pedidos:', error);
-    allPedidos = getMockPedidos();
-    renderPedidos(allPedidos);
+    renderPedidos([]);
   }
-}
-
-function getMockPedidos() {
-  return [
-    {
-      id: 'PED-2026-001',
-      titulo: 'Power BI Avançado',
-      tipo: 'Externa',
-      entidade: 'CEGOC',
-      solicitante: { id: '1', nome: 'Carlos Ferreira', departamento: 'Financeiro' },
-      data_pedido: '2025-12-28',
-      estado: 'pendente_rh',
-      duracao_horas: 24,
-      justificacao: 'Necessidade de capacitação em análise avançada de dados para o departamento financeiro.',
-      objetivo: 'Dominar funcionalidades avançadas do Power BI incluindo DAX, modelação de dados e dashboards interativos.',
-      historico: [
-        { data: '2025-12-28T09:15:00', acao: 'Pedido submetido', user: 'Carlos Ferreira', comentario: '' },
-        { data: '2025-12-29T14:30:00', acao: 'Aprovado pelo Dirigente', user: 'Ana Costa', comentario: 'Aprovado. Formação importante para a equipa.' }
-      ]
-    },
-    {
-      id: 'PED-2026-002',
-      titulo: 'Gestão de Projetos - Metodologias Ágeis',
-      tipo: 'Externa',
-      entidade: 'Rumos',
-      solicitante: { id: '2', nome: 'Maria Santos', departamento: 'TI' },
-      data_pedido: '2025-12-30',
-      estado: 'pendente_dirigente',
-      duracao_horas: 16,
-      justificacao: 'Transição para metodologias ágeis no departamento.',
-      objetivo: 'Aprender Scrum, Kanban e outras metodologias ágeis.',
-      historico: [
-        { data: '2025-12-30T10:00:00', acao: 'Pedido submetido', user: 'Maria Santos', comentario: '' }
-      ]
-    },
-    {
-      id: 'PED-2026-003',
-      titulo: 'Comunicação Eficaz',
-      tipo: 'Interna',
-      entidade: 'RH Interno',
-      solicitante: { id: '3', nome: 'João Oliveira', departamento: 'Comercial' },
-      data_pedido: '2025-12-20',
-      estado: 'aprovado',
-      duracao_horas: 8,
-      justificacao: 'Melhorar competências de comunicação da equipa comercial.',
-      objetivo: 'Técnicas de comunicação assertiva e apresentações.',
-      historico: [
-        { data: '2025-12-20T11:00:00', acao: 'Pedido submetido', user: 'João Oliveira', comentario: '' },
-        { data: '2025-12-21T09:00:00', acao: 'Aprovado pelo Dirigente', user: 'Pedro Almeida', comentario: '' },
-        { data: '2025-12-22T15:00:00', acao: 'Aprovado pela AFR-RH', user: 'Sofia Martins', comentario: 'Formação agendada para Janeiro.' }
-      ]
-    }
-  ];
 }
 
 function renderPedidos(pedidos) {
   const container = document.getElementById('pedidosList');
   
-  if (pedidos.length === 0) {
+  if (!pedidos || pedidos.length === 0) {
     container.innerHTML = `
       <div class="empty-state">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -576,26 +435,28 @@ function renderPedidos(pedidos) {
   container.innerHTML = pedidos.map(p => {
     const estadoClass = getEstadoClass(p.estado);
     const estadoLabel = getEstadoLabel(p.estado);
-    const initials = p.solicitante.nome.split(' ').map(n => n[0]).join('').substring(0, 2);
+    const solicitanteNome = p.solicitante?.nome || 'Desconhecido';
+    const initials = solicitanteNome.split(' ').map(n => n[0]).join('').substring(0, 2);
+    const departamento = p.solicitante?.departamentos?.nome || p.departamentos?.nome || 'N/D';
     
     return `
       <div class="pedido-card" onclick="abrirDetalhesPedido('${p.id}')">
         <div class="pedido-header">
-          <div class="pedido-id">${p.id}</div>
+          <div class="pedido-id">${p.numero_pedido || p.id.substring(0, 8)}</div>
           <span class="status-badge ${estadoClass}">${estadoLabel}</span>
         </div>
         <h4 class="pedido-titulo">${p.titulo}</h4>
         <div class="pedido-meta">
-          <span><strong>Tipo:</strong> ${p.tipo}</span>
-          <span><strong>Entidade:</strong> ${p.entidade || 'N/D'}</span>
+          <span><strong>Tipo:</strong> ${p.tipo || 'N/D'}</span>
+          <span><strong>Entidade:</strong> ${p.entidade_formadora || 'N/D'}</span>
           <span><strong>Duração:</strong> ${p.duracao_horas || 0}h</span>
         </div>
         <div class="pedido-footer">
           <div class="pedido-solicitante">
             <div class="avatar-mini">${initials}</div>
             <div>
-              <div class="solicitante-nome">${p.solicitante.nome}</div>
-              <div class="solicitante-dept">${p.solicitante.departamento}</div>
+              <div class="solicitante-nome">${solicitanteNome}</div>
+              <div class="solicitante-dept">${departamento}</div>
             </div>
           </div>
           <div class="pedido-data">
@@ -604,7 +465,7 @@ function renderPedidos(pedidos) {
               <line x1="16" y1="2" x2="16" y2="6"/>
               <line x1="8" y1="2" x2="8" y2="6"/>
             </svg>
-            ${formatDate(p.data_pedido)}
+            ${formatDate(p.created_at)}
           </div>
         </div>
       </div>
@@ -624,24 +485,32 @@ function filterPedidos() {
   if (search) {
     filtered = filtered.filter(p => 
       p.titulo.toLowerCase().includes(search) ||
-      p.solicitante.nome.toLowerCase().includes(search) ||
-      p.id.toLowerCase().includes(search)
+      (p.solicitante?.nome || '').toLowerCase().includes(search) ||
+      (p.numero_pedido || '').toLowerCase().includes(search)
     );
   }
   
   renderPedidos(filtered);
 }
 
-function abrirDetalhesPedido(pedidoId) {
+async function abrirDetalhesPedido(pedidoId) {
   selectedPedido = allPedidos.find(p => p.id === pedidoId);
   if (!selectedPedido) return;
   
   const estadoClass = getEstadoClass(selectedPedido.estado);
   const estadoLabel = getEstadoLabel(selectedPedido.estado);
-  const canApprove = selectedPedido.estado === 'pendente_rh' || 
+  const solicitanteNome = selectedPedido.solicitante?.nome || 'Desconhecido';
+  const departamento = selectedPedido.solicitante?.departamentos?.nome || selectedPedido.departamentos?.nome || 'N/D';
+  const initials = solicitanteNome.split(' ').map(n => n[0]).join('').substring(0, 2);
+  
+  // Verificar permissões de aprovação
+  const canApprove = (selectedPedido.estado === 'pendente_rh') || 
                      (selectedPedido.estado === 'pendente_dirigente' && AuthService.isDirigente(currentUser));
   
-  document.getElementById('modalPedidoTitle').textContent = `Pedido ${selectedPedido.id}`;
+  // Construir histórico
+  const historico = selectedPedido.pedidos_formacao_historico || [];
+  
+  document.getElementById('modalPedidoTitle').textContent = `Pedido ${selectedPedido.numero_pedido || selectedPedido.id.substring(0, 8)}`;
   
   document.getElementById('modalPedidoBody').innerHTML = `
     <div class="pedido-detail-grid">
@@ -657,11 +526,11 @@ function abrirDetalhesPedido(pedidoId) {
           <div class="detail-meta-grid">
             <div class="detail-meta-item">
               <span class="label">Tipo</span>
-              <span class="value">${selectedPedido.tipo}</span>
+              <span class="value">${selectedPedido.tipo || 'N/D'}</span>
             </div>
             <div class="detail-meta-item">
               <span class="label">Entidade</span>
-              <span class="value">${selectedPedido.entidade || 'N/D'}</span>
+              <span class="value">${selectedPedido.entidade_formadora || 'N/D'}</span>
             </div>
             <div class="detail-meta-item">
               <span class="label">Duração</span>
@@ -669,8 +538,20 @@ function abrirDetalhesPedido(pedidoId) {
             </div>
             <div class="detail-meta-item">
               <span class="label">Data Pedido</span>
-              <span class="value">${formatDate(selectedPedido.data_pedido)}</span>
+              <span class="value">${formatDate(selectedPedido.created_at)}</span>
             </div>
+            ${selectedPedido.data_prevista_inicio ? `
+            <div class="detail-meta-item">
+              <span class="label">Data Prevista</span>
+              <span class="value">${formatDate(selectedPedido.data_prevista_inicio)}</span>
+            </div>
+            ` : ''}
+            ${selectedPedido.custo_estimado ? `
+            <div class="detail-meta-item">
+              <span class="label">Custo Estimado</span>
+              <span class="value">${selectedPedido.custo_estimado}€</span>
+            </div>
+            ` : ''}
           </div>
         </div>
         
@@ -678,10 +559,10 @@ function abrirDetalhesPedido(pedidoId) {
         <div class="detail-section">
           <h5>Solicitante</h5>
           <div class="solicitante-card">
-            <div class="avatar">${selectedPedido.solicitante.nome.split(' ').map(n => n[0]).join('').substring(0, 2)}</div>
+            <div class="avatar">${initials}</div>
             <div>
-              <div class="nome">${selectedPedido.solicitante.nome}</div>
-              <div class="dept">${selectedPedido.solicitante.departamento}</div>
+              <div class="nome">${solicitanteNome}</div>
+              <div class="dept">${departamento}</div>
             </div>
           </div>
         </div>
@@ -711,6 +592,13 @@ function abrirDetalhesPedido(pedidoId) {
               </svg>
               Rejeitar
             </button>
+            <button class="btn btn-secondary" onclick="iniciarAcao('devolver')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="1 4 1 10 7 10"/>
+                <path d="M3.51 15a9 9 0 102.13-9.36L1 10"/>
+              </svg>
+              Devolver
+            </button>
             <button class="btn btn-success" onclick="iniciarAcao('aprovar')">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
@@ -733,19 +621,20 @@ function abrirDetalhesPedido(pedidoId) {
             Histórico
           </h5>
           <div class="timeline">
-            ${selectedPedido.historico.map((h, i) => {
-              const isLast = i === selectedPedido.historico.length - 1;
-              const iconClass = h.acao.includes('Aprovado') ? 'success' : 
-                               h.acao.includes('Rejeitado') ? 'danger' : 'neutral';
+            ${historico.map(h => {
+              const iconClass = h.acao?.includes('Aprovado') ? 'success' : 
+                               h.acao?.includes('Rejeitado') ? 'danger' : 
+                               h.acao?.includes('Devolvido') ? 'neutral' : 'neutral';
+              const icon = h.acao?.includes('Aprovado') ? '✓' : 
+                          h.acao?.includes('Rejeitado') ? '✗' : 
+                          h.acao?.includes('Devolvido') ? '↩' : '•';
               return `
                 <div class="timeline-item">
-                  <div class="timeline-icon ${iconClass}">
-                    ${h.acao.includes('Aprovado') ? '✓' : h.acao.includes('Rejeitado') ? '✗' : '•'}
-                  </div>
+                  <div class="timeline-icon ${iconClass}">${icon}</div>
                   <div class="timeline-content">
                     <div class="timeline-title">${h.acao}</div>
-                    <div class="timeline-user">${h.user}</div>
-                    <div class="timeline-date">${formatDateTime(h.data)}</div>
+                    <div class="timeline-user">${h.user_nome || 'Sistema'}</div>
+                    <div class="timeline-date">${formatDateTime(h.created_at)}</div>
                     ${h.comentario ? `<div class="timeline-comment">${h.comentario}</div>` : ''}
                   </div>
                 </div>
@@ -769,15 +658,15 @@ function abrirDetalhesPedido(pedidoId) {
           <h5>Resumo</h5>
           <div class="summary-item">
             <span>Nº Pedido</span>
-            <span>${selectedPedido.id}</span>
+            <span>${selectedPedido.numero_pedido || selectedPedido.id.substring(0, 8)}</span>
           </div>
           <div class="summary-item">
             <span>Estado</span>
-            <span class="status-badge ${estadoClass}" style="font-size: 0.7rem;">${estadoLabel}</span>
+            <span class="status-badge ${estadoClass}" style="font-size: 0.65rem; padding: 0.25rem 0.5rem;">${estadoLabel}</span>
           </div>
           <div class="summary-item">
             <span>Submetido</span>
-            <span>${formatDate(selectedPedido.data_pedido)}</span>
+            <span>${formatDate(selectedPedido.created_at)}</span>
           </div>
         </div>
       </div>
@@ -790,20 +679,44 @@ function abrirDetalhesPedido(pedidoId) {
 function iniciarAcao(tipo) {
   currentAcao = tipo;
   const isAprovar = tipo === 'aprovar';
+  const isDevolver = tipo === 'devolver';
   
-  document.getElementById('modalAcaoIcon').textContent = isAprovar ? '✓' : '✗';
-  document.getElementById('modalAcaoIcon').className = `modal-icon ${isAprovar ? 'success' : 'danger'}`;
-  document.getElementById('modalAcaoTitle').textContent = isAprovar ? 'Aprovar Pedido' : 'Rejeitar Pedido';
-  document.getElementById('modalAcaoDesc').textContent = isAprovar 
-    ? 'Tem a certeza que pretende aprovar este pedido de formação?'
-    : 'Tem a certeza que pretende rejeitar este pedido? É obrigatório indicar o motivo.';
-  document.getElementById('modalAcaoComentarioLabel').textContent = isAprovar ? 'Comentário (opcional)' : 'Motivo da rejeição *';
+  let icon, title, desc, labelComentario, btnClass, btnText;
+  
+  if (isAprovar) {
+    icon = '✓';
+    title = 'Aprovar Pedido';
+    desc = 'Tem a certeza que pretende aprovar este pedido de formação?';
+    labelComentario = 'Comentário (opcional)';
+    btnClass = 'btn-success';
+    btnText = 'Confirmar Aprovação';
+  } else if (isDevolver) {
+    icon = '↩';
+    title = 'Devolver Pedido';
+    desc = 'O pedido será devolvido ao solicitante para ajustes. É obrigatório indicar o motivo.';
+    labelComentario = 'Motivo da devolução *';
+    btnClass = 'btn-secondary';
+    btnText = 'Confirmar Devolução';
+  } else {
+    icon = '✗';
+    title = 'Rejeitar Pedido';
+    desc = 'Tem a certeza que pretende rejeitar este pedido? É obrigatório indicar o motivo.';
+    labelComentario = 'Motivo da rejeição *';
+    btnClass = 'btn-danger';
+    btnText = 'Confirmar Rejeição';
+  }
+  
+  document.getElementById('modalAcaoIcon').textContent = icon;
+  document.getElementById('modalAcaoIcon').className = `modal-icon ${isAprovar ? 'success' : isDevolver ? '' : 'danger'}`;
+  document.getElementById('modalAcaoTitle').textContent = title;
+  document.getElementById('modalAcaoDesc').textContent = desc;
+  document.getElementById('modalAcaoComentarioLabel').textContent = labelComentario;
   document.getElementById('modalAcaoComentario').value = '';
   document.getElementById('modalAcaoComentario').required = !isAprovar;
   
   const btnConfirmar = document.getElementById('btnConfirmarAcao');
-  btnConfirmar.className = `btn ${isAprovar ? 'btn-success' : 'btn-danger'}`;
-  btnConfirmar.textContent = isAprovar ? 'Confirmar Aprovação' : 'Confirmar Rejeição';
+  btnConfirmar.className = `btn ${btnClass}`;
+  btnConfirmar.textContent = btnText;
   
   document.getElementById('modalAcao').classList.add('show');
 }
@@ -811,34 +724,46 @@ function iniciarAcao(tipo) {
 async function confirmarAcao() {
   const comentario = document.getElementById('modalAcaoComentario').value.trim();
   
-  if (currentAcao === 'rejeitar' && !comentario) {
-    showToast('É obrigatório indicar o motivo da rejeição.', 'error');
+  if ((currentAcao === 'rejeitar' || currentAcao === 'devolver') && !comentario) {
+    showToast('É obrigatório indicar o motivo.', 'error');
     return;
   }
   
-  // Simular ação
-  const novoHistorico = {
-    data: new Date().toISOString(),
-    acao: currentAcao === 'aprovar' ? 'Aprovado pela AFR-RH' : 'Rejeitado pela AFR-RH',
-    user: currentUser.nome,
-    comentario: comentario
-  };
-  
-  selectedPedido.historico.push(novoHistorico);
-  selectedPedido.estado = currentAcao === 'aprovar' ? 'aprovado' : 'rejeitado';
-  
-  closeModal('modalAcao');
-  closeModal('modalDetalhesPedido');
-  
-  showToast(
-    currentAcao === 'aprovar' 
-      ? 'Pedido aprovado com sucesso!' 
-      : 'Pedido rejeitado.',
-    currentAcao === 'aprovar' ? 'success' : 'info'
-  );
-  
-  renderPedidos(allPedidos);
-  updateStats();
+  try {
+    const isRHLevel = selectedPedido.estado === 'pendente_rh';
+    
+    if (currentAcao === 'aprovar') {
+      if (isRHLevel) {
+        await DataService.aprovarPedidoRH(selectedPedido.id, currentUser.id, comentario);
+      } else {
+        await DataService.aprovarPedidoDirigente(selectedPedido.id, currentUser.id, comentario);
+      }
+      showToast('Pedido aprovado com sucesso!', 'success');
+    } else if (currentAcao === 'rejeitar') {
+      if (isRHLevel) {
+        await DataService.rejeitarPedidoRH(selectedPedido.id, currentUser.id, comentario);
+      } else {
+        await DataService.rejeitarPedidoDirigente(selectedPedido.id, currentUser.id, comentario);
+      }
+      showToast('Pedido rejeitado.', 'info');
+    } else if (currentAcao === 'devolver') {
+      if (isRHLevel) {
+        await DataService.devolverPedidoRH(selectedPedido.id, currentUser.id, comentario);
+      } else {
+        await DataService.devolverPedidoDirigente(selectedPedido.id, currentUser.id, comentario);
+      }
+      showToast('Pedido devolvido para ajustes.', 'info');
+    }
+    
+    closeModal('modalAcao');
+    closeModal('modalDetalhesPedido');
+    await loadPedidos();
+    updateStats();
+    
+  } catch (error) {
+    console.error('Erro na ação:', error);
+    showToast('Erro ao processar ação.', 'error');
+  }
 }
 
 // ==========================================
@@ -848,9 +773,11 @@ async function confirmarAcao() {
 async function loadFormacoes() {
   try {
     allFormacoes = await DataService.getFormacoes();
+    console.log('[GestaoFormacoes] Formações carregadas:', allFormacoes.length);
     renderFormacoes(allFormacoes);
   } catch (error) {
     console.error('Erro ao carregar formações:', error);
+    renderFormacoes([]);
   }
 }
 
@@ -873,9 +800,23 @@ function renderFormacoes(formacoes) {
   
   container.innerHTML = formacoes.map(f => {
     const inscritos = (f.formacao_inscricoes || []).filter(i => i.estado === 'Inscrito').length;
-    const formadorNome = f.formadores?.nome || f.entidade_formadora || 'N/D';
-    // Remove títulos como Dra., Eng., etc.
-    const formadorClean = formadorNome.replace(/^(Dra?\.|Eng\.|Prof\.|Sr\.?a?)\s*/gi, '');
+    
+    // Obter formadores (múltiplos possíveis)
+    let formadorNomes = [];
+    if (f.formacao_formadores && f.formacao_formadores.length > 0) {
+      formadorNomes = f.formacao_formadores.map(ff => {
+        if (ff.formadores?.nome) return DataService.cleanFormadorName(ff.formadores.nome);
+        if (ff.entidades_formadoras?.nome) return ff.entidades_formadoras.nome;
+        return null;
+      }).filter(Boolean);
+    }
+    if (formadorNomes.length === 0 && f.formadores?.nome) {
+      formadorNomes.push(DataService.cleanFormadorName(f.formadores.nome));
+    }
+    if (formadorNomes.length === 0 && f.entidades_formadoras?.nome) {
+      formadorNomes.push(f.entidades_formadoras.nome);
+    }
+    const formadorDisplay = formadorNomes.length > 0 ? formadorNomes.join(', ') : 'N/D';
     
     return `
       <div class="formacao-card-admin">
@@ -887,7 +828,7 @@ function renderFormacoes(formacoes) {
         <div class="formacao-meta">
           <span>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-            ${formadorClean}
+            ${formadorDisplay}
           </span>
           <span>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
@@ -1009,25 +950,25 @@ async function criarFormacao() {
   });
   
   try {
-    // Criar formação via DataService
     const novaFormacao = {
       titulo,
       tipo,
       modalidade,
-      entidade_formadora: formador,
+      entidade_formadora: formador, // Será processado para múltiplos
       duracao_horas: parseInt(duracao),
       max_participantes: parseInt(maxParticipantes) || 20,
       estado,
       objetivo,
-      sessoes
+      sessoes,
+      criado_por: currentUser.id
     };
     
-    // Em produção: await DataService.createFormacao(novaFormacao);
-    console.log('Nova formação:', novaFormacao);
+    await DataService.createFormacao(novaFormacao);
     
     closeModal('modalNovaFormacao');
     showToast('Formação criada com sucesso!', 'success');
     await loadFormacoes();
+    updateStats();
     
   } catch (error) {
     console.error('Erro ao criar formação:', error);
@@ -1071,7 +1012,8 @@ function getEstadoClass(estado) {
     'pendente_dirigente': 'status-pending',
     'pendente_rh': 'status-pending-rh',
     'aprovado': 'status-approved',
-    'rejeitado': 'status-rejected'
+    'rejeitado': 'status-rejected',
+    'devolvido': 'status-pending'
   };
   return classes[estado] || '';
 }
@@ -1081,7 +1023,8 @@ function getEstadoLabel(estado) {
     'pendente_dirigente': 'Aguarda Dirigente',
     'pendente_rh': 'Aguarda AFR-RH',
     'aprovado': 'Aprovado',
-    'rejeitado': 'Rejeitado'
+    'rejeitado': 'Rejeitado',
+    'devolvido': 'Devolvido'
   };
   return labels[estado] || estado;
 }
@@ -1112,11 +1055,6 @@ function closeModal(modalId) {
   document.getElementById(modalId).classList.remove('show');
 }
 
-function handleFileSelect(input) {
-  const fileName = input.files[0]?.name || 'Clique para carregar documento (PDF, DOC)';
-  document.getElementById('fileUploadText').textContent = fileName;
-}
-
 function showToast(message, type = 'success') {
   let container = document.querySelector('.toast-container');
   
@@ -1130,6 +1068,15 @@ function showToast(message, type = 'success') {
     toast.classList.remove('show');
     setTimeout(() => toast.remove(), 300);
   }, 3000);
+}
+
+// Funções placeholder para ações futuras
+function editarFormacao(id) {
+  showToast('Funcionalidade em desenvolvimento.', 'info');
+}
+
+function verInscritos(id) {
+  showToast('Funcionalidade em desenvolvimento.', 'info');
 }
 
 // Modal click outside
