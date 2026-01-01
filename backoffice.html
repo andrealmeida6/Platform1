@@ -60,8 +60,10 @@ title: Backoffice - Gestão de Utilizadores
 <!-- Users Tab Content -->
 <div class="tab-content" id="tabUsers">
   <div class="users-grid" id="usersGrid">
-    <!-- Users will be loaded here -->
-    <div class="loading-state">A carregar utilizadores...</div>
+    <div class="loading-state">
+      <div class="spinner" style="width: 40px; height: 40px; border: 3px solid #e2e8f0; border-top-color: #00b276; border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
+      <p style="margin-top: 1rem; color: #64748b;">A carregar utilizadores...</p>
+    </div>
   </div>
 </div>
 
@@ -79,7 +81,6 @@ title: Backoffice - Gestão de Utilizadores
         </tr>
       </thead>
       <tbody id="rolesTableBody">
-        <!-- Roles will be loaded here -->
       </tbody>
     </table>
   </div>
@@ -106,7 +107,6 @@ title: Backoffice - Gestão de Utilizadores
       </p>
       
       <div class="roles-checklist" id="rolesChecklist">
-        <!-- Role checkboxes will be loaded here -->
       </div>
     </div>
     <div class="modal-footer">
@@ -123,6 +123,20 @@ title: Backoffice - Gestão de Utilizadores
   </div>
 </div>
 
+<style>
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem;
+  grid-column: 1 / -1;
+}
+</style>
+
 <script>
 // ==========================================
 // BACKOFFICE - GESTÃO DE UTILIZADORES
@@ -132,40 +146,76 @@ let allUsers = [];
 let allRoles = [];
 let currentEditingUser = null;
 
+// Aguardar serviços
+async function waitForServices() {
+  return new Promise((resolve) => {
+    const check = () => {
+      if (typeof DataService !== 'undefined' && typeof AuthService !== 'undefined') {
+        console.log('[Backoffice] Serviços disponíveis');
+        resolve();
+      } else {
+        console.log('[Backoffice] Aguardando serviços...');
+        setTimeout(check, 100);
+      }
+    };
+    check();
+  });
+}
+
 // Inicialização
 document.addEventListener('DOMContentLoaded', async function() {
-  // Verificar permissões
-  await checkBackofficeAccess();
-  
-  // Carregar dados
-  await loadBackofficeData();
-  
-  // Setup tabs
-  setupTabs();
+  try {
+    // Aguardar serviços
+    await waitForServices();
+    
+    // Verificar permissões
+    await checkBackofficeAccess();
+    
+    // Carregar dados
+    await loadBackofficeData();
+    
+    // Setup tabs
+    setupTabs();
+    
+  } catch (error) {
+    console.error('[Backoffice] Erro na inicialização:', error);
+    document.getElementById('usersGrid').innerHTML = `
+      <div class="loading-state">
+        <p style="color: #ef4444;">Erro ao carregar dados. Por favor, recarrega a página.</p>
+      </div>
+    `;
+  }
 });
 
 async function checkBackofficeAccess() {
   try {
     const user = await AuthService.getRealUser();
+    console.log('[Backoffice] Utilizador:', user?.nome, 'Admin:', user ? AuthService.isAdmin(user) : false);
+    
     if (!user || !AuthService.canAccessBackoffice(user)) {
-      // Redirecionar se não tem permissão
       showToast('Não tem permissão para aceder ao backoffice', 'danger');
       setTimeout(() => {
         window.location.href = '{{ "/" | relative_url }}';
       }, 2000);
+      throw new Error('Acesso negado');
     }
   } catch (error) {
-    console.error('Erro ao verificar permissões:', error);
+    console.error('[Backoffice] Erro ao verificar permissões:', error);
+    throw error;
   }
 }
 
 async function loadBackofficeData() {
   try {
+    console.log('[Backoffice] A carregar dados...');
+    
     // Carregar utilizadores e roles em paralelo
     const [users, roles] = await Promise.all([
       AuthService.getColaboradoresComRoles(),
       AuthService.getRoles()
     ]);
+    
+    console.log('[Backoffice] Carregados:', users.length, 'utilizadores,', roles.length, 'roles');
     
     allUsers = users;
     allRoles = roles;
@@ -180,16 +230,16 @@ async function loadBackofficeData() {
     renderRolesTable();
     
   } catch (error) {
-    console.error('Erro ao carregar dados:', error);
+    console.error('[Backoffice] Erro ao carregar dados:', error);
     showToast('Erro ao carregar dados', 'danger');
   }
 }
 
 function updateStats() {
   document.getElementById('statTotalUsers').textContent = allUsers.length;
-  document.getElementById('statNucleo').textContent = allUsers.filter(u => u.roles.some(r => r.codigo === 'nucleo')).length;
-  document.getElementById('statAFR').textContent = allUsers.filter(u => u.roles.some(r => r.codigo === 'afr_dirigente')).length;
-  document.getElementById('statBasic').textContent = allUsers.filter(u => u.roles.some(r => r.codigo === 'basic_user')).length;
+  document.getElementById('statNucleo').textContent = allUsers.filter(u => (u.roles || []).some(r => r.codigo === 'nucleo')).length;
+  document.getElementById('statAFR').textContent = allUsers.filter(u => (u.roles || []).some(r => r.codigo === 'afr_dirigente')).length;
+  document.getElementById('statBasic').textContent = allUsers.filter(u => (u.roles || []).some(r => r.codigo === 'basic_user')).length;
 }
 
 function renderUsers(users) {
@@ -197,28 +247,27 @@ function renderUsers(users) {
   
   if (users.length === 0) {
     grid.innerHTML = `
-      <div class="empty-state" style="grid-column: 1 / -1;">
-        <div class="empty-state-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
-            <circle cx="9" cy="7" r="4"/>
-            <path d="M23 21v-2a4 4 0 00-3-3.87"/>
-            <path d="M16 3.13a4 4 0 010 7.75"/>
-          </svg>
-        </div>
-        <div class="empty-state-title">Nenhum utilizador encontrado</div>
-        <div class="empty-state-description">Ajuste os filtros de pesquisa</div>
+      <div class="empty-state" style="grid-column: 1 / -1; text-align: center; padding: 3rem;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 48px; height: 48px; color: #94a3b8; margin-bottom: 1rem;">
+          <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 00-3-3.87"/>
+          <path d="M16 3.13a4 4 0 010 7.75"/>
+        </svg>
+        <h3 style="color: #1e293b; margin-bottom: 0.5rem;">Nenhum utilizador encontrado</h3>
+        <p style="color: #64748b;">Ajuste os filtros de pesquisa</p>
       </div>
     `;
     return;
   }
   
   grid.innerHTML = users.map(user => {
-    const initials = user.nome.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
+    const initials = (user.nome || 'U').split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
     const deptName = user.departamentos?.nome || 'Sem departamento';
+    const userRoles = user.roles || [];
     
-    const roleBadges = user.roles.length > 0 
-      ? user.roles.map(r => `
+    const roleBadges = userRoles.length > 0 
+      ? userRoles.map(r => `
           <span class="role-badge ${r.codigo}">
             ${getRoleIcon(r.codigo)}
             ${r.nome}
@@ -255,9 +304,9 @@ function renderUsers(users) {
 
 function getRoleIcon(codigo) {
   const icons = {
-    nucleo: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>',
-    afr_dirigente: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>',
-    basic_user: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>'
+    nucleo: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>',
+    afr_dirigente: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>',
+    basic_user: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>'
   };
   return icons[codigo] || '';
 }
@@ -266,7 +315,7 @@ function renderRolesTable() {
   const tbody = document.getElementById('rolesTableBody');
   
   tbody.innerHTML = allRoles.map(role => {
-    const userCount = allUsers.filter(u => u.roles.some(r => r.id === role.id)).length;
+    const userCount = allUsers.filter(u => (u.roles || []).some(r => r.id === role.id)).length;
     
     return `
       <tr>
@@ -278,7 +327,7 @@ function renderRolesTable() {
         </td>
         <td>${role.descricao || '-'}</td>
         <td><strong>${role.nivel}</strong></td>
-        <td>${role.scope}</td>
+        <td>${role.scope || 'global'}</td>
         <td><strong>${userCount}</strong> utilizadores</td>
       </tr>
     `;
@@ -291,20 +340,18 @@ function filterUsers() {
   
   let filtered = allUsers;
   
-  // Filtro de pesquisa
   if (searchTerm) {
     filtered = filtered.filter(u => 
-      u.nome.toLowerCase().includes(searchTerm) ||
-      u.email.toLowerCase().includes(searchTerm)
+      (u.nome || '').toLowerCase().includes(searchTerm) ||
+      (u.email || '').toLowerCase().includes(searchTerm)
     );
   }
   
-  // Filtro de role
   if (roleFilter) {
     if (roleFilter === 'sem_role') {
-      filtered = filtered.filter(u => u.roles.length === 0);
+      filtered = filtered.filter(u => (u.roles || []).length === 0);
     } else {
-      filtered = filtered.filter(u => u.roles.some(r => r.codigo === roleFilter));
+      filtered = filtered.filter(u => (u.roles || []).some(r => r.codigo === roleFilter));
     }
   }
   
@@ -314,13 +361,9 @@ function filterUsers() {
 function setupTabs() {
   document.querySelectorAll('.backoffice-tab').forEach(tab => {
     tab.addEventListener('click', function() {
-      // Remove active de todos
       document.querySelectorAll('.backoffice-tab').forEach(t => t.classList.remove('active'));
-      
-      // Adiciona active ao clicado
       this.classList.add('active');
       
-      // Mostrar/esconder conteúdo
       const tabId = this.dataset.tab;
       document.getElementById('tabUsers').style.display = tabId === 'users' ? 'block' : 'none';
       document.getElementById('tabRoles').style.display = tabId === 'roles' ? 'block' : 'none';
@@ -336,33 +379,30 @@ function openManageRoles(userId) {
   currentEditingUser = allUsers.find(u => u.id === userId);
   if (!currentEditingUser) return;
   
-  // Preencher dados do utilizador no modal
-  const initials = currentEditingUser.nome.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
+  const initials = (currentEditingUser.nome || 'U').split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
   document.getElementById('modalUserAvatar').textContent = initials;
   document.getElementById('modalUserName').textContent = currentEditingUser.nome;
   document.getElementById('modalUserEmail').textContent = currentEditingUser.email;
   
-  // Renderizar checkboxes de roles
-  const userRoleIds = currentEditingUser.roles.map(r => r.id);
+  const userRoleIds = (currentEditingUser.roles || []).map(r => r.id);
   
   const checklist = document.getElementById('rolesChecklist');
   checklist.innerHTML = allRoles.map(role => `
-    <label class="role-checkbox-item">
-      <input type="checkbox" value="${role.id}" ${userRoleIds.includes(role.id) ? 'checked' : ''}>
+    <label class="role-checkbox-item" style="display: flex; align-items: flex-start; gap: 0.75rem; padding: 1rem; background: #f8fafc; border-radius: 10px; margin-bottom: 0.75rem; cursor: pointer;">
+      <input type="checkbox" value="${role.id}" ${userRoleIds.includes(role.id) ? 'checked' : ''} style="margin-top: 0.25rem; accent-color: #00b276;">
       <div class="role-checkbox-info">
-        <div class="role-checkbox-name">
+        <div class="role-checkbox-name" style="font-weight: 600; color: #1e293b; margin-bottom: 0.25rem;">
           <span class="role-badge ${role.codigo}" style="margin-right: 0.5rem;">
             ${getRoleIcon(role.codigo)}
             ${role.nome}
           </span>
         </div>
-        <div class="role-checkbox-desc">${role.descricao || ''}</div>
-        <div class="role-checkbox-level">Nível: ${role.nivel} | Scope: ${role.scope}</div>
+        <div class="role-checkbox-desc" style="font-size: 0.8rem; color: #64748b;">${role.descricao || ''}</div>
+        <div class="role-checkbox-level" style="font-size: 0.7rem; color: #94a3b8; margin-top: 0.25rem;">Nível: ${role.nivel} | Scope: ${role.scope || 'global'}</div>
       </div>
     </label>
   `).join('');
   
-  // Abrir modal
   document.getElementById('modalManageRoles').classList.add('show');
 }
 
@@ -374,15 +414,12 @@ async function saveUserRoles() {
     .filter(cb => cb.checked)
     .map(cb => cb.value);
   
-  const currentRoleIds = currentEditingUser.roles.map(r => r.id);
+  const currentRoleIds = (currentEditingUser.roles || []).map(r => r.id);
   
   try {
-    // Roles a adicionar
     const toAdd = selectedRoleIds.filter(id => !currentRoleIds.includes(id));
-    // Roles a remover
     const toRemove = currentRoleIds.filter(id => !selectedRoleIds.includes(id));
     
-    // Executar operações
     for (const roleId of toAdd) {
       await AuthService.atribuirRole(currentEditingUser.id, roleId);
     }
@@ -391,16 +428,13 @@ async function saveUserRoles() {
       await AuthService.removerRole(currentEditingUser.id, roleId);
     }
     
-    // Fechar modal
     closeModal('modalManageRoles');
-    
-    // Recarregar dados
     await loadBackofficeData();
     
     showToast('Roles atualizadas com sucesso!', 'success');
     
   } catch (error) {
-    console.error('Erro ao guardar roles:', error);
+    console.error('[Backoffice] Erro ao guardar roles:', error);
     showToast('Erro ao guardar roles', 'danger');
   }
 }
@@ -410,35 +444,29 @@ function closeModal(modalId) {
   currentEditingUser = null;
 }
 
-// Fechar modal ao clicar fora
 document.getElementById('modalManageRoles').addEventListener('click', function(e) {
   if (e.target === this) {
     closeModal('modalManageRoles');
   }
 });
 
-// Toast notification
 function showToast(message, type = 'success') {
-  const container = document.querySelector('.toast-container') || createToastContainer();
+  let container = document.querySelector('.toast-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.className = 'toast-container';
+    document.body.appendChild(container);
+  }
   
   const toast = document.createElement('div');
   toast.className = `toast ${type}`;
   toast.innerHTML = `<span class="toast-message">${message}</span>`;
-  
   container.appendChild(toast);
   
   setTimeout(() => toast.classList.add('show'), 10);
-  
   setTimeout(() => {
     toast.classList.remove('show');
     setTimeout(() => toast.remove(), 300);
   }, 3000);
-}
-
-function createToastContainer() {
-  const container = document.createElement('div');
-  container.className = 'toast-container';
-  document.body.appendChild(container);
-  return container;
 }
 </script>
