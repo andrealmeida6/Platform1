@@ -1,121 +1,136 @@
 // ===================================================================
 // AUTH SERVICE - Gestão de Autenticação e Permissões
 // ===================================================================
-// Serviço para gestão do utilizador atual, roles e funcionalidade
-// "Ver como" para simular diferentes utilizadores/permissões
-// ===================================================================
 
 const AuthService = (function() {
   
-  // Chave para localStorage
   const STORAGE_KEY = 'platform1_current_user';
   const VIEW_AS_KEY = 'platform1_view_as';
   
-  // Cache de dados
   let currentUserCache = null;
   let viewAsUserCache = null;
   let rolesCache = null;
-  let colaboradoresCache = null;
   
   // ==========================================
   // FUNÇÕES DE ROLES
   // ==========================================
   
-  /**
-   * Obtém todas as roles disponíveis
-   */
   async function getRoles() {
     if (rolesCache) return rolesCache;
     
-    rolesCache = await DataService.retrieveMultipleRecords('roles', {
-      filter: { ativo: true },
-      orderby: 'nivel.desc'
-    });
-    return rolesCache;
-  }
-  
-  /**
-   * Obtém colaboradores com as suas roles
-   */
-  async function getColaboradoresComRoles() {
-    const select = '*,departamentos(id,codigo,nome),colaborador_roles(id,role_id,ativo,roles(id,codigo,nome,nivel,scope,permissoes))';
-    const colaboradores = await DataService.retrieveWithRelations('colaboradores', select, { ativo: true });
-    
-    // Processar para facilitar uso
-    return colaboradores.map(c => ({
-      ...c,
-      roles: (c.colaborador_roles || [])
-        .filter(cr => cr.ativo)
-        .map(cr => cr.roles)
-        .sort((a, b) => b.nivel - a.nivel)
-    }));
-  }
-  
-  /**
-   * Obtém um colaborador específico com roles
-   */
-  async function getColaboradorComRoles(colaboradorId) {
-    const select = '*,departamentos(id,codigo,nome),colaborador_roles(id,role_id,ativo,roles(id,codigo,nome,nivel,scope,permissoes))';
-    const result = await DataService.retrieveWithRelations('colaboradores', select, { id: colaboradorId });
-    
-    if (result.length === 0) return null;
-    
-    const c = result[0];
-    return {
-      ...c,
-      roles: (c.colaborador_roles || [])
-        .filter(cr => cr.ativo)
-        .map(cr => cr.roles)
-        .sort((a, b) => b.nivel - a.nivel)
-    };
-  }
-  
-  /**
-   * Atribui uma role a um colaborador
-   */
-  async function atribuirRole(colaboradorId, roleId, atribuidoPor = null) {
-    return DataService.createRecord('colaborador_roles', {
-      colaborador_id: colaboradorId,
-      role_id: roleId,
-      atribuido_por: atribuidoPor,
-      ativo: true
-    });
-  }
-  
-  /**
-   * Remove uma role de um colaborador
-   */
-  async function removerRole(colaboradorId, roleId) {
-    // Buscar o registo
-    const registos = await DataService.retrieveMultipleRecords('colaborador_roles', {
-      filter: {
-        colaborador_id: colaboradorId,
-        role_id: roleId
-      }
-    });
-    
-    if (registos.length > 0) {
-      return DataService.deleteRecord('colaborador_roles', registos[0].id);
+    try {
+      rolesCache = await DataService.retrieveMultipleRecords('roles', {
+        filter: { ativo: true },
+        orderby: 'nivel.desc'
+      });
+      return rolesCache;
+    } catch (error) {
+      console.error('[AuthService] Erro ao buscar roles:', error);
+      return [];
     }
-    return false;
+  }
+  
+  async function getColaboradoresComRoles() {
+    try {
+      // Query simples sem nested joins complexos
+      const select = '*,departamentos(id,codigo,nome),colaborador_roles(id,role_id,ativo)';
+      const colaboradores = await DataService.retrieveWithRelations('colaboradores', select, { ativo: true });
+      
+      // Buscar todas as roles uma vez
+      const roles = await getRoles();
+      const rolesMap = {};
+      roles.forEach(r => rolesMap[r.id] = r);
+      
+      // Processar para adicionar roles completas
+      return colaboradores.map(c => {
+        const userRoles = (c.colaborador_roles || [])
+          .filter(cr => cr.ativo && rolesMap[cr.role_id])
+          .map(cr => rolesMap[cr.role_id])
+          .sort((a, b) => (b.nivel || 0) - (a.nivel || 0));
+        
+        return {
+          ...c,
+          roles: userRoles,
+          colaborador_roles: undefined // limpar
+        };
+      });
+    } catch (error) {
+      console.error('[AuthService] Erro ao buscar colaboradores com roles:', error);
+      return [];
+    }
+  }
+  
+  async function getColaboradorComRoles(colaboradorId) {
+    try {
+      const select = '*,departamentos(id,codigo,nome),colaborador_roles(id,role_id,ativo)';
+      const result = await DataService.retrieveWithRelations('colaboradores', select, { id: colaboradorId });
+      
+      if (result.length === 0) return null;
+      
+      const roles = await getRoles();
+      const rolesMap = {};
+      roles.forEach(r => rolesMap[r.id] = r);
+      
+      const c = result[0];
+      const userRoles = (c.colaborador_roles || [])
+        .filter(cr => cr.ativo && rolesMap[cr.role_id])
+        .map(cr => rolesMap[cr.role_id])
+        .sort((a, b) => (b.nivel || 0) - (a.nivel || 0));
+      
+      return {
+        ...c,
+        roles: userRoles,
+        colaborador_roles: undefined
+      };
+    } catch (error) {
+      console.error('[AuthService] Erro ao buscar colaborador:', error);
+      return null;
+    }
+  }
+  
+  async function atribuirRole(colaboradorId, roleId, atribuidoPor = null) {
+    try {
+      return await DataService.createRecord('colaborador_roles', {
+        colaborador_id: colaboradorId,
+        role_id: roleId,
+        atribuido_por: atribuidoPor,
+        ativo: true
+      });
+    } catch (error) {
+      console.error('[AuthService] Erro ao atribuir role:', error);
+      throw error;
+    }
+  }
+  
+  async function removerRole(colaboradorId, roleId) {
+    try {
+      const registos = await DataService.retrieveMultipleRecords('colaborador_roles', {
+        filter: {
+          colaborador_id: colaboradorId,
+          role_id: roleId
+        }
+      });
+      
+      if (registos.length > 0) {
+        return await DataService.deleteRecord('colaborador_roles', registos[0].id);
+      }
+      return false;
+    } catch (error) {
+      console.error('[AuthService] Erro ao remover role:', error);
+      throw error;
+    }
   }
   
   // ==========================================
   // GESTÃO DO UTILIZADOR ATUAL
   // ==========================================
   
-  /**
-   * Define o utilizador atual (simulação de login)
-   */
   async function setCurrentUser(colaboradorId) {
     localStorage.setItem(STORAGE_KEY, colaboradorId);
     currentUserCache = await getColaboradorComRoles(colaboradorId);
     return currentUserCache;
   }
   
-  /**
-   * Obtém o utilizador atual
-   */
   async function getCurrentUser() {
     // Se há "Ver como" ativo, retorna esse utilizador
     const viewAsId = localStorage.getItem(VIEW_AS_KEY);
@@ -132,25 +147,28 @@ const AuthService = (function() {
     const userId = localStorage.getItem(STORAGE_KEY);
     if (userId) {
       currentUserCache = await getColaboradorComRoles(userId);
-      return currentUserCache;
+      if (currentUserCache) return currentUserCache;
     }
     
     // Default: primeiro utilizador com role Núcleo, ou primeiro colaborador
-    const colaboradores = await getColaboradoresComRoles();
-    const admin = colaboradores.find(c => c.roles.some(r => r.codigo === 'nucleo'));
-    const defaultUser = admin || colaboradores[0];
-    
-    if (defaultUser) {
-      await setCurrentUser(defaultUser.id);
-      return currentUserCache;
+    try {
+      const colaboradores = await getColaboradoresComRoles();
+      if (colaboradores.length === 0) return null;
+      
+      const admin = colaboradores.find(c => c.roles && c.roles.some(r => r.codigo === 'nucleo'));
+      const defaultUser = admin || colaboradores[0];
+      
+      if (defaultUser) {
+        await setCurrentUser(defaultUser.id);
+        return currentUserCache;
+      }
+    } catch (error) {
+      console.error('[AuthService] Erro ao obter utilizador default:', error);
     }
     
     return null;
   }
   
-  /**
-   * Obtém o utilizador real (ignorando "Ver como")
-   */
   async function getRealUser() {
     const userId = localStorage.getItem(STORAGE_KEY);
     if (!userId) return getCurrentUser();
@@ -165,9 +183,6 @@ const AuthService = (function() {
   // FUNCIONALIDADE "VER COMO"
   // ==========================================
   
-  /**
-   * Ativa modo "Ver como" outro utilizador
-   */
   async function setViewAs(colaboradorId) {
     if (colaboradorId) {
       localStorage.setItem(VIEW_AS_KEY, colaboradorId);
@@ -177,7 +192,6 @@ const AuthService = (function() {
       viewAsUserCache = null;
     }
     
-    // Dispara evento para atualizar UI
     window.dispatchEvent(new CustomEvent('viewAsChanged', { 
       detail: { viewAsUser: viewAsUserCache }
     }));
@@ -185,23 +199,14 @@ const AuthService = (function() {
     return viewAsUserCache;
   }
   
-  /**
-   * Obtém utilizador do modo "Ver como" (se ativo)
-   */
   function getViewAsUser() {
     return viewAsUserCache;
   }
   
-  /**
-   * Verifica se modo "Ver como" está ativo
-   */
   function isViewAsActive() {
     return localStorage.getItem(VIEW_AS_KEY) !== null;
   }
   
-  /**
-   * Desativa modo "Ver como"
-   */
   function clearViewAs() {
     localStorage.removeItem(VIEW_AS_KEY);
     viewAsUserCache = null;
@@ -215,17 +220,11 @@ const AuthService = (function() {
   // VERIFICAÇÃO DE PERMISSÕES
   // ==========================================
   
-  /**
-   * Verifica se utilizador tem uma role específica
-   */
   function hasRole(user, roleCode) {
     if (!user || !user.roles) return false;
     return user.roles.some(r => r.codigo === roleCode);
   }
   
-  /**
-   * Verifica se utilizador tem uma permissão específica
-   */
   function hasPermission(user, permission) {
     if (!user || !user.roles) return false;
     
@@ -235,56 +234,32 @@ const AuthService = (function() {
     });
   }
   
-  /**
-   * Obtém o nível máximo de permissão do utilizador
-   */
   function getMaxLevel(user) {
     if (!user || !user.roles || user.roles.length === 0) return 0;
     return Math.max(...user.roles.map(r => r.nivel || 0));
   }
   
-  /**
-   * Verifica se utilizador é admin (Núcleo)
-   */
   function isAdmin(user) {
     return hasRole(user, 'nucleo');
   }
   
-  /**
-   * Verifica se utilizador pode ver backoffice
-   */
   function canAccessBackoffice(user) {
-    return hasPermission(user, 'backoffice') || hasPermission(user, 'gerir_utilizadores');
+    return isAdmin(user) || hasPermission(user, 'backoffice') || hasPermission(user, 'gerir_utilizadores');
   }
   
-  /**
-   * Verifica se utilizador pode aprovar pedidos
-   */
   function canApprove(user) {
-    return hasPermission(user, 'aprovar') || hasPermission(user, 'aprovar_afr');
+    return hasPermission(user, 'aprovar') || hasPermission(user, 'aprovar_afr') || isAdmin(user);
   }
   
-  /**
-   * Filtra dados baseado nas permissões do utilizador
-   * @param {Array} data - Array de dados a filtrar
-   * @param {Object} user - Utilizador atual
-   * @param {string} ownerField - Campo que identifica o proprietário (ex: 'criado_por', 'colaborador_id')
-   */
   function filterByPermissions(data, user, ownerField = 'criado_por') {
     if (!user || !data) return [];
     
-    // Admin vê tudo
     if (isAdmin(user)) return data;
-    
-    // AFR Dirigente vê tudo da AFR (para este exemplo, vê tudo também)
     if (hasRole(user, 'afr_dirigente')) return data;
     
-    // Basic User vê apenas o próprio
     return data.filter(item => {
-      // Verifica se é o criador
       if (item[ownerField] === user.id) return true;
       
-      // Verifica se está nos colaboradores associados
       if (item.deslocacao_colaboradores) {
         return item.deslocacao_colaboradores.some(dc => dc.colaborador_id === user.id);
       }
@@ -300,20 +275,19 @@ const AuthService = (function() {
   // INICIALIZAÇÃO
   // ==========================================
   
-  /**
-   * Inicializa o serviço de autenticação
-   */
   async function init() {
-    // Carregar utilizador atual
-    await getCurrentUser();
-    
-    // Verificar se há "Ver como" ativo
-    const viewAsId = localStorage.getItem(VIEW_AS_KEY);
-    if (viewAsId) {
-      viewAsUserCache = await getColaboradorComRoles(viewAsId);
+    try {
+      await getCurrentUser();
+      
+      const viewAsId = localStorage.getItem(VIEW_AS_KEY);
+      if (viewAsId) {
+        viewAsUserCache = await getColaboradorComRoles(viewAsId);
+      }
+      
+      console.log('[AuthService] Inicializado com sucesso');
+    } catch (error) {
+      console.error('[AuthService] Erro na inicialização:', error);
     }
-    
-    console.log('[AuthService] Inicializado');
   }
   
   // ==========================================
@@ -321,25 +295,18 @@ const AuthService = (function() {
   // ==========================================
   
   return {
-    // Roles
     getRoles,
     getColaboradoresComRoles,
     getColaboradorComRoles,
     atribuirRole,
     removerRole,
-    
-    // Utilizador atual
     setCurrentUser,
     getCurrentUser,
     getRealUser,
-    
-    // Ver como
     setViewAs,
     getViewAsUser,
     isViewAsActive,
     clearViewAs,
-    
-    // Permissões
     hasRole,
     hasPermission,
     getMaxLevel,
@@ -347,12 +314,9 @@ const AuthService = (function() {
     canAccessBackoffice,
     canApprove,
     filterByPermissions,
-    
-    // Inicialização
     init
   };
   
 })();
 
-// Exportar para uso global
 window.AuthService = AuthService;
