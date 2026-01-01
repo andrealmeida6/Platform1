@@ -255,6 +255,41 @@ const AuthService = (function() {
     return isAdmin(user);
   }
   
+  // Verificar se é AFR - RH (gestão de formações)
+  function isAFRRH(user) {
+    return hasRole(user, 'afr_rh');
+  }
+  
+  // Verificar se pode aceder à gestão de formações
+  function canAccessFormacaoManagement(user) {
+    return isAdmin(user) || isAFRRH(user);
+  }
+  
+  // Verificar se é Secretariado
+  function isSecretariado(user) {
+    return hasRole(user, 'secretariado');
+  }
+  
+  // Verificar se é Dirigente de unidade orgânica
+  function isDirigente(user) {
+    return hasRole(user, 'afr_dirigente');
+  }
+  
+  // Verificar se pode aprovar pedidos de formação (1º nível - dirigente)
+  function canApproveFormacaoLevel1(user, pedido) {
+    // O dirigente da unidade orgânica do solicitante pode aprovar
+    if (!isDirigente(user)) return false;
+    if (!pedido || !pedido.solicitante) return false;
+    
+    // Verificar se é dirigente da mesma unidade orgânica
+    return user.departamento_id === pedido.solicitante.departamento_id;
+  }
+  
+  // Verificar se pode aprovar pedidos de formação (2º nível - AFR-RH)
+  function canApproveFormacaoLevel2(user) {
+    return canAccessFormacaoManagement(user);
+  }
+  
   // ==========================================
   // INICIALIZAÇÃO
   // ==========================================
@@ -297,6 +332,12 @@ const AuthService = (function() {
     hasRole,
     isAdmin,
     canAccessBackoffice,
+    isAFRRH,
+    canAccessFormacaoManagement,
+    isSecretariado,
+    isDirigente,
+    canApproveFormacaoLevel1,
+    canApproveFormacaoLevel2,
     init
   };
   
