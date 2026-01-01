@@ -216,6 +216,8 @@ const DataService = (function() {
       const response = await fetch(url, { headers });
       
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`[DataService] Erro response:`, errorText);
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
@@ -267,14 +269,14 @@ const DataService = (function() {
   // --- COLABORADORES ---
   async function getColaboradores() {
     return retrieveWithRelations('colaboradores', 
-      '*, departamentos(id, codigo, nome)',
+      '*,departamentos(id,codigo,nome)',
       { ativo: true }
     );
   }
   
   async function getColaboradorById(id) {
     const result = await retrieveWithRelations('colaboradores',
-      '*, departamentos(id, codigo, nome), roles(id, codigo, nome)',
+      '*,departamentos(id,codigo,nome),roles(id,codigo,nome)',
       { id }
     );
     return result.length > 0 ? result[0] : null;
@@ -291,7 +293,7 @@ const DataService = (function() {
   // --- FORMADORES ---
   async function getFormadores() {
     return retrieveWithRelations('formadores',
-      '*, entidades_formadoras(id, nome)',
+      '*,entidades_formadoras(id,nome)',
       { ativo: true }
     );
   }
@@ -334,35 +336,15 @@ const DataService = (function() {
   }
   
   // --- FORMAÇÕES ---
+  // IMPORTANTE: Queries Supabase devem estar numa única linha, sem quebras!
   async function getFormacoes() {
-    return retrieveWithRelations('formacoes',
-      `*,
-       entidades_formadoras(id, codigo, nome),
-       formadores(id, nome, especialidade, tipo),
-       formacao_sessoes(id, data, hora_inicio, hora_fim),
-       formacao_inscricoes(id, colaborador_id, estado),
-       formacao_departamentos(id, departamento_id, departamentos(id, codigo, nome)),
-       formacao_favoritos(id, colaborador_id),
-       formacao_presencas(id, colaborador_id, presente),
-       formacao_resultados(id, colaborador_id, resultado),
-       formacao_avaliacoes(id, colaborador_id, score_conteudo, score_formador, score_organizacao, comentario, created_at)`
-    );
+    const select = '*,entidades_formadoras(id,codigo,nome),formadores(id,nome,especialidade,tipo),formacao_sessoes(id,data,hora_inicio,hora_fim),formacao_inscricoes(id,colaborador_id,estado),formacao_departamentos(id,departamento_id,departamentos(id,codigo,nome)),formacao_favoritos(id,colaborador_id),formacao_presencas(id,colaborador_id,presente),formacao_resultados(id,colaborador_id,resultado),formacao_avaliacoes(id,colaborador_id,score_conteudo,score_formador,score_organizacao,comentario,created_at)';
+    return retrieveWithRelations('formacoes', select);
   }
   
   async function getFormacaoById(id) {
-    const result = await retrieveWithRelations('formacoes',
-      `*,
-       entidades_formadoras(id, codigo, nome),
-       formadores(id, nome, especialidade, tipo),
-       formacao_sessoes(id, data, hora_inicio, hora_fim),
-       formacao_inscricoes(id, colaborador_id, estado, colaboradores(id, nome, email, departamento_id)),
-       formacao_departamentos(id, departamento_id, departamentos(id, codigo, nome)),
-       formacao_favoritos(id, colaborador_id),
-       formacao_presencas(id, colaborador_id, presente),
-       formacao_resultados(id, colaborador_id, resultado),
-       formacao_avaliacoes(id, colaborador_id, score_conteudo, score_formador, score_organizacao, comentario, created_at)`,
-      { id }
-    );
+    const select = '*,entidades_formadoras(id,codigo,nome),formadores(id,nome,especialidade,tipo),formacao_sessoes(id,data,hora_inicio,hora_fim),formacao_inscricoes(id,colaborador_id,estado,colaboradores(id,nome,email,departamento_id)),formacao_departamentos(id,departamento_id,departamentos(id,codigo,nome)),formacao_favoritos(id,colaborador_id),formacao_presencas(id,colaborador_id,presente),formacao_resultados(id,colaborador_id,resultado),formacao_avaliacoes(id,colaborador_id,score_conteudo,score_formador,score_organizacao,comentario,created_at)';
+    const result = await retrieveWithRelations('formacoes', select, { id });
     return result.length > 0 ? result[0] : null;
   }
   
@@ -485,32 +467,15 @@ const DataService = (function() {
   }
   
   // --- DESLOCAÇÕES ---
+  // IMPORTANTE: Queries Supabase devem estar numa única linha, sem quebras!
   async function getDeslocacoes() {
-    return retrieveWithRelations('deslocacoes',
-      `*,
-       criador:colaboradores!deslocacoes_criado_por_fkey(id, nome),
-       deslocacao_colaboradores(id, colaborador_id, ordem, colaboradores(id, nome, departamento_id)),
-       deslocacao_transportes(id, tipo_transporte_id, viatura_id, tipo_publico_id, motorista_id, ordem,
-         tipos_transporte(id, codigo, nome, requer_motorista, requer_viatura),
-         frota(id, matricula, modelo, tipo, lugares),
-         tipos_transporte_publico(id, codigo, nome),
-         motorista:colaboradores(id, nome))`
-    );
+    const select = '*,criador:colaboradores!deslocacoes_criado_por_fkey(id,nome),deslocacao_colaboradores(id,colaborador_id,ordem,colaboradores(id,nome,departamento_id,departamentos(id,nome))),deslocacao_transportes(id,tipo_transporte_id,viatura_id,tipo_publico_id,motorista_id,ordem,observacoes,tipos_transporte(id,codigo,nome,requer_motorista,requer_viatura),frota(id,matricula,modelo,tipo,lugares),tipos_transporte_publico(id,codigo,nome),motorista:colaboradores(id,nome)),deslocacao_anexos(id,nome_ficheiro,url,tipo_ficheiro)';
+    return retrieveWithRelations('deslocacoes', select);
   }
   
   async function getDeslocacaoById(id) {
-    const result = await retrieveWithRelations('deslocacoes',
-      `*,
-       criador:colaboradores!deslocacoes_criado_por_fkey(id, nome),
-       deslocacao_colaboradores(id, colaborador_id, ordem, colaboradores(id, nome, departamento_id, departamentos(nome))),
-       deslocacao_transportes(id, tipo_transporte_id, viatura_id, tipo_publico_id, motorista_id, ordem,
-         tipos_transporte(id, codigo, nome, requer_motorista, requer_viatura),
-         frota(id, matricula, modelo, tipo, lugares),
-         tipos_transporte_publico(id, codigo, nome),
-         motorista:colaboradores(id, nome)),
-       deslocacao_anexos(id, nome_ficheiro, url, tipo_ficheiro, tamanho_bytes)`,
-      { id }
-    );
+    const select = '*,criador:colaboradores!deslocacoes_criado_por_fkey(id,nome),deslocacao_colaboradores(id,colaborador_id,ordem,colaboradores(id,nome,departamento_id,departamentos(id,nome))),deslocacao_transportes(id,tipo_transporte_id,viatura_id,tipo_publico_id,motorista_id,ordem,observacoes,tipos_transporte(id,codigo,nome,requer_motorista,requer_viatura),frota(id,matricula,modelo,tipo,lugares),tipos_transporte_publico(id,codigo,nome),motorista:colaboradores(id,nome)),deslocacao_anexos(id,nome_ficheiro,url,tipo_ficheiro)';
+    const result = await retrieveWithRelations('deslocacoes', select, { id });
     return result.length > 0 ? result[0] : null;
   }
   
