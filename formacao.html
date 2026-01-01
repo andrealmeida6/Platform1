@@ -26,6 +26,25 @@ title: Centro de Formação
             </svg>
             As Minhas Formações
           </button>
+          <button class="hero-btn hero-btn-outline" onclick="openModalProporFormacao()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="12" y1="18" x2="12" y2="12"/>
+              <line x1="9" y1="15" x2="15" y2="15"/>
+            </svg>
+            Propor Formação
+          </button>
+        </div>
+        <!-- Link para Gestão (apenas AFR-RH/Admin) -->
+        <div id="gestaoLink" style="display: none; margin-top: 1rem;">
+          <a href="{{ '/gestao-formacoes' | relative_url }}" style="display: inline-flex; align-items: center; gap: 0.5rem; color: #64748b; font-size: 0.875rem; text-decoration: none; transition: color 0.2s;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px;">
+              <path d="M12 20h9"/>
+              <path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/>
+            </svg>
+            Gestão de Formações (AFR-RH)
+          </a>
         </div>
       </div>
     </div>
@@ -300,6 +319,114 @@ title: Centro de Formação
   </div>
 </div>
 
+<!-- Modal: Propor Formação -->
+<div class="modal-overlay" id="modalProporFormacao">
+  <div class="modal-content" style="max-width: 650px;">
+    <div class="modal-header">
+      <h3 class="modal-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 24px; height: 24px; vertical-align: middle; margin-right: 0.5rem;">
+          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="12" y1="18" x2="12" y2="12"/>
+          <line x1="9" y1="15" x2="15" y2="15"/>
+        </svg>
+        Propor Nova Formação
+      </h3>
+      <button class="modal-close" onclick="closeModal('modalProporFormacao')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem;">
+        <p style="color: #166534; font-size: 0.875rem; margin: 0;">
+          <strong>ℹ️ Circuito de Aprovação:</strong><br>
+          O seu pedido será enviado primeiro ao <strong>Dirigente da sua unidade orgânica</strong> e depois à equipa <strong>AFR - RH</strong> para aprovação final.
+        </p>
+      </div>
+      
+      <form id="formProporFormacao">
+        <div style="margin-bottom: 1.25rem;">
+          <label style="display: block; font-size: 0.875rem; font-weight: 600; color: #1e293b; margin-bottom: 0.5rem;">Título da Formação *</label>
+          <input type="text" id="pedidoTitulo" required style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 0.9rem;" placeholder="Ex: Excel Avançado para Análise de Dados">
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
+          <div>
+            <label style="display: block; font-size: 0.875rem; font-weight: 600; color: #1e293b; margin-bottom: 0.5rem;">Tipo</label>
+            <select id="pedidoTipo" style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 0.9rem;">
+              <option value="Externa">Externa</option>
+              <option value="Interna">Interna</option>
+            </select>
+          </div>
+          <div>
+            <label style="display: block; font-size: 0.875rem; font-weight: 600; color: #1e293b; margin-bottom: 0.5rem;">Modalidade</label>
+            <select id="pedidoModalidade" style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 0.9rem;">
+              <option value="Opcional">Opcional</option>
+              <option value="Obrigatória">Obrigatória</option>
+            </select>
+          </div>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
+          <div>
+            <label style="display: block; font-size: 0.875rem; font-weight: 600; color: #1e293b; margin-bottom: 0.5rem;">Entidade Formadora *</label>
+            <input type="text" id="pedidoEntidade" required style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 0.9rem;" placeholder="Ex: IEFP, Cegoc, Formador interno">
+          </div>
+          <div>
+            <label style="display: block; font-size: 0.875rem; font-weight: 600; color: #1e293b; margin-bottom: 0.5rem;">Duração (horas)</label>
+            <input type="number" id="pedidoDuracao" min="1" style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 0.9rem;" placeholder="8">
+          </div>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
+          <div>
+            <label style="display: block; font-size: 0.875rem; font-weight: 600; color: #1e293b; margin-bottom: 0.5rem;">Data Prevista Início</label>
+            <input type="date" id="pedidoDataInicio" style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 0.9rem;">
+          </div>
+          <div>
+            <label style="display: block; font-size: 0.875rem; font-weight: 600; color: #1e293b; margin-bottom: 0.5rem;">Custo Estimado (€)</label>
+            <input type="number" id="pedidoCusto" min="0" step="0.01" style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 0.9rem;" placeholder="0">
+          </div>
+        </div>
+        
+        <div style="margin-bottom: 1.25rem;">
+          <label style="display: block; font-size: 0.875rem; font-weight: 600; color: #1e293b; margin-bottom: 0.5rem;">Objetivo / Descrição</label>
+          <textarea id="pedidoObjetivo" rows="2" style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 0.9rem; resize: vertical;" placeholder="Descreva brevemente o objetivo da formação..."></textarea>
+        </div>
+        
+        <div style="margin-bottom: 1.25rem;">
+          <label style="display: block; font-size: 0.875rem; font-weight: 600; color: #1e293b; margin-bottom: 0.5rem;">Justificação do Pedido *</label>
+          <textarea id="pedidoJustificacao" rows="3" required style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 0.9rem; resize: vertical;" placeholder="Explique porque esta formação é importante para si ou para a equipa..."></textarea>
+        </div>
+        
+        <div style="margin-bottom: 0.5rem;">
+          <label style="display: block; font-size: 0.875rem; font-weight: 600; color: #1e293b; margin-bottom: 0.5rem;">Documento de Estrutura (opcional)</label>
+          <div id="fileUploadArea" style="border: 2px dashed #e2e8f0; border-radius: 8px; padding: 1.5rem; text-align: center; cursor: pointer; transition: all 0.2s;" onclick="document.getElementById('pedidoDocumento').click()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" style="width: 32px; height: 32px; margin: 0 auto 0.5rem;">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            <p id="fileUploadText" style="color: #64748b; font-size: 0.875rem; margin: 0;">Clique para carregar documento (PDF, DOC, DOCX)</p>
+          </div>
+          <input type="file" id="pedidoDocumento" accept=".pdf,.doc,.docx" style="display: none;" onchange="handlePedidoFileSelect(this)">
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modalProporFormacao')">Cancelar</button>
+      <button class="btn btn-primary" onclick="submeterPedidoFormacao()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px; margin-right: 0.25rem;">
+          <path d="M22 2L11 13"/>
+          <path d="M22 2l-7 20-4-9-9-4 20-7z"/>
+        </svg>
+        Submeter Pedido
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container"></div>
+
 <script>
 // ==========================================
 // FORMAÇÃO - LEARNING PLATFORM
@@ -334,6 +461,11 @@ document.addEventListener('DOMContentLoaded', async function() {
     currentUser = await AuthService.getCurrentUser();
     console.log('[Formação] Utilizador:', currentUser?.nome);
     
+    // Mostrar link de gestão para AFR-RH/Admin
+    if (currentUser && AuthService.canAccessFormacaoManagement(currentUser)) {
+      document.getElementById('gestaoLink').style.display = 'block';
+    }
+    
     await loadFormacoes();
     initFormacaoCalendar();
     
@@ -365,6 +497,94 @@ async function loadFormacoes() {
     
   } catch (error) {
     console.error('[Formação] Erro ao carregar:', error);
+  }
+}
+
+// ==========================================
+// PROPOR FORMAÇÃO
+// ==========================================
+
+function openModalProporFormacao() {
+  if (!currentUser) {
+    showToast('É necessário estar autenticado para propor uma formação.', 'error');
+    return;
+  }
+  
+  // Reset form
+  document.getElementById('formProporFormacao').reset();
+  document.getElementById('fileUploadText').textContent = 'Clique para carregar documento (PDF, DOC, DOCX)';
+  document.getElementById('fileUploadArea').style.borderColor = '#e2e8f0';
+  
+  document.getElementById('modalProporFormacao').classList.add('show');
+}
+
+function handlePedidoFileSelect(input) {
+  const file = input.files[0];
+  if (file) {
+    document.getElementById('fileUploadText').textContent = file.name;
+    document.getElementById('fileUploadArea').style.borderColor = '#00b276';
+  } else {
+    document.getElementById('fileUploadText').textContent = 'Clique para carregar documento (PDF, DOC, DOCX)';
+    document.getElementById('fileUploadArea').style.borderColor = '#e2e8f0';
+  }
+}
+
+async function submeterPedidoFormacao() {
+  if (!currentUser) {
+    showToast('É necessário estar autenticado.', 'error');
+    return;
+  }
+  
+  const titulo = document.getElementById('pedidoTitulo').value.trim();
+  const tipo = document.getElementById('pedidoTipo').value;
+  const modalidade = document.getElementById('pedidoModalidade').value;
+  const entidade = document.getElementById('pedidoEntidade').value.trim();
+  const duracao = document.getElementById('pedidoDuracao').value;
+  const dataInicio = document.getElementById('pedidoDataInicio').value;
+  const custo = document.getElementById('pedidoCusto').value;
+  const objetivo = document.getElementById('pedidoObjetivo').value.trim();
+  const justificacao = document.getElementById('pedidoJustificacao').value.trim();
+  
+  if (!titulo || !entidade || !justificacao) {
+    showToast('Preencha os campos obrigatórios.', 'error');
+    return;
+  }
+  
+  try {
+    const pedido = {
+      titulo,
+      tipo,
+      modalidade,
+      entidade_formadora: entidade,
+      duracao_horas: duracao ? parseInt(duracao) : null,
+      data_prevista_inicio: dataInicio || null,
+      custo_estimado: custo ? parseFloat(custo) : null,
+      objetivo,
+      justificacao,
+      solicitante_id: currentUser.id,
+      departamento_id: currentUser.departamento_id,
+      estado: 'pendente_dirigente'
+    };
+    
+    const result = await DataService.createPedidoFormacao(pedido);
+    
+    // Adicionar ao histórico
+    await DataService.addHistoricoPedido(
+      result.id,
+      'Pedido submetido',
+      currentUser.id,
+      currentUser.nome,
+      'Pedido criado e submetido para aprovação do dirigente.',
+      null,
+      'pendente_dirigente'
+    );
+    
+    closeModal('modalProporFormacao');
+    showToast('Pedido de formação submetido com sucesso! Aguarde aprovação.', 'success');
+    
+  } catch (error) {
+    console.error('Erro ao submeter pedido:', error);
+    showToast('Erro ao submeter pedido. Tente novamente.', 'error');
   }
 }
 
@@ -609,7 +829,20 @@ function renderCatalog(formacoes) {
   
   grid.innerHTML = disponiveis.map(f => {
     const categoria = getCategoriaClass(f.titulo);
-    const formador = f.formadores?.nome || 'Formador interno';
+    
+    // Obter formadores (múltiplos possíveis)
+    let formadorDisplay = 'Formador interno';
+    if (f.formacao_formadores && f.formacao_formadores.length > 0) {
+      const nomes = f.formacao_formadores.map(ff => {
+        if (ff.formadores?.nome) return DataService.cleanFormadorName(ff.formadores.nome);
+        if (ff.entidades_formadoras?.nome) return ff.entidades_formadoras.nome;
+        return null;
+      }).filter(Boolean);
+      if (nomes.length > 0) formadorDisplay = nomes.join(', ');
+    } else if (f.formadores?.nome) {
+      formadorDisplay = DataService.cleanFormadorName(f.formadores.nome);
+    }
+    
     const inscritos = (f.formacao_inscricoes || []).filter(i => i.estado === 'Inscrito').length;
     const vagas = f.max_participantes || 20;
     
@@ -644,7 +877,7 @@ function renderCatalog(formacoes) {
           <h3 class="course-card-title">${f.titulo}</h3>
           <p class="course-card-instructor">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-            ${formador}
+            ${formadorDisplay}
           </p>
           <div class="course-card-meta">
             <span class="course-meta-item">
@@ -718,7 +951,19 @@ function renderMyFormacoes(formacoes) {
   }
   
   tbody.innerHTML = formacoes.map(f => {
-    const formador = f.formadores?.nome || 'Formador interno';
+    // Obter formador (limpo de prefixos)
+    let formadorDisplay = 'Formador interno';
+    if (f.formacao_formadores && f.formacao_formadores.length > 0) {
+      const nomes = f.formacao_formadores.map(ff => {
+        if (ff.formadores?.nome) return DataService.cleanFormadorName(ff.formadores.nome);
+        if (ff.entidades_formadoras?.nome) return ff.entidades_formadoras.nome;
+        return null;
+      }).filter(Boolean);
+      if (nomes.length > 0) formadorDisplay = nomes.join(', ');
+    } else if (f.formadores?.nome) {
+      formadorDisplay = DataService.cleanFormadorName(f.formadores.nome);
+    }
+    
     const sessoes = (f.formacao_sessoes || []).sort((a, b) => new Date(a.data) - new Date(b.data));
     const primeiraSessao = sessoes[0];
     const dataStr = primeiraSessao ? formatDate(primeiraSessao.data) : 'A definir';
@@ -742,7 +987,7 @@ function renderMyFormacoes(formacoes) {
           ${f.modalidade === 'Obrigatória' ? '<span class="badge-mandatory">Obrigatória</span>' : ''}
         </div>
         <div>${f.tipo || '-'}</div>
-        <div>${formador}</div>
+        <div>${formadorDisplay}</div>
         <div>${dataStr}</div>
         <div>${f.duracao_horas || 0}h</div>
         <div>
@@ -854,7 +1099,19 @@ async function openCourseDetails(formacaoId) {
   selectedFormacao = allFormacoes.find(f => f.id === formacaoId);
   if (!selectedFormacao) return;
   
-  const formador = selectedFormacao.formadores?.nome || 'Formador interno';
+  // Obter formador (limpo de prefixos)
+  let formadorDisplay = 'Formador interno';
+  if (selectedFormacao.formacao_formadores && selectedFormacao.formacao_formadores.length > 0) {
+    const nomes = selectedFormacao.formacao_formadores.map(ff => {
+      if (ff.formadores?.nome) return DataService.cleanFormadorName(ff.formadores.nome);
+      if (ff.entidades_formadoras?.nome) return ff.entidades_formadoras.nome;
+      return null;
+    }).filter(Boolean);
+    if (nomes.length > 0) formadorDisplay = nomes.join(', ');
+  } else if (selectedFormacao.formadores?.nome) {
+    formadorDisplay = DataService.cleanFormadorName(selectedFormacao.formadores.nome);
+  }
+  
   const sessoes = (selectedFormacao.formacao_sessoes || []).sort((a, b) => new Date(a.data) - new Date(b.data));
   const inscritos = (selectedFormacao.formacao_inscricoes || []).filter(i => i.estado === 'Inscrito').length;
   const vagas = selectedFormacao.max_participantes || 20;
@@ -888,7 +1145,7 @@ async function openCourseDetails(formacaoId) {
     
     <div style="margin-bottom: 1.5rem;">
       <h4 style="font-size: 0.875rem; font-weight: 600; color: #1e293b; margin-bottom: 0.5rem;">Formador</h4>
-      <p style="color: #475569;">${formador}</p>
+      <p style="color: #475569;">${formadorDisplay}</p>
     </div>
     
     <div style="margin-bottom: 1.5rem;">
@@ -988,3 +1245,16 @@ document.querySelectorAll('.modal-overlay').forEach(modal => {
   });
 });
 </script>
+
+<style>
+/* Estilo adicional para o botão outline */
+.hero-btn-outline {
+  background: transparent;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  color: white;
+}
+.hero-btn-outline:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: white;
+}
+</style>
