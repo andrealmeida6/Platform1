@@ -7,7 +7,7 @@ title: Centro de Formação
 
 <div class="learning-platform">
 
-  <!-- Hero Section (Original layout, sem badge/descrição/counters) -->
+  <!-- Hero Section (título e botões à esquerda) -->
   <section class="learning-hero">
     <div class="hero-inner">
       <div class="hero-content">
@@ -84,50 +84,37 @@ title: Centro de Formação
     </div>
   </section>
 
-  <!-- Calendário de Formações (mesmo estilo da homepage) -->
+  <!-- Calendário de Formações (estilo light, visível por defeito) -->
   <section class="calendar-section" id="formacaoCalendarSection">
-    <div class="calendar-cards">
-      <div class="calendar-card green">
-        <div class="calendar-card-label">Total Disponíveis</div>
-        <div class="calendar-card-number" id="calCardTotal">0</div>
-        <div class="calendar-card-info" id="calCardTotalInfo">formações ativas</div>
-      </div>
-
-      <div class="calendar-card blue">
-        <div class="calendar-card-label">Minhas Inscrições</div>
-        <div class="calendar-card-number" id="calCardInscritas">0</div>
-        <div class="calendar-card-info" id="calCardInscritasInfo">formações inscritas</div>
-      </div>
-
-      <div class="calendar-card orange">
-        <div class="calendar-card-label">Próxima Formação</div>
-        <div class="calendar-card-number" id="calCardProxima">-</div>
-        <div class="calendar-card-info" id="calCardProximaInfo">a definir</div>
-      </div>
-
-      <div class="calendar-card purple">
-        <div class="calendar-card-label">Horas Totais</div>
-        <div class="calendar-card-number" id="calCardHoras">0h</div>
-        <div class="calendar-card-info" id="calCardHorasInfo">de formação</div>
-      </div>
+    <div class="calendar-section-header">
+      <h3 class="calendar-section-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+          <line x1="16" y1="2" x2="16" y2="6"/>
+          <line x1="8" y1="2" x2="8" y2="6"/>
+          <line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>
+        Calendário de Formações
+      </h3>
+      <button class="calendar-toggle-btn" id="calendarToggleBtn" onclick="toggleFormacaoCalendar()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="18 15 12 9 6 15"/>
+        </svg>
+        Esconder
+      </button>
     </div>
 
-    <button class="calendar-toggle-btn" id="calendarToggleBtn" onclick="toggleFormacaoCalendar()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <polyline points="6 9 12 15 18 9"/>
-      </svg>
-      Ver Calendário de Formações
-    </button>
-
-    <!-- Collapsible Calendar Section -->
-    <div class="calendar-collapsible" id="formacaoCalendarCollapsible">
+    <!-- Calendar Content (visível por defeito) -->
+    <div class="calendar-content expanded" id="formacaoCalendarContent">
       <div class="calendar-wrapper">
         <!-- Dual Calendar -->
         <div class="dual-calendar-container">
-          <!-- Minimal Legend -->
-          <div class="calendar-legend-minimal">
-            <span class="legend-dot formacao" title="Formação"></span>
-            <span class="legend-text">Formações agendadas</span>
+          <!-- Legend -->
+          <div class="calendar-legend">
+            <span class="legend-chip">
+              <span class="legend-chip-color formacao"></span>
+              Formações agendadas
+            </span>
           </div>
           
           <div class="months-container">
@@ -136,7 +123,7 @@ title: Centro de Formação
               <div class="month-header">
                 <button class="nav-arrow" id="formacaoPrevMonth">◀</button>
                 <span id="formacaoCurrentMonthName">Janeiro 2026</span>
-                <span style="width: 28px;"></span>
+                <span style="width: 32px;"></span>
               </div>
               
               <div class="calendar-grid days">
@@ -149,7 +136,7 @@ title: Centro de Formação
             <!-- Next Month -->
             <div class="calendar-month">
               <div class="month-header">
-                <span style="width: 28px;"></span>
+                <span style="width: 32px;"></span>
                 <span id="formacaoNextMonthName">Fevereiro 2026</span>
                 <button class="nav-arrow" id="formacaoNextMonth">▶</button>
               </div>
@@ -324,6 +311,7 @@ let currentUser = null;
 let selectedFormacao = null;
 let formacaoCalendarDate = new Date();
 let formacaoEvents = {};
+let calendarExpanded = true; // Visível por defeito
 
 // Aguardar serviços
 async function waitForServices() {
@@ -371,7 +359,6 @@ async function loadFormacoes() {
     
     // Atualizar UI
     updateStats();
-    updateCalendarCards();
     renderCatalog(allFormacoes);
     renderMyFormacoes(myFormacoes);
     renderFormacaoCalendar();
@@ -400,33 +387,6 @@ function updateStats() {
     document.getElementById('statEmCurso').textContent = emCurso;
     document.getElementById('statPendentes').textContent = pendentes;
     document.getElementById('statAgendadas').textContent = agendadas;
-  }
-}
-
-function updateCalendarCards() {
-  const disponiveis = allFormacoes.filter(f => f.estado === 'Agendada' || f.estado === 'Em Curso');
-  const totalHoras = myFormacoes.reduce((sum, f) => sum + (f.duracao_horas || 0), 0);
-  
-  document.getElementById('calCardTotal').textContent = disponiveis.length;
-  document.getElementById('calCardInscritas').textContent = myFormacoes.length;
-  document.getElementById('calCardHoras').textContent = totalHoras + 'h';
-  
-  // Próxima formação
-  const proximas = myFormacoes
-    .filter(f => f.estado === 'Agendada' || f.estado === 'Em Curso')
-    .map(f => {
-      const sessoes = (f.formacao_sessoes || []).sort((a, b) => new Date(a.data) - new Date(b.data));
-      const proximaSessao = sessoes.find(s => new Date(s.data) >= new Date());
-      return { ...f, proximaSessao };
-    })
-    .filter(f => f.proximaSessao)
-    .sort((a, b) => new Date(a.proximaSessao.data) - new Date(b.proximaSessao.data));
-  
-  if (proximas.length > 0) {
-    const prox = proximas[0];
-    const dataProx = new Date(prox.proximaSessao.data);
-    document.getElementById('calCardProxima').textContent = dataProx.toLocaleDateString('pt-PT', { day: '2-digit', month: '2-digit' });
-    document.getElementById('calCardProximaInfo').textContent = prox.titulo.substring(0, 25) + (prox.titulo.length > 25 ? '...' : '');
   }
 }
 
@@ -474,24 +434,26 @@ function initFormacaoCalendar() {
 }
 
 function toggleFormacaoCalendar() {
-  const collapsible = document.getElementById('formacaoCalendarCollapsible');
+  const content = document.getElementById('formacaoCalendarContent');
   const btn = document.getElementById('calendarToggleBtn');
   
-  collapsible.classList.toggle('expanded');
+  calendarExpanded = !calendarExpanded;
   
-  if (collapsible.classList.contains('expanded')) {
+  if (calendarExpanded) {
+    content.classList.add('expanded');
     btn.innerHTML = `
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <polyline points="18 15 12 9 6 15"/>
       </svg>
-      Esconder Calendário
+      Esconder
     `;
   } else {
+    content.classList.remove('expanded');
     btn.innerHTML = `
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <polyline points="6 9 12 15 18 9"/>
       </svg>
-      Ver Calendário de Formações
+      Mostrar
     `;
   }
 }
@@ -538,7 +500,7 @@ function renderFormacaoMonthDays(containerId, year, month) {
     
     let classes = 'day-number';
     if (isToday) classes += ' today';
-    if (hasEvents) classes += ' has-event formacao';
+    if (hasEvents) classes += ' formacao';
     
     html += `<p class="${classes}" onclick="selectFormacaoDate('${dateStr}')" data-date="${dateStr}">${day}</p>`;
   }
