@@ -235,12 +235,6 @@ title: Gestão de Formação
               <label class="form-label">Entidade Formadora</label>
               <select class="form-select" id="formEntidade" onchange="onEntidadeChange()">
                 <option value="">Selecionar ou criar nova...</option>
-                <option value="Interno">Formação Interna</option>
-                <option value="IEFP">IEFP</option>
-                <option value="Cegoc">Cegoc</option>
-                <option value="PHC">PHC Academy</option>
-                <option value="Microsoft">Microsoft Learn</option>
-                <option value="outro">+ Outra (especificar)</option>
               </select>
             </div>
             
@@ -832,4 +826,6 @@ title: Gestão de Formação
   </div>
 </div>
 
+<!-- Scripts: DataService PRIMEIRO, depois o módulo específico -->
+<script src="{{ site.baseurl }}/web-files/js/dataService.js"></script>
 <script src="{{ site.baseurl }}/web-files/js/formacao.js"></script>
