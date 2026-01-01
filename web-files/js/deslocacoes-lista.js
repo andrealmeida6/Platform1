@@ -364,3 +364,216 @@ async function openViewRequest(requestId) {
     }
   }
   
+  if (!currentViewRequest) {
+    alert('Pedido não encontrado.');
+    return;
+  }
+  
+  // Atualizar process tracker
+  updateViewProcessTracker(currentViewRequest.estado);
+  
+  // Renderizar detalhes
+  detailsContainer.innerHTML = renderRequestDetails(currentViewRequest);
+  
+  // Mostrar/esconder botão de editar
+  const btnEditar = document.getElementById('btnEditarPedido');
+  if (btnEditar) {
+    btnEditar.style.display = currentViewRequest.estado === 'Rascunho' ? 'inline-flex' : 'none';
+  }
+  
+  // Abrir modal
+  modal.classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeViewRequestModal() {
+  const modal = document.getElementById('viewRequestModal');
+  if (modal) {
+    modal.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+  currentViewRequest = null;
+}
+
+function editCurrentRequest() {
+  if (currentViewRequest) {
+    window.location.href = `novo-pedido-deslocacao?id=${currentViewRequest.id}`;
+  }
+}
+
+function updateViewProcessTracker(estado) {
+  const step1 = document.getElementById('viewStep1Circle');
+  const step2 = document.getElementById('viewStep2Circle');
+  const step3 = document.getElementById('viewStep3Circle');
+  const progress = document.getElementById('viewTrackerProgress');
+  
+  // Reset
+  [step1, step2, step3].forEach(el => {
+    if (el) el.className = 'process-step-circle';
+  });
+  
+  switch (estado) {
+    case 'Rascunho':
+      step1?.classList.add('active');
+      if (progress) progress.style.width = '0%';
+      break;
+    case 'Submetido':
+    case 'Em Aprovação':
+      step1?.classList.add('completed');
+      step2?.classList.add('active');
+      if (progress) progress.style.width = '50%';
+      break;
+    case 'Aprovado':
+      step1?.classList.add('completed');
+      step2?.classList.add('completed');
+      step3?.classList.add('completed');
+      if (progress) progress.style.width = '100%';
+      break;
+    case 'Rejeitado':
+      step1?.classList.add('completed');
+      step2?.classList.add('rejected');
+      if (progress) progress.style.width = '50%';
+      break;
+  }
+}
+
+function renderRequestDetails(request) {
+  return `
+    <div class="detail-section">
+      <h4 class="detail-section-title">Informação Geral</h4>
+      <div class="detail-grid">
+        <div class="detail-item">
+          <span class="detail-label">Motivo</span>
+          <span class="detail-value">${request.motivo || '-'}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Colaboradores</span>
+          <span class="detail-value">${request.colaboradores?.join(', ') || '-'}</span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="detail-section">
+      <h4 class="detail-section-title">Datas e Horários</h4>
+      <div class="detail-grid">
+        <div class="detail-item">
+          <span class="detail-label">Data de Partida</span>
+          <span class="detail-value">${formatDateDisplay(request.data_partida)}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Data de Chegada</span>
+          <span class="detail-value">${formatDateDisplay(request.data_chegada)}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Hora de Partida</span>
+          <span class="detail-value">${request.hora_partida || '-'}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Hora de Chegada</span>
+          <span class="detail-value">${request.hora_chegada || '-'}</span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="detail-section">
+      <h4 class="detail-section-title">Percurso</h4>
+      <div class="detail-grid">
+        <div class="detail-item">
+          <span class="detail-label">Origem</span>
+          <span class="detail-value">${request.local_origem || '-'}</span>
+        </div>
+        ${request.pontos_intermedios?.length > 0 ? `
+          <div class="detail-item">
+            <span class="detail-label">Pontos Intermédios</span>
+            <span class="detail-value">${request.pontos_intermedios.join(' → ')}</span>
+          </div>
+        ` : ''}
+        <div class="detail-item">
+          <span class="detail-label">Destino</span>
+          <span class="detail-value">${request.local_destino || '-'}</span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="detail-section">
+      <h4 class="detail-section-title">Transportes</h4>
+      ${request.transportes?.map(t => `
+        <div class="transport-detail-item">
+          <span class="transport-name">${getTransportName(t.tipo_codigo)}</span>
+          ${t.observacoes ? `<span class="transport-obs">${t.observacoes}</span>` : ''}
+        </div>
+      `).join('') || '<p>Nenhum transporte selecionado</p>'}
+    </div>
+    
+    ${request.alojamentos?.length > 0 ? `
+      <div class="detail-section">
+        <h4 class="detail-section-title">Alojamento</h4>
+        ${request.alojamentos.map(a => `
+          <div class="alojamento-detail-item">
+            <span class="alojamento-local">${a.local}</span>
+            ${a.observacoes ? `<span class="alojamento-obs">${a.observacoes}</span>` : ''}
+          </div>
+        `).join('')}
+      </div>
+    ` : ''}
+    
+    ${request.observacoes ? `
+      <div class="detail-section">
+        <h4 class="detail-section-title">Observações</h4>
+        <p class="detail-obs">${request.observacoes}</p>
+      </div>
+    ` : ''}
+  `;
+}
+
+function getTransportName(codigo) {
+  const nomes = {
+    'frota': 'Viatura EMRP (Frota)',
+    'publico': 'Transporte Público (Metro, Autocarro, etc.)',
+    'aviao': 'Avião',
+    'comboio': 'Comboio',
+    'taxi': 'Táxi / TVDE'
+  };
+  return nomes[codigo] || codigo;
+}
+
+// ====================
+// UTILITÁRIOS UI
+// ====================
+function showLoadingInTable() {
+  const container = document.getElementById('requestsTable');
+  if (container) {
+    container.innerHTML = `
+      <div class="table-loading">
+        <div class="loading-spinner"></div>
+        <span>A carregar pedidos...</span>
+      </div>
+    `;
+  }
+}
+
+function showErrorInTable(message) {
+  const container = document.getElementById('requestsTable');
+  if (container) {
+    container.innerHTML = `
+      <div class="table-error">
+        <p>${message}</p>
+        <button onclick="loadRequests()" class="btn btn-primary">Tentar novamente</button>
+      </div>
+    `;
+  }
+}
+
+// Fechar modal ao clicar fora
+document.addEventListener('click', function(e) {
+  if (e.target.classList.contains('modal-overlay')) {
+    closeViewRequestModal();
+  }
+});
+
+// Fechar modal com Escape
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    closeViewRequestModal();
+  }
+});
