@@ -1,0 +1,1141 @@
+---
+layout: default
+title: Gestão de Formações
+---
+
+<link rel="stylesheet" href="{{ '/web-files/css/formacao.css' | relative_url }}">
+<link rel="stylesheet" href="{{ '/web-files/css/gestao-formacoes.css' | relative_url }}">
+
+<div class="management-page">
+  <!-- Access Check -->
+  <div id="accessDenied" class="access-denied" style="display: none;">
+    <div class="access-denied-content">
+      <div class="access-denied-icon">🔒</div>
+      <h2>Acesso Restrito</h2>
+      <p>Esta página é reservada à equipa AFR - RH.</p>
+      <a href="{{ '/formacao' | relative_url }}" class="btn btn-primary">Voltar às Formações</a>
+    </div>
+  </div>
+
+  <!-- Main Content (hidden until access verified) -->
+  <div id="mainContent" style="display: none;">
+    
+    <!-- Page Header -->
+    <div class="page-header">
+      <div class="page-header-left">
+        <a href="{{ '/formacao' | relative_url }}" class="back-button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+        </a>
+        <div>
+          <h1>Gestão de Formações</h1>
+          <p>Gerir pedidos, criar formações e acompanhar aprovações</p>
+        </div>
+      </div>
+      <div class="page-header-right">
+        <button class="btn btn-primary" onclick="openModalNovaFormacao()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          Nova Formação
+        </button>
+      </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+      <div class="stat-card orange">
+        <div class="stat-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+        </div>
+        <div class="stat-info">
+          <span class="stat-number" id="statPendentes">0</span>
+          <span class="stat-label">Pedidos Pendentes</span>
+        </div>
+      </div>
+      <div class="stat-card blue">
+        <div class="stat-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+            <polyline points="22 4 12 14.01 9 11.01"/>
+          </svg>
+        </div>
+        <div class="stat-info">
+          <span class="stat-number" id="statAprovados">0</span>
+          <span class="stat-label">Aprovados este mês</span>
+        </div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+            <line x1="3" y1="9" x2="21" y2="9"/>
+            <line x1="9" y1="21" x2="9" y2="9"/>
+          </svg>
+        </div>
+        <div class="stat-info">
+          <span class="stat-number" id="statFormacoes">0</span>
+          <span class="stat-label">Formações Ativas</span>
+        </div>
+      </div>
+      <div class="stat-card purple">
+        <div class="stat-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 00-3-3.87"/>
+            <path d="M16 3.13a4 4 0 010 7.75"/>
+          </svg>
+        </div>
+        <div class="stat-info">
+          <span class="stat-number" id="statInscritos">0</span>
+          <span class="stat-label">Inscritos Total</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="content-tabs">
+      <button class="tab-btn active" data-tab="pedidos" onclick="switchTab('pedidos')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="16" y1="13" x2="8" y2="13"/>
+          <line x1="16" y1="17" x2="8" y2="17"/>
+        </svg>
+        Pedidos de Formação
+        <span class="tab-badge" id="badgePedidos">0</span>
+      </button>
+      <button class="tab-btn" data-tab="formacoes" onclick="switchTab('formacoes')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+          <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+        </svg>
+        Formações
+      </button>
+      <button class="tab-btn" data-tab="historico" onclick="switchTab('historico')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <polyline points="12 6 12 12 16 14"/>
+        </svg>
+        Histórico
+      </button>
+    </div>
+
+    <!-- Tab Content: Pedidos -->
+    <div class="tab-content active" id="tabPedidos">
+      <div class="content-header">
+        <h2>Pedidos de Formação</h2>
+        <div class="content-filters">
+          <select id="filterEstadoPedido" onchange="filterPedidos()">
+            <option value="">Todos os estados</option>
+            <option value="pendente_dirigente">Aguarda Dirigente</option>
+            <option value="pendente_rh">Aguarda AFR-RH</option>
+            <option value="aprovado">Aprovado</option>
+            <option value="rejeitado">Rejeitado</option>
+          </select>
+          <div class="search-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"/>
+              <path d="M21 21l-4.35-4.35"/>
+            </svg>
+            <input type="text" id="searchPedidos" placeholder="Pesquisar..." oninput="filterPedidos()">
+          </div>
+        </div>
+      </div>
+
+      <div class="pedidos-list" id="pedidosList">
+        <div class="loading-state">
+          <div class="spinner"></div>
+          <p>A carregar pedidos...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab Content: Formações -->
+    <div class="tab-content" id="tabFormacoes">
+      <div class="content-header">
+        <h2>Formações Registadas</h2>
+        <div class="content-filters">
+          <select id="filterEstadoFormacao" onchange="filterFormacoes()">
+            <option value="">Todos os estados</option>
+            <option value="Agendada">Agendada</option>
+            <option value="Em Curso">Em Curso</option>
+            <option value="Concluída">Concluída</option>
+            <option value="Cancelada">Cancelada</option>
+          </select>
+          <div class="search-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"/>
+              <path d="M21 21l-4.35-4.35"/>
+            </svg>
+            <input type="text" id="searchFormacoes" placeholder="Pesquisar..." oninput="filterFormacoes()">
+          </div>
+        </div>
+      </div>
+
+      <div class="formacoes-grid" id="formacoesGrid">
+        <div class="loading-state">
+          <div class="spinner"></div>
+          <p>A carregar formações...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab Content: Histórico -->
+    <div class="tab-content" id="tabHistorico">
+      <div class="content-header">
+        <h2>Histórico de Aprovações</h2>
+      </div>
+      <div class="historico-list" id="historicoList">
+        <div class="loading-state">
+          <div class="spinner"></div>
+          <p>A carregar histórico...</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Modal: Novo Pedido de Formação -->
+<div class="modal-overlay" id="modalNovoPedido">
+  <div class="modal-content modal-large">
+    <div class="modal-header">
+      <h3>Propor Nova Formação</h3>
+      <button class="modal-close" onclick="closeModal('modalNovoPedido')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <form id="formNovoPedido">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Título da Formação *</label>
+            <input type="text" id="pedidoTitulo" required placeholder="Ex: Excel Avançado para Análise de Dados">
+          </div>
+        </div>
+        
+        <div class="form-row two-cols">
+          <div class="form-group">
+            <label>Tipo</label>
+            <select id="pedidoTipo">
+              <option value="Externa">Externa</option>
+              <option value="Interna">Interna</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Modalidade</label>
+            <select id="pedidoModalidade">
+              <option value="Opcional">Opcional</option>
+              <option value="Obrigatória">Obrigatória</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row two-cols">
+          <div class="form-group">
+            <label>Entidade Formadora</label>
+            <input type="text" id="pedidoEntidade" placeholder="Ex: CEGOC, IEFP, Empresa XYZ">
+          </div>
+          <div class="form-group">
+            <label>Duração (horas)</label>
+            <input type="number" id="pedidoDuracao" min="1" placeholder="Ex: 16">
+          </div>
+        </div>
+
+        <div class="form-row two-cols">
+          <div class="form-group">
+            <label>Data Prevista Início</label>
+            <input type="date" id="pedidoDataInicio">
+          </div>
+          <div class="form-group">
+            <label>Data Prevista Fim</label>
+            <input type="date" id="pedidoDataFim">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Objetivo / Descrição *</label>
+          <textarea id="pedidoObjetivo" rows="3" required placeholder="Descreva os objetivos e conteúdo da formação..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Justificação do Pedido *</label>
+          <textarea id="pedidoJustificacao" rows="3" required placeholder="Explique porque esta formação é necessária..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Documento de Suporte (opcional)</label>
+          <div class="file-upload-area" onclick="document.getElementById('pedidoDocumento').click()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            <span id="fileUploadText">Clique para carregar documento (PDF, DOC)</span>
+            <input type="file" id="pedidoDocumento" accept=".pdf,.doc,.docx" style="display:none" onchange="handleFileSelect(this)">
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modalNovoPedido')">Cancelar</button>
+      <button class="btn btn-primary" onclick="submeterPedido()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="22" y1="2" x2="11" y2="13"/>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+        </svg>
+        Submeter Pedido
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Nova Formação (Admin) -->
+<div class="modal-overlay" id="modalNovaFormacao">
+  <div class="modal-content modal-large">
+    <div class="modal-header">
+      <h3>Criar Nova Formação</h3>
+      <button class="modal-close" onclick="closeModal('modalNovaFormacao')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <form id="formNovaFormacao">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Título da Formação *</label>
+            <input type="text" id="formacaoTitulo" required>
+          </div>
+        </div>
+        
+        <div class="form-row two-cols">
+          <div class="form-group">
+            <label>Tipo *</label>
+            <select id="formacaoTipo" required>
+              <option value="Interna">Interna</option>
+              <option value="Externa">Externa</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Modalidade *</label>
+            <select id="formacaoModalidade" required>
+              <option value="Opcional">Opcional</option>
+              <option value="Obrigatória">Obrigatória</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row two-cols">
+          <div class="form-group">
+            <label>Formador(es) / Entidade *</label>
+            <input type="text" id="formacaoFormador" required placeholder="Ex: João Silva, Maria Costa">
+          </div>
+          <div class="form-group">
+            <label>Duração (horas) *</label>
+            <input type="number" id="formacaoDuracao" min="1" required>
+          </div>
+        </div>
+
+        <div class="form-row two-cols">
+          <div class="form-group">
+            <label>Máx. Participantes</label>
+            <input type="number" id="formacaoMaxParticipantes" min="1" value="20">
+          </div>
+          <div class="form-group">
+            <label>Estado</label>
+            <select id="formacaoEstado">
+              <option value="Agendada">Agendada</option>
+              <option value="Em Curso">Em Curso</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Objetivo / Descrição</label>
+          <textarea id="formacaoObjetivo" rows="3"></textarea>
+        </div>
+
+        <div class="form-section-title">Sessões</div>
+        <div id="sessoesContainer">
+          <div class="sessao-row" data-index="0">
+            <div class="form-row three-cols">
+              <div class="form-group">
+                <label>Data</label>
+                <input type="date" class="sessao-data">
+              </div>
+              <div class="form-group">
+                <label>Hora Início</label>
+                <input type="time" class="sessao-hora-inicio" value="09:00">
+              </div>
+              <div class="form-group">
+                <label>Hora Fim</label>
+                <input type="time" class="sessao-hora-fim" value="18:00">
+              </div>
+            </div>
+          </div>
+        </div>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="adicionarSessao()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          Adicionar Sessão
+        </button>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modalNovaFormacao')">Cancelar</button>
+      <button class="btn btn-primary" onclick="criarFormacao()">Criar Formação</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Detalhes do Pedido -->
+<div class="modal-overlay" id="modalDetalhesPedido">
+  <div class="modal-content modal-xlarge">
+    <div class="modal-header">
+      <h3 id="modalPedidoTitle">Detalhes do Pedido</h3>
+      <button class="modal-close" onclick="closeModal('modalDetalhesPedido')">&times;</button>
+    </div>
+    <div class="modal-body" id="modalPedidoBody">
+      <!-- Conteúdo preenchido por JavaScript -->
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Ação de Aprovação/Rejeição -->
+<div class="modal-overlay" id="modalAcao">
+  <div class="modal-content">
+    <div class="modal-header">
+      <div class="modal-icon" id="modalAcaoIcon">✓</div>
+      <h3 id="modalAcaoTitle">Aprovar Pedido</h3>
+    </div>
+    <div class="modal-body">
+      <p id="modalAcaoDesc">Tem a certeza que pretende aprovar este pedido?</p>
+      <div class="form-group">
+        <label id="modalAcaoComentarioLabel">Comentário (opcional)</label>
+        <textarea id="modalAcaoComentario" rows="3" placeholder="Adicione um comentário..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modalAcao')">Cancelar</button>
+      <button class="btn" id="btnConfirmarAcao" onclick="confirmarAcao()">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast-container"></div>
+
+<script>
+// ==========================================
+// GESTÃO DE FORMAÇÕES
+// ==========================================
+
+let currentUser = null;
+let allPedidos = [];
+let allFormacoes = [];
+let selectedPedido = null;
+let currentAcao = null;
+
+// Aguardar serviços
+async function waitForServices() {
+  return new Promise((resolve) => {
+    const check = () => {
+      if (typeof DataService !== 'undefined' && typeof AuthService !== 'undefined') {
+        resolve();
+      } else {
+        setTimeout(check, 100);
+      }
+    };
+    check();
+  });
+}
+
+// Inicialização
+document.addEventListener('DOMContentLoaded', async function() {
+  try {
+    await waitForServices();
+    currentUser = await AuthService.getCurrentUser();
+    
+    // Verificar acesso
+    if (!AuthService.canAccessFormacaoManagement(currentUser)) {
+      document.getElementById('accessDenied').style.display = 'flex';
+      return;
+    }
+    
+    document.getElementById('mainContent').style.display = 'block';
+    
+    await loadData();
+    
+  } catch (error) {
+    console.error('[GestaoFormacoes] Erro:', error);
+  }
+});
+
+async function loadData() {
+  await Promise.all([
+    loadPedidos(),
+    loadFormacoes()
+  ]);
+  updateStats();
+}
+
+// ==========================================
+// PEDIDOS DE FORMAÇÃO
+// ==========================================
+
+async function loadPedidos() {
+  try {
+    // Simular dados de pedidos (em produção viria do Supabase)
+    allPedidos = await DataService.getPedidosFormacao?.() || getMockPedidos();
+    renderPedidos(allPedidos);
+    document.getElementById('badgePedidos').textContent = allPedidos.filter(p => 
+      p.estado === 'pendente_dirigente' || p.estado === 'pendente_rh'
+    ).length;
+  } catch (error) {
+    console.error('Erro ao carregar pedidos:', error);
+    allPedidos = getMockPedidos();
+    renderPedidos(allPedidos);
+  }
+}
+
+function getMockPedidos() {
+  return [
+    {
+      id: 'PED-2026-001',
+      titulo: 'Power BI Avançado',
+      tipo: 'Externa',
+      entidade: 'CEGOC',
+      solicitante: { id: '1', nome: 'Carlos Ferreira', departamento: 'Financeiro' },
+      data_pedido: '2025-12-28',
+      estado: 'pendente_rh',
+      duracao_horas: 24,
+      justificacao: 'Necessidade de capacitação em análise avançada de dados para o departamento financeiro.',
+      objetivo: 'Dominar funcionalidades avançadas do Power BI incluindo DAX, modelação de dados e dashboards interativos.',
+      historico: [
+        { data: '2025-12-28T09:15:00', acao: 'Pedido submetido', user: 'Carlos Ferreira', comentario: '' },
+        { data: '2025-12-29T14:30:00', acao: 'Aprovado pelo Dirigente', user: 'Ana Costa', comentario: 'Aprovado. Formação importante para a equipa.' }
+      ]
+    },
+    {
+      id: 'PED-2026-002',
+      titulo: 'Gestão de Projetos - Metodologias Ágeis',
+      tipo: 'Externa',
+      entidade: 'Rumos',
+      solicitante: { id: '2', nome: 'Maria Santos', departamento: 'TI' },
+      data_pedido: '2025-12-30',
+      estado: 'pendente_dirigente',
+      duracao_horas: 16,
+      justificacao: 'Transição para metodologias ágeis no departamento.',
+      objetivo: 'Aprender Scrum, Kanban e outras metodologias ágeis.',
+      historico: [
+        { data: '2025-12-30T10:00:00', acao: 'Pedido submetido', user: 'Maria Santos', comentario: '' }
+      ]
+    },
+    {
+      id: 'PED-2026-003',
+      titulo: 'Comunicação Eficaz',
+      tipo: 'Interna',
+      entidade: 'RH Interno',
+      solicitante: { id: '3', nome: 'João Oliveira', departamento: 'Comercial' },
+      data_pedido: '2025-12-20',
+      estado: 'aprovado',
+      duracao_horas: 8,
+      justificacao: 'Melhorar competências de comunicação da equipa comercial.',
+      objetivo: 'Técnicas de comunicação assertiva e apresentações.',
+      historico: [
+        { data: '2025-12-20T11:00:00', acao: 'Pedido submetido', user: 'João Oliveira', comentario: '' },
+        { data: '2025-12-21T09:00:00', acao: 'Aprovado pelo Dirigente', user: 'Pedro Almeida', comentario: '' },
+        { data: '2025-12-22T15:00:00', acao: 'Aprovado pela AFR-RH', user: 'Sofia Martins', comentario: 'Formação agendada para Janeiro.' }
+      ]
+    }
+  ];
+}
+
+function renderPedidos(pedidos) {
+  const container = document.getElementById('pedidosList');
+  
+  if (pedidos.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+        </svg>
+        <h3>Sem pedidos</h3>
+        <p>Não existem pedidos de formação.</p>
+      </div>
+    `;
+    return;
+  }
+  
+  container.innerHTML = pedidos.map(p => {
+    const estadoClass = getEstadoClass(p.estado);
+    const estadoLabel = getEstadoLabel(p.estado);
+    const initials = p.solicitante.nome.split(' ').map(n => n[0]).join('').substring(0, 2);
+    
+    return `
+      <div class="pedido-card" onclick="abrirDetalhesPedido('${p.id}')">
+        <div class="pedido-header">
+          <div class="pedido-id">${p.id}</div>
+          <span class="status-badge ${estadoClass}">${estadoLabel}</span>
+        </div>
+        <h4 class="pedido-titulo">${p.titulo}</h4>
+        <div class="pedido-meta">
+          <span><strong>Tipo:</strong> ${p.tipo}</span>
+          <span><strong>Entidade:</strong> ${p.entidade || 'N/D'}</span>
+          <span><strong>Duração:</strong> ${p.duracao_horas || 0}h</span>
+        </div>
+        <div class="pedido-footer">
+          <div class="pedido-solicitante">
+            <div class="avatar-mini">${initials}</div>
+            <div>
+              <div class="solicitante-nome">${p.solicitante.nome}</div>
+              <div class="solicitante-dept">${p.solicitante.departamento}</div>
+            </div>
+          </div>
+          <div class="pedido-data">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+              <line x1="16" y1="2" x2="16" y2="6"/>
+              <line x1="8" y1="2" x2="8" y2="6"/>
+            </svg>
+            ${formatDate(p.data_pedido)}
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function filterPedidos() {
+  const estado = document.getElementById('filterEstadoPedido').value;
+  const search = document.getElementById('searchPedidos').value.toLowerCase();
+  
+  let filtered = allPedidos;
+  
+  if (estado) {
+    filtered = filtered.filter(p => p.estado === estado);
+  }
+  if (search) {
+    filtered = filtered.filter(p => 
+      p.titulo.toLowerCase().includes(search) ||
+      p.solicitante.nome.toLowerCase().includes(search) ||
+      p.id.toLowerCase().includes(search)
+    );
+  }
+  
+  renderPedidos(filtered);
+}
+
+function abrirDetalhesPedido(pedidoId) {
+  selectedPedido = allPedidos.find(p => p.id === pedidoId);
+  if (!selectedPedido) return;
+  
+  const estadoClass = getEstadoClass(selectedPedido.estado);
+  const estadoLabel = getEstadoLabel(selectedPedido.estado);
+  const canApprove = selectedPedido.estado === 'pendente_rh' || 
+                     (selectedPedido.estado === 'pendente_dirigente' && AuthService.isDirigente(currentUser));
+  
+  document.getElementById('modalPedidoTitle').textContent = `Pedido ${selectedPedido.id}`;
+  
+  document.getElementById('modalPedidoBody').innerHTML = `
+    <div class="pedido-detail-grid">
+      <div class="pedido-detail-main">
+        <!-- Status Badge -->
+        <div class="detail-status">
+          <span class="status-badge ${estadoClass}">${estadoLabel}</span>
+        </div>
+        
+        <!-- Info Principal -->
+        <div class="detail-section">
+          <h4>${selectedPedido.titulo}</h4>
+          <div class="detail-meta-grid">
+            <div class="detail-meta-item">
+              <span class="label">Tipo</span>
+              <span class="value">${selectedPedido.tipo}</span>
+            </div>
+            <div class="detail-meta-item">
+              <span class="label">Entidade</span>
+              <span class="value">${selectedPedido.entidade || 'N/D'}</span>
+            </div>
+            <div class="detail-meta-item">
+              <span class="label">Duração</span>
+              <span class="value">${selectedPedido.duracao_horas || 0} horas</span>
+            </div>
+            <div class="detail-meta-item">
+              <span class="label">Data Pedido</span>
+              <span class="value">${formatDate(selectedPedido.data_pedido)}</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Solicitante -->
+        <div class="detail-section">
+          <h5>Solicitante</h5>
+          <div class="solicitante-card">
+            <div class="avatar">${selectedPedido.solicitante.nome.split(' ').map(n => n[0]).join('').substring(0, 2)}</div>
+            <div>
+              <div class="nome">${selectedPedido.solicitante.nome}</div>
+              <div class="dept">${selectedPedido.solicitante.departamento}</div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Objetivo -->
+        <div class="detail-section">
+          <h5>Objetivo</h5>
+          <p>${selectedPedido.objetivo || 'Sem descrição.'}</p>
+        </div>
+        
+        <!-- Justificação -->
+        <div class="detail-section">
+          <h5>Justificação</h5>
+          <div class="justificacao-box">
+            ${selectedPedido.justificacao || 'Sem justificação.'}
+          </div>
+        </div>
+        
+        <!-- Ações -->
+        ${canApprove ? `
+          <div class="detail-actions">
+            <button class="btn btn-danger" onclick="iniciarAcao('rejeitar')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="15" y1="9" x2="9" y2="15"/>
+                <line x1="9" y1="9" x2="15" y2="15"/>
+              </svg>
+              Rejeitar
+            </button>
+            <button class="btn btn-success" onclick="iniciarAcao('aprovar')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
+              </svg>
+              Aprovar
+            </button>
+          </div>
+        ` : ''}
+      </div>
+      
+      <!-- Timeline -->
+      <div class="pedido-detail-sidebar">
+        <div class="timeline-card">
+          <h5>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+            Histórico
+          </h5>
+          <div class="timeline">
+            ${selectedPedido.historico.map((h, i) => {
+              const isLast = i === selectedPedido.historico.length - 1;
+              const iconClass = h.acao.includes('Aprovado') ? 'success' : 
+                               h.acao.includes('Rejeitado') ? 'danger' : 'neutral';
+              return `
+                <div class="timeline-item">
+                  <div class="timeline-icon ${iconClass}">
+                    ${h.acao.includes('Aprovado') ? '✓' : h.acao.includes('Rejeitado') ? '✗' : '•'}
+                  </div>
+                  <div class="timeline-content">
+                    <div class="timeline-title">${h.acao}</div>
+                    <div class="timeline-user">${h.user}</div>
+                    <div class="timeline-date">${formatDateTime(h.data)}</div>
+                    ${h.comentario ? `<div class="timeline-comment">${h.comentario}</div>` : ''}
+                  </div>
+                </div>
+              `;
+            }).join('')}
+            
+            ${selectedPedido.estado.startsWith('pendente') ? `
+              <div class="timeline-item">
+                <div class="timeline-icon pending">⏳</div>
+                <div class="timeline-content">
+                  <div class="timeline-title">Aguarda ${selectedPedido.estado === 'pendente_dirigente' ? 'Dirigente' : 'AFR-RH'}</div>
+                  <div class="timeline-date">Pendente</div>
+                </div>
+              </div>
+            ` : ''}
+          </div>
+        </div>
+        
+        <!-- Resumo -->
+        <div class="summary-card">
+          <h5>Resumo</h5>
+          <div class="summary-item">
+            <span>Nº Pedido</span>
+            <span>${selectedPedido.id}</span>
+          </div>
+          <div class="summary-item">
+            <span>Estado</span>
+            <span class="status-badge ${estadoClass}" style="font-size: 0.7rem;">${estadoLabel}</span>
+          </div>
+          <div class="summary-item">
+            <span>Submetido</span>
+            <span>${formatDate(selectedPedido.data_pedido)}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  document.getElementById('modalDetalhesPedido').classList.add('show');
+}
+
+function iniciarAcao(tipo) {
+  currentAcao = tipo;
+  const isAprovar = tipo === 'aprovar';
+  
+  document.getElementById('modalAcaoIcon').textContent = isAprovar ? '✓' : '✗';
+  document.getElementById('modalAcaoIcon').className = `modal-icon ${isAprovar ? 'success' : 'danger'}`;
+  document.getElementById('modalAcaoTitle').textContent = isAprovar ? 'Aprovar Pedido' : 'Rejeitar Pedido';
+  document.getElementById('modalAcaoDesc').textContent = isAprovar 
+    ? 'Tem a certeza que pretende aprovar este pedido de formação?'
+    : 'Tem a certeza que pretende rejeitar este pedido? É obrigatório indicar o motivo.';
+  document.getElementById('modalAcaoComentarioLabel').textContent = isAprovar ? 'Comentário (opcional)' : 'Motivo da rejeição *';
+  document.getElementById('modalAcaoComentario').value = '';
+  document.getElementById('modalAcaoComentario').required = !isAprovar;
+  
+  const btnConfirmar = document.getElementById('btnConfirmarAcao');
+  btnConfirmar.className = `btn ${isAprovar ? 'btn-success' : 'btn-danger'}`;
+  btnConfirmar.textContent = isAprovar ? 'Confirmar Aprovação' : 'Confirmar Rejeição';
+  
+  document.getElementById('modalAcao').classList.add('show');
+}
+
+async function confirmarAcao() {
+  const comentario = document.getElementById('modalAcaoComentario').value.trim();
+  
+  if (currentAcao === 'rejeitar' && !comentario) {
+    showToast('É obrigatório indicar o motivo da rejeição.', 'error');
+    return;
+  }
+  
+  // Simular ação
+  const novoHistorico = {
+    data: new Date().toISOString(),
+    acao: currentAcao === 'aprovar' ? 'Aprovado pela AFR-RH' : 'Rejeitado pela AFR-RH',
+    user: currentUser.nome,
+    comentario: comentario
+  };
+  
+  selectedPedido.historico.push(novoHistorico);
+  selectedPedido.estado = currentAcao === 'aprovar' ? 'aprovado' : 'rejeitado';
+  
+  closeModal('modalAcao');
+  closeModal('modalDetalhesPedido');
+  
+  showToast(
+    currentAcao === 'aprovar' 
+      ? 'Pedido aprovado com sucesso!' 
+      : 'Pedido rejeitado.',
+    currentAcao === 'aprovar' ? 'success' : 'info'
+  );
+  
+  renderPedidos(allPedidos);
+  updateStats();
+}
+
+// ==========================================
+// FORMAÇÕES
+// ==========================================
+
+async function loadFormacoes() {
+  try {
+    allFormacoes = await DataService.getFormacoes();
+    renderFormacoes(allFormacoes);
+  } catch (error) {
+    console.error('Erro ao carregar formações:', error);
+  }
+}
+
+function renderFormacoes(formacoes) {
+  const container = document.getElementById('formacoesGrid');
+  
+  if (!formacoes || formacoes.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+          <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+        </svg>
+        <h3>Sem formações</h3>
+        <p>Não existem formações registadas.</p>
+      </div>
+    `;
+    return;
+  }
+  
+  container.innerHTML = formacoes.map(f => {
+    const inscritos = (f.formacao_inscricoes || []).filter(i => i.estado === 'Inscrito').length;
+    const formadorNome = f.formadores?.nome || f.entidade_formadora || 'N/D';
+    // Remove títulos como Dra., Eng., etc.
+    const formadorClean = formadorNome.replace(/^(Dra?\.|Eng\.|Prof\.|Sr\.?a?)\s*/gi, '');
+    
+    return `
+      <div class="formacao-card-admin">
+        <div class="formacao-card-header">
+          <span class="formacao-tipo">${f.tipo || 'Formação'}</span>
+          <span class="status-badge ${getFormacaoEstadoClass(f.estado)}">${f.estado}</span>
+        </div>
+        <h4>${f.titulo}</h4>
+        <div class="formacao-meta">
+          <span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            ${formadorClean}
+          </span>
+          <span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            ${f.duracao_horas || 0}h
+          </span>
+          <span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+            ${inscritos}/${f.max_participantes || 20}
+          </span>
+        </div>
+        <div class="formacao-card-actions">
+          <button class="btn btn-sm btn-secondary" onclick="editarFormacao('${f.id}')">Editar</button>
+          <button class="btn btn-sm btn-primary" onclick="verInscritos('${f.id}')">Ver Inscritos</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function filterFormacoes() {
+  const estado = document.getElementById('filterEstadoFormacao').value;
+  const search = document.getElementById('searchFormacoes').value.toLowerCase();
+  
+  let filtered = allFormacoes;
+  
+  if (estado) {
+    filtered = filtered.filter(f => f.estado === estado);
+  }
+  if (search) {
+    filtered = filtered.filter(f => f.titulo.toLowerCase().includes(search));
+  }
+  
+  renderFormacoes(filtered);
+}
+
+// ==========================================
+// CRIAR FORMAÇÃO
+// ==========================================
+
+function openModalNovaFormacao() {
+  document.getElementById('formNovaFormacao').reset();
+  document.getElementById('sessoesContainer').innerHTML = `
+    <div class="sessao-row" data-index="0">
+      <div class="form-row three-cols">
+        <div class="form-group">
+          <label>Data</label>
+          <input type="date" class="sessao-data">
+        </div>
+        <div class="form-group">
+          <label>Hora Início</label>
+          <input type="time" class="sessao-hora-inicio" value="09:00">
+        </div>
+        <div class="form-group">
+          <label>Hora Fim</label>
+          <input type="time" class="sessao-hora-fim" value="18:00">
+        </div>
+      </div>
+    </div>
+  `;
+  document.getElementById('modalNovaFormacao').classList.add('show');
+}
+
+function adicionarSessao() {
+  const container = document.getElementById('sessoesContainer');
+  const index = container.children.length;
+  
+  const sessaoHtml = `
+    <div class="sessao-row" data-index="${index}">
+      <div class="form-row three-cols">
+        <div class="form-group">
+          <label>Data</label>
+          <input type="date" class="sessao-data">
+        </div>
+        <div class="form-group">
+          <label>Hora Início</label>
+          <input type="time" class="sessao-hora-inicio" value="09:00">
+        </div>
+        <div class="form-group">
+          <label>Hora Fim</label>
+          <input type="time" class="sessao-hora-fim" value="18:00">
+        </div>
+      </div>
+      <button type="button" class="btn-remove-sessao" onclick="removerSessao(${index})">✕</button>
+    </div>
+  `;
+  
+  container.insertAdjacentHTML('beforeend', sessaoHtml);
+}
+
+function removerSessao(index) {
+  const row = document.querySelector(`.sessao-row[data-index="${index}"]`);
+  if (row) row.remove();
+}
+
+async function criarFormacao() {
+  const titulo = document.getElementById('formacaoTitulo').value.trim();
+  const tipo = document.getElementById('formacaoTipo').value;
+  const modalidade = document.getElementById('formacaoModalidade').value;
+  const formador = document.getElementById('formacaoFormador').value.trim();
+  const duracao = document.getElementById('formacaoDuracao').value;
+  const maxParticipantes = document.getElementById('formacaoMaxParticipantes').value;
+  const estado = document.getElementById('formacaoEstado').value;
+  const objetivo = document.getElementById('formacaoObjetivo').value.trim();
+  
+  if (!titulo || !formador || !duracao) {
+    showToast('Preencha os campos obrigatórios.', 'error');
+    return;
+  }
+  
+  // Recolher sessões
+  const sessoes = [];
+  document.querySelectorAll('.sessao-row').forEach(row => {
+    const data = row.querySelector('.sessao-data').value;
+    const horaInicio = row.querySelector('.sessao-hora-inicio').value;
+    const horaFim = row.querySelector('.sessao-hora-fim').value;
+    if (data) {
+      sessoes.push({ data, hora_inicio: horaInicio, hora_fim: horaFim });
+    }
+  });
+  
+  try {
+    // Criar formação via DataService
+    const novaFormacao = {
+      titulo,
+      tipo,
+      modalidade,
+      entidade_formadora: formador,
+      duracao_horas: parseInt(duracao),
+      max_participantes: parseInt(maxParticipantes) || 20,
+      estado,
+      objetivo,
+      sessoes
+    };
+    
+    // Em produção: await DataService.createFormacao(novaFormacao);
+    console.log('Nova formação:', novaFormacao);
+    
+    closeModal('modalNovaFormacao');
+    showToast('Formação criada com sucesso!', 'success');
+    await loadFormacoes();
+    
+  } catch (error) {
+    console.error('Erro ao criar formação:', error);
+    showToast('Erro ao criar formação.', 'error');
+  }
+}
+
+// ==========================================
+// TABS & UI
+// ==========================================
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.tab === tab);
+  });
+  
+  document.querySelectorAll('.tab-content').forEach(content => {
+    content.classList.toggle('active', content.id === `tab${tab.charAt(0).toUpperCase() + tab.slice(1)}`);
+  });
+}
+
+function updateStats() {
+  const pendentes = allPedidos.filter(p => p.estado === 'pendente_dirigente' || p.estado === 'pendente_rh').length;
+  const aprovados = allPedidos.filter(p => p.estado === 'aprovado').length;
+  const formacoes = allFormacoes.filter(f => f.estado === 'Agendada' || f.estado === 'Em Curso').length;
+  const inscritos = allFormacoes.reduce((sum, f) => 
+    sum + ((f.formacao_inscricoes || []).filter(i => i.estado === 'Inscrito').length), 0);
+  
+  document.getElementById('statPendentes').textContent = pendentes;
+  document.getElementById('statAprovados').textContent = aprovados;
+  document.getElementById('statFormacoes').textContent = formacoes;
+  document.getElementById('statInscritos').textContent = inscritos;
+}
+
+// ==========================================
+// HELPERS
+// ==========================================
+
+function getEstadoClass(estado) {
+  const classes = {
+    'pendente_dirigente': 'status-pending',
+    'pendente_rh': 'status-pending-rh',
+    'aprovado': 'status-approved',
+    'rejeitado': 'status-rejected'
+  };
+  return classes[estado] || '';
+}
+
+function getEstadoLabel(estado) {
+  const labels = {
+    'pendente_dirigente': 'Aguarda Dirigente',
+    'pendente_rh': 'Aguarda AFR-RH',
+    'aprovado': 'Aprovado',
+    'rejeitado': 'Rejeitado'
+  };
+  return labels[estado] || estado;
+}
+
+function getFormacaoEstadoClass(estado) {
+  const classes = {
+    'Agendada': 'status-scheduled',
+    'Em Curso': 'status-progress',
+    'Concluída': 'status-complete',
+    'Cancelada': 'status-cancelled'
+  };
+  return classes[estado] || '';
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return 'N/D';
+  const date = new Date(dateStr);
+  return date.toLocaleDateString('pt-PT');
+}
+
+function formatDateTime(dateStr) {
+  if (!dateStr) return 'N/D';
+  const date = new Date(dateStr);
+  return date.toLocaleDateString('pt-PT') + ' às ' + date.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' });
+}
+
+function closeModal(modalId) {
+  document.getElementById(modalId).classList.remove('show');
+}
+
+function handleFileSelect(input) {
+  const fileName = input.files[0]?.name || 'Clique para carregar documento (PDF, DOC)';
+  document.getElementById('fileUploadText').textContent = fileName;
+}
+
+function showToast(message, type = 'success') {
+  let container = document.querySelector('.toast-container');
+  
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.innerHTML = `<span class="toast-message">${message}</span>`;
+  container.appendChild(toast);
+  
+  setTimeout(() => toast.classList.add('show'), 10);
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
+}
+
+// Modal click outside
+document.querySelectorAll('.modal-overlay').forEach(modal => {
+  modal.addEventListener('click', function(e) {
+    if (e.target === this) this.classList.remove('show');
+  });
+});
+</script>
