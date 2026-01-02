@@ -1,6 +1,7 @@
 /**
  * novo-pedido-deslocacao.js
  * Lógica para a página de criação/edição de pedidos de deslocação
+ * Compatível com Power Pages
  */
 
 // ====================
@@ -11,8 +12,10 @@ let transportCount = 0;
 let uploadedFiles = [];
 let lastSavedData = null;
 let autoSaveTimer = null;
+let currentUser = null;
+let colaboradoresList = [];
 
-// Tipos de transporte permitidos (sem Viatura Própria e Viatura de Aluguer)
+// Tipos de transporte permitidos
 const TIPOS_TRANSPORTE_PERMITIDOS = [
   { id: 'frota', codigo: 'frota', nome: 'Viatura EMRP (Frota)', requer_motorista: true },
   { id: 'publico', codigo: 'publico', nome: 'Transporte Público (Metro, Autocarro, etc.)' },
@@ -29,118 +32,106 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 async function initializePage() {
-  // Inicializar inputs de data
-  initializeDateInputs();
-  
-  // Verificar se é edição
-  const urlParams = new URLSearchParams(window.location.search);
-  const pedidoId = urlParams.get('id');
-  
-  if (pedidoId) {
-    await loadPedido(pedidoId);
-  } else {
-    // Novo pedido - inicializar estado padrão
-    document.getElementById('pedidoEstado').value = 'Rascunho';
-    updateProcessTracker('Rascunho');
-    updateCollaboratorsList();
-    addTransportMethod(); // Adicionar um meio de transporte por defeito
+  try {
+    // Inicializar AuthService e obter utilizador atual
+    await AuthService.init();
+    currentUser = await AuthService.getCurrentUser();
+    
+    // Carregar lista de colaboradores
+    await loadColaboradores();
+    
+    // Configurar visibilidade baseada em roles
+    setupRoleBasedVisibility();
+    
+    // Verificar se é edição
+    const urlParams = new URLSearchParams(window.location.search);
+    const pedidoId = urlParams.get('id');
+    
+    if (pedidoId) {
+      await loadPedido(pedidoId);
+    } else {
+      // Novo pedido - inicializar estado padrão
+      document.getElementById('pedidoEstado').value = 'Rascunho';
+      updateProcessTracker('Rascunho');
+      updateCollaboratorsList();
+      addTransportMethod(); // Adicionar um meio de transporte por defeito
+    }
+    
+    // Configurar auto-save
+    setupAutoSave();
+    
+    // Event listeners para atualização de alojamento
+    document.getElementById('localOrigem')?.addEventListener('input', updateAlojamentoOptions);
+    document.getElementById('localDestino')?.addEventListener('input', updateAlojamentoOptions);
+    
+    // Atualizar alojamento inicial
+    updateAlojamentoOptions();
+    
+    // Form submit handler
+    document.getElementById('pedidoForm')?.addEventListener('submit', handleSubmit);
+    
+  } catch (error) {
+    console.error('[novo-pedido-deslocacao] Erro na inicialização:', error);
   }
-  
-  // Configurar auto-save
-  setupAutoSave();
-  
-  // Event listeners para atualização de alojamento
-  document.getElementById('localOrigem')?.addEventListener('input', updateAlojamentoOptions);
-  document.getElementById('localDestino')?.addEventListener('input', updateAlojamentoOptions);
-  
-  // Atualizar alojamento inicial
-  updateAlojamentoOptions();
-  
-  // Form submit handler
-  document.getElementById('pedidoForm')?.addEventListener('submit', handleSubmit);
 }
 
 // ====================
-// FORMATAÇÃO DE DATAS (dd/mm/aaaa)
+// CARREGAR COLABORADORES
 // ====================
-function initializeDateInputs() {
-  const dateInputs = document.querySelectorAll('.date-input');
-  
-  dateInputs.forEach(input => {
-    // Auto-formatar enquanto o utilizador escreve
-    input.addEventListener('input', function(e) {
-      let value = e.target.value.replace(/\D/g, '');
-      
-      if (value.length >= 2) {
-        value = value.substring(0, 2) + '/' + value.substring(2);
-      }
-      if (value.length >= 5) {
-        value = value.substring(0, 5) + '/' + value.substring(5);
-      }
-      if (value.length > 10) {
-        value = value.substring(0, 10);
-      }
-      
-      e.target.value = value;
-    });
+async function loadColaboradores() {
+  try {
+    colaboradoresList = await AuthService.getColaboradoresComRoles();
     
-    // Validar ao sair do campo
-    input.addEventListener('blur', function(e) {
-      validateDateInput(e.target);
-    });
+    // Popular dropdown "Submeter em nome de"
+    populateColaboradorDropdown('submitOnBehalf', true);
+    
+  } catch (error) {
+    console.error('[novo-pedido-deslocacao] Erro ao carregar colaboradores:', error);
+  }
+}
+
+function populateColaboradorDropdown(selectId, includeOwnOption = false) {
+  const select = document.getElementById(selectId);
+  if (!select) return;
+  
+  // Limpar opções existentes
+  select.innerHTML = '';
+  
+  // Adicionar opção "Próprio" se aplicável
+  if (includeOwnOption) {
+    const ownOption = document.createElement('option');
+    ownOption.value = '';
+    ownOption.textContent = '-- Próprio --';
+    select.appendChild(ownOption);
+  } else {
+    const defaultOption = document.createElement('option');
+    defaultOption.value = '';
+    defaultOption.textContent = '-- Selecionar Colaborador --';
+    select.appendChild(defaultOption);
+  }
+  
+  // Adicionar colaboradores
+  colaboradoresList.forEach(colab => {
+    const option = document.createElement('option');
+    option.value = colab.id;
+    option.textContent = colab.nome;
+    if (colab.departamentos) {
+      option.textContent += ` (${colab.departamentos.nome || colab.departamentos.codigo})`;
+    }
+    select.appendChild(option);
   });
 }
 
-function validateDateInput(input) {
-  const value = input.value;
-  const regex = /^(\d{2})\/(\d{2})\/(\d{4})$/;
-  
-  if (value && !regex.test(value)) {
-    showToast('Formato de data inválido. Use dd/mm/aaaa', 'error');
-    input.focus();
-    return false;
+// ====================
+// VISIBILIDADE BASEADA EM ROLES
+// ====================
+function setupRoleBasedVisibility() {
+  // "Submeter em nome de" - só visível para AFR-RH ou Secretariado
+  const submitOnBehalfContainer = document.getElementById('submitOnBehalfContainer');
+  if (submitOnBehalfContainer && currentUser) {
+    const canSubmitOnBehalf = AuthService.isAFRRH(currentUser) || AuthService.isSecretariado(currentUser) || AuthService.isAdmin(currentUser);
+    submitOnBehalfContainer.style.display = canSubmitOnBehalf ? 'block' : 'none';
   }
-  
-  if (regex.test(value)) {
-    const parts = value.match(regex);
-    const day = parseInt(parts[1], 10);
-    const month = parseInt(parts[2], 10);
-    const year = parseInt(parts[3], 10);
-    
-    if (month < 1 || month > 12) {
-      showToast('Mês inválido', 'error');
-      return false;
-    }
-    
-    const daysInMonth = new Date(year, month, 0).getDate();
-    if (day < 1 || day > daysInMonth) {
-      showToast('Dia inválido para o mês selecionado', 'error');
-      return false;
-    }
-  }
-  
-  return true;
-}
-
-function parseDateFromDisplay(displayDate) {
-  // Converte dd/mm/aaaa para yyyy-mm-dd
-  if (!displayDate) return null;
-  const regex = /^(\d{2})\/(\d{2})\/(\d{4})$/;
-  const match = displayDate.match(regex);
-  if (match) {
-    return `${match[3]}-${match[2]}-${match[1]}`;
-  }
-  return null;
-}
-
-function formatDateToDisplay(isoDate) {
-  // Converte yyyy-mm-dd para dd/mm/aaaa
-  if (!isoDate) return '';
-  const parts = isoDate.split('-');
-  if (parts.length === 3) {
-    return `${parts[2]}/${parts[1]}/${parts[0]}`;
-  }
-  return isoDate;
 }
 
 // ====================
@@ -151,18 +142,13 @@ function updateDayCounter() {
   const dataChegada = document.getElementById('dataChegada')?.value;
   
   if (dataPartida && dataChegada) {
-    const isoPartida = parseDateFromDisplay(dataPartida);
-    const isoChegada = parseDateFromDisplay(dataChegada);
+    const partida = new Date(dataPartida);
+    const chegada = new Date(dataChegada);
     
-    if (isoPartida && isoChegada) {
-      const partida = new Date(isoPartida);
-      const chegada = new Date(isoChegada);
-      
-      const diffTime = Math.abs(chegada - partida);
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-      
-      document.getElementById('dayCounterValue').textContent = diffDays > 0 ? diffDays : 0;
-    }
+    const diffTime = Math.abs(chegada - partida);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+    
+    document.getElementById('dayCounterValue').textContent = diffDays > 0 ? diffDays : 0;
   }
 }
 
@@ -195,11 +181,34 @@ function updateCollaboratorsList() {
       </div>
       <select class="form-select colaborador-select" id="colaborador_${i}" ${i === 0 ? 'required' : ''}>
         <option value="">-- Selecionar Colaborador --</option>
-        <option value="self">Próprio</option>
       </select>
     `;
     container.appendChild(div);
+    
+    // Popular dropdown com colaboradores
+    populateColaboradorSelect(`colaborador_${i}`);
   }
+}
+
+function populateColaboradorSelect(selectId) {
+  const select = document.getElementById(selectId);
+  if (!select) return;
+  
+  // Manter a primeira opção (placeholder)
+  const firstOption = select.options[0];
+  select.innerHTML = '';
+  select.appendChild(firstOption);
+  
+  // Adicionar colaboradores
+  colaboradoresList.forEach(colab => {
+    const option = document.createElement('option');
+    option.value = colab.id;
+    option.textContent = colab.nome;
+    if (colab.departamentos) {
+      option.textContent += ` (${colab.departamentos.nome || colab.departamentos.codigo})`;
+    }
+    select.appendChild(option);
+  });
 }
 
 // ====================
@@ -298,13 +307,11 @@ function addTransportMethod() {
       </button>
     </div>
     <div class="transport-body">
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Tipo de Transporte <span class="required">*</span></label>
-          <select class="form-select transport-tipo-select" id="transportTipo_${transportCount}" required onchange="onTransportTypeChange(${transportCount})">
-            ${optionsHtml}
-          </select>
-        </div>
+      <div class="form-group">
+        <label class="form-label">Tipo de Transporte <span class="required">*</span></label>
+        <select class="form-select transport-tipo-select" id="transportTipo_${transportCount}" required onchange="onTransportTypeChange(${transportCount})">
+          ${optionsHtml}
+        </select>
       </div>
       
       <!-- Campos específicos para Viatura EMRP (Frota) -->
@@ -313,21 +320,19 @@ function addTransportMethod() {
           <label class="form-label">Responsável pela Condução <span class="required">*</span></label>
           <select class="form-select" id="frotaCondutor_${transportCount}">
             <option value="">-- Selecionar --</option>
-            <option value="colaborador1">Colaborador 1</option>
-            <option value="colaborador2">Colaborador 2</option>
           </select>
         </div>
-      </div>
-      
-      <!-- Opção de Motorista para outros transportes -->
-      <div class="motorista-trajeto-section" id="motoristaTrajeto_${transportCount}" style="display: none;">
-        <label class="checkbox-label">
-          <input type="checkbox" id="solicitarMotorista_${transportCount}">
-          <span class="checkbox-custom"></span>
-          <span class="checkbox-text">Solicitar motorista para este trajeto</span>
-        </label>
-        <div class="form-group motorista-obs-group" style="margin-top: 8px;">
-          <textarea class="form-textarea" id="motoristaObs_${transportCount}" rows="2" placeholder="Observações para o motorista neste trajeto..."></textarea>
+        
+        <!-- Opção de Motorista - só para Viatura EMRP (Frota) -->
+        <div class="motorista-trajeto-section" id="motoristaTrajeto_${transportCount}">
+          <label class="checkbox-label">
+            <input type="checkbox" id="solicitarMotorista_${transportCount}">
+            <span class="checkbox-custom"></span>
+            <span class="checkbox-text">Solicitar motorista para este trajeto</span>
+          </label>
+          <div class="form-group motorista-obs-group" style="margin-top: 8px;">
+            <textarea class="form-textarea" id="motoristaObs_${transportCount}" rows="2" placeholder="Observações para o motorista neste trajeto..."></textarea>
+          </div>
         </div>
       </div>
       
@@ -343,6 +348,9 @@ function addTransportMethod() {
   
   container.appendChild(div);
   updateTransportNumbers();
+  
+  // Popular dropdown do condutor
+  populateColaboradorSelect(`frotaCondutor_${transportCount}`);
 }
 
 function removeTransportMethod(id) {
@@ -365,53 +373,20 @@ function updateTransportNumbers() {
 
 function onTransportTypeChange(id) {
   const select = document.getElementById(`transportTipo_${id}`);
-  const selectedOption = select.options[select.selectedIndex];
   const tipo = select.value;
   
   const frotaFields = document.getElementById(`frotaFields_${id}`);
-  const motoristaTrajeto = document.getElementById(`motoristaTrajeto_${id}`);
   const observacoesSection = document.getElementById(`transportObservacoes_${id}`);
-  const motoristaGlobal = document.getElementById('solicitarMotoristaGlobal');
   
-  // Mostrar/esconder campos específicos
+  // Mostrar/esconder campos específicos para Viatura EMRP (Frota)
   if (frotaFields) {
     frotaFields.style.display = tipo === 'frota' ? 'block' : 'none';
-  }
-  
-  // Mostrar opção de motorista para não-frota (se motorista global não estiver selecionado)
-  if (motoristaTrajeto) {
-    const showMotorista = tipo && tipo !== 'frota' && !motoristaGlobal?.checked;
-    motoristaTrajeto.style.display = showMotorista ? 'block' : 'none';
   }
   
   // Mostrar observações quando tipo selecionado
   if (observacoesSection) {
     observacoesSection.style.display = tipo ? 'block' : 'none';
   }
-}
-
-function toggleMotoristaGlobal() {
-  const checkbox = document.getElementById('solicitarMotoristaGlobal');
-  const container = document.getElementById('motoristaGlobalContainer');
-  
-  if (container) {
-    container.style.display = checkbox.checked ? 'block' : 'none';
-  }
-  
-  // Esconder opções de motorista por trajeto se global estiver selecionado
-  const motoristaTrajetoSections = document.querySelectorAll('.motorista-trajeto-section');
-  motoristaTrajetoSections.forEach(section => {
-    if (checkbox.checked) {
-      section.style.display = 'none';
-    } else {
-      // Verificar se o transporte correspondente é não-frota
-      const id = section.id.replace('motoristaTrajeto_', '');
-      const tipoSelect = document.getElementById(`transportTipo_${id}`);
-      if (tipoSelect && tipoSelect.value && tipoSelect.value !== 'frota') {
-        section.style.display = 'block';
-      }
-    }
-  });
 }
 
 // ====================
@@ -548,7 +523,7 @@ function updateProcessTracker(estado) {
   // Reset all
   [step1, step2, step3].forEach(step => {
     if (step) {
-      step.querySelector('.step-circle')?.classList.remove('active', 'completed');
+      step.querySelector('.step-circle')?.classList.remove('active', 'completed', 'rejected');
     }
   });
   
@@ -564,7 +539,7 @@ function updateProcessTracker(estado) {
     case 'Aprovado':
       step1?.querySelector('.step-circle')?.classList.add('completed');
       step2?.querySelector('.step-circle')?.classList.add('completed');
-      step3?.querySelector('.step-circle')?.classList.add('active');
+      step3?.querySelector('.step-circle')?.classList.add('completed');
       break;
     case 'Rejeitado':
       step1?.querySelector('.step-circle')?.classList.add('completed');
@@ -748,16 +723,9 @@ function validateForm() {
   const dataPartida = document.getElementById('dataPartida');
   const dataChegada = document.getElementById('dataChegada');
   
-  if (!validateDateInput(dataPartida) || !validateDateInput(dataChegada)) {
-    isValid = false;
-  }
-  
   // Validar que data de chegada >= data de partida
   if (dataPartida.value && dataChegada.value) {
-    const isoPartida = parseDateFromDisplay(dataPartida.value);
-    const isoChegada = parseDateFromDisplay(dataChegada.value);
-    
-    if (isoPartida && isoChegada && new Date(isoChegada) < new Date(isoPartida)) {
+    if (new Date(dataChegada.value) < new Date(dataPartida.value)) {
       showToast('Data de chegada não pode ser anterior à data de partida', 'error');
       isValid = false;
     }
@@ -805,8 +773,8 @@ function collectFormData() {
     
     // Detalhes
     motivo: document.getElementById('motivoDeslocacao')?.value || '',
-    data_partida: parseDateFromDisplay(document.getElementById('dataPartida')?.value),
-    data_chegada: parseDateFromDisplay(document.getElementById('dataChegada')?.value),
+    data_partida: document.getElementById('dataPartida')?.value || null,
+    data_chegada: document.getElementById('dataChegada')?.value || null,
     hora_partida: `${document.getElementById('horaPartida')?.value || '09'}:${document.getElementById('minutoPartida')?.value || '00'}`,
     hora_chegada: `${document.getElementById('horaChegada')?.value || '18'}:${document.getElementById('minutoChegada')?.value || '00'}`,
     
@@ -814,10 +782,6 @@ function collectFormData() {
     local_origem: document.getElementById('localOrigem')?.value || '',
     local_destino: document.getElementById('localDestino')?.value || '',
     pontos_intermedios: getPontosIntermédios(),
-    
-    // Motorista Global
-    solicitar_motorista_global: document.getElementById('solicitarMotoristaGlobal')?.checked || false,
-    motorista_global_obs: document.getElementById('motoristaGlobalObs')?.value || '',
     
     // Transportes
     transportes: [],
@@ -857,7 +821,6 @@ function collectFormData() {
       
       if (tipo === 'frota') {
         transportData.condutor = document.getElementById(`frotaCondutor_${id}`)?.value || '';
-      } else {
         transportData.solicitar_motorista = document.getElementById(`solicitarMotorista_${id}`)?.checked || false;
         transportData.motorista_trajeto_obs = document.getElementById(`motoristaObs_${id}`)?.value || '';
       }
@@ -919,8 +882,8 @@ async function loadPedido(pedidoId) {
     
     // Preencher detalhes
     document.getElementById('motivoDeslocacao').value = pedido.motivo || '';
-    document.getElementById('dataPartida').value = formatDateToDisplay(pedido.data_partida) || '';
-    document.getElementById('dataChegada').value = formatDateToDisplay(pedido.data_chegada) || '';
+    document.getElementById('dataPartida').value = pedido.data_partida || '';
+    document.getElementById('dataChegada').value = pedido.data_chegada || '';
     
     if (pedido.hora_partida) {
       const [h, m] = pedido.hora_partida.split(':');
@@ -954,13 +917,6 @@ async function loadPedido(pedidoId) {
       updateCollaboratorsList();
     }
     
-    // Motorista global
-    if (pedido.solicitar_motorista_global) {
-      document.getElementById('solicitarMotoristaGlobal').checked = true;
-      toggleMotoristaGlobal();
-      document.getElementById('motoristaGlobalObs').value = pedido.motorista_global_obs || '';
-    }
-    
     // Transportes
     const transportesContainer = document.getElementById('transportesContainer');
     transportesContainer.innerHTML = '';
@@ -975,7 +931,6 @@ async function loadPedido(pedidoId) {
         
         if (transporte.tipo_codigo === 'frota') {
           document.getElementById(`frotaCondutor_${id}`).value = transporte.condutor || '';
-        } else {
           document.getElementById(`solicitarMotorista_${id}`).checked = transporte.solicitar_motorista || false;
           document.getElementById(`motoristaObs_${id}`).value = transporte.motorista_trajeto_obs || '';
         }
