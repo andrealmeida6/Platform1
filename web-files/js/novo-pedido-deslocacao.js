@@ -2,6 +2,13 @@
  * novo-pedido-deslocacao.js
  * Lógica para a página de criação/edição de pedidos de deslocação
  * Compatível com Power Pages
+ * 
+ * MELHORES PRÁTICAS PARA GRANDES VOLUMES DE DADOS:
+ * 1. Cache local com TTL para evitar requests repetidos
+ * 2. Debounce na pesquisa para reduzir chamadas
+ * 3. Limitar resultados no dropdown (paginação virtual)
+ * 4. Para >1000 registos: implementar pesquisa server-side
+ * 5. Carregar dados em background após render inicial
  */
 
 // ====================
@@ -17,16 +24,21 @@ let colaboradoresList = [];
 let colaboradoresCache = null;
 let selectedColaboradores = [];
 let searchDebounceTimers = {};
+let activeDropdown = null;
 
 // Configuração para grandes volumes de dados
 const CONFIG = {
-  SEARCH_DEBOUNCE_MS: 300,      // Debounce para pesquisa
-  MIN_SEARCH_LENGTH: 2,          // Mínimo de caracteres para pesquisar
+  SEARCH_DEBOUNCE_MS: 300,       // Debounce para pesquisa
+  MIN_SEARCH_LENGTH: 0,          // Mínimo de caracteres para pesquisar (0 = mostrar todos)
   MAX_DROPDOWN_ITEMS: 50,        // Máximo de itens no dropdown
-  CACHE_DURATION_MS: 5 * 60 * 1000 // Cache de 5 minutos
+  CACHE_DURATION_MS: 5 * 60 * 1000, // Cache de 5 minutos
+  // Para volumes muito grandes (>1000), considerar:
+  // - Pesquisa server-side com endpoint dedicado
+  // - Paginação no dropdown
+  // - Virtual scrolling
 };
 
-// Tipos de transporte permitidos (sem Comboio - está dentro de Transporte Público)
+// Tipos de transporte permitidos
 const TIPOS_TRANSPORTE_PERMITIDOS = [
   { id: 'frota', codigo: 'frota', nome: 'Viatura EMRP (Frota)', requer_motorista: true },
   { id: 'publico', codigo: 'publico', nome: 'Transporte Público (Metro, Autocarro, Comboio, etc.)' },
@@ -43,59 +55,69 @@ document.addEventListener('DOMContentLoaded', function() {
 
 async function initializePage() {
   try {
-    // Inicializar AuthService e obter utilizador atual
     await AuthService.init();
     currentUser = await AuthService.getCurrentUser();
     
-    // Carregar lista de colaboradores (com cache)
+    // Carregar colaboradores (com cache)
     await loadColaboradores();
     
-    // Configurar visibilidade baseada em roles
     setupRoleBasedVisibility();
-    
-    // Configurar inputs de data
     setupDateInputs();
-    
-    // Configurar search selects
     setupSearchSelects();
+    setupGlobalDropdownClose();
     
-    // Verificar se é edição
     const urlParams = new URLSearchParams(window.location.search);
     const pedidoId = urlParams.get('id');
     
     if (pedidoId) {
       await loadPedido(pedidoId);
     } else {
-      // Novo pedido - inicializar estado padrão
       document.getElementById('pedidoEstado').value = 'Rascunho';
       updateProcessTracker('Rascunho');
       updateCollaboratorsList();
       addTransportMethod();
     }
     
-    // Configurar auto-save
     setupAutoSave();
     
-    // Event listeners para atualização de alojamento
     document.getElementById('localOrigem')?.addEventListener('input', updateAlojamentoOptions);
     document.getElementById('localDestino')?.addEventListener('input', updateAlojamentoOptions);
     
-    // Atualizar alojamento inicial
     updateAlojamentoOptions();
     
-    // Form submit handler
     document.getElementById('pedidoForm')?.addEventListener('submit', handleSubmit);
-    
-    // Fechar dropdowns ao clicar fora
-    document.addEventListener('click', function(e) {
-      if (!e.target.closest('.search-select-wrapper')) {
-        document.querySelectorAll('.search-dropdown').forEach(d => d.classList.remove('active'));
-      }
-    });
     
   } catch (error) {
     console.error('[novo-pedido-deslocacao] Erro na inicialização:', error);
   }
+}
+
+// ====================
+// FECHAR DROPDOWNS GLOBALMENTE
+// ====================
+function setupGlobalDropdownClose() {
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.search-select-wrapper')) {
+      closeAllDropdowns();
+    }
+  });
+  
+  // Fechar ao fazer scroll
+  document.addEventListener('scroll', function() {
+    closeAllDropdowns();
+  }, true);
+  
+  // Fechar ao redimensionar
+  window.addEventListener('resize', function() {
+    closeAllDropdowns();
+  });
+}
+
+function closeAllDropdowns() {
+  document.querySelectorAll('.search-dropdown.active').forEach(d => {
+    d.classList.remove('active');
+  });
+  activeDropdown = null;
 }
 
 // ====================
@@ -105,7 +127,6 @@ function setupDateInputs() {
   const dateInputs = document.querySelectorAll('.date-input');
   
   dateInputs.forEach(input => {
-    // Auto-formatar enquanto o utilizador escreve
     input.addEventListener('input', function(e) {
       let value = e.target.value.replace(/\D/g, '');
       
@@ -121,16 +142,15 @@ function setupDateInputs() {
       
       e.target.value = value;
       
-      // Atualizar contador de dias se ambas as datas estiverem preenchidas
       if (value.length === 10) {
         updateDayCounter();
       }
     });
     
-    // Validar ao sair do campo
     input.addEventListener('blur', function(e) {
       validateDateInput(e.target);
       updateDayCounter();
+      updateAlojamentoOptions(); // Atualizar hints de datas
     });
   });
 }
@@ -167,7 +187,6 @@ function validateDateInput(input) {
 }
 
 function parseDateFromDisplay(displayDate) {
-  // Converte dd/mm/aaaa para yyyy-mm-dd (formato ISO)
   if (!displayDate) return null;
   const regex = /^(\d{2})\/(\d{2})\/(\d{4})$/;
   const match = displayDate.match(regex);
@@ -178,7 +197,6 @@ function parseDateFromDisplay(displayDate) {
 }
 
 function formatDateToDisplay(isoDate) {
-  // Converte yyyy-mm-dd para dd/mm/aaaa
   if (!isoDate) return '';
   const parts = isoDate.split('-');
   if (parts.length === 3) {
@@ -188,13 +206,12 @@ function formatDateToDisplay(isoDate) {
 }
 
 function getDateFromDisplay(displayDate) {
-  // Retorna objeto Date a partir de dd/mm/aaaa
   const isoDate = parseDateFromDisplay(displayDate);
   return isoDate ? new Date(isoDate) : null;
 }
 
 // ====================
-// CARREGAR COLABORADORES (com cache e otimização)
+// CARREGAR COLABORADORES
 // ====================
 async function loadColaboradores() {
   try {
@@ -204,15 +221,9 @@ async function loadColaboradores() {
       return;
     }
     
-    // Para Power Pages, a melhor prática é:
-    // 1. Carregar dados em lotes se volume > 1000
-    // 2. Usar cache local
-    // 3. Pesquisa server-side para volumes muito grandes
-    
-    // Carregar colaboradores (assumindo volume < 500, senão usar paginação)
     const colaboradores = await AuthService.getColaboradoresComRoles();
     
-    // Guardar apenas dados essenciais (nome e id) para otimizar memória
+    // Guardar apenas dados essenciais
     colaboradoresList = colaboradores.map(c => ({
       id: c.id,
       nome: c.nome,
@@ -231,10 +242,9 @@ async function loadColaboradores() {
 }
 
 // ====================
-// SEARCH SELECT (Dropdowns com pesquisa e debounce)
+// SEARCH SELECT (Dropdowns com pesquisa e position:fixed)
 // ====================
 function setupSearchSelects() {
-  // Setup para "Submeter em nome de"
   const submitOnBehalfSearch = document.getElementById('submitOnBehalfSearch');
   const submitOnBehalfDropdown = document.getElementById('submitOnBehalfDropdown');
   const submitOnBehalfHidden = document.getElementById('submitOnBehalf');
@@ -245,63 +255,74 @@ function setupSearchSelects() {
 }
 
 function setupSearchSelect(id, searchInput, dropdown, hiddenInput, filterFn = null) {
-  // Mostrar dropdown ao focar
+  // Focar mostra dropdown
   searchInput.addEventListener('focus', function() {
-    const filter = searchInput.value.trim();
-    if (filter.length >= CONFIG.MIN_SEARCH_LENGTH || filter.length === 0) {
-      renderSearchDropdown(id, dropdown, filter, hiddenInput, filterFn);
-      dropdown.classList.add('active');
-    }
+    showDropdown(id, searchInput, dropdown, hiddenInput, filterFn);
   });
   
-  // Filtrar ao digitar com debounce
+  // Filtrar com debounce
   searchInput.addEventListener('input', function() {
     const filter = searchInput.value.trim();
     
-    // Limpar debounce anterior
     if (searchDebounceTimers[id]) {
       clearTimeout(searchDebounceTimers[id]);
     }
     
-    // Mostrar loading
-    if (filter.length >= CONFIG.MIN_SEARCH_LENGTH) {
-      dropdown.innerHTML = '<div class="search-dropdown-loading">A pesquisar...</div>';
-      dropdown.classList.add('active');
-    }
-    
-    // Debounce
     searchDebounceTimers[id] = setTimeout(() => {
-      if (filter.length >= CONFIG.MIN_SEARCH_LENGTH || filter.length === 0) {
-        renderSearchDropdown(id, dropdown, filter, hiddenInput, filterFn);
-        dropdown.classList.add('active');
-      } else {
-        dropdown.classList.remove('active');
-      }
+      showDropdown(id, searchInput, dropdown, hiddenInput, filterFn);
     }, CONFIG.SEARCH_DEBOUNCE_MS);
   });
   
-  // Fechar ao perder foco (com delay para permitir click)
+  // Não fechar imediatamente ao blur para permitir click
   searchInput.addEventListener('blur', function() {
     setTimeout(() => {
+      if (activeDropdown !== dropdown) return;
       dropdown.classList.remove('active');
+      activeDropdown = null;
     }, 200);
   });
+}
+
+function showDropdown(id, searchInput, dropdown, hiddenInput, filterFn) {
+  const filter = searchInput.value.trim();
+  
+  // Posicionar dropdown com position:fixed
+  positionDropdown(searchInput, dropdown);
+  
+  // Renderizar conteúdo
+  renderSearchDropdown(id, dropdown, filter, hiddenInput, filterFn);
+  
+  dropdown.classList.add('active');
+  activeDropdown = dropdown;
+}
+
+function positionDropdown(input, dropdown) {
+  const rect = input.getBoundingClientRect();
+  
+  dropdown.style.position = 'fixed';
+  dropdown.style.top = (rect.bottom + 4) + 'px';
+  dropdown.style.left = rect.left + 'px';
+  dropdown.style.width = rect.width + 'px';
+  
+  // Verificar se está a sair da viewport em baixo
+  const dropdownHeight = 250; // max-height
+  if (rect.bottom + dropdownHeight > window.innerHeight) {
+    // Mostrar acima do input
+    dropdown.style.top = (rect.top - dropdownHeight - 4) + 'px';
+  }
 }
 
 function renderSearchDropdown(id, dropdown, filter, hiddenInput, filterFn = null) {
   const filterLower = (filter || '').toLowerCase();
   
-  // Aplicar filtro
   let items = filterFn ? filterFn(colaboradoresList) : colaboradoresList;
   
-  // Filtrar por texto
   if (filterLower) {
     items = items.filter(item => 
       item.nome.toLowerCase().includes(filterLower)
     );
   }
   
-  // Limitar resultados
   const limitedItems = items.slice(0, CONFIG.MAX_DROPDOWN_ITEMS);
   const hasMore = items.length > CONFIG.MAX_DROPDOWN_ITEMS;
   
@@ -326,17 +347,21 @@ function renderSearchDropdown(id, dropdown, filter, hiddenInput, filterFn = null
   // Click handlers
   dropdown.querySelectorAll('.search-dropdown-item').forEach(el => {
     el.addEventListener('mousedown', function(e) {
-      e.preventDefault(); // Prevenir blur antes do click
+      e.preventDefault();
       const itemId = this.dataset.id;
       const nome = this.dataset.nome;
       
       hiddenInput.value = itemId;
-      const searchInput = dropdown.parentElement.querySelector('.search-input');
-      if (searchInput) searchInput.value = nome;
+      const searchInput = dropdown.previousElementSibling?.previousElementSibling || 
+                          document.querySelector(`#${id.replace('colaborador_', 'colaboradorSearch_')}`) ||
+                          document.getElementById(`${id}Search`);
+      if (searchInput && searchInput.classList.contains('search-input')) {
+        searchInput.value = nome;
+      }
       
       dropdown.classList.remove('active');
+      activeDropdown = null;
       
-      // Trigger change event
       hiddenInput.dispatchEvent(new Event('change'));
     });
   });
@@ -411,14 +436,12 @@ function updateCollaboratorsList() {
     `;
     container.appendChild(div);
     
-    // Setup search select para este colaborador
     const searchInput = document.getElementById(`colaboradorSearch_${i}`);
     const dropdown = document.getElementById(`colaboradorDropdown_${i}`);
     const hiddenInput = document.getElementById(`colaborador_${i}`);
     
     setupSearchSelect(`colaborador_${i}`, searchInput, dropdown, hiddenInput);
     
-    // Ao selecionar, atualizar lista de colaboradores selecionados
     hiddenInput.addEventListener('change', updateSelectedColaboradores);
   }
 }
@@ -435,7 +458,6 @@ function updateSelectedColaboradores() {
     }
   });
   
-  // Atualizar dropdowns de condutores nos transportes
   updateCondutorDropdowns();
 }
 
@@ -558,9 +580,7 @@ function addTransportMethod() {
         </select>
       </div>
       
-      <!-- Campos específicos para Viatura EMRP (Frota) -->
       <div class="frota-fields" id="frotaFields_${transportCount}" style="display: none;">
-        <!-- Responsável pela Condução - esconde quando motorista é selecionado -->
         <div class="form-group" id="condutorGroup_${transportCount}">
           <label class="form-label">Responsável pela Condução <span class="required">*</span></label>
           <select class="form-select" id="frotaCondutor_${transportCount}">
@@ -569,7 +589,6 @@ function addTransportMethod() {
           <small style="color: #64748b; font-size: 12px; margin-top: 4px; display: block;">Apenas colaboradores selecionados acima</small>
         </div>
         
-        <!-- Opção de Motorista - só para Viatura EMRP (Frota) -->
         <div class="motorista-trajeto-section">
           <label class="checkbox-label">
             <input type="checkbox" id="solicitarMotorista_${transportCount}" onchange="onMotoristaChange(${transportCount})">
@@ -582,7 +601,6 @@ function addTransportMethod() {
         </div>
       </div>
       
-      <!-- Campo de Observações -->
       <div class="transport-observacoes-section" id="transportObservacoes_${transportCount}" style="display: none;">
         <div class="form-group">
           <label class="form-label">Observações do Transporte</label>
@@ -669,7 +687,6 @@ function updateAlojamentoOptions() {
     return;
   }
   
-  // Obter datas da viagem para validação
   const dataPartidaStr = document.getElementById('dataPartida')?.value || '';
   const dataChegadaStr = document.getElementById('dataChegada')?.value || '';
   
@@ -702,8 +719,7 @@ function updateAlojamentoOptions() {
                      placeholder="dd/mm/aaaa" 
                      maxlength="10"
                      data-min-date="${dataPartidaStr}"
-                     data-max-date="${dataChegadaStr}"
-                     onblur="validateAlojamentoDate(this)">
+                     data-max-date="${dataChegadaStr}">
               <svg class="date-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
                 <line x1="16" y1="2" x2="16" y2="6"/>
@@ -721,8 +737,7 @@ function updateAlojamentoOptions() {
                      placeholder="dd/mm/aaaa" 
                      maxlength="10"
                      data-min-date="${dataPartidaStr}"
-                     data-max-date="${dataChegadaStr}"
-                     onblur="validateAlojamentoDate(this)">
+                     data-max-date="${dataChegadaStr}">
               <svg class="date-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
                 <line x1="16" y1="2" x2="16" y2="6"/>
@@ -741,7 +756,7 @@ function updateAlojamentoOptions() {
     `;
     container.appendChild(div);
     
-    // Setup formatação de datas para os novos inputs
+    // Setup formatação e validação de datas
     const checkinInput = document.getElementById(`alojamentoCheckin_${index}`);
     const checkoutInput = document.getElementById(`alojamentoCheckout_${index}`);
     
@@ -753,6 +768,10 @@ function updateAlojamentoOptions() {
           if (value.length >= 5) value = value.substring(0, 5) + '/' + value.substring(5);
           if (value.length > 10) value = value.substring(0, 10);
           e.target.value = value;
+        });
+        
+        input.addEventListener('blur', function(e) {
+          validateAlojamentoDate(e.target);
         });
       }
     });
@@ -771,7 +790,6 @@ function toggleAlojamentoFields(index) {
 function validateAlojamentoDate(input) {
   if (!input.value) return true;
   
-  // Primeiro validar formato
   if (!validateDateInput(input)) {
     showToast('Formato de data inválido. Use dd/mm/aaaa', 'error');
     return false;
@@ -783,11 +801,10 @@ function validateAlojamentoDate(input) {
   
   if (!inputDate) return false;
   
-  // Validar que está dentro do período da viagem
   if (minDateStr) {
     const minDate = getDateFromDisplay(minDateStr);
     if (minDate && inputDate < minDate) {
-      showToast('A data deve ser igual ou posterior à data de partida', 'error');
+      showToast('A data deve ser igual ou posterior à data de partida (' + minDateStr + ')', 'error');
       input.classList.add('error');
       return false;
     }
@@ -796,7 +813,7 @@ function validateAlojamentoDate(input) {
   if (maxDateStr) {
     const maxDate = getDateFromDisplay(maxDateStr);
     if (maxDate && inputDate > maxDate) {
-      showToast('A data deve ser igual ou anterior à data de chegada', 'error');
+      showToast('A data deve ser igual ou anterior à data de chegada (' + maxDateStr + ')', 'error');
       input.classList.add('error');
       return false;
     }
@@ -1012,7 +1029,7 @@ function updateUltimaGravacao() {
 }
 
 // ====================
-// FUNÇÕES DE PERSISTÊNCIA (Supabase)
+// FUNÇÕES DE PERSISTÊNCIA
 // ====================
 async function createDeslocacao(data) {
   const deslocacaoData = {
@@ -1193,7 +1210,6 @@ function validateForm() {
   const form = document.getElementById('pedidoForm');
   let isValid = true;
   
-  // Validar campos de texto obrigatórios
   const requiredTextInputs = form.querySelectorAll('input[required]:not([type="hidden"]):not(.date-input):not(.search-input), textarea[required]');
   requiredTextInputs.forEach(field => {
     if (!field.value.trim()) {
@@ -1204,7 +1220,6 @@ function validateForm() {
     }
   });
   
-  // Validar datas
   const dataPartidaInput = document.getElementById('dataPartida');
   const dataChegadaInput = document.getElementById('dataChegada');
   
@@ -1218,7 +1233,6 @@ function validateForm() {
     isValid = false;
   }
   
-  // Validar que data de chegada >= data de partida
   const dataPartida = getDateFromDisplay(dataPartidaInput.value);
   const dataChegada = getDateFromDisplay(dataChegadaInput.value);
   
@@ -1228,7 +1242,6 @@ function validateForm() {
     isValid = false;
   }
   
-  // Validar pelo menos um meio de transporte
   const transportContainer = document.getElementById('transportesContainer');
   const transportItems = transportContainer.querySelectorAll('.transport-item');
   
@@ -1250,7 +1263,6 @@ function validateForm() {
     isValid = false;
   }
   
-  // Validar datas de alojamento
   const alojamentoDates = document.querySelectorAll('.alojamento-date');
   alojamentoDates.forEach(input => {
     if (input.value && !validateAlojamentoDate(input)) {
@@ -1266,7 +1278,7 @@ function validateForm() {
 }
 
 // ====================
-// RECOLHER DADOS DO FORMULÁRIO
+// RECOLHER DADOS
 // ====================
 function collectFormData() {
   const data = {
@@ -1290,7 +1302,6 @@ function collectFormData() {
     estado: document.getElementById('pedidoEstado')?.value || 'Rascunho'
   };
   
-  // Recolher colaboradores
   const numColab = data.num_colaboradores;
   for (let i = 0; i < numColab; i++) {
     const hiddenInput = document.getElementById(`colaborador_${i}`);
@@ -1299,7 +1310,6 @@ function collectFormData() {
     }
   }
   
-  // Recolher transportes
   const transportContainer = document.getElementById('transportesContainer');
   const transportItems = transportContainer.querySelectorAll('.transport-item');
   
@@ -1328,7 +1338,6 @@ function collectFormData() {
     }
   });
   
-  // Recolher alojamentos
   const alojamentoContainer = document.getElementById('alojamentoContainer');
   const alojamentoItems = alojamentoContainer.querySelectorAll('.alojamento-item');
   
@@ -1353,7 +1362,7 @@ function collectFormData() {
 }
 
 // ====================
-// CARREGAR PEDIDO (EDIÇÃO)
+// CARREGAR PEDIDO
 // ====================
 async function loadPedido(pedidoId) {
   try {
@@ -1414,7 +1423,6 @@ async function loadPedido(pedidoId) {
     }
     updateCollaboratorsList();
     
-    // Carregar colaboradores
     const colabUrl = `${DataService.getBaseUrl()}/rest/v1/deslocacao_colaboradores?deslocacao_id=eq.${pedidoId}&order=ordem`;
     const colabResponse = await fetch(colabUrl, { headers: DataService.getHeaders() });
     const colabResults = await colabResponse.json();
@@ -1433,7 +1441,6 @@ async function loadPedido(pedidoId) {
     
     updateSelectedColaboradores();
     
-    // Transportes
     const transportesContainer = document.getElementById('transportesContainer');
     transportesContainer.innerHTML = '';
     transportCount = 0;
@@ -1468,7 +1475,6 @@ async function loadPedido(pedidoId) {
     updateProcessTracker(pedido.estado || 'Rascunho');
     updateAlojamentoOptions();
     
-    // Carregar alojamentos
     const alojUrl = `${DataService.getBaseUrl()}/rest/v1/deslocacao_alojamentos?deslocacao_id=eq.${pedidoId}`;
     const alojResponse = await fetch(alojUrl, { headers: DataService.getHeaders() });
     const alojResults = await alojResponse.json();

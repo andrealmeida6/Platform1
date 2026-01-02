@@ -204,8 +204,8 @@
   background: var(--bg-white);
   border-radius: 12px;
   border: 1px solid var(--border-color);
-  overflow: visible; /* Importante para dropdowns */
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  /* NÃO usar overflow:hidden para permitir dropdowns */
 }
 
 .form-section-header {
@@ -215,6 +215,7 @@
   padding: 16px 20px;
   background: linear-gradient(135deg, var(--bg-gray) 0%, var(--bg-gray-dark) 100%);
   border-bottom: 1px solid var(--border-color);
+  border-radius: 12px 12px 0 0;
 }
 
 .form-section-icon {
@@ -242,8 +243,7 @@
 
 .form-section-content {
   padding: 20px;
-  overflow: visible; /* Importante para dropdowns */
-  position: relative;
+  /* NÃO usar overflow ou position que bloqueie dropdowns */
 }
 
 /* ====================
@@ -440,10 +440,10 @@
 
 /* ====================
    SEARCH SELECT (Dropdowns com pesquisa)
+   Usando position:fixed para garantir que fica sobre tudo
    ==================== */
 .search-select-wrapper {
   position: relative;
-  z-index: 10;
 }
 
 .search-input {
@@ -453,20 +453,18 @@
   font-size: 14px;
 }
 
+/* Dropdown com position:fixed - anexado ao body via JS */
 .search-dropdown {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
+  position: fixed;
   max-height: 250px;
+  min-width: 200px;
   overflow-y: auto;
   background: var(--bg-white);
   border: 1px solid var(--border-color);
   border-radius: 8px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-  z-index: 9999;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+  z-index: 99999;
   display: none;
-  margin-top: 4px;
 }
 
 .search-dropdown.active {
@@ -524,8 +522,6 @@
   border-radius: 8px;
   padding: 16px;
   border: 1px solid var(--border-color);
-  position: relative;
-  overflow: visible;
 }
 
 .colaborador-header {
@@ -708,7 +704,6 @@
   border-radius: 8px;
   border: 1px solid var(--border-color);
   margin-bottom: 12px;
-  overflow: visible;
 }
 
 .transport-header {
@@ -718,6 +713,7 @@
   padding: 12px 16px;
   background: var(--bg-gray-dark);
   border-bottom: 1px solid var(--border-color);
+  border-radius: 8px 8px 0 0;
 }
 
 .transport-number {
@@ -1184,7 +1180,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 9999;
+  z-index: 99999;
 }
 
 .loading-content {
@@ -1222,7 +1218,7 @@
   position: fixed;
   bottom: 100px;
   right: 24px;
-  z-index: 10000;
+  z-index: 100000;
   display: flex;
   flex-direction: column;
   gap: 8px;
