@@ -87,9 +87,11 @@ title: Novo Pedido de Deslocação
             <!-- Submeter em nome de - só visível para AFR-RH ou Secretariado -->
             <div class="form-group" id="submitOnBehalfContainer" style="display: none;">
               <label class="form-label">Submeter em nome de</label>
-              <select class="form-select" id="submitOnBehalf">
-                <option value="">-- Próprio --</option>
-              </select>
+              <div class="search-select-wrapper">
+                <input type="text" class="form-input search-input" id="submitOnBehalfSearch" placeholder="Pesquisar colaborador..." autocomplete="off">
+                <input type="hidden" id="submitOnBehalf" value="">
+                <div class="search-dropdown" id="submitOnBehalfDropdown"></div>
+              </div>
             </div>
           </div>
           <div id="colaboradoresContainer" class="colaboradores-grid"></div>
@@ -115,7 +117,7 @@ title: Novo Pedido de Deslocação
             <input type="text" class="form-input" id="motivoDeslocacao" required placeholder="Ex: Reunião com cliente, Visita técnica, Formação...">
           </div>
 
-          <div class="form-row form-row-3">
+          <div class="form-row form-row-3 form-row-align-top">
             <div class="form-group">
               <label class="form-label">Data de Partida <span class="required">*</span></label>
               <input type="date" class="form-input" id="dataPartida" required onchange="updateDayCounter()">
@@ -279,7 +281,7 @@ title: Novo Pedido de Deslocação
                   <line x1="12" y1="3" x2="12" y2="15"/>
                 </svg>
                 <span>Arraste ficheiros ou clique para selecionar</span>
-                <span class="file-types">PDF, DOC, DOCX, JPG, PNG (máx. 10MB)</span>
+                <span class="file-types">PDF, DOC, DOCX, JPG, PNG</span>
               </div>
             </div>
             <div id="fileList" class="file-list"></div>

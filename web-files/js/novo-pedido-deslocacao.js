@@ -14,13 +14,13 @@ let lastSavedData = null;
 let autoSaveTimer = null;
 let currentUser = null;
 let colaboradoresList = [];
+let selectedColaboradores = []; // Colaboradores escolhidos na secção Colaboradores
 
-// Tipos de transporte permitidos
+// Tipos de transporte permitidos (sem Comboio - está dentro de Transporte Público)
 const TIPOS_TRANSPORTE_PERMITIDOS = [
   { id: 'frota', codigo: 'frota', nome: 'Viatura EMRP (Frota)', requer_motorista: true },
-  { id: 'publico', codigo: 'publico', nome: 'Transporte Público (Metro, Autocarro, etc.)' },
+  { id: 'publico', codigo: 'publico', nome: 'Transporte Público (Metro, Autocarro, Comboio, etc.)' },
   { id: 'aviao', codigo: 'aviao', nome: 'Avião' },
-  { id: 'comboio', codigo: 'comboio', nome: 'Comboio' },
   { id: 'taxi', codigo: 'taxi', nome: 'Táxi / TVDE' }
 ];
 
@@ -42,6 +42,9 @@ async function initializePage() {
     
     // Configurar visibilidade baseada em roles
     setupRoleBasedVisibility();
+    
+    // Configurar search selects
+    setupSearchSelects();
     
     // Verificar se é edição
     const urlParams = new URLSearchParams(window.location.search);
@@ -70,6 +73,13 @@ async function initializePage() {
     // Form submit handler
     document.getElementById('pedidoForm')?.addEventListener('submit', handleSubmit);
     
+    // Fechar dropdowns ao clicar fora
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.search-select-wrapper')) {
+        document.querySelectorAll('.search-dropdown').forEach(d => d.classList.remove('active'));
+      }
+    });
+    
   } catch (error) {
     console.error('[novo-pedido-deslocacao] Erro na inicialização:', error);
   }
@@ -81,44 +91,70 @@ async function initializePage() {
 async function loadColaboradores() {
   try {
     colaboradoresList = await AuthService.getColaboradoresComRoles();
-    
-    // Popular dropdown "Submeter em nome de"
-    populateColaboradorDropdown('submitOnBehalf', true);
-    
   } catch (error) {
     console.error('[novo-pedido-deslocacao] Erro ao carregar colaboradores:', error);
   }
 }
 
-function populateColaboradorDropdown(selectId, includeOwnOption = false) {
-  const select = document.getElementById(selectId);
-  if (!select) return;
+// ====================
+// SEARCH SELECT (Dropdowns com pesquisa)
+// ====================
+function setupSearchSelects() {
+  // Setup para "Submeter em nome de"
+  const submitOnBehalfSearch = document.getElementById('submitOnBehalfSearch');
+  const submitOnBehalfDropdown = document.getElementById('submitOnBehalfDropdown');
+  const submitOnBehalfHidden = document.getElementById('submitOnBehalf');
   
-  // Limpar opções existentes
-  select.innerHTML = '';
+  if (submitOnBehalfSearch && submitOnBehalfDropdown) {
+    setupSearchSelect(submitOnBehalfSearch, submitOnBehalfDropdown, submitOnBehalfHidden, colaboradoresList);
+  }
+}
+
+function setupSearchSelect(searchInput, dropdown, hiddenInput, items) {
+  // Mostrar dropdown ao focar
+  searchInput.addEventListener('focus', function() {
+    renderSearchDropdown(dropdown, items, searchInput.value, hiddenInput);
+    dropdown.classList.add('active');
+  });
   
-  // Adicionar opção "Próprio" se aplicável
-  if (includeOwnOption) {
-    const ownOption = document.createElement('option');
-    ownOption.value = '';
-    ownOption.textContent = '-- Próprio --';
-    select.appendChild(ownOption);
-  } else {
-    const defaultOption = document.createElement('option');
-    defaultOption.value = '';
-    defaultOption.textContent = '-- Selecionar Colaborador --';
-    select.appendChild(defaultOption);
+  // Filtrar ao digitar
+  searchInput.addEventListener('input', function() {
+    renderSearchDropdown(dropdown, items, searchInput.value, hiddenInput);
+    dropdown.classList.add('active');
+  });
+}
+
+function renderSearchDropdown(dropdown, items, filter, hiddenInput) {
+  const filterLower = (filter || '').toLowerCase();
+  const filtered = items.filter(item => 
+    item.nome.toLowerCase().includes(filterLower)
+  );
+  
+  if (filtered.length === 0) {
+    dropdown.innerHTML = '<div class="search-dropdown-empty">Nenhum colaborador encontrado</div>';
+    return;
   }
   
-  // Adicionar colaboradores
-  colaboradoresList.forEach(colab => {
-    const option = document.createElement('option');
-    option.value = colab.id;
-    option.textContent = colab.nome;
-    if (colab.departamentos) {
-      option.textContent += ` (${colab.departamentos.nome || colab.departamentos.codigo})`;
-    }
-    select.appendChild(option);
+  dropdown.innerHTML = filtered.map(item => `
+    <div class="search-dropdown-item ${hiddenInput.value === item.id ? 'selected' : ''}" 
+         data-id="${item.id}" data-nome="${item.nome}">
+      ${item.nome}
+    </div>
+  `).join('');
+  
+  // Click handlers
+  dropdown.querySelectorAll('.search-dropdown-item').forEach(el => {
+    el.addEventListener('click', function() {
+      const id = this.dataset.id;
+      const nome = this.dataset.nome;
+      
+      hiddenInput.value = id;
+      const searchInput = dropdown.previousElementSibling.previousElementSibling || 
+                          dropdown.parentElement.querySelector('.search-input');
+      if (searchInput) searchInput.value = nome;
+      
+      dropdown.classList.remove('active');
+    });
   });
 }
 
@@ -179,35 +215,63 @@ function updateCollaboratorsList() {
         <span class="colaborador-number">${i + 1}</span>
         <span class="colaborador-label">Colaborador ${i === 0 ? '(Responsável)' : ''}</span>
       </div>
-      <select class="form-select colaborador-select" id="colaborador_${i}" ${i === 0 ? 'required' : ''}>
-        <option value="">-- Selecionar Colaborador --</option>
-      </select>
+      <div class="search-select-wrapper">
+        <input type="text" class="form-input search-input colaborador-search" 
+               id="colaboradorSearch_${i}" 
+               placeholder="Pesquisar colaborador..." 
+               autocomplete="off"
+               ${i === 0 ? 'required' : ''}>
+        <input type="hidden" class="colaborador-hidden" id="colaborador_${i}" value="">
+        <div class="search-dropdown" id="colaboradorDropdown_${i}"></div>
+      </div>
     `;
     container.appendChild(div);
     
-    // Popular dropdown com colaboradores
-    populateColaboradorSelect(`colaborador_${i}`);
+    // Setup search select para este colaborador
+    const searchInput = document.getElementById(`colaboradorSearch_${i}`);
+    const dropdown = document.getElementById(`colaboradorDropdown_${i}`);
+    const hiddenInput = document.getElementById(`colaborador_${i}`);
+    
+    setupSearchSelect(searchInput, dropdown, hiddenInput, colaboradoresList);
+    
+    // Ao selecionar, atualizar lista de colaboradores selecionados
+    hiddenInput.addEventListener('change', updateSelectedColaboradores);
+    searchInput.addEventListener('blur', () => {
+      setTimeout(updateSelectedColaboradores, 200);
+    });
   }
 }
 
-function populateColaboradorSelect(selectId) {
-  const select = document.getElementById(selectId);
-  if (!select) return;
-  
-  // Manter a primeira opção (placeholder)
-  const firstOption = select.options[0];
-  select.innerHTML = '';
-  select.appendChild(firstOption);
-  
-  // Adicionar colaboradores
-  colaboradoresList.forEach(colab => {
-    const option = document.createElement('option');
-    option.value = colab.id;
-    option.textContent = colab.nome;
-    if (colab.departamentos) {
-      option.textContent += ` (${colab.departamentos.nome || colab.departamentos.codigo})`;
+function updateSelectedColaboradores() {
+  selectedColaboradores = [];
+  const hiddenInputs = document.querySelectorAll('.colaborador-hidden');
+  hiddenInputs.forEach(input => {
+    if (input.value) {
+      const colab = colaboradoresList.find(c => c.id === input.value);
+      if (colab) {
+        selectedColaboradores.push(colab);
+      }
     }
-    select.appendChild(option);
+  });
+  
+  // Atualizar dropdowns de condutores nos transportes
+  updateCondutorDropdowns();
+}
+
+function updateCondutorDropdowns() {
+  // Atualizar todos os dropdowns de condutor para mostrar apenas colaboradores selecionados
+  const condutorSelects = document.querySelectorAll('[id^="frotaCondutor_"]');
+  condutorSelects.forEach(select => {
+    const currentValue = select.value;
+    select.innerHTML = '<option value="">-- Selecionar Condutor --</option>';
+    
+    selectedColaboradores.forEach(colab => {
+      const option = document.createElement('option');
+      option.value = colab.id;
+      option.textContent = colab.nome;
+      if (colab.id === currentValue) option.selected = true;
+      select.appendChild(option);
+    });
   });
 }
 
@@ -265,7 +329,7 @@ function updateIntermediateMarkers() {
   });
 }
 
-function getPontosIntermédios() {
+function getPontosIntermedios() {
   const container = document.getElementById('pontosIntermediosContainer');
   const inputs = container.querySelectorAll('.ponto-intermedio-input');
   const pontos = [];
@@ -293,7 +357,7 @@ function addTransportMethod() {
   
   let optionsHtml = '<option value="">-- Selecionar --</option>';
   TIPOS_TRANSPORTE_PERMITIDOS.forEach(tipo => {
-    optionsHtml += `<option value="${tipo.codigo}" data-requer-motorista="${tipo.requer_motorista || false}">${tipo.nome}</option>`;
+    optionsHtml += `<option value="${tipo.codigo}">${tipo.nome}</option>`;
   });
   
   div.innerHTML = `
@@ -316,21 +380,23 @@ function addTransportMethod() {
       
       <!-- Campos específicos para Viatura EMRP (Frota) -->
       <div class="frota-fields" id="frotaFields_${transportCount}" style="display: none;">
-        <div class="form-group">
+        <!-- Responsável pela Condução - esconde quando motorista é selecionado -->
+        <div class="form-group" id="condutorGroup_${transportCount}">
           <label class="form-label">Responsável pela Condução <span class="required">*</span></label>
           <select class="form-select" id="frotaCondutor_${transportCount}">
-            <option value="">-- Selecionar --</option>
+            <option value="">-- Selecionar Condutor --</option>
           </select>
+          <small style="color: #64748b; font-size: 12px; margin-top: 4px; display: block;">Apenas colaboradores selecionados acima</small>
         </div>
         
         <!-- Opção de Motorista - só para Viatura EMRP (Frota) -->
-        <div class="motorista-trajeto-section" id="motoristaTrajeto_${transportCount}">
+        <div class="motorista-trajeto-section">
           <label class="checkbox-label">
-            <input type="checkbox" id="solicitarMotorista_${transportCount}">
+            <input type="checkbox" id="solicitarMotorista_${transportCount}" onchange="onMotoristaChange(${transportCount})">
             <span class="checkbox-custom"></span>
             <span class="checkbox-text">Solicitar motorista para este trajeto</span>
           </label>
-          <div class="form-group motorista-obs-group" style="margin-top: 8px;">
+          <div class="form-group motorista-obs-group" id="motoristaObsGroup_${transportCount}" style="margin-top: 8px; display: none;">
             <textarea class="form-textarea" id="motoristaObs_${transportCount}" rows="2" placeholder="Observações para o motorista neste trajeto..."></textarea>
           </div>
         </div>
@@ -348,9 +414,7 @@ function addTransportMethod() {
   
   container.appendChild(div);
   updateTransportNumbers();
-  
-  // Popular dropdown do condutor
-  populateColaboradorSelect(`frotaCondutor_${transportCount}`);
+  updateCondutorDropdowns();
 }
 
 function removeTransportMethod(id) {
@@ -387,6 +451,29 @@ function onTransportTypeChange(id) {
   if (observacoesSection) {
     observacoesSection.style.display = tipo ? 'block' : 'none';
   }
+  
+  // Reset motorista checkbox
+  const motoristaCheckbox = document.getElementById(`solicitarMotorista_${id}`);
+  if (motoristaCheckbox) {
+    motoristaCheckbox.checked = false;
+    onMotoristaChange(id);
+  }
+}
+
+function onMotoristaChange(id) {
+  const motoristaCheckbox = document.getElementById(`solicitarMotorista_${id}`);
+  const condutorGroup = document.getElementById(`condutorGroup_${id}`);
+  const motoristaObsGroup = document.getElementById(`motoristaObsGroup_${id}`);
+  
+  if (motoristaCheckbox.checked) {
+    // Esconder campo de condutor quando motorista é selecionado
+    if (condutorGroup) condutorGroup.style.display = 'none';
+    if (motoristaObsGroup) motoristaObsGroup.style.display = 'block';
+  } else {
+    // Mostrar campo de condutor
+    if (condutorGroup) condutorGroup.style.display = 'block';
+    if (motoristaObsGroup) motoristaObsGroup.style.display = 'none';
+  }
 }
 
 // ====================
@@ -397,7 +484,7 @@ function updateAlojamentoOptions() {
   if (!container) return;
   
   // Obter todos os pontos do percurso
-  const pontosIntermedios = getPontosIntermédios();
+  const pontosIntermedios = getPontosIntermedios();
   const destino = document.getElementById('localDestino')?.value?.trim() || '';
   
   // Criar lista de pontos que podem ter alojamento (intermédios + destino)
@@ -420,7 +507,7 @@ function updateAlojamentoOptions() {
     div.innerHTML = `
       <div class="alojamento-header">
         <label class="checkbox-label">
-          <input type="checkbox" class="alojamento-checkbox" id="alojamento_${index}" onchange="toggleAlojamentoObs(${index})">
+          <input type="checkbox" class="alojamento-checkbox" id="alojamento_${index}" onchange="toggleAlojamentoFields(${index})">
           <span class="checkbox-custom"></span>
           <span class="checkbox-text">
             <span class="alojamento-local">${ponto}</span>
@@ -428,9 +515,19 @@ function updateAlojamentoOptions() {
           </span>
         </label>
       </div>
-      <div class="alojamento-obs-container" id="alojamentoObsContainer_${index}" style="display: none;">
+      <div class="alojamento-fields" id="alojamentoFields_${index}" style="display: none;">
+        <div class="alojamento-dates">
+          <div class="form-group">
+            <label class="form-label">Data Check-in</label>
+            <input type="date" class="form-input" id="alojamentoCheckin_${index}">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Data Check-out</label>
+            <input type="date" class="form-input" id="alojamentoCheckout_${index}">
+          </div>
+        </div>
         <div class="form-group">
-          <label class="form-label">Observações sobre alojamento em ${ponto}</label>
+          <label class="form-label">Observações sobre alojamento</label>
           <textarea class="form-textarea" id="alojamentoObs_${index}" rows="2" placeholder="Preferências de hotel, número de noites, etc..."></textarea>
         </div>
       </div>
@@ -439,12 +536,12 @@ function updateAlojamentoOptions() {
   });
 }
 
-function toggleAlojamentoObs(index) {
+function toggleAlojamentoFields(index) {
   const checkbox = document.getElementById(`alojamento_${index}`);
-  const container = document.getElementById(`alojamentoObsContainer_${index}`);
+  const fieldsContainer = document.getElementById(`alojamentoFields_${index}`);
   
-  if (container) {
-    container.style.display = checkbox.checked ? 'block' : 'none';
+  if (fieldsContainer) {
+    fieldsContainer.style.display = checkbox.checked ? 'block' : 'none';
   }
 }
 
@@ -453,11 +550,10 @@ function toggleAlojamentoObs(index) {
 // ====================
 function handleFileSelect(event) {
   const files = event.target.files;
-  const fileList = document.getElementById('fileList');
   
   Array.from(files).forEach(file => {
     if (file.size > 10 * 1024 * 1024) {
-      showToast(`Ficheiro "${file.name}" excede 10MB`, 'error');
+      showToast(`Ficheiro "${file.name}" excede o limite de tamanho`, 'error');
       return;
     }
     
@@ -467,7 +563,6 @@ function handleFileSelect(event) {
     }
   });
   
-  // Limpar input para permitir re-selecionar o mesmo ficheiro
   event.target.value = '';
 }
 
@@ -520,7 +615,6 @@ function updateProcessTracker(estado) {
   const step2 = document.getElementById('processStep2');
   const step3 = document.getElementById('processStep3');
   
-  // Reset all
   [step1, step2, step3].forEach(step => {
     if (step) {
       step.querySelector('.step-circle')?.classList.remove('active', 'completed', 'rejected');
@@ -533,21 +627,23 @@ function updateProcessTracker(estado) {
       break;
     case 'Submetido':
     case 'Em Aprovação':
+    case 'Pendente Aprovação':
       step1?.querySelector('.step-circle')?.classList.add('completed');
       step2?.querySelector('.step-circle')?.classList.add('active');
       break;
     case 'Aprovado':
+    case 'Aprovada':
       step1?.querySelector('.step-circle')?.classList.add('completed');
       step2?.querySelector('.step-circle')?.classList.add('completed');
       step3?.querySelector('.step-circle')?.classList.add('completed');
       break;
     case 'Rejeitado':
+    case 'Rejeitada':
       step1?.querySelector('.step-circle')?.classList.add('completed');
       step2?.querySelector('.step-circle')?.classList.add('rejected');
       break;
   }
   
-  // Atualizar badge de estado
   const badge = document.getElementById('estadoBadge');
   if (badge) {
     badge.textContent = estado;
@@ -579,15 +675,14 @@ function scheduleAutoSave() {
     if (pedidoId) {
       autoSaveDraft();
     }
-  }, 30000); // Auto-save após 30 segundos de inatividade
+  }, 30000);
 }
 
 async function autoSaveDraft() {
   const currentData = collectFormData();
   
-  // Verificar se os dados mudaram
   if (JSON.stringify(currentData) === JSON.stringify(lastSavedData)) {
-    return; // Sem alterações
+    return;
   }
   
   try {
@@ -609,21 +704,17 @@ async function saveDraft(formData, isAutoSave = false) {
   try {
     showLoadingOverlay(isAutoSave ? '' : 'A guardar rascunho...');
     
-    // Garantir que o estado é Rascunho
     formData.estado = 'Rascunho';
     
     const pedidoId = document.getElementById('pedidoId')?.value;
     
     let result;
     if (pedidoId) {
-      // Atualizar existente
-      result = await DataService.updateDeslocacao(pedidoId, formData);
+      result = await saveDeslocacao(pedidoId, formData);
     } else {
-      // Criar novo
-      result = await DataService.createDeslocacao(formData);
+      result = await createDeslocacao(formData);
       if (result && result.id) {
         document.getElementById('pedidoId').value = result.id;
-        // Atualizar URL sem recarregar
         const newUrl = `${window.location.pathname}?id=${result.id}`;
         window.history.replaceState({}, '', newUrl);
       }
@@ -632,11 +723,9 @@ async function saveDraft(formData, isAutoSave = false) {
     lastSavedData = formData;
     updateUltimaGravacao();
     
+    hideLoadingOverlay();
     if (!isAutoSave) {
-      hideLoadingOverlay();
       showToast('Rascunho guardado com sucesso', 'success');
-    } else {
-      hideLoadingOverlay();
     }
     
     return result;
@@ -662,12 +751,160 @@ function updateUltimaGravacao() {
 }
 
 // ====================
+// FUNÇÕES DE PERSISTÊNCIA (Supabase)
+// ====================
+async function createDeslocacao(data) {
+  const deslocacaoData = {
+    motivo: data.motivo,
+    origem: data.local_origem,
+    destino: data.local_destino,
+    ponto_intermedio: data.pontos_intermedios.length > 0 ? data.pontos_intermedios[0] : null,
+    pontos_intermedios: data.pontos_intermedios,
+    data_partida: data.data_partida,
+    hora_partida: data.hora_partida,
+    data_chegada: data.data_chegada,
+    hora_chegada: data.hora_chegada,
+    observacoes: data.observacoes,
+    estado: data.estado || 'Rascunho',
+    criado_por: currentUser?.id || null,
+    submetido_em_nome_de: data.submit_on_behalf || null,
+    num_colaboradores: data.num_colaboradores,
+    transportes: data.transportes
+  };
+  
+  const url = `${DataService.getBaseUrl()}/rest/v1/deslocacoes`;
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      ...DataService.getHeaders(),
+      'Prefer': 'return=representation'
+    },
+    body: JSON.stringify(deslocacaoData)
+  });
+  
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+  }
+  
+  const results = await response.json();
+  const deslocacao = Array.isArray(results) ? results[0] : results;
+  
+  // Guardar colaboradores
+  if (data.colaboradores && data.colaboradores.length > 0) {
+    await saveDeslocacaoColaboradores(deslocacao.id, data.colaboradores);
+  }
+  
+  // Guardar alojamentos
+  if (data.alojamentos && data.alojamentos.length > 0) {
+    await saveDeslocacaoAlojamentos(deslocacao.id, data.alojamentos);
+  }
+  
+  return deslocacao;
+}
+
+async function saveDeslocacao(id, data) {
+  const deslocacaoData = {
+    motivo: data.motivo,
+    origem: data.local_origem,
+    destino: data.local_destino,
+    ponto_intermedio: data.pontos_intermedios.length > 0 ? data.pontos_intermedios[0] : null,
+    pontos_intermedios: data.pontos_intermedios,
+    data_partida: data.data_partida,
+    hora_partida: data.hora_partida,
+    data_chegada: data.data_chegada,
+    hora_chegada: data.hora_chegada,
+    observacoes: data.observacoes,
+    estado: data.estado || 'Rascunho',
+    submetido_em_nome_de: data.submit_on_behalf || null,
+    num_colaboradores: data.num_colaboradores,
+    transportes: data.transportes,
+    updated_at: new Date().toISOString()
+  };
+  
+  const url = `${DataService.getBaseUrl()}/rest/v1/deslocacoes?id=eq.${id}`;
+  const response = await fetch(url, {
+    method: 'PATCH',
+    headers: {
+      ...DataService.getHeaders(),
+      'Prefer': 'return=representation'
+    },
+    body: JSON.stringify(deslocacaoData)
+  });
+  
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+  }
+  
+  // Atualizar colaboradores
+  await saveDeslocacaoColaboradores(id, data.colaboradores);
+  
+  // Atualizar alojamentos
+  await saveDeslocacaoAlojamentos(id, data.alojamentos);
+  
+  const results = await response.json();
+  return Array.isArray(results) ? results[0] : results;
+}
+
+async function saveDeslocacaoColaboradores(deslocacaoId, colaboradores) {
+  // Apagar existentes
+  const deleteUrl = `${DataService.getBaseUrl()}/rest/v1/deslocacao_colaboradores?deslocacao_id=eq.${deslocacaoId}`;
+  await fetch(deleteUrl, {
+    method: 'DELETE',
+    headers: DataService.getHeaders()
+  });
+  
+  // Inserir novos
+  if (colaboradores && colaboradores.length > 0) {
+    const insertUrl = `${DataService.getBaseUrl()}/rest/v1/deslocacao_colaboradores`;
+    const records = colaboradores.map((colabId, index) => ({
+      deslocacao_id: deslocacaoId,
+      colaborador_id: colabId,
+      ordem: index + 1
+    }));
+    
+    await fetch(insertUrl, {
+      method: 'POST',
+      headers: DataService.getHeaders(),
+      body: JSON.stringify(records)
+    });
+  }
+}
+
+async function saveDeslocacaoAlojamentos(deslocacaoId, alojamentos) {
+  // Apagar existentes
+  const deleteUrl = `${DataService.getBaseUrl()}/rest/v1/deslocacao_alojamentos?deslocacao_id=eq.${deslocacaoId}`;
+  await fetch(deleteUrl, {
+    method: 'DELETE',
+    headers: DataService.getHeaders()
+  });
+  
+  // Inserir novos
+  if (alojamentos && alojamentos.length > 0) {
+    const insertUrl = `${DataService.getBaseUrl()}/rest/v1/deslocacao_alojamentos`;
+    const records = alojamentos.map(aloj => ({
+      deslocacao_id: deslocacaoId,
+      local: aloj.local,
+      data_checkin: aloj.data_checkin || null,
+      data_checkout: aloj.data_checkout || null,
+      observacoes: aloj.observacoes || null
+    }));
+    
+    await fetch(insertUrl, {
+      method: 'POST',
+      headers: DataService.getHeaders(),
+      body: JSON.stringify(records)
+    });
+  }
+}
+
+// ====================
 // SUBMETER PEDIDO
 // ====================
 async function handleSubmit(event) {
   event.preventDefault();
   
-  // Validar formulário
   if (!validateForm()) {
     return;
   }
@@ -676,22 +913,19 @@ async function handleSubmit(event) {
     showLoadingOverlay('A submeter pedido...');
     
     const formData = collectFormData();
-    formData.estado = 'Submetido';
-    formData.data_submissao = new Date().toISOString();
+    formData.estado = 'Pendente Aprovação';
     
     const pedidoId = document.getElementById('pedidoId')?.value;
     
-    let result;
     if (pedidoId) {
-      result = await DataService.updateDeslocacao(pedidoId, formData);
+      await saveDeslocacao(pedidoId, formData);
     } else {
-      result = await DataService.createDeslocacao(formData);
+      await createDeslocacao(formData);
     }
     
     hideLoadingOverlay();
     showToast('Pedido submetido com sucesso!', 'success');
     
-    // Redirecionar para a lista após 1.5 segundos
     setTimeout(() => {
       window.location.href = document.querySelector('a.btn-voltar')?.href || '/deslocacoes';
     }, 1500);
@@ -705,12 +939,11 @@ async function handleSubmit(event) {
 
 function validateForm() {
   const form = document.getElementById('pedidoForm');
-  
-  // Validar campos obrigatórios
-  const requiredFields = form.querySelectorAll('[required]');
   let isValid = true;
   
-  requiredFields.forEach(field => {
+  // Validar campos obrigatórios de texto
+  const requiredInputs = form.querySelectorAll('input[required]:not([type="hidden"]), textarea[required]');
+  requiredInputs.forEach(field => {
     if (!field.value.trim()) {
       field.classList.add('error');
       isValid = false;
@@ -723,7 +956,6 @@ function validateForm() {
   const dataPartida = document.getElementById('dataPartida');
   const dataChegada = document.getElementById('dataChegada');
   
-  // Validar que data de chegada >= data de partida
   if (dataPartida.value && dataChegada.value) {
     if (new Date(dataChegada.value) < new Date(dataPartida.value)) {
       showToast('Data de chegada não pode ser anterior à data de partida', 'error');
@@ -736,11 +968,10 @@ function validateForm() {
   const transportItems = transportContainer.querySelectorAll('.transport-item');
   
   if (transportItems.length === 0) {
-    showToast('Deve selecionar pelo menos um meio de transporte', 'error');
+    showToast('Deve adicionar pelo menos um meio de transporte', 'error');
     isValid = false;
   }
   
-  // Validar tipos de transporte selecionados
   let hasTransportSelected = false;
   transportItems.forEach(item => {
     const select = item.querySelector('.transport-tipo-select');
@@ -766,42 +997,32 @@ function validateForm() {
 // ====================
 function collectFormData() {
   const data = {
-    // Colaboradores
     num_colaboradores: parseInt(document.getElementById('numColaboradores')?.value) || 1,
     submit_on_behalf: document.getElementById('submitOnBehalf')?.value || null,
     colaboradores: [],
     
-    // Detalhes
     motivo: document.getElementById('motivoDeslocacao')?.value || '',
     data_partida: document.getElementById('dataPartida')?.value || null,
     data_chegada: document.getElementById('dataChegada')?.value || null,
     hora_partida: `${document.getElementById('horaPartida')?.value || '09'}:${document.getElementById('minutoPartida')?.value || '00'}`,
     hora_chegada: `${document.getElementById('horaChegada')?.value || '18'}:${document.getElementById('minutoChegada')?.value || '00'}`,
     
-    // Percurso
     local_origem: document.getElementById('localOrigem')?.value || '',
     local_destino: document.getElementById('localDestino')?.value || '',
-    pontos_intermedios: getPontosIntermédios(),
+    pontos_intermedios: getPontosIntermedios(),
     
-    // Transportes
     transportes: [],
-    
-    // Alojamentos
     alojamentos: [],
-    
-    // Observações e Anexos
     observacoes: document.getElementById('observacoes')?.value || '',
-    
-    // Estado
     estado: document.getElementById('pedidoEstado')?.value || 'Rascunho'
   };
   
   // Recolher colaboradores
   const numColab = data.num_colaboradores;
   for (let i = 0; i < numColab; i++) {
-    const select = document.getElementById(`colaborador_${i}`);
-    if (select && select.value) {
-      data.colaboradores.push(select.value);
+    const hiddenInput = document.getElementById(`colaborador_${i}`);
+    if (hiddenInput && hiddenInput.value) {
+      data.colaboradores.push(hiddenInput.value);
     }
   }
   
@@ -809,7 +1030,7 @@ function collectFormData() {
   const transportContainer = document.getElementById('transportesContainer');
   const transportItems = transportContainer.querySelectorAll('.transport-item');
   
-  transportItems.forEach((item, index) => {
+  transportItems.forEach((item) => {
     const id = item.id.replace('transport_', '');
     const tipo = document.getElementById(`transportTipo_${id}`)?.value;
     
@@ -820,9 +1041,14 @@ function collectFormData() {
       };
       
       if (tipo === 'frota') {
-        transportData.condutor = document.getElementById(`frotaCondutor_${id}`)?.value || '';
-        transportData.solicitar_motorista = document.getElementById(`solicitarMotorista_${id}`)?.checked || false;
-        transportData.motorista_trajeto_obs = document.getElementById(`motoristaObs_${id}`)?.value || '';
+        const solicitarMotorista = document.getElementById(`solicitarMotorista_${id}`)?.checked || false;
+        transportData.solicitar_motorista = solicitarMotorista;
+        
+        if (solicitarMotorista) {
+          transportData.motorista_obs = document.getElementById(`motoristaObs_${id}`)?.value || '';
+        } else {
+          transportData.condutor = document.getElementById(`frotaCondutor_${id}`)?.value || '';
+        }
       }
       
       data.transportes.push(transportData);
@@ -837,10 +1063,14 @@ function collectFormData() {
     const checkbox = item.querySelector('.alojamento-checkbox');
     if (checkbox && checkbox.checked) {
       const local = item.querySelector('.alojamento-local')?.textContent || '';
+      const checkin = document.getElementById(`alojamentoCheckin_${index}`)?.value || null;
+      const checkout = document.getElementById(`alojamentoCheckout_${index}`)?.value || null;
       const obs = document.getElementById(`alojamentoObs_${index}`)?.value || '';
       
       data.alojamentos.push({
         local: local,
+        data_checkin: checkin,
+        data_checkout: checkout,
         observacoes: obs
       });
     }
@@ -856,7 +1086,11 @@ async function loadPedido(pedidoId) {
   try {
     showLoadingOverlay('A carregar pedido...');
     
-    const pedido = await DataService.getDeslocacaoById(pedidoId);
+    // Carregar deslocação
+    const url = `${DataService.getBaseUrl()}/rest/v1/deslocacoes?id=eq.${pedidoId}`;
+    const response = await fetch(url, { headers: DataService.getHeaders() });
+    const results = await response.json();
+    const pedido = results[0];
     
     if (!pedido) {
       throw new Error('Pedido não encontrado');
@@ -866,21 +1100,18 @@ async function loadPedido(pedidoId) {
     document.getElementById('pedidoId').value = pedidoId;
     document.getElementById('pedidoEstado').value = pedido.estado || 'Rascunho';
     
-    // Atualizar título
     const titulo = document.getElementById('pedidoTitulo');
     if (titulo) {
       titulo.textContent = pedido.estado === 'Rascunho' ? 'Editar Rascunho' : 'Visualizar Pedido';
     }
     
-    // Mostrar número do pedido
     const numeroContainer = document.getElementById('pedidoNumero');
     const numeroValor = document.getElementById('numeroValor');
     if (numeroContainer && numeroValor) {
       numeroContainer.style.display = 'flex';
-      numeroValor.textContent = pedido.numero || pedidoId.substring(0, 8).toUpperCase();
+      numeroValor.textContent = pedidoId.substring(0, 8).toUpperCase();
     }
     
-    // Preencher detalhes
     document.getElementById('motivoDeslocacao').value = pedido.motivo || '';
     document.getElementById('dataPartida').value = pedido.data_partida || '';
     document.getElementById('dataChegada').value = pedido.data_chegada || '';
@@ -897,42 +1128,63 @@ async function loadPedido(pedidoId) {
       document.getElementById('minutoChegada').value = m;
     }
     
-    // Preencher percurso
-    document.getElementById('localOrigem').value = pedido.local_origem || '';
-    document.getElementById('localDestino').value = pedido.local_destino || '';
+    document.getElementById('localOrigem').value = pedido.origem || '';
+    document.getElementById('localDestino').value = pedido.destino || '';
     
     // Pontos intermédios
-    if (pedido.pontos_intermedios && pedido.pontos_intermedios.length > 0) {
-      pedido.pontos_intermedios.forEach((ponto, index) => {
-        addPontoIntermedio();
-        const input = document.querySelector(`#pontosIntermediosContainer .ponto-intermedio-input:last-child`) ||
-                      document.getElementById(`pontoIntermedio_input_${pontoIntermedioCount}`);
-        if (input) input.value = ponto;
-      });
-    }
+    const pontosIntermedios = pedido.pontos_intermedios || [];
+    pontosIntermedios.forEach((ponto) => {
+      addPontoIntermedio();
+      const input = document.getElementById(`pontoIntermedio_input_${pontoIntermedioCount}`);
+      if (input) input.value = ponto;
+    });
     
     // Colaboradores
     if (pedido.num_colaboradores) {
       document.getElementById('numColaboradores').value = pedido.num_colaboradores;
-      updateCollaboratorsList();
     }
+    updateCollaboratorsList();
+    
+    // Carregar colaboradores da deslocação
+    const colabUrl = `${DataService.getBaseUrl()}/rest/v1/deslocacao_colaboradores?deslocacao_id=eq.${pedidoId}&order=ordem`;
+    const colabResponse = await fetch(colabUrl, { headers: DataService.getHeaders() });
+    const colabResults = await colabResponse.json();
+    
+    colabResults.forEach((dc, index) => {
+      const hiddenInput = document.getElementById(`colaborador_${index}`);
+      const searchInput = document.getElementById(`colaboradorSearch_${index}`);
+      if (hiddenInput) {
+        hiddenInput.value = dc.colaborador_id;
+        const colab = colaboradoresList.find(c => c.id === dc.colaborador_id);
+        if (colab && searchInput) {
+          searchInput.value = colab.nome;
+        }
+      }
+    });
+    
+    updateSelectedColaboradores();
     
     // Transportes
     const transportesContainer = document.getElementById('transportesContainer');
     transportesContainer.innerHTML = '';
     transportCount = 0;
     
-    if (pedido.transportes && pedido.transportes.length > 0) {
-      pedido.transportes.forEach(transporte => {
+    const transportes = pedido.transportes || [];
+    if (transportes.length > 0) {
+      transportes.forEach(transporte => {
         addTransportMethod();
         const id = transportCount;
         document.getElementById(`transportTipo_${id}`).value = transporte.tipo_codigo;
         onTransportTypeChange(id);
         
         if (transporte.tipo_codigo === 'frota') {
-          document.getElementById(`frotaCondutor_${id}`).value = transporte.condutor || '';
-          document.getElementById(`solicitarMotorista_${id}`).checked = transporte.solicitar_motorista || false;
-          document.getElementById(`motoristaObs_${id}`).value = transporte.motorista_trajeto_obs || '';
+          if (transporte.solicitar_motorista) {
+            document.getElementById(`solicitarMotorista_${id}`).checked = true;
+            onMotoristaChange(id);
+            document.getElementById(`motoristaObs_${id}`).value = transporte.motorista_obs || '';
+          } else {
+            document.getElementById(`frotaCondutor_${id}`).value = transporte.condutor || '';
+          }
         }
         
         document.getElementById(`transportObs_${id}`).value = transporte.observacoes || '';
@@ -941,35 +1193,36 @@ async function loadPedido(pedidoId) {
       addTransportMethod();
     }
     
-    // Observações
     document.getElementById('observacoes').value = pedido.observacoes || '';
     
-    // Atualizar UI
     updateDayCounter();
     updateProcessTracker(pedido.estado || 'Rascunho');
     updateAlojamentoOptions();
     
-    // Preencher alojamentos após atualizar opções
+    // Carregar alojamentos
+    const alojUrl = `${DataService.getBaseUrl()}/rest/v1/deslocacao_alojamentos?deslocacao_id=eq.${pedidoId}`;
+    const alojResponse = await fetch(alojUrl, { headers: DataService.getHeaders() });
+    const alojResults = await alojResponse.json();
+    
     setTimeout(() => {
-      if (pedido.alojamentos && pedido.alojamentos.length > 0) {
-        pedido.alojamentos.forEach(aloj => {
-          const items = document.querySelectorAll('.alojamento-item');
-          items.forEach((item, index) => {
-            const localText = item.querySelector('.alojamento-local')?.textContent;
-            if (localText === aloj.local) {
-              const checkbox = document.getElementById(`alojamento_${index}`);
-              if (checkbox) {
-                checkbox.checked = true;
-                toggleAlojamentoObs(index);
-                document.getElementById(`alojamentoObs_${index}`).value = aloj.observacoes || '';
-              }
+      alojResults.forEach(aloj => {
+        const items = document.querySelectorAll('.alojamento-item');
+        items.forEach((item, index) => {
+          const localText = item.querySelector('.alojamento-local')?.textContent;
+          if (localText === aloj.local) {
+            const checkbox = document.getElementById(`alojamento_${index}`);
+            if (checkbox) {
+              checkbox.checked = true;
+              toggleAlojamentoFields(index);
+              document.getElementById(`alojamentoCheckin_${index}`).value = aloj.data_checkin || '';
+              document.getElementById(`alojamentoCheckout_${index}`).value = aloj.data_checkout || '';
+              document.getElementById(`alojamentoObs_${index}`).value = aloj.observacoes || '';
             }
-          });
+          }
         });
-      }
+      });
     }, 100);
     
-    // Guardar estado para comparação
     lastSavedData = collectFormData();
     
     hideLoadingOverlay();
@@ -1033,7 +1286,6 @@ function showToast(message, type = 'info') {
   
   container.appendChild(toast);
   
-  // Auto-remove após 5 segundos
   setTimeout(() => {
     toast.classList.add('toast-fade-out');
     setTimeout(() => toast.remove(), 300);

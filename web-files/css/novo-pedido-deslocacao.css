@@ -327,6 +327,11 @@ input[type="date"].form-input::-webkit-calendar-picker-indicator:hover {
   grid-template-columns: 1fr 1fr 1fr;
 }
 
+/* Alinhamento ao topo para labels */
+.form-row-align-top {
+  align-items: start;
+}
+
 /* Input numérico com botões */
 .number-input-wrapper {
   display: flex;
@@ -410,6 +415,8 @@ input[type="date"].form-input::-webkit-calendar-picker-indicator:hover {
   background: linear-gradient(135deg, var(--primary-bg) 0%, var(--primary-bg-light) 100%);
   border-radius: 8px;
   border: 1px solid var(--primary-border);
+  height: 42px;
+  box-sizing: border-box;
 }
 
 .day-counter-value {
@@ -425,11 +432,73 @@ input[type="date"].form-input::-webkit-calendar-picker-indicator:hover {
 }
 
 /* ====================
+   SEARCH SELECT (Dropdowns com pesquisa)
+   ==================== */
+.search-select-wrapper {
+  position: relative;
+}
+
+.search-input {
+  width: 100%;
+  padding: 10px 14px;
+  padding-right: 36px;
+  font-size: 14px;
+}
+
+.search-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  max-height: 250px;
+  overflow-y: auto;
+  background: var(--bg-white);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  z-index: 100;
+  display: none;
+}
+
+.search-dropdown.active {
+  display: block;
+}
+
+.search-dropdown-item {
+  padding: 10px 14px;
+  font-size: 14px;
+  color: var(--text-dark);
+  cursor: pointer;
+  transition: background 0.15s ease;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.search-dropdown-item:last-child {
+  border-bottom: none;
+}
+
+.search-dropdown-item:hover {
+  background: var(--primary-bg-light);
+}
+
+.search-dropdown-item.selected {
+  background: var(--primary-bg);
+  font-weight: 500;
+}
+
+.search-dropdown-empty {
+  padding: 16px 14px;
+  font-size: 14px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+/* ====================
    COLABORADORES
    ==================== */
 .colaboradores-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 12px;
   margin-top: 12px;
 }
@@ -437,7 +506,7 @@ input[type="date"].form-input::-webkit-calendar-picker-indicator:hover {
 .colaborador-item {
   background: var(--bg-gray);
   border-radius: 8px;
-  padding: 12px;
+  padding: 16px;
   border: 1px solid var(--border-color);
 }
 
@@ -445,7 +514,7 @@ input[type="date"].form-input::-webkit-calendar-picker-indicator:hover {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 .colaborador-number {
@@ -463,14 +532,16 @@ input[type="date"].form-input::-webkit-calendar-picker-indicator:hover {
 }
 
 .colaborador-label {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
   color: var(--text-light);
 }
 
 .colaborador-select {
-  font-size: 13px;
-  padding: 8px 10px;
+  font-size: 14px;
+  padding: 10px 14px;
+  width: 100%;
+  min-height: 42px;
 }
 
 /* ====================
@@ -814,10 +885,17 @@ input[type="date"].form-input::-webkit-calendar-picker-indicator:hover {
   margin-left: 8px;
 }
 
-.alojamento-obs-container {
+.alojamento-fields {
   margin-top: 12px;
   padding-top: 12px;
   border-top: 1px solid var(--border-color);
+}
+
+.alojamento-dates {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
 }
 
 /* ====================
@@ -1223,6 +1301,10 @@ input[type="date"].form-input::-webkit-calendar-picker-indicator:hover {
     grid-template-columns: 1fr;
   }
   
+  .alojamento-dates {
+    grid-template-columns: 1fr;
+  }
+  
   .pedido-actions-bar {
     flex-direction: column;
     gap: 12px;
@@ -1257,6 +1339,10 @@ input[type="date"].form-input::-webkit-calendar-picker-indicator:hover {
     height: 28px;
     font-size: 12px;
   }
+  
+  .colaboradores-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 480px) {
@@ -1271,10 +1357,6 @@ input[type="date"].form-input::-webkit-calendar-picker-indicator:hover {
   
   .form-section-content {
     padding: 16px;
-  }
-  
-  .colaboradores-grid {
-    grid-template-columns: 1fr;
   }
   
   .time-input-wrapper {
@@ -1310,7 +1392,6 @@ input[type="date"].form-input::-webkit-calendar-picker-indicator:hover {
 /* ====================
    POWER PAGES COMPATIBILITY
    ==================== */
-/* Garantir que os estilos não conflitam com Portal/Power Pages */
 .page-container-pedido * {
   box-sizing: border-box;
 }
@@ -1333,7 +1414,6 @@ input[type="date"].form-input::-webkit-calendar-picker-indicator:hover {
   cursor: pointer;
 }
 
-/* Reset para evitar conflitos */
 .page-container-pedido a {
   text-decoration: none;
 }
