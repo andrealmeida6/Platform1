@@ -14,7 +14,17 @@ let lastSavedData = null;
 let autoSaveTimer = null;
 let currentUser = null;
 let colaboradoresList = [];
-let selectedColaboradores = []; // Colaboradores escolhidos na secção Colaboradores
+let colaboradoresCache = null;
+let selectedColaboradores = [];
+let searchDebounceTimers = {};
+
+// Configuração para grandes volumes de dados
+const CONFIG = {
+  SEARCH_DEBOUNCE_MS: 300,      // Debounce para pesquisa
+  MIN_SEARCH_LENGTH: 2,          // Mínimo de caracteres para pesquisar
+  MAX_DROPDOWN_ITEMS: 50,        // Máximo de itens no dropdown
+  CACHE_DURATION_MS: 5 * 60 * 1000 // Cache de 5 minutos
+};
 
 // Tipos de transporte permitidos (sem Comboio - está dentro de Transporte Público)
 const TIPOS_TRANSPORTE_PERMITIDOS = [
@@ -37,11 +47,14 @@ async function initializePage() {
     await AuthService.init();
     currentUser = await AuthService.getCurrentUser();
     
-    // Carregar lista de colaboradores
+    // Carregar lista de colaboradores (com cache)
     await loadColaboradores();
     
     // Configurar visibilidade baseada em roles
     setupRoleBasedVisibility();
+    
+    // Configurar inputs de data
+    setupDateInputs();
     
     // Configurar search selects
     setupSearchSelects();
@@ -57,7 +70,7 @@ async function initializePage() {
       document.getElementById('pedidoEstado').value = 'Rascunho';
       updateProcessTracker('Rascunho');
       updateCollaboratorsList();
-      addTransportMethod(); // Adicionar um meio de transporte por defeito
+      addTransportMethod();
     }
     
     // Configurar auto-save
@@ -86,18 +99,139 @@ async function initializePage() {
 }
 
 // ====================
-// CARREGAR COLABORADORES
+// FORMATAÇÃO DE DATAS (dd/mm/aaaa)
+// ====================
+function setupDateInputs() {
+  const dateInputs = document.querySelectorAll('.date-input');
+  
+  dateInputs.forEach(input => {
+    // Auto-formatar enquanto o utilizador escreve
+    input.addEventListener('input', function(e) {
+      let value = e.target.value.replace(/\D/g, '');
+      
+      if (value.length >= 2) {
+        value = value.substring(0, 2) + '/' + value.substring(2);
+      }
+      if (value.length >= 5) {
+        value = value.substring(0, 5) + '/' + value.substring(5);
+      }
+      if (value.length > 10) {
+        value = value.substring(0, 10);
+      }
+      
+      e.target.value = value;
+      
+      // Atualizar contador de dias se ambas as datas estiverem preenchidas
+      if (value.length === 10) {
+        updateDayCounter();
+      }
+    });
+    
+    // Validar ao sair do campo
+    input.addEventListener('blur', function(e) {
+      validateDateInput(e.target);
+      updateDayCounter();
+    });
+  });
+}
+
+function validateDateInput(input) {
+  const value = input.value;
+  if (!value) return true;
+  
+  const regex = /^(\d{2})\/(\d{2})\/(\d{4})$/;
+  
+  if (!regex.test(value)) {
+    input.classList.add('error');
+    return false;
+  }
+  
+  const parts = value.match(regex);
+  const day = parseInt(parts[1], 10);
+  const month = parseInt(parts[2], 10);
+  const year = parseInt(parts[3], 10);
+  
+  if (month < 1 || month > 12) {
+    input.classList.add('error');
+    return false;
+  }
+  
+  const daysInMonth = new Date(year, month, 0).getDate();
+  if (day < 1 || day > daysInMonth) {
+    input.classList.add('error');
+    return false;
+  }
+  
+  input.classList.remove('error');
+  return true;
+}
+
+function parseDateFromDisplay(displayDate) {
+  // Converte dd/mm/aaaa para yyyy-mm-dd (formato ISO)
+  if (!displayDate) return null;
+  const regex = /^(\d{2})\/(\d{2})\/(\d{4})$/;
+  const match = displayDate.match(regex);
+  if (match) {
+    return `${match[3]}-${match[2]}-${match[1]}`;
+  }
+  return null;
+}
+
+function formatDateToDisplay(isoDate) {
+  // Converte yyyy-mm-dd para dd/mm/aaaa
+  if (!isoDate) return '';
+  const parts = isoDate.split('-');
+  if (parts.length === 3) {
+    return `${parts[2]}/${parts[1]}/${parts[0]}`;
+  }
+  return isoDate;
+}
+
+function getDateFromDisplay(displayDate) {
+  // Retorna objeto Date a partir de dd/mm/aaaa
+  const isoDate = parseDateFromDisplay(displayDate);
+  return isoDate ? new Date(isoDate) : null;
+}
+
+// ====================
+// CARREGAR COLABORADORES (com cache e otimização)
 // ====================
 async function loadColaboradores() {
   try {
-    colaboradoresList = await AuthService.getColaboradoresComRoles();
+    // Verificar cache
+    if (colaboradoresCache && colaboradoresCache.timestamp > Date.now() - CONFIG.CACHE_DURATION_MS) {
+      colaboradoresList = colaboradoresCache.data;
+      return;
+    }
+    
+    // Para Power Pages, a melhor prática é:
+    // 1. Carregar dados em lotes se volume > 1000
+    // 2. Usar cache local
+    // 3. Pesquisa server-side para volumes muito grandes
+    
+    // Carregar colaboradores (assumindo volume < 500, senão usar paginação)
+    const colaboradores = await AuthService.getColaboradoresComRoles();
+    
+    // Guardar apenas dados essenciais (nome e id) para otimizar memória
+    colaboradoresList = colaboradores.map(c => ({
+      id: c.id,
+      nome: c.nome,
+      departamento: c.departamentos?.nome || c.departamentos?.codigo || ''
+    }));
+    
+    // Atualizar cache
+    colaboradoresCache = {
+      data: colaboradoresList,
+      timestamp: Date.now()
+    };
+    
   } catch (error) {
     console.error('[novo-pedido-deslocacao] Erro ao carregar colaboradores:', error);
   }
 }
 
 // ====================
-// SEARCH SELECT (Dropdowns com pesquisa)
+// SEARCH SELECT (Dropdowns com pesquisa e debounce)
 // ====================
 function setupSearchSelects() {
   // Setup para "Submeter em nome de"
@@ -106,54 +240,104 @@ function setupSearchSelects() {
   const submitOnBehalfHidden = document.getElementById('submitOnBehalf');
   
   if (submitOnBehalfSearch && submitOnBehalfDropdown) {
-    setupSearchSelect(submitOnBehalfSearch, submitOnBehalfDropdown, submitOnBehalfHidden, colaboradoresList);
+    setupSearchSelect('submitOnBehalf', submitOnBehalfSearch, submitOnBehalfDropdown, submitOnBehalfHidden);
   }
 }
 
-function setupSearchSelect(searchInput, dropdown, hiddenInput, items) {
+function setupSearchSelect(id, searchInput, dropdown, hiddenInput, filterFn = null) {
   // Mostrar dropdown ao focar
   searchInput.addEventListener('focus', function() {
-    renderSearchDropdown(dropdown, items, searchInput.value, hiddenInput);
-    dropdown.classList.add('active');
+    const filter = searchInput.value.trim();
+    if (filter.length >= CONFIG.MIN_SEARCH_LENGTH || filter.length === 0) {
+      renderSearchDropdown(id, dropdown, filter, hiddenInput, filterFn);
+      dropdown.classList.add('active');
+    }
   });
   
-  // Filtrar ao digitar
+  // Filtrar ao digitar com debounce
   searchInput.addEventListener('input', function() {
-    renderSearchDropdown(dropdown, items, searchInput.value, hiddenInput);
-    dropdown.classList.add('active');
+    const filter = searchInput.value.trim();
+    
+    // Limpar debounce anterior
+    if (searchDebounceTimers[id]) {
+      clearTimeout(searchDebounceTimers[id]);
+    }
+    
+    // Mostrar loading
+    if (filter.length >= CONFIG.MIN_SEARCH_LENGTH) {
+      dropdown.innerHTML = '<div class="search-dropdown-loading">A pesquisar...</div>';
+      dropdown.classList.add('active');
+    }
+    
+    // Debounce
+    searchDebounceTimers[id] = setTimeout(() => {
+      if (filter.length >= CONFIG.MIN_SEARCH_LENGTH || filter.length === 0) {
+        renderSearchDropdown(id, dropdown, filter, hiddenInput, filterFn);
+        dropdown.classList.add('active');
+      } else {
+        dropdown.classList.remove('active');
+      }
+    }, CONFIG.SEARCH_DEBOUNCE_MS);
+  });
+  
+  // Fechar ao perder foco (com delay para permitir click)
+  searchInput.addEventListener('blur', function() {
+    setTimeout(() => {
+      dropdown.classList.remove('active');
+    }, 200);
   });
 }
 
-function renderSearchDropdown(dropdown, items, filter, hiddenInput) {
+function renderSearchDropdown(id, dropdown, filter, hiddenInput, filterFn = null) {
   const filterLower = (filter || '').toLowerCase();
-  const filtered = items.filter(item => 
-    item.nome.toLowerCase().includes(filterLower)
-  );
   
-  if (filtered.length === 0) {
+  // Aplicar filtro
+  let items = filterFn ? filterFn(colaboradoresList) : colaboradoresList;
+  
+  // Filtrar por texto
+  if (filterLower) {
+    items = items.filter(item => 
+      item.nome.toLowerCase().includes(filterLower)
+    );
+  }
+  
+  // Limitar resultados
+  const limitedItems = items.slice(0, CONFIG.MAX_DROPDOWN_ITEMS);
+  const hasMore = items.length > CONFIG.MAX_DROPDOWN_ITEMS;
+  
+  if (limitedItems.length === 0) {
     dropdown.innerHTML = '<div class="search-dropdown-empty">Nenhum colaborador encontrado</div>';
     return;
   }
   
-  dropdown.innerHTML = filtered.map(item => `
+  let html = limitedItems.map(item => `
     <div class="search-dropdown-item ${hiddenInput.value === item.id ? 'selected' : ''}" 
          data-id="${item.id}" data-nome="${item.nome}">
       ${item.nome}
     </div>
   `).join('');
   
+  if (hasMore) {
+    html += `<div class="search-dropdown-empty">Mais ${items.length - CONFIG.MAX_DROPDOWN_ITEMS} resultados. Refine a pesquisa.</div>`;
+  }
+  
+  dropdown.innerHTML = html;
+  
   // Click handlers
   dropdown.querySelectorAll('.search-dropdown-item').forEach(el => {
-    el.addEventListener('click', function() {
-      const id = this.dataset.id;
+    el.addEventListener('mousedown', function(e) {
+      e.preventDefault(); // Prevenir blur antes do click
+      const itemId = this.dataset.id;
       const nome = this.dataset.nome;
       
-      hiddenInput.value = id;
-      const searchInput = dropdown.previousElementSibling.previousElementSibling || 
-                          dropdown.parentElement.querySelector('.search-input');
+      hiddenInput.value = itemId;
+      const searchInput = dropdown.parentElement.querySelector('.search-input');
       if (searchInput) searchInput.value = nome;
       
       dropdown.classList.remove('active');
+      
+      // Trigger change event
+      hiddenInput.dispatchEvent(new Event('change'));
     });
   });
 }
@@ -162,7 +346,6 @@ function renderSearchDropdown(dropdown, items, filter, hiddenInput) {
 // VISIBILIDADE BASEADA EM ROLES
 // ====================
 function setupRoleBasedVisibility() {
-  // "Submeter em nome de" - só visível para AFR-RH ou Secretariado
   const submitOnBehalfContainer = document.getElementById('submitOnBehalfContainer');
   if (submitOnBehalfContainer && currentUser) {
     const canSubmitOnBehalf = AuthService.isAFRRH(currentUser) || AuthService.isSecretariado(currentUser) || AuthService.isAdmin(currentUser);
@@ -174,17 +357,18 @@ function setupRoleBasedVisibility() {
 // CONTADOR DE DIAS
 // ====================
 function updateDayCounter() {
-  const dataPartida = document.getElementById('dataPartida')?.value;
-  const dataChegada = document.getElementById('dataChegada')?.value;
+  const dataPartidaStr = document.getElementById('dataPartida')?.value;
+  const dataChegadaStr = document.getElementById('dataChegada')?.value;
   
-  if (dataPartida && dataChegada) {
-    const partida = new Date(dataPartida);
-    const chegada = new Date(dataChegada);
-    
-    const diffTime = Math.abs(chegada - partida);
+  const dataPartida = getDateFromDisplay(dataPartidaStr);
+  const dataChegada = getDateFromDisplay(dataChegadaStr);
+  
+  if (dataPartida && dataChegada && dataChegada >= dataPartida) {
+    const diffTime = Math.abs(dataChegada - dataPartida);
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-    
-    document.getElementById('dayCounterValue').textContent = diffDays > 0 ? diffDays : 0;
+    document.getElementById('dayCounterValue').textContent = diffDays;
+  } else {
+    document.getElementById('dayCounterValue').textContent = '0';
   }
 }
 
@@ -232,13 +416,10 @@ function updateCollaboratorsList() {
     const dropdown = document.getElementById(`colaboradorDropdown_${i}`);
     const hiddenInput = document.getElementById(`colaborador_${i}`);
     
-    setupSearchSelect(searchInput, dropdown, hiddenInput, colaboradoresList);
+    setupSearchSelect(`colaborador_${i}`, searchInput, dropdown, hiddenInput);
     
     // Ao selecionar, atualizar lista de colaboradores selecionados
     hiddenInput.addEventListener('change', updateSelectedColaboradores);
-    searchInput.addEventListener('blur', () => {
-      setTimeout(updateSelectedColaboradores, 200);
-    });
   }
 }
 
@@ -259,7 +440,6 @@ function updateSelectedColaboradores() {
 }
 
 function updateCondutorDropdowns() {
-  // Atualizar todos os dropdowns de condutor para mostrar apenas colaboradores selecionados
   const condutorSelects = document.querySelectorAll('[id^="frotaCondutor_"]');
   condutorSelects.forEach(select => {
     const currentValue = select.value;
@@ -402,7 +582,7 @@ function addTransportMethod() {
         </div>
       </div>
       
-      <!-- Campo de Observações (sempre visível quando tipo selecionado) -->
+      <!-- Campo de Observações -->
       <div class="transport-observacoes-section" id="transportObservacoes_${transportCount}" style="display: none;">
         <div class="form-group">
           <label class="form-label">Observações do Transporte</label>
@@ -442,17 +622,14 @@ function onTransportTypeChange(id) {
   const frotaFields = document.getElementById(`frotaFields_${id}`);
   const observacoesSection = document.getElementById(`transportObservacoes_${id}`);
   
-  // Mostrar/esconder campos específicos para Viatura EMRP (Frota)
   if (frotaFields) {
     frotaFields.style.display = tipo === 'frota' ? 'block' : 'none';
   }
   
-  // Mostrar observações quando tipo selecionado
   if (observacoesSection) {
     observacoesSection.style.display = tipo ? 'block' : 'none';
   }
   
-  // Reset motorista checkbox
   const motoristaCheckbox = document.getElementById(`solicitarMotorista_${id}`);
   if (motoristaCheckbox) {
     motoristaCheckbox.checked = false;
@@ -466,11 +643,9 @@ function onMotoristaChange(id) {
   const motoristaObsGroup = document.getElementById(`motoristaObsGroup_${id}`);
   
   if (motoristaCheckbox.checked) {
-    // Esconder campo de condutor quando motorista é selecionado
     if (condutorGroup) condutorGroup.style.display = 'none';
     if (motoristaObsGroup) motoristaObsGroup.style.display = 'block';
   } else {
-    // Mostrar campo de condutor
     if (condutorGroup) condutorGroup.style.display = 'block';
     if (motoristaObsGroup) motoristaObsGroup.style.display = 'none';
   }
@@ -483,11 +658,9 @@ function updateAlojamentoOptions() {
   const container = document.getElementById('alojamentoContainer');
   if (!container) return;
   
-  // Obter todos os pontos do percurso
   const pontosIntermedios = getPontosIntermedios();
   const destino = document.getElementById('localDestino')?.value?.trim() || '';
   
-  // Criar lista de pontos que podem ter alojamento (intermédios + destino)
   const pontosAlojamento = [...pontosIntermedios];
   if (destino) pontosAlojamento.push(destino);
   
@@ -495,6 +668,10 @@ function updateAlojamentoOptions() {
     container.innerHTML = '<p class="alojamento-hint">As opções de alojamento serão mostradas com base nos pontos do percurso definidos.</p>';
     return;
   }
+  
+  // Obter datas da viagem para validação
+  const dataPartidaStr = document.getElementById('dataPartida')?.value || '';
+  const dataChegadaStr = document.getElementById('dataChegada')?.value || '';
   
   container.innerHTML = '';
   
@@ -519,11 +696,41 @@ function updateAlojamentoOptions() {
         <div class="alojamento-dates">
           <div class="form-group">
             <label class="form-label">Data Check-in</label>
-            <input type="date" class="form-input" id="alojamentoCheckin_${index}">
+            <div class="date-input-wrapper">
+              <input type="text" class="form-input date-input alojamento-date" 
+                     id="alojamentoCheckin_${index}" 
+                     placeholder="dd/mm/aaaa" 
+                     maxlength="10"
+                     data-min-date="${dataPartidaStr}"
+                     data-max-date="${dataChegadaStr}"
+                     onblur="validateAlojamentoDate(this)">
+              <svg class="date-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+            </div>
+            <div class="alojamento-date-hint">Entre ${dataPartidaStr || 'data partida'} e ${dataChegadaStr || 'data chegada'}</div>
           </div>
           <div class="form-group">
             <label class="form-label">Data Check-out</label>
-            <input type="date" class="form-input" id="alojamentoCheckout_${index}">
+            <div class="date-input-wrapper">
+              <input type="text" class="form-input date-input alojamento-date" 
+                     id="alojamentoCheckout_${index}" 
+                     placeholder="dd/mm/aaaa" 
+                     maxlength="10"
+                     data-min-date="${dataPartidaStr}"
+                     data-max-date="${dataChegadaStr}"
+                     onblur="validateAlojamentoDate(this)">
+              <svg class="date-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+            </div>
+            <div class="alojamento-date-hint">Entre ${dataPartidaStr || 'data partida'} e ${dataChegadaStr || 'data chegada'}</div>
           </div>
         </div>
         <div class="form-group">
@@ -533,6 +740,22 @@ function updateAlojamentoOptions() {
       </div>
     `;
     container.appendChild(div);
+    
+    // Setup formatação de datas para os novos inputs
+    const checkinInput = document.getElementById(`alojamentoCheckin_${index}`);
+    const checkoutInput = document.getElementById(`alojamentoCheckout_${index}`);
+    
+    [checkinInput, checkoutInput].forEach(input => {
+      if (input) {
+        input.addEventListener('input', function(e) {
+          let value = e.target.value.replace(/\D/g, '');
+          if (value.length >= 2) value = value.substring(0, 2) + '/' + value.substring(2);
+          if (value.length >= 5) value = value.substring(0, 5) + '/' + value.substring(5);
+          if (value.length > 10) value = value.substring(0, 10);
+          e.target.value = value;
+        });
+      }
+    });
   });
 }
 
@@ -543,6 +766,44 @@ function toggleAlojamentoFields(index) {
   if (fieldsContainer) {
     fieldsContainer.style.display = checkbox.checked ? 'block' : 'none';
   }
+}
+
+function validateAlojamentoDate(input) {
+  if (!input.value) return true;
+  
+  // Primeiro validar formato
+  if (!validateDateInput(input)) {
+    showToast('Formato de data inválido. Use dd/mm/aaaa', 'error');
+    return false;
+  }
+  
+  const inputDate = getDateFromDisplay(input.value);
+  const minDateStr = input.dataset.minDate;
+  const maxDateStr = input.dataset.maxDate;
+  
+  if (!inputDate) return false;
+  
+  // Validar que está dentro do período da viagem
+  if (minDateStr) {
+    const minDate = getDateFromDisplay(minDateStr);
+    if (minDate && inputDate < minDate) {
+      showToast('A data deve ser igual ou posterior à data de partida', 'error');
+      input.classList.add('error');
+      return false;
+    }
+  }
+  
+  if (maxDateStr) {
+    const maxDate = getDateFromDisplay(maxDateStr);
+    if (maxDate && inputDate > maxDate) {
+      showToast('A data deve ser igual ou anterior à data de chegada', 'error');
+      input.classList.add('error');
+      return false;
+    }
+  }
+  
+  input.classList.remove('error');
+  return true;
 }
 
 // ====================
@@ -790,12 +1051,10 @@ async function createDeslocacao(data) {
   const results = await response.json();
   const deslocacao = Array.isArray(results) ? results[0] : results;
   
-  // Guardar colaboradores
   if (data.colaboradores && data.colaboradores.length > 0) {
     await saveDeslocacaoColaboradores(deslocacao.id, data.colaboradores);
   }
   
-  // Guardar alojamentos
   if (data.alojamentos && data.alojamentos.length > 0) {
     await saveDeslocacaoAlojamentos(deslocacao.id, data.alojamentos);
   }
@@ -837,10 +1096,7 @@ async function saveDeslocacao(id, data) {
     throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
   }
   
-  // Atualizar colaboradores
   await saveDeslocacaoColaboradores(id, data.colaboradores);
-  
-  // Atualizar alojamentos
   await saveDeslocacaoAlojamentos(id, data.alojamentos);
   
   const results = await response.json();
@@ -848,14 +1104,12 @@ async function saveDeslocacao(id, data) {
 }
 
 async function saveDeslocacaoColaboradores(deslocacaoId, colaboradores) {
-  // Apagar existentes
   const deleteUrl = `${DataService.getBaseUrl()}/rest/v1/deslocacao_colaboradores?deslocacao_id=eq.${deslocacaoId}`;
   await fetch(deleteUrl, {
     method: 'DELETE',
     headers: DataService.getHeaders()
   });
   
-  // Inserir novos
   if (colaboradores && colaboradores.length > 0) {
     const insertUrl = `${DataService.getBaseUrl()}/rest/v1/deslocacao_colaboradores`;
     const records = colaboradores.map((colabId, index) => ({
@@ -873,14 +1127,12 @@ async function saveDeslocacaoColaboradores(deslocacaoId, colaboradores) {
 }
 
 async function saveDeslocacaoAlojamentos(deslocacaoId, alojamentos) {
-  // Apagar existentes
   const deleteUrl = `${DataService.getBaseUrl()}/rest/v1/deslocacao_alojamentos?deslocacao_id=eq.${deslocacaoId}`;
   await fetch(deleteUrl, {
     method: 'DELETE',
     headers: DataService.getHeaders()
   });
   
-  // Inserir novos
   if (alojamentos && alojamentos.length > 0) {
     const insertUrl = `${DataService.getBaseUrl()}/rest/v1/deslocacao_alojamentos`;
     const records = alojamentos.map(aloj => ({
@@ -941,9 +1193,9 @@ function validateForm() {
   const form = document.getElementById('pedidoForm');
   let isValid = true;
   
-  // Validar campos obrigatórios de texto
-  const requiredInputs = form.querySelectorAll('input[required]:not([type="hidden"]), textarea[required]');
-  requiredInputs.forEach(field => {
+  // Validar campos de texto obrigatórios
+  const requiredTextInputs = form.querySelectorAll('input[required]:not([type="hidden"]):not(.date-input):not(.search-input), textarea[required]');
+  requiredTextInputs.forEach(field => {
     if (!field.value.trim()) {
       field.classList.add('error');
       isValid = false;
@@ -953,14 +1205,27 @@ function validateForm() {
   });
   
   // Validar datas
-  const dataPartida = document.getElementById('dataPartida');
-  const dataChegada = document.getElementById('dataChegada');
+  const dataPartidaInput = document.getElementById('dataPartida');
+  const dataChegadaInput = document.getElementById('dataChegada');
   
-  if (dataPartida.value && dataChegada.value) {
-    if (new Date(dataChegada.value) < new Date(dataPartida.value)) {
-      showToast('Data de chegada não pode ser anterior à data de partida', 'error');
-      isValid = false;
-    }
+  if (!dataPartidaInput.value || !validateDateInput(dataPartidaInput)) {
+    dataPartidaInput.classList.add('error');
+    isValid = false;
+  }
+  
+  if (!dataChegadaInput.value || !validateDateInput(dataChegadaInput)) {
+    dataChegadaInput.classList.add('error');
+    isValid = false;
+  }
+  
+  // Validar que data de chegada >= data de partida
+  const dataPartida = getDateFromDisplay(dataPartidaInput.value);
+  const dataChegada = getDateFromDisplay(dataChegadaInput.value);
+  
+  if (dataPartida && dataChegada && dataChegada < dataPartida) {
+    showToast('Data de chegada não pode ser anterior à data de partida', 'error');
+    dataChegadaInput.classList.add('error');
+    isValid = false;
   }
   
   // Validar pelo menos um meio de transporte
@@ -985,8 +1250,16 @@ function validateForm() {
     isValid = false;
   }
   
+  // Validar datas de alojamento
+  const alojamentoDates = document.querySelectorAll('.alojamento-date');
+  alojamentoDates.forEach(input => {
+    if (input.value && !validateAlojamentoDate(input)) {
+      isValid = false;
+    }
+  });
+  
   if (!isValid) {
-    showToast('Por favor, preencha todos os campos obrigatórios', 'error');
+    showToast('Por favor, preencha todos os campos obrigatórios corretamente', 'error');
   }
   
   return isValid;
@@ -1002,8 +1275,8 @@ function collectFormData() {
     colaboradores: [],
     
     motivo: document.getElementById('motivoDeslocacao')?.value || '',
-    data_partida: document.getElementById('dataPartida')?.value || null,
-    data_chegada: document.getElementById('dataChegada')?.value || null,
+    data_partida: parseDateFromDisplay(document.getElementById('dataPartida')?.value),
+    data_chegada: parseDateFromDisplay(document.getElementById('dataChegada')?.value),
     hora_partida: `${document.getElementById('horaPartida')?.value || '09'}:${document.getElementById('minutoPartida')?.value || '00'}`,
     hora_chegada: `${document.getElementById('horaChegada')?.value || '18'}:${document.getElementById('minutoChegada')?.value || '00'}`,
     
@@ -1063,14 +1336,14 @@ function collectFormData() {
     const checkbox = item.querySelector('.alojamento-checkbox');
     if (checkbox && checkbox.checked) {
       const local = item.querySelector('.alojamento-local')?.textContent || '';
-      const checkin = document.getElementById(`alojamentoCheckin_${index}`)?.value || null;
-      const checkout = document.getElementById(`alojamentoCheckout_${index}`)?.value || null;
+      const checkinValue = document.getElementById(`alojamentoCheckin_${index}`)?.value || '';
+      const checkoutValue = document.getElementById(`alojamentoCheckout_${index}`)?.value || '';
       const obs = document.getElementById(`alojamentoObs_${index}`)?.value || '';
       
       data.alojamentos.push({
         local: local,
-        data_checkin: checkin,
-        data_checkout: checkout,
+        data_checkin: parseDateFromDisplay(checkinValue),
+        data_checkout: parseDateFromDisplay(checkoutValue),
         observacoes: obs
       });
     }
@@ -1086,7 +1359,6 @@ async function loadPedido(pedidoId) {
   try {
     showLoadingOverlay('A carregar pedido...');
     
-    // Carregar deslocação
     const url = `${DataService.getBaseUrl()}/rest/v1/deslocacoes?id=eq.${pedidoId}`;
     const response = await fetch(url, { headers: DataService.getHeaders() });
     const results = await response.json();
@@ -1096,7 +1368,6 @@ async function loadPedido(pedidoId) {
       throw new Error('Pedido não encontrado');
     }
     
-    // Preencher campos
     document.getElementById('pedidoId').value = pedidoId;
     document.getElementById('pedidoEstado').value = pedido.estado || 'Rascunho';
     
@@ -1113,8 +1384,8 @@ async function loadPedido(pedidoId) {
     }
     
     document.getElementById('motivoDeslocacao').value = pedido.motivo || '';
-    document.getElementById('dataPartida').value = pedido.data_partida || '';
-    document.getElementById('dataChegada').value = pedido.data_chegada || '';
+    document.getElementById('dataPartida').value = formatDateToDisplay(pedido.data_partida) || '';
+    document.getElementById('dataChegada').value = formatDateToDisplay(pedido.data_chegada) || '';
     
     if (pedido.hora_partida) {
       const [h, m] = pedido.hora_partida.split(':');
@@ -1131,7 +1402,6 @@ async function loadPedido(pedidoId) {
     document.getElementById('localOrigem').value = pedido.origem || '';
     document.getElementById('localDestino').value = pedido.destino || '';
     
-    // Pontos intermédios
     const pontosIntermedios = pedido.pontos_intermedios || [];
     pontosIntermedios.forEach((ponto) => {
       addPontoIntermedio();
@@ -1139,13 +1409,12 @@ async function loadPedido(pedidoId) {
       if (input) input.value = ponto;
     });
     
-    // Colaboradores
     if (pedido.num_colaboradores) {
       document.getElementById('numColaboradores').value = pedido.num_colaboradores;
     }
     updateCollaboratorsList();
     
-    // Carregar colaboradores da deslocação
+    // Carregar colaboradores
     const colabUrl = `${DataService.getBaseUrl()}/rest/v1/deslocacao_colaboradores?deslocacao_id=eq.${pedidoId}&order=ordem`;
     const colabResponse = await fetch(colabUrl, { headers: DataService.getHeaders() });
     const colabResults = await colabResponse.json();
@@ -1214,8 +1483,8 @@ async function loadPedido(pedidoId) {
             if (checkbox) {
               checkbox.checked = true;
               toggleAlojamentoFields(index);
-              document.getElementById(`alojamentoCheckin_${index}`).value = aloj.data_checkin || '';
-              document.getElementById(`alojamentoCheckout_${index}`).value = aloj.data_checkout || '';
+              document.getElementById(`alojamentoCheckin_${index}`).value = formatDateToDisplay(aloj.data_checkin) || '';
+              document.getElementById(`alojamentoCheckout_${index}`).value = formatDateToDisplay(aloj.data_checkout) || '';
               document.getElementById(`alojamentoObs_${index}`).value = aloj.observacoes || '';
             }
           }
