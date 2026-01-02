@@ -38,7 +38,9 @@ async function loadRequests() {
     
     // Carregar pedidos do DataService
     if (typeof DataService !== 'undefined' && DataService.getDeslocacoes) {
-      allRequests = await DataService.getDeslocacoes();
+      const rawData = await DataService.getDeslocacoes();
+      // Mapear dados para formato esperado pela UI
+      allRequests = mapDeslocacoesData(rawData);
     } else {
       // Dados de exemplo para demonstração
       allRequests = getExampleData();
@@ -51,6 +53,70 @@ async function loadRequests() {
     console.error('Erro ao carregar pedidos:', error);
     showErrorInTable('Erro ao carregar pedidos. Por favor, tente novamente.');
   }
+}
+
+// Mapear dados do Supabase para formato esperado
+function mapDeslocacoesData(rawData) {
+  return rawData.map(d => {
+    // Extrair nomes dos colaboradores
+    let colaboradores = [];
+    if (d.deslocacao_colaboradores && d.deslocacao_colaboradores.length > 0) {
+      colaboradores = d.deslocacao_colaboradores
+        .sort((a, b) => (a.ordem || 0) - (b.ordem || 0))
+        .map(dc => dc.colaboradores?.nome || 'Colaborador')
+        .filter(Boolean);
+    }
+    
+    // Extrair transportes
+    let transportes = [];
+    if (d.transportes && Array.isArray(d.transportes)) {
+      transportes = d.transportes;
+    } else if (d.deslocacao_transportes && d.deslocacao_transportes.length > 0) {
+      transportes = d.deslocacao_transportes.map(dt => ({
+        tipo_codigo: dt.tipos_transporte?.codigo || 'outro',
+        nome: dt.tipos_transporte?.nome || 'Transporte'
+      }));
+    }
+    
+    // Extrair pontos intermédios
+    let pontosIntermedios = [];
+    if (d.pontos_intermedios && Array.isArray(d.pontos_intermedios)) {
+      pontosIntermedios = d.pontos_intermedios;
+    } else if (d.ponto_intermedio) {
+      pontosIntermedios = [d.ponto_intermedio];
+    }
+    
+    return {
+      id: d.id,
+      motivo: d.motivo || '-',
+      colaboradores: colaboradores,
+      local_origem: d.origem || d.local_origem || '-',
+      local_destino: d.destino || d.local_destino || '-',
+      pontos_intermedios: pontosIntermedios,
+      data_partida: d.data_partida,
+      data_chegada: d.data_chegada,
+      hora_partida: d.hora_partida,
+      hora_chegada: d.hora_chegada,
+      transportes: transportes,
+      estado: normalizeEstado(d.estado),
+      observacoes: d.observacoes,
+      created_at: d.created_at,
+      criador: d.criador
+    };
+  });
+}
+
+function normalizeEstado(estado) {
+  if (!estado) return 'Rascunho';
+  
+  const estadoLower = estado.toLowerCase();
+  if (estadoLower.includes('rascunho')) return 'Rascunho';
+  if (estadoLower.includes('pendente') || estadoLower.includes('aprovação')) return 'Em Aprovação';
+  if (estadoLower.includes('aprovad')) return 'Aprovado';
+  if (estadoLower.includes('rejeitad')) return 'Rejeitado';
+  if (estadoLower.includes('cancelad')) return 'Cancelado';
+  
+  return estado;
 }
 
 function getExampleData() {
@@ -102,7 +168,7 @@ function getExampleData() {
 // ====================
 function updateStats() {
   const total = allRequests.length;
-  const pending = allRequests.filter(r => r.estado === 'Em Aprovação' || r.estado === 'Submetido').length;
+  const pending = allRequests.filter(r => r.estado === 'Em Aprovação' || r.estado === 'Submetido' || r.estado === 'Pendente Aprovação').length;
   const approved = allRequests.filter(r => r.estado === 'Aprovado').length;
   const draft = allRequests.filter(r => r.estado === 'Rascunho').length;
   
@@ -133,7 +199,7 @@ function renderTable() {
   const sorted = sortRequests(allRequests);
   
   container.innerHTML = sorted.map(request => `
-    <div class="table-grid table-grid-row table-grid-deslocacoes" onclick="openViewRequest('${request.id}')">
+    <div class="table-grid table-grid-row table-grid-deslocacoes table-row-clickable" onclick="navigateToRequest('${request.id}', '${request.estado}')">
       <div class="table-cell">
         <span class="cell-main">${request.motivo || '-'}</span>
       </div>
@@ -156,6 +222,17 @@ function renderTable() {
       </div>
     </div>
   `).join('');
+}
+
+// Navegar para o pedido (editar se rascunho, visualizar se outro estado)
+function navigateToRequest(id, estado) {
+  if (estado === 'Rascunho') {
+    // Rascunho - ir diretamente para edição
+    window.location.href = `novo-pedido-deslocacao?id=${id}`;
+  } else {
+    // Outro estado - abrir modal de visualização
+    openViewRequest(id);
+  }
 }
 
 function sortRequests(requests) {
@@ -247,7 +324,7 @@ function searchTable() {
   const sorted = sortRequests(filtered);
   
   container.innerHTML = sorted.map(request => `
-    <div class="table-grid table-grid-row table-grid-deslocacoes" onclick="openViewRequest('${request.id}')">
+    <div class="table-grid table-grid-row table-grid-deslocacoes table-row-clickable" onclick="navigateToRequest('${request.id}', '${request.estado}')">
       <div class="table-cell">
         <span class="cell-main">${request.motivo || '-'}</span>
       </div>
@@ -308,7 +385,7 @@ function formatTransportes(transportes) {
       case 'aviao': return 'Avião';
       case 'comboio': return 'Comboio';
       case 'taxi': return 'Táxi/TVDE';
-      default: return t.tipo_codigo;
+      default: return t.tipo_codigo || 'Transporte';
     }
   });
   
@@ -326,17 +403,18 @@ function formatDateDisplay(isoDate) {
 }
 
 function renderStatusBadge(status) {
-  const statusClasses = {
-    'Rascunho': 'status-draft',
-    'Submetido': 'status-pending',
-    'Em Aprovação': 'status-pending',
-    'Aprovado': 'status-approved',
-    'Rejeitado': 'status-rejected',
-    'Cancelado': 'status-cancelled'
+  const statusConfig = {
+    'Rascunho': { class: 'status-draft', icon: '✏️' },
+    'Submetido': { class: 'status-pending', icon: '⏳' },
+    'Em Aprovação': { class: 'status-pending', icon: '⏳' },
+    'Pendente Aprovação': { class: 'status-pending', icon: '⏳' },
+    'Aprovado': { class: 'status-approved', icon: '✅' },
+    'Rejeitado': { class: 'status-rejected', icon: '❌' },
+    'Cancelado': { class: 'status-cancelled', icon: '⛔' }
   };
   
-  const statusClass = statusClasses[status] || 'status-default';
-  return `<span class="status-badge ${statusClass}">${status || '-'}</span>`;
+  const config = statusConfig[status] || { class: 'status-default', icon: '' };
+  return `<span class="status-badge ${config.class}">${status || '-'}</span>`;
 }
 
 // ====================
@@ -355,7 +433,10 @@ async function openViewRequest(requestId) {
     // Tentar carregar do servidor
     if (typeof DataService !== 'undefined' && DataService.getDeslocacaoById) {
       try {
-        currentViewRequest = await DataService.getDeslocacaoById(requestId);
+        const rawData = await DataService.getDeslocacaoById(requestId);
+        if (rawData) {
+          currentViewRequest = mapDeslocacoesData([rawData])[0];
+        }
       } catch (error) {
         console.error('Erro ao carregar pedido:', error);
         alert('Pedido não encontrado.');
@@ -419,6 +500,7 @@ function updateViewProcessTracker(estado) {
       break;
     case 'Submetido':
     case 'Em Aprovação':
+    case 'Pendente Aprovação':
       step1?.classList.add('completed');
       step2?.classList.add('active');
       if (progress) progress.style.width = '50%';
@@ -534,7 +616,7 @@ function getTransportName(codigo) {
     'comboio': 'Comboio',
     'taxi': 'Táxi / TVDE'
   };
-  return nomes[codigo] || codigo;
+  return nomes[codigo] || codigo || 'Transporte';
 }
 
 // ====================
