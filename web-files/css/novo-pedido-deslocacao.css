@@ -205,7 +205,6 @@
   border-radius: 12px;
   border: 1px solid var(--border-color);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  /* NÃO usar overflow:hidden para permitir dropdowns */
 }
 
 .form-section-header {
@@ -243,7 +242,6 @@
 
 .form-section-content {
   padding: 20px;
-  /* NÃO usar overflow ou position que bloqueie dropdowns */
 }
 
 /* ====================
@@ -304,24 +302,9 @@
   min-height: 80px;
 }
 
-/* Date input wrapper */
-.date-input-wrapper {
-  position: relative;
-}
-
-.date-input-wrapper .date-icon {
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 18px;
-  height: 18px;
-  color: var(--text-muted);
-  pointer-events: none;
-}
-
-.date-input-wrapper .form-input {
-  padding-right: 40px;
+/* Date input - usa o date picker nativo do browser */
+input[type="date"].form-input {
+  padding: 9px 14px;
 }
 
 .form-row {
@@ -334,7 +317,6 @@
   grid-template-columns: 1fr 1fr 1fr;
 }
 
-/* Alinhamento ao topo para labels */
 .form-row-align-top {
   align-items: start;
 }
@@ -440,7 +422,7 @@
 
 /* ====================
    SEARCH SELECT (Dropdowns com pesquisa)
-   Usando position:fixed para garantir que fica sobre tudo
+   Dropdown é renderizado no #dropdownPortal (body level)
    ==================== */
 .search-select-wrapper {
   position: relative;
@@ -453,8 +435,8 @@
   font-size: 14px;
 }
 
-/* Dropdown com position:fixed - anexado ao body via JS */
-.search-dropdown {
+/* Dropdown anexado ao body via portal */
+.search-dropdown-portal {
   position: fixed;
   max-height: 250px;
   min-width: 200px;
@@ -462,12 +444,12 @@
   background: var(--bg-white);
   border: 1px solid var(--border-color);
   border-radius: 8px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
-  z-index: 99999;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  z-index: 999999;
   display: none;
 }
 
-.search-dropdown.active {
+.search-dropdown-portal.active {
   display: block;
 }
 
@@ -1180,7 +1162,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 99999;
+  z-index: 999999;
 }
 
 .loading-content {
@@ -1218,7 +1200,7 @@
   position: fixed;
   bottom: 100px;
   right: 24px;
-  z-index: 100000;
+  z-index: 1000000;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -1421,6 +1403,13 @@
 .page-container-pedido textarea,
 .page-container-pedido button {
   font-family: inherit;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+/* Manter aparência nativa do date picker */
+.page-container-pedido input[type="date"] {
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;

@@ -24,7 +24,7 @@ let colaboradoresList = [];
 let colaboradoresCache = null;
 let selectedColaboradores = [];
 let searchDebounceTimers = {};
-let activeDropdown = null;
+let activeDropdownId = null;
 
 // Configuração para grandes volumes de dados
 const CONFIG = {
@@ -62,8 +62,6 @@ async function initializePage() {
     await loadColaboradores();
     
     setupRoleBasedVisibility();
-    setupDateInputs();
-    setupSearchSelects();
     setupGlobalDropdownClose();
     
     const urlParams = new URLSearchParams(window.location.search);
@@ -93,6 +91,40 @@ async function initializePage() {
 }
 
 // ====================
+// DROPDOWN PORTAL (anexado ao body)
+// ====================
+function getDropdownPortal() {
+  let portal = document.getElementById('dropdownPortal');
+  if (!portal) {
+    portal = document.createElement('div');
+    portal.id = 'dropdownPortal';
+    document.body.appendChild(portal);
+  }
+  return portal;
+}
+
+function createDropdownElement(id) {
+  const portal = getDropdownPortal();
+  let dropdown = document.getElementById(`dropdown_${id}`);
+  
+  if (!dropdown) {
+    dropdown = document.createElement('div');
+    dropdown.id = `dropdown_${id}`;
+    dropdown.className = 'search-dropdown-portal';
+    portal.appendChild(dropdown);
+  }
+  
+  return dropdown;
+}
+
+function removeDropdownElement(id) {
+  const dropdown = document.getElementById(`dropdown_${id}`);
+  if (dropdown) {
+    dropdown.remove();
+  }
+}
+
+// ====================
 // FECHAR DROPDOWNS GLOBALMENTE
 // ====================
 function setupGlobalDropdownClose() {
@@ -102,112 +134,20 @@ function setupGlobalDropdownClose() {
     }
   });
   
-  // Fechar ao fazer scroll
   document.addEventListener('scroll', function() {
     closeAllDropdowns();
   }, true);
   
-  // Fechar ao redimensionar
   window.addEventListener('resize', function() {
     closeAllDropdowns();
   });
 }
 
 function closeAllDropdowns() {
-  document.querySelectorAll('.search-dropdown.active').forEach(d => {
+  document.querySelectorAll('.search-dropdown-portal.active').forEach(d => {
     d.classList.remove('active');
   });
-  activeDropdown = null;
-}
-
-// ====================
-// FORMATAÇÃO DE DATAS (dd/mm/aaaa)
-// ====================
-function setupDateInputs() {
-  const dateInputs = document.querySelectorAll('.date-input');
-  
-  dateInputs.forEach(input => {
-    input.addEventListener('input', function(e) {
-      let value = e.target.value.replace(/\D/g, '');
-      
-      if (value.length >= 2) {
-        value = value.substring(0, 2) + '/' + value.substring(2);
-      }
-      if (value.length >= 5) {
-        value = value.substring(0, 5) + '/' + value.substring(5);
-      }
-      if (value.length > 10) {
-        value = value.substring(0, 10);
-      }
-      
-      e.target.value = value;
-      
-      if (value.length === 10) {
-        updateDayCounter();
-      }
-    });
-    
-    input.addEventListener('blur', function(e) {
-      validateDateInput(e.target);
-      updateDayCounter();
-      updateAlojamentoOptions(); // Atualizar hints de datas
-    });
-  });
-}
-
-function validateDateInput(input) {
-  const value = input.value;
-  if (!value) return true;
-  
-  const regex = /^(\d{2})\/(\d{2})\/(\d{4})$/;
-  
-  if (!regex.test(value)) {
-    input.classList.add('error');
-    return false;
-  }
-  
-  const parts = value.match(regex);
-  const day = parseInt(parts[1], 10);
-  const month = parseInt(parts[2], 10);
-  const year = parseInt(parts[3], 10);
-  
-  if (month < 1 || month > 12) {
-    input.classList.add('error');
-    return false;
-  }
-  
-  const daysInMonth = new Date(year, month, 0).getDate();
-  if (day < 1 || day > daysInMonth) {
-    input.classList.add('error');
-    return false;
-  }
-  
-  input.classList.remove('error');
-  return true;
-}
-
-function parseDateFromDisplay(displayDate) {
-  if (!displayDate) return null;
-  const regex = /^(\d{2})\/(\d{2})\/(\d{4})$/;
-  const match = displayDate.match(regex);
-  if (match) {
-    return `${match[3]}-${match[2]}-${match[1]}`;
-  }
-  return null;
-}
-
-function formatDateToDisplay(isoDate) {
-  if (!isoDate) return '';
-  const parts = isoDate.split('-');
-  if (parts.length === 3) {
-    return `${parts[2]}/${parts[1]}/${parts[0]}`;
-  }
-  return isoDate;
-}
-
-function getDateFromDisplay(displayDate) {
-  const isoDate = parseDateFromDisplay(displayDate);
-  return isoDate ? new Date(isoDate) : null;
+  activeDropdownId = null;
 }
 
 // ====================
@@ -215,7 +155,6 @@ function getDateFromDisplay(displayDate) {
 // ====================
 async function loadColaboradores() {
   try {
-    // Verificar cache
     if (colaboradoresCache && colaboradoresCache.timestamp > Date.now() - CONFIG.CACHE_DURATION_MS) {
       colaboradoresList = colaboradoresCache.data;
       return;
@@ -223,14 +162,12 @@ async function loadColaboradores() {
     
     const colaboradores = await AuthService.getColaboradoresComRoles();
     
-    // Guardar apenas dados essenciais
     colaboradoresList = colaboradores.map(c => ({
       id: c.id,
       nome: c.nome,
       departamento: c.departamentos?.nome || c.departamentos?.codigo || ''
     }));
     
-    // Atualizar cache
     colaboradoresCache = {
       data: colaboradoresList,
       timestamp: Date.now()
@@ -242,28 +179,16 @@ async function loadColaboradores() {
 }
 
 // ====================
-// SEARCH SELECT (Dropdowns com pesquisa e position:fixed)
+// SEARCH SELECT (Dropdowns com pesquisa via portal)
 // ====================
-function setupSearchSelects() {
-  const submitOnBehalfSearch = document.getElementById('submitOnBehalfSearch');
-  const submitOnBehalfDropdown = document.getElementById('submitOnBehalfDropdown');
-  const submitOnBehalfHidden = document.getElementById('submitOnBehalf');
+function setupSearchSelect(id, searchInput, hiddenInput, filterFn = null) {
+  const dropdown = createDropdownElement(id);
   
-  if (submitOnBehalfSearch && submitOnBehalfDropdown) {
-    setupSearchSelect('submitOnBehalf', submitOnBehalfSearch, submitOnBehalfDropdown, submitOnBehalfHidden);
-  }
-}
-
-function setupSearchSelect(id, searchInput, dropdown, hiddenInput, filterFn = null) {
-  // Focar mostra dropdown
   searchInput.addEventListener('focus', function() {
     showDropdown(id, searchInput, dropdown, hiddenInput, filterFn);
   });
   
-  // Filtrar com debounce
   searchInput.addEventListener('input', function() {
-    const filter = searchInput.value.trim();
-    
     if (searchDebounceTimers[id]) {
       clearTimeout(searchDebounceTimers[id]);
     }
@@ -273,12 +198,11 @@ function setupSearchSelect(id, searchInput, dropdown, hiddenInput, filterFn = nu
     }, CONFIG.SEARCH_DEBOUNCE_MS);
   });
   
-  // Não fechar imediatamente ao blur para permitir click
   searchInput.addEventListener('blur', function() {
     setTimeout(() => {
-      if (activeDropdown !== dropdown) return;
+      if (activeDropdownId !== id) return;
       dropdown.classList.remove('active');
-      activeDropdown = null;
+      activeDropdownId = null;
     }, 200);
   });
 }
@@ -286,33 +210,25 @@ function setupSearchSelect(id, searchInput, dropdown, hiddenInput, filterFn = nu
 function showDropdown(id, searchInput, dropdown, hiddenInput, filterFn) {
   const filter = searchInput.value.trim();
   
-  // Posicionar dropdown com position:fixed
-  positionDropdown(searchInput, dropdown);
-  
-  // Renderizar conteúdo
-  renderSearchDropdown(id, dropdown, filter, hiddenInput, filterFn);
-  
-  dropdown.classList.add('active');
-  activeDropdown = dropdown;
-}
-
-function positionDropdown(input, dropdown) {
-  const rect = input.getBoundingClientRect();
-  
-  dropdown.style.position = 'fixed';
-  dropdown.style.top = (rect.bottom + 4) + 'px';
-  dropdown.style.left = rect.left + 'px';
+  // Posicionar dropdown
+  const rect = searchInput.getBoundingClientRect();
+  dropdown.style.top = (rect.bottom + window.scrollY + 4) + 'px';
+  dropdown.style.left = (rect.left + window.scrollX) + 'px';
   dropdown.style.width = rect.width + 'px';
   
-  // Verificar se está a sair da viewport em baixo
-  const dropdownHeight = 250; // max-height
+  // Verificar se sai da viewport
+  const dropdownHeight = 250;
   if (rect.bottom + dropdownHeight > window.innerHeight) {
-    // Mostrar acima do input
-    dropdown.style.top = (rect.top - dropdownHeight - 4) + 'px';
+    dropdown.style.top = (rect.top + window.scrollY - dropdownHeight - 4) + 'px';
   }
+  
+  renderSearchDropdown(id, dropdown, filter, hiddenInput, searchInput, filterFn);
+  
+  dropdown.classList.add('active');
+  activeDropdownId = id;
 }
 
-function renderSearchDropdown(id, dropdown, filter, hiddenInput, filterFn = null) {
+function renderSearchDropdown(id, dropdown, filter, hiddenInput, searchInput, filterFn = null) {
   const filterLower = (filter || '').toLowerCase();
   
   let items = filterFn ? filterFn(colaboradoresList) : colaboradoresList;
@@ -352,15 +268,10 @@ function renderSearchDropdown(id, dropdown, filter, hiddenInput, filterFn = null
       const nome = this.dataset.nome;
       
       hiddenInput.value = itemId;
-      const searchInput = dropdown.previousElementSibling?.previousElementSibling || 
-                          document.querySelector(`#${id.replace('colaborador_', 'colaboradorSearch_')}`) ||
-                          document.getElementById(`${id}Search`);
-      if (searchInput && searchInput.classList.contains('search-input')) {
-        searchInput.value = nome;
-      }
+      searchInput.value = nome;
       
       dropdown.classList.remove('active');
-      activeDropdown = null;
+      activeDropdownId = null;
       
       hiddenInput.dispatchEvent(new Event('change'));
     });
@@ -375,6 +286,14 @@ function setupRoleBasedVisibility() {
   if (submitOnBehalfContainer && currentUser) {
     const canSubmitOnBehalf = AuthService.isAFRRH(currentUser) || AuthService.isSecretariado(currentUser) || AuthService.isAdmin(currentUser);
     submitOnBehalfContainer.style.display = canSubmitOnBehalf ? 'block' : 'none';
+    
+    if (canSubmitOnBehalf) {
+      const searchInput = document.getElementById('submitOnBehalfSearch');
+      const hiddenInput = document.getElementById('submitOnBehalf');
+      if (searchInput && hiddenInput) {
+        setupSearchSelect('submitOnBehalf', searchInput, hiddenInput);
+      }
+    }
   }
 }
 
@@ -382,16 +301,20 @@ function setupRoleBasedVisibility() {
 // CONTADOR DE DIAS
 // ====================
 function updateDayCounter() {
-  const dataPartidaStr = document.getElementById('dataPartida')?.value;
-  const dataChegadaStr = document.getElementById('dataChegada')?.value;
+  const dataPartida = document.getElementById('dataPartida')?.value;
+  const dataChegada = document.getElementById('dataChegada')?.value;
   
-  const dataPartida = getDateFromDisplay(dataPartidaStr);
-  const dataChegada = getDateFromDisplay(dataChegadaStr);
-  
-  if (dataPartida && dataChegada && dataChegada >= dataPartida) {
-    const diffTime = Math.abs(dataChegada - dataPartida);
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-    document.getElementById('dayCounterValue').textContent = diffDays;
+  if (dataPartida && dataChegada) {
+    const start = new Date(dataPartida);
+    const end = new Date(dataChegada);
+    
+    if (end >= start) {
+      const diffTime = Math.abs(end - start);
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+      document.getElementById('dayCounterValue').textContent = diffDays;
+    } else {
+      document.getElementById('dayCounterValue').textContent = '0';
+    }
   } else {
     document.getElementById('dayCounterValue').textContent = '0';
   }
@@ -414,6 +337,12 @@ function updateCollaboratorsList() {
   
   if (!container) return;
   
+  // Limpar dropdowns antigos
+  const oldCount = container.querySelectorAll('.colaborador-item').length;
+  for (let i = 0; i < oldCount; i++) {
+    removeDropdownElement(`colaborador_${i}`);
+  }
+  
   container.innerHTML = '';
   
   for (let i = 0; i < count; i++) {
@@ -431,16 +360,14 @@ function updateCollaboratorsList() {
                autocomplete="off"
                ${i === 0 ? 'required' : ''}>
         <input type="hidden" class="colaborador-hidden" id="colaborador_${i}" value="">
-        <div class="search-dropdown" id="colaboradorDropdown_${i}"></div>
       </div>
     `;
     container.appendChild(div);
     
     const searchInput = document.getElementById(`colaboradorSearch_${i}`);
-    const dropdown = document.getElementById(`colaboradorDropdown_${i}`);
     const hiddenInput = document.getElementById(`colaborador_${i}`);
     
-    setupSearchSelect(`colaborador_${i}`, searchInput, dropdown, hiddenInput);
+    setupSearchSelect(`colaborador_${i}`, searchInput, hiddenInput);
     
     hiddenInput.addEventListener('change', updateSelectedColaboradores);
   }
@@ -687,8 +614,9 @@ function updateAlojamentoOptions() {
     return;
   }
   
-  const dataPartidaStr = document.getElementById('dataPartida')?.value || '';
-  const dataChegadaStr = document.getElementById('dataChegada')?.value || '';
+  // Obter datas da viagem para validação (formato ISO yyyy-mm-dd)
+  const dataPartida = document.getElementById('dataPartida')?.value || '';
+  const dataChegada = document.getElementById('dataChegada')?.value || '';
   
   container.innerHTML = '';
   
@@ -713,39 +641,21 @@ function updateAlojamentoOptions() {
         <div class="alojamento-dates">
           <div class="form-group">
             <label class="form-label">Data Check-in</label>
-            <div class="date-input-wrapper">
-              <input type="text" class="form-input date-input alojamento-date" 
-                     id="alojamentoCheckin_${index}" 
-                     placeholder="dd/mm/aaaa" 
-                     maxlength="10"
-                     data-min-date="${dataPartidaStr}"
-                     data-max-date="${dataChegadaStr}">
-              <svg class="date-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                <line x1="16" y1="2" x2="16" y2="6"/>
-                <line x1="8" y1="2" x2="8" y2="6"/>
-                <line x1="3" y1="10" x2="21" y2="10"/>
-              </svg>
-            </div>
-            <div class="alojamento-date-hint">Entre ${dataPartidaStr || 'data partida'} e ${dataChegadaStr || 'data chegada'}</div>
+            <input type="date" class="form-input alojamento-date" 
+                   id="alojamentoCheckin_${index}"
+                   min="${dataPartida}"
+                   max="${dataChegada}"
+                   onchange="validateAlojamentoDate(this, '${dataPartida}', '${dataChegada}')">
+            <div class="alojamento-date-hint">Deve estar entre as datas da viagem</div>
           </div>
           <div class="form-group">
             <label class="form-label">Data Check-out</label>
-            <div class="date-input-wrapper">
-              <input type="text" class="form-input date-input alojamento-date" 
-                     id="alojamentoCheckout_${index}" 
-                     placeholder="dd/mm/aaaa" 
-                     maxlength="10"
-                     data-min-date="${dataPartidaStr}"
-                     data-max-date="${dataChegadaStr}">
-              <svg class="date-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                <line x1="16" y1="2" x2="16" y2="6"/>
-                <line x1="8" y1="2" x2="8" y2="6"/>
-                <line x1="3" y1="10" x2="21" y2="10"/>
-              </svg>
-            </div>
-            <div class="alojamento-date-hint">Entre ${dataPartidaStr || 'data partida'} e ${dataChegadaStr || 'data chegada'}</div>
+            <input type="date" class="form-input alojamento-date" 
+                   id="alojamentoCheckout_${index}"
+                   min="${dataPartida}"
+                   max="${dataChegada}"
+                   onchange="validateAlojamentoDate(this, '${dataPartida}', '${dataChegada}')">
+            <div class="alojamento-date-hint">Deve estar entre as datas da viagem</div>
           </div>
         </div>
         <div class="form-group">
@@ -755,26 +665,6 @@ function updateAlojamentoOptions() {
       </div>
     `;
     container.appendChild(div);
-    
-    // Setup formatação e validação de datas
-    const checkinInput = document.getElementById(`alojamentoCheckin_${index}`);
-    const checkoutInput = document.getElementById(`alojamentoCheckout_${index}`);
-    
-    [checkinInput, checkoutInput].forEach(input => {
-      if (input) {
-        input.addEventListener('input', function(e) {
-          let value = e.target.value.replace(/\D/g, '');
-          if (value.length >= 2) value = value.substring(0, 2) + '/' + value.substring(2);
-          if (value.length >= 5) value = value.substring(0, 5) + '/' + value.substring(5);
-          if (value.length > 10) value = value.substring(0, 10);
-          e.target.value = value;
-        });
-        
-        input.addEventListener('blur', function(e) {
-          validateAlojamentoDate(e.target);
-        });
-      }
-    });
   });
 }
 
@@ -787,40 +677,25 @@ function toggleAlojamentoFields(index) {
   }
 }
 
-function validateAlojamentoDate(input) {
+function validateAlojamentoDate(input, minDate, maxDate) {
   if (!input.value) return true;
   
-  if (!validateDateInput(input)) {
-    showToast('Formato de data inválido. Use dd/mm/aaaa', 'error');
-    return false;
+  const selectedDate = input.value;
+  let isValid = true;
+  
+  if (minDate && selectedDate < minDate) {
+    showToast('A data deve ser igual ou posterior à data de partida', 'error');
+    input.classList.add('error');
+    isValid = false;
+  } else if (maxDate && selectedDate > maxDate) {
+    showToast('A data deve ser igual ou anterior à data de chegada', 'error');
+    input.classList.add('error');
+    isValid = false;
+  } else {
+    input.classList.remove('error');
   }
   
-  const inputDate = getDateFromDisplay(input.value);
-  const minDateStr = input.dataset.minDate;
-  const maxDateStr = input.dataset.maxDate;
-  
-  if (!inputDate) return false;
-  
-  if (minDateStr) {
-    const minDate = getDateFromDisplay(minDateStr);
-    if (minDate && inputDate < minDate) {
-      showToast('A data deve ser igual ou posterior à data de partida (' + minDateStr + ')', 'error');
-      input.classList.add('error');
-      return false;
-    }
-  }
-  
-  if (maxDateStr) {
-    const maxDate = getDateFromDisplay(maxDateStr);
-    if (maxDate && inputDate > maxDate) {
-      showToast('A data deve ser igual ou anterior à data de chegada (' + maxDateStr + ')', 'error');
-      input.classList.add('error');
-      return false;
-    }
-  }
-  
-  input.classList.remove('error');
-  return true;
+  return isValid;
 }
 
 // ====================
@@ -1210,7 +1085,7 @@ function validateForm() {
   const form = document.getElementById('pedidoForm');
   let isValid = true;
   
-  const requiredTextInputs = form.querySelectorAll('input[required]:not([type="hidden"]):not(.date-input):not(.search-input), textarea[required]');
+  const requiredTextInputs = form.querySelectorAll('input[required]:not([type="hidden"]):not([type="date"]):not(.search-input), textarea[required]');
   requiredTextInputs.forEach(field => {
     if (!field.value.trim()) {
       field.classList.add('error');
@@ -1223,20 +1098,21 @@ function validateForm() {
   const dataPartidaInput = document.getElementById('dataPartida');
   const dataChegadaInput = document.getElementById('dataChegada');
   
-  if (!dataPartidaInput.value || !validateDateInput(dataPartidaInput)) {
+  if (!dataPartidaInput.value) {
     dataPartidaInput.classList.add('error');
     isValid = false;
+  } else {
+    dataPartidaInput.classList.remove('error');
   }
   
-  if (!dataChegadaInput.value || !validateDateInput(dataChegadaInput)) {
+  if (!dataChegadaInput.value) {
     dataChegadaInput.classList.add('error');
     isValid = false;
+  } else {
+    dataChegadaInput.classList.remove('error');
   }
   
-  const dataPartida = getDateFromDisplay(dataPartidaInput.value);
-  const dataChegada = getDateFromDisplay(dataChegadaInput.value);
-  
-  if (dataPartida && dataChegada && dataChegada < dataPartida) {
+  if (dataPartidaInput.value && dataChegadaInput.value && dataChegadaInput.value < dataPartidaInput.value) {
     showToast('Data de chegada não pode ser anterior à data de partida', 'error');
     dataChegadaInput.classList.add('error');
     isValid = false;
@@ -1263,10 +1139,15 @@ function validateForm() {
     isValid = false;
   }
   
+  // Validar datas de alojamento
   const alojamentoDates = document.querySelectorAll('.alojamento-date');
   alojamentoDates.forEach(input => {
-    if (input.value && !validateAlojamentoDate(input)) {
-      isValid = false;
+    if (input.value) {
+      const minDate = dataPartidaInput.value;
+      const maxDate = dataChegadaInput.value;
+      if (!validateAlojamentoDate(input, minDate, maxDate)) {
+        isValid = false;
+      }
     }
   });
   
@@ -1287,8 +1168,8 @@ function collectFormData() {
     colaboradores: [],
     
     motivo: document.getElementById('motivoDeslocacao')?.value || '',
-    data_partida: parseDateFromDisplay(document.getElementById('dataPartida')?.value),
-    data_chegada: parseDateFromDisplay(document.getElementById('dataChegada')?.value),
+    data_partida: document.getElementById('dataPartida')?.value || null,
+    data_chegada: document.getElementById('dataChegada')?.value || null,
     hora_partida: `${document.getElementById('horaPartida')?.value || '09'}:${document.getElementById('minutoPartida')?.value || '00'}`,
     hora_chegada: `${document.getElementById('horaChegada')?.value || '18'}:${document.getElementById('minutoChegada')?.value || '00'}`,
     
@@ -1351,8 +1232,8 @@ function collectFormData() {
       
       data.alojamentos.push({
         local: local,
-        data_checkin: parseDateFromDisplay(checkinValue),
-        data_checkout: parseDateFromDisplay(checkoutValue),
+        data_checkin: checkinValue || null,
+        data_checkout: checkoutValue || null,
         observacoes: obs
       });
     }
@@ -1393,8 +1274,8 @@ async function loadPedido(pedidoId) {
     }
     
     document.getElementById('motivoDeslocacao').value = pedido.motivo || '';
-    document.getElementById('dataPartida').value = formatDateToDisplay(pedido.data_partida) || '';
-    document.getElementById('dataChegada').value = formatDateToDisplay(pedido.data_chegada) || '';
+    document.getElementById('dataPartida').value = pedido.data_partida || '';
+    document.getElementById('dataChegada').value = pedido.data_chegada || '';
     
     if (pedido.hora_partida) {
       const [h, m] = pedido.hora_partida.split(':');
@@ -1489,8 +1370,8 @@ async function loadPedido(pedidoId) {
             if (checkbox) {
               checkbox.checked = true;
               toggleAlojamentoFields(index);
-              document.getElementById(`alojamentoCheckin_${index}`).value = formatDateToDisplay(aloj.data_checkin) || '';
-              document.getElementById(`alojamentoCheckout_${index}`).value = formatDateToDisplay(aloj.data_checkout) || '';
+              document.getElementById(`alojamentoCheckin_${index}`).value = aloj.data_checkin || '';
+              document.getElementById(`alojamentoCheckout_${index}`).value = aloj.data_checkout || '';
               document.getElementById(`alojamentoObs_${index}`).value = aloj.observacoes || '';
             }
           }

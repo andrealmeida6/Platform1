@@ -90,7 +90,6 @@ title: Novo Pedido de Deslocação
               <div class="search-select-wrapper">
                 <input type="text" class="form-input search-input" id="submitOnBehalfSearch" placeholder="Pesquisar colaborador..." autocomplete="off">
                 <input type="hidden" id="submitOnBehalf" value="">
-                <div class="search-dropdown" id="submitOnBehalfDropdown"></div>
               </div>
             </div>
           </div>
@@ -120,27 +119,11 @@ title: Novo Pedido de Deslocação
           <div class="form-row form-row-3 form-row-align-top">
             <div class="form-group">
               <label class="form-label">Data de Partida <span class="required">*</span></label>
-              <div class="date-input-wrapper">
-                <input type="text" class="form-input date-input" id="dataPartida" required placeholder="dd/mm/aaaa" maxlength="10">
-                <svg class="date-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                  <line x1="16" y1="2" x2="16" y2="6"/>
-                  <line x1="8" y1="2" x2="8" y2="6"/>
-                  <line x1="3" y1="10" x2="21" y2="10"/>
-                </svg>
-              </div>
+              <input type="date" class="form-input" id="dataPartida" required onchange="updateDayCounter(); updateAlojamentoOptions();">
             </div>
             <div class="form-group">
               <label class="form-label">Data de Chegada <span class="required">*</span></label>
-              <div class="date-input-wrapper">
-                <input type="text" class="form-input date-input" id="dataChegada" required placeholder="dd/mm/aaaa" maxlength="10">
-                <svg class="date-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                  <line x1="16" y1="2" x2="16" y2="6"/>
-                  <line x1="8" y1="2" x2="8" y2="6"/>
-                  <line x1="3" y1="10" x2="21" y2="10"/>
-                </svg>
-              </div>
+              <input type="date" class="form-input" id="dataChegada" required onchange="updateDayCounter(); updateAlojamentoOptions();">
             </div>
             <div class="form-group">
               <label class="form-label">Duração</label>
@@ -341,6 +324,9 @@ title: Novo Pedido de Deslocação
     </div>
   </form>
 </div>
+
+<!-- Container global para dropdowns (anexado ao body para garantir z-index) -->
+<div id="dropdownPortal"></div>
 
 <!-- Scripts -->
 <script src="{{ site.baseurl }}/web-files/js/authService.js"></script>
