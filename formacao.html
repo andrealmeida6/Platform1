@@ -18,13 +18,13 @@ title: Centro de Formação
               <circle cx="11" cy="11" r="8"/>
               <path d="M21 21l-4.35-4.35"/>
             </svg>
-            Explorar Catálogo
+            <span>Explorar Catálogo</span>
           </button>
           <button class="hero-btn hero-btn-secondary" onclick="scrollToMinhasFormacoes()">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
             </svg>
-            As Minhas Formações
+            <span>Minhas Formações</span>
           </button>
           <button class="hero-btn hero-btn-outline" onclick="openModalProporFormacao()">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -33,17 +33,15 @@ title: Centro de Formação
               <line x1="12" y1="18" x2="12" y2="12"/>
               <line x1="9" y1="15" x2="15" y2="15"/>
             </svg>
-            Propor Formação
+            <span>Propor Formação</span>
           </button>
-        </div>
-        <!-- Link para Gestão (apenas AFR-RH/Admin) -->
-        <div id="gestaoLink" style="display: none; margin-top: 1rem;">
-          <a href="{{ '/gestao-formacoes' | relative_url }}" style="display: inline-flex; align-items: center; gap: 0.5rem; color: #64748b; font-size: 0.875rem; text-decoration: none; transition: color 0.2s;">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px;">
+          <!-- Botão Gestão (apenas AFR-RH/Admin) -->
+          <a href="{{ '/gestao-formacoes' | relative_url }}" class="hero-btn hero-btn-gestao" id="btnGestaoFormacoes" style="display: none;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M12 20h9"/>
               <path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/>
             </svg>
-            Gestão de Formações (AFR-RH)
+            <span>Gestão de Formações</span>
           </a>
         </div>
       </div>
@@ -116,10 +114,12 @@ title: Centro de Formação
         Calendário de Formações
       </h3>
       <button class="calendar-toggle-btn" id="calendarToggleBtn" onclick="toggleFormacaoCalendar()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <span class="toggle-label">Calendário de Formações</span>
+        <span class="toggle-separator">•</span>
+        <svg class="toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <polyline points="18 15 12 9 6 15"/>
         </svg>
-        Esconder
+        <span class="toggle-action">Esconder</span>
       </button>
     </div>
 
@@ -304,14 +304,53 @@ title: Centro de Formação
 
 </div>
 
-<!-- Modal: Detalhes do Curso -->
+<!-- Modal: Detalhes do Curso com Tabs -->
 <div class="modal-overlay" id="modalCourse">
-  <div class="modal-content" style="max-width: 700px;">
+  <div class="modal-content modal-course-details">
     <div class="modal-header">
       <h3 class="modal-title" id="modalCourseTitle">Detalhes da Formação</h3>
       <button class="modal-close" onclick="closeModal('modalCourse')">&times;</button>
     </div>
-    <div class="modal-body" id="modalCourseBody"></div>
+    
+    <!-- Tabs Navigation -->
+    <div class="modal-tabs">
+      <button class="modal-tab active" data-tab="detalhes" onclick="switchCourseTab('detalhes')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="16" x2="12" y2="12"/>
+          <line x1="12" y1="8" x2="12.01" y2="8"/>
+        </svg>
+        Detalhes
+      </button>
+      <button class="modal-tab" data-tab="conteudo" onclick="switchCourseTab('conteudo')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="16" y1="13" x2="8" y2="13"/>
+          <line x1="16" y1="17" x2="8" y2="17"/>
+          <polyline points="10 9 9 9 8 9"/>
+        </svg>
+        Conteúdo Programático
+      </button>
+      <button class="modal-tab" data-tab="anexos" onclick="switchCourseTab('anexos')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/>
+        </svg>
+        Anexos
+      </button>
+    </div>
+    
+    <div class="modal-body">
+      <!-- Tab: Detalhes -->
+      <div class="tab-content active" id="tabDetalhes"></div>
+      
+      <!-- Tab: Conteúdo Programático -->
+      <div class="tab-content" id="tabConteudo"></div>
+      
+      <!-- Tab: Anexos -->
+      <div class="tab-content" id="tabAnexos"></div>
+    </div>
+    
     <div class="modal-footer" id="modalCourseFooter">
       <button class="btn btn-secondary" onclick="closeModal('modalCourse')">Fechar</button>
       <button class="btn btn-primary" id="btnInscrever" onclick="inscreverFormacao()">Inscrever-me</button>
@@ -464,9 +503,9 @@ document.addEventListener('DOMContentLoaded', async function() {
     currentUser = await AuthService.getCurrentUser();
     console.log('[Formação] Utilizador:', currentUser?.nome);
     
-    // Mostrar link de gestão para AFR-RH/Admin
+    // Mostrar botão de gestão para AFR-RH/Admin
     if (currentUser && AuthService.canAccessFormacaoManagement(currentUser)) {
-      document.getElementById('gestaoLink').style.display = 'block';
+      document.getElementById('btnGestaoFormacoes').style.display = 'inline-flex';
     }
     
     await loadFormacoes();
@@ -665,18 +704,22 @@ function toggleFormacaoCalendar() {
   if (calendarExpanded) {
     content.classList.add('expanded');
     btn.innerHTML = `
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <span class="toggle-label">Calendário de Formações</span>
+      <span class="toggle-separator">•</span>
+      <svg class="toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <polyline points="18 15 12 9 6 15"/>
       </svg>
-      Esconder
+      <span class="toggle-action">Esconder</span>
     `;
   } else {
     content.classList.remove('expanded');
     btn.innerHTML = `
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <span class="toggle-label">Calendário de Formações</span>
+      <span class="toggle-separator">•</span>
+      <svg class="toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <polyline points="6 9 12 15 18 9"/>
       </svg>
-      Mostrar
+      <span class="toggle-action">Mostrar</span>
     `;
   }
 }
@@ -1106,8 +1149,18 @@ function scrollToMinhasFormacoes() {
 }
 
 // ==========================================
-// ACTIONS
+// MODAL TABS - DETALHES DA FORMAÇÃO
 // ==========================================
+
+function switchCourseTab(tabName) {
+  // Remover active de todas as tabs
+  document.querySelectorAll('.modal-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  
+  // Adicionar active à tab selecionada
+  document.querySelector(`.modal-tab[data-tab="${tabName}"]`).classList.add('active');
+  document.getElementById(`tab${tabName.charAt(0).toUpperCase() + tabName.slice(1)}`).classList.add('active');
+}
 
 async function openCourseDetails(formacaoId) {
   selectedFormacao = allFormacoes.find(f => f.id === formacaoId);
@@ -1136,7 +1189,8 @@ async function openCourseDetails(formacaoId) {
   
   document.getElementById('modalCourseTitle').textContent = selectedFormacao.titulo;
   
-  document.getElementById('modalCourseBody').innerHTML = `
+  // Tab: Detalhes
+  document.getElementById('tabDetalhes').innerHTML = `
     <div style="margin-bottom: 1.5rem;">
       <span style="display: inline-block; padding: 0.25rem 0.75rem; background: #d1fae5; color: #065f46; border-radius: 20px; font-size: 0.75rem; font-weight: 600; margin-right: 0.5rem;">${selectedFormacao.tipo || 'Formação'}</span>
       <span style="display: inline-block; padding: 0.25rem 0.75rem; background: #dbeafe; color: #1e40af; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">${selectedFormacao.estado}</span>
@@ -1184,6 +1238,62 @@ async function openCourseDetails(formacaoId) {
       </div>
     ` : ''}
   `;
+  
+  // Tab: Conteúdo Programático
+  const conteudoProgramatico = selectedFormacao.conteudo_programatico || null;
+  document.getElementById('tabConteudo').innerHTML = conteudoProgramatico ? `
+    <div class="conteudo-programatico">
+      ${conteudoProgramatico}
+    </div>
+  ` : `
+    <div class="empty-tab-state">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 48px; height: 48px; color: #94a3b8; margin-bottom: 1rem;">
+        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+        <polyline points="14 2 14 8 20 8"/>
+        <line x1="16" y1="13" x2="8" y2="13"/>
+        <line x1="16" y1="17" x2="8" y2="17"/>
+      </svg>
+      <p style="color: #64748b; font-size: 0.875rem;">Conteúdo programático não disponível.</p>
+    </div>
+  `;
+  
+  // Tab: Anexos
+  const anexos = selectedFormacao.formacao_anexos || [];
+  document.getElementById('tabAnexos').innerHTML = anexos.length > 0 ? `
+    <div class="anexos-list">
+      ${anexos.map(a => `
+        <div class="anexo-item">
+          <div class="anexo-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+            </svg>
+          </div>
+          <div class="anexo-info">
+            <span class="anexo-nome">${a.nome || 'Documento'}</span>
+            <span class="anexo-tipo">${a.tipo || 'PDF'}</span>
+          </div>
+          <a href="${a.url}" target="_blank" class="anexo-download" title="Descarregar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+          </a>
+        </div>
+      `).join('')}
+    </div>
+  ` : `
+    <div class="empty-tab-state">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 48px; height: 48px; color: #94a3b8; margin-bottom: 1rem;">
+        <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/>
+      </svg>
+      <p style="color: #64748b; font-size: 0.875rem;">Sem anexos disponíveis para esta formação.</p>
+    </div>
+  `;
+  
+  // Reset para tab Detalhes
+  switchCourseTab('detalhes');
   
   const btnInscrever = document.getElementById('btnInscrever');
   if (jaInscrito) {
@@ -1261,7 +1371,17 @@ document.querySelectorAll('.modal-overlay').forEach(modal => {
 </script>
 
 <style>
-/* Estilo adicional para o botão outline */
+/* Hero Buttons - No wrap */
+.hero-btn {
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+.hero-btn span {
+  white-space: nowrap;
+}
+
+/* Botão outline */
 .hero-btn-outline {
   background: transparent;
   border: 2px solid rgba(255, 255, 255, 0.5);
@@ -1270,5 +1390,210 @@ document.querySelectorAll('.modal-overlay').forEach(modal => {
 .hero-btn-outline:hover {
   background: rgba(255, 255, 255, 0.1);
   border-color: white;
+}
+
+/* Botão Gestão */
+.hero-btn-gestao {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: white;
+  border: none;
+}
+.hero-btn-gestao:hover {
+  background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(245, 158, 11, 0.3);
+}
+
+/* Calendar Toggle Button */
+.calendar-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.calendar-toggle-btn .toggle-label {
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.calendar-toggle-btn .toggle-separator {
+  color: #94a3b8;
+}
+
+.calendar-toggle-btn .toggle-icon {
+  width: 16px;
+  height: 16px;
+  transition: transform 0.3s;
+}
+
+.calendar-toggle-btn .toggle-action {
+  color: #64748b;
+}
+
+/* Modal with Tabs */
+.modal-course-details {
+  max-width: 750px;
+}
+
+.modal-tabs {
+  display: flex;
+  gap: 0.25rem;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
+  margin: 0 -1.5rem;
+  padding: 0.5rem 1.5rem;
+}
+
+.modal-tab {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: transparent;
+  border: none;
+  border-radius: 8px 8px 0 0;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.modal-tab svg {
+  width: 16px;
+  height: 16px;
+}
+
+.modal-tab:hover {
+  color: #1e293b;
+  background: rgba(0, 178, 118, 0.05);
+}
+
+.modal-tab.active {
+  color: #00b276;
+  background: white;
+  border-bottom: 2px solid #00b276;
+  margin-bottom: -1px;
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+.empty-tab-state {
+  text-align: center;
+  padding: 3rem 2rem;
+}
+
+/* Conteúdo Programático */
+.conteudo-programatico {
+  line-height: 1.7;
+  color: #475569;
+}
+
+.conteudo-programatico h4,
+.conteudo-programatico h5 {
+  color: #1e293b;
+  margin: 1rem 0 0.5rem;
+}
+
+.conteudo-programatico ul,
+.conteudo-programatico ol {
+  padding-left: 1.5rem;
+  margin: 0.5rem 0;
+}
+
+.conteudo-programatico li {
+  margin-bottom: 0.25rem;
+}
+
+/* Anexos */
+.anexos-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.anexo-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: #f8fafc;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  transition: all 0.2s;
+}
+
+.anexo-item:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+.anexo-icon {
+  width: 40px;
+  height: 40px;
+  background: #dbeafe;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.anexo-icon svg {
+  width: 20px;
+  height: 20px;
+  color: #2563eb;
+}
+
+.anexo-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.anexo-nome {
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 0.875rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.anexo-tipo {
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.anexo-download {
+  width: 36px;
+  height: 36px;
+  background: #00b276;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  text-decoration: none;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.anexo-download:hover {
+  background: #009966;
+  transform: translateY(-2px);
+}
+
+.anexo-download svg {
+  width: 18px;
+  height: 18px;
 }
 </style>
