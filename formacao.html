@@ -440,6 +440,9 @@ let formacaoCalendarDate = new Date();
 let formacaoEvents = {};
 let calendarExpanded = true; // Visível por defeito
 
+// Nomes dos meses abreviados em português
+const MONTH_NAMES_SHORT = ['JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ'];
+
 // Aguardar serviços
 async function waitForServices() {
   return new Promise((resolve) => {
@@ -750,12 +753,18 @@ function selectFormacaoDate(dateStr) {
   if (events.length === 0) {
     container.innerHTML = '<div class="no-events">Sem formações agendadas para este dia.</div>';
   } else {
+    const day = dateObj.getDate();
+    const month = MONTH_NAMES_SHORT[dateObj.getMonth()];
+    
     container.innerHTML = events.map(e => `
-      <div class="event-item formacao" onclick="openCourseDetails('${e.formacaoId}')">
-        <div class="event-time">${e.hora}</div>
+      <div class="event-item formacao" onclick="openCourseDetails('${e.formacaoId}')" style="--event-color: #00b276;">
+        <div class="event-date">
+          <div class="event-day">${day}</div>
+          <div class="event-month">${month}</div>
+        </div>
         <div class="event-details">
           <div class="event-title">${e.titulo}</div>
-          <div class="event-meta">${e.tipo || 'Formação'} • ${e.estado}</div>
+          <div class="event-meta">${e.hora} • ${e.tipo || 'Formação'}</div>
         </div>
       </div>
     `).join('');
@@ -794,10 +803,15 @@ function renderFormacaoUpcomingEvents() {
   } else {
     container.innerHTML = eventsToShow.map(e => {
       const dateObj = new Date(e.date);
-      const dateFormatted = dateObj.toLocaleDateString('pt-PT', { day: 'numeric', month: 'short' });
+      const day = dateObj.getDate();
+      const month = MONTH_NAMES_SHORT[dateObj.getMonth()];
+      
       return `
-        <div class="event-item formacao" onclick="openCourseDetails('${e.formacaoId}')">
-          <div class="event-time">${dateFormatted}</div>
+        <div class="event-item formacao" onclick="openCourseDetails('${e.formacaoId}')" style="--event-color: #00b276;">
+          <div class="event-date">
+            <div class="event-day">${day}</div>
+            <div class="event-month">${month}</div>
+          </div>
           <div class="event-details">
             <div class="event-title">${e.titulo}</div>
             <div class="event-meta">${e.hora} • ${e.tipo || 'Formação'}</div>
