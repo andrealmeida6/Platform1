@@ -104,15 +104,6 @@ title: Centro de Formação
   <!-- Calendário de Formações (estilo light, visível por defeito) -->
   <section class="calendar-section" id="formacaoCalendarSection">
     <div class="calendar-section-header">
-      <h3 class="calendar-section-title">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-          <line x1="16" y1="2" x2="16" y2="6"/>
-          <line x1="8" y1="2" x2="8" y2="6"/>
-          <line x1="3" y1="10" x2="21" y2="10"/>
-        </svg>
-        Calendário de Formações
-      </h3>
       <button class="calendar-toggle-btn" id="calendarToggleBtn" onclick="toggleFormacaoCalendar()">
         <span class="toggle-label">Calendário de Formações</span>
         <span class="toggle-separator">•</span>
@@ -478,6 +469,7 @@ let selectedFormacao = null;
 let formacaoCalendarDate = new Date();
 let formacaoEvents = {};
 let calendarExpanded = true; // Visível por defeito
+let canViewInscritos = false; // Controla se pode ver número de inscritos
 
 // Nomes dos meses abreviados em português
 const MONTH_NAMES_SHORT = ['JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ'];
@@ -496,6 +488,37 @@ async function waitForServices() {
   });
 }
 
+// Verificar se utilizador é formador de uma formação específica
+function isFormadorOf(formacao, userId) {
+  if (!formacao || !userId) return false;
+  
+  // Verificar na relação formacao_formadores
+  if (formacao.formacao_formadores && formacao.formacao_formadores.length > 0) {
+    return formacao.formacao_formadores.some(ff => {
+      if (ff.formadores?.colaborador_id === userId) return true;
+      return false;
+    });
+  }
+  
+  // Verificar no formador direto (legacy)
+  if (formacao.formadores?.colaborador_id === userId) return true;
+  
+  return false;
+}
+
+// Verificar se utilizador pode ver inscritos (é formador ou tem permissão de gestão)
+function canSeeInscritos(formacao) {
+  if (!currentUser) return false;
+  
+  // Tem permissão de gestão de formações
+  if (canViewInscritos) return true;
+  
+  // É formador desta formação específica
+  if (isFormadorOf(formacao, currentUser.id)) return true;
+  
+  return false;
+}
+
 // Inicialização
 document.addEventListener('DOMContentLoaded', async function() {
   try {
@@ -503,9 +526,10 @@ document.addEventListener('DOMContentLoaded', async function() {
     currentUser = await AuthService.getCurrentUser();
     console.log('[Formação] Utilizador:', currentUser?.nome);
     
-    // Mostrar botão de gestão para AFR-RH/Admin
+    // Verificar permissão de gestão
     if (currentUser && AuthService.canAccessFormacaoManagement(currentUser)) {
       document.getElementById('btnGestaoFormacoes').style.display = 'inline-flex';
+      canViewInscritos = true;
     }
     
     await loadFormacoes();
@@ -918,6 +942,10 @@ function renderCatalog(formacoes) {
     if (f.modalidade === 'Obrigatória') badges += '<span class="course-badge mandatory">Obrigatória</span>';
     if (isNew(f.created_at)) badges += '<span class="course-badge new">Nova</span>';
     
+    // Mostrar inscritos apenas para quem tem permissão
+    const showInscritos = canSeeInscritos(f);
+    const inscritosDisplay = showInscritos ? `${inscritos}/${vagas}` : `${vagas} vagas`;
+    
     return `
       <div class="course-card" onclick="openCourseDetails('${f.id}')">
         <div class="course-card-banner ${categoria}">
@@ -943,7 +971,7 @@ function renderCatalog(formacoes) {
             </span>
             <span class="course-meta-item">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-              ${inscritos}/${vagas}
+              ${inscritosDisplay}
             </span>
           </div>
           <div class="course-card-footer">
@@ -1187,9 +1215,24 @@ async function openCourseDetails(formacaoId) {
     i => i.colaborador_id === currentUser.id && i.estado === 'Inscrito'
   );
   
+  // Verificar se pode ver inscritos
+  const showInscritos = canSeeInscritos(selectedFormacao);
+  
   document.getElementById('modalCourseTitle').textContent = selectedFormacao.titulo;
   
-  // Tab: Detalhes
+  // Tab: Detalhes - mostrar inscritos apenas se tiver permissão
+  const inscritosHtml = showInscritos ? `
+    <div style="text-align: center;">
+      <div style="font-size: 1.25rem; font-weight: 700; color: #1e293b;">${inscritos}/${vagas}</div>
+      <div style="font-size: 0.75rem; color: #64748b;">Inscritos</div>
+    </div>
+  ` : `
+    <div style="text-align: center;">
+      <div style="font-size: 1.25rem; font-weight: 700; color: #1e293b;">${vagas}</div>
+      <div style="font-size: 0.75rem; color: #64748b;">Vagas</div>
+    </div>
+  `;
+  
   document.getElementById('tabDetalhes').innerHTML = `
     <div style="margin-bottom: 1.5rem;">
       <span style="display: inline-block; padding: 0.25rem 0.75rem; background: #d1fae5; color: #065f46; border-radius: 20px; font-size: 0.75rem; font-weight: 600; margin-right: 0.5rem;">${selectedFormacao.tipo || 'Formação'}</span>
@@ -1201,10 +1244,7 @@ async function openCourseDetails(formacaoId) {
         <div style="font-size: 1.25rem; font-weight: 700; color: #1e293b;">${selectedFormacao.duracao_horas || 0}h</div>
         <div style="font-size: 0.75rem; color: #64748b;">Duração</div>
       </div>
-      <div style="text-align: center;">
-        <div style="font-size: 1.25rem; font-weight: 700; color: #1e293b;">${inscritos}/${vagas}</div>
-        <div style="font-size: 0.75rem; color: #64748b;">Inscritos</div>
-      </div>
+      ${inscritosHtml}
       <div style="text-align: center;">
         <div style="font-size: 1.25rem; font-weight: 700; color: #1e293b;">${sessoes.length}</div>
         <div style="font-size: 0.75rem; color: #64748b;">Sessões</div>
