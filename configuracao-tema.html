@@ -33,14 +33,14 @@ title: Configuração de Tema
         </div>
       </div>
       <div class="config-header-right">
-        <button class="btn btn-secondary" onclick="resetarTema()">
+        <button type="button" class="btn btn-secondary" onclick="resetarTema()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <polyline points="1 4 1 10 7 10"/>
             <path d="M3.51 15a9 9 0 102.13-9.36L1 10"/>
           </svg>
           Repor Padrão
         </button>
-        <button class="btn btn-primary" onclick="guardarAlteracoes()" id="btnGuardar">
+        <button type="button" class="btn btn-primary" onclick="guardarAlteracoes()" id="btnGuardar">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
             <polyline points="17 21 17 13 7 13 7 21"/>
@@ -399,7 +399,7 @@ let hasChanges = false;
 async function waitForServices() {
   return new Promise((resolve) => {
     const check = () => {
-      if (typeof DataService !== 'undefined' && typeof ThemeService !== 'undefined') {
+      if (typeof ThemeService !== 'undefined') {
         resolve();
       } else {
         setTimeout(check, 100);
@@ -411,8 +411,11 @@ async function waitForServices() {
 
 // Inicialização
 document.addEventListener('DOMContentLoaded', async function() {
+  console.log('[ConfigTema] Inicializando...');
+  
   try {
     await waitForServices();
+    console.log('[ConfigTema] ThemeService disponível');
     
     // Verificar se AuthService existe e se o utilizador tem permissão
     if (typeof AuthService !== 'undefined') {
@@ -435,6 +438,8 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Atualizar preview inicial
     updatePreview();
     
+    console.log('[ConfigTema] Inicializado com sucesso');
+    
   } catch (error) {
     console.error('[ConfigTema] Erro:', error);
     document.getElementById('mainContent').style.display = 'block';
@@ -446,8 +451,15 @@ document.addEventListener('DOMContentLoaded', async function() {
 // Carregar configurações atuais
 async function loadCurrentConfig() {
   try {
+    console.log('[ConfigTema] A carregar configurações...');
     const config = await ThemeService.loadConfig();
-    if (!config) return;
+    
+    if (!config) {
+      console.warn('[ConfigTema] Sem configurações');
+      return;
+    }
+    
+    console.log('[ConfigTema] Configs carregadas:', Object.keys(config).length);
     
     // Preencher todos os campos
     Object.keys(config).forEach(key => {
@@ -471,7 +483,7 @@ async function loadCurrentConfig() {
     }
     
   } catch (error) {
-    console.error('Erro ao carregar config:', error);
+    console.error('[ConfigTema] Erro ao carregar config:', error);
   }
 }
 
@@ -557,6 +569,8 @@ function updatePreview() {
 
 // Guardar alterações
 async function guardarAlteracoes() {
+  console.log('[ConfigTema] A guardar alterações...');
+  
   const btn = document.getElementById('btnGuardar');
   const originalText = btn.innerHTML;
   btn.innerHTML = '<span class="spinner-sm"></span> A guardar...';
@@ -585,14 +599,16 @@ async function guardarAlteracoes() {
       }
     });
     
+    console.log('[ConfigTema] Configs a guardar:', Object.keys(configs).length);
+    
     await ThemeService.saveMultipleConfigs(configs);
     
     hasChanges = false;
     showToast('Tema guardado com sucesso! As alterações serão aplicadas em toda a plataforma.', 'success');
     
   } catch (error) {
-    console.error('Erro ao guardar:', error);
-    showToast('Erro ao guardar alterações.', 'error');
+    console.error('[ConfigTema] Erro ao guardar:', error);
+    showToast('Erro ao guardar alterações: ' + error.message, 'error');
   } finally {
     btn.innerHTML = originalText;
     btn.disabled = false;
@@ -611,7 +627,7 @@ async function resetarTema() {
     updatePreview();
     showToast('Tema reposto para valores padrão.', 'success');
   } catch (error) {
-    console.error('Erro ao resetar:', error);
+    console.error('[ConfigTema] Erro ao resetar:', error);
     showToast('Erro ao repor tema.', 'error');
   }
 }
@@ -668,6 +684,58 @@ window.addEventListener('beforeunload', function(e) {
   margin-bottom: 1rem;
 }
 
+/* ========================================
+   BOTÕES - ESTILOS COMPLETOS
+   ======================================== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #00b276 0%, #009661 100%);
+  color: white;
+  box-shadow: 0 4px 15px rgba(0, 178, 118, 0.3);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #009661 0%, #007a4d 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(0, 178, 118, 0.4);
+}
+
+.btn-secondary {
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: #e2e8f0;
+  color: #1e293b;
+}
+
 /* Header */
 .config-header {
   display: flex;
@@ -697,8 +765,8 @@ window.addEventListener('beforeunload', function(e) {
 }
 
 .back-link:hover {
-  color: var(--primary-color);
-  background: var(--primary-light);
+  color: #00b276;
+  background: #e6f7f1;
 }
 
 .back-link svg {
@@ -769,8 +837,8 @@ window.addEventListener('beforeunload', function(e) {
   align-items: center;
   justify-content: space-between;
   padding: 0.75rem 1rem;
-  background: var(--header-bg);
-  border-bottom: 1px solid var(--header-border);
+  background: var(--header-bg, #ffffff);
+  border-bottom: 1px solid var(--header-border, #e9ecf4);
 }
 
 .preview-logo {
@@ -797,21 +865,21 @@ window.addEventListener('beforeunload', function(e) {
 
 .preview-nav-item {
   font-size: 0.65rem;
-  color: var(--text-secondary);
+  color: var(--text-secondary, #686b87);
   padding: 0.25rem 0.5rem;
   border-radius: 4px;
 }
 
 .preview-nav-item.active {
-  color: var(--primary-color);
-  background: var(--primary-light);
+  color: var(--primary-color, #00b276);
+  background: var(--primary-light, #e6f7f1);
 }
 
 .preview-quick-actions {
   display: flex;
   gap: 0.5rem;
   padding: 1rem;
-  background: var(--bg-gray);
+  background: var(--bg-gray, #f8fafb);
 }
 
 .preview-qa-item {
@@ -828,7 +896,7 @@ window.addEventListener('beforeunload', function(e) {
 .preview-qa-icon {
   width: 28px;
   height: 28px;
-  background: var(--quick-action-icon-bg);
+  background: var(--quick-action-icon-bg, #00b276);
   border-radius: 8px;
   display: flex;
   align-items: center;
@@ -838,12 +906,12 @@ window.addEventListener('beforeunload', function(e) {
 .preview-qa-icon svg {
   width: 14px;
   height: 14px;
-  color: var(--quick-action-icon-color);
+  color: var(--quick-action-icon-color, #ffffff);
 }
 
 .preview-qa-item span {
   font-size: 0.6rem;
-  color: var(--text-secondary);
+  color: var(--text-secondary, #686b87);
 }
 
 .preview-buttons {
@@ -864,8 +932,8 @@ window.addEventListener('beforeunload', function(e) {
 }
 
 .preview-btn.primary {
-  background: var(--btn-primary-bg);
-  color: var(--btn-primary-text);
+  background: var(--btn-primary-bg, #00b276);
+  color: var(--btn-primary-text, #ffffff);
 }
 
 .preview-btn.secondary {
@@ -878,8 +946,8 @@ window.addEventListener('beforeunload', function(e) {
   justify-content: space-between;
   align-items: center;
   padding: 0.75rem 1rem;
-  background: var(--modal-header-bg);
-  color: var(--modal-header-text);
+  background: var(--modal-header-bg, #00b276);
+  color: var(--modal-header-text, #ffffff);
   font-size: 0.75rem;
   font-weight: 600;
 }
@@ -904,10 +972,10 @@ window.addEventListener('beforeunload', function(e) {
   font-weight: 500;
 }
 
-.preview-badge.success { background: #d1fae5; color: var(--success-color); }
-.preview-badge.warning { background: #fef3c7; color: var(--warning-color); }
-.preview-badge.danger { background: #fee2e2; color: var(--danger-color); }
-.preview-badge.info { background: #dbeafe; color: var(--info-color); }
+.preview-badge.success { background: #d1fae5; color: var(--success-color, #00b276); }
+.preview-badge.warning { background: #fef3c7; color: var(--warning-color, #f59e0b); }
+.preview-badge.danger { background: #fee2e2; color: var(--danger-color, #ef4444); }
+.preview-badge.info { background: #dbeafe; color: var(--info-color, #3b82f6); }
 
 /* Info Card */
 .info-card {
@@ -959,7 +1027,7 @@ window.addEventListener('beforeunload', function(e) {
 .section-header svg {
   width: 24px;
   height: 24px;
-  color: var(--primary-color);
+  color: var(--primary-color, #00b276);
 }
 
 .section-header h2 {
@@ -1007,7 +1075,7 @@ window.addEventListener('beforeunload', function(e) {
 
 .config-item input:focus {
   outline: none;
-  border-color: var(--primary-color);
+  border-color: #00b276;
   box-shadow: 0 0 0 3px rgba(0, 178, 118, 0.1);
 }
 
@@ -1084,7 +1152,7 @@ window.addEventListener('beforeunload', function(e) {
 .gradient-preview {
   height: 60px;
   border-radius: 10px;
-  background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
+  background: linear-gradient(135deg, var(--gradient-start, #00b276) 0%, var(--gradient-end, #059669) 100%);
 }
 
 /* Spinner */
