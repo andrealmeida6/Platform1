@@ -240,12 +240,12 @@ const DataService = (function() {
   
   // --- FORMAÇÕES ---
   async function getFormacoes() {
-    const select = '*,entidades_formadoras(id,codigo,nome),formadores(id,nome,especialidade,tipo),formacao_sessoes(id,data,hora_inicio,hora_fim),formacao_inscricoes(id,colaborador_id,estado),formacao_departamentos(id,departamento_id,departamentos(id,codigo,nome)),formacao_favoritos(id,colaborador_id),formacao_presencas(id,colaborador_id,presente),formacao_resultados(id,colaborador_id,resultado),formacao_avaliacoes(id,colaborador_id,score_conteudo,score_formador,score_organizacao,comentario,created_at),formacao_formadores(id,formador_id,entidade_id,principal,formadores(id,nome),entidades_formadoras(id,nome)),formacao_anexos(id,nome,tipo,url,tamanho_bytes)';
+    const select = '*,entidades_formadoras(id,codigo,nome),formadores(id,nome,especialidade,tipo,colaborador_id),formacao_sessoes(id,data,hora_inicio,hora_fim,estado,codigo_entrada,codigo_saida,hora_abertura_entrada,hora_abertura_saida,hora_conclusao),formacao_inscricoes(id,colaborador_id,estado),formacao_departamentos(id,departamento_id,departamentos(id,codigo,nome)),formacao_favoritos(id,colaborador_id),formacao_presencas(id,colaborador_id,sessao_id,presente,hora_entrada,hora_saida,validado),formacao_resultados(id,colaborador_id,resultado),formacao_avaliacoes(id,colaborador_id,score_conteudo,score_formador,score_organizacao,comentario,created_at),formacao_formadores(id,formador_id,entidade_id,principal,formadores(id,nome,colaborador_id),entidades_formadoras(id,nome)),formacao_anexos(id,nome,tipo,url,tamanho_bytes)';
     return retrieveWithRelations('formacoes', select);
   }
   
   async function getFormacaoById(id) {
-    const select = '*,entidades_formadoras(id,codigo,nome),formadores(id,nome,especialidade,tipo),formacao_sessoes(id,data,hora_inicio,hora_fim),formacao_inscricoes(id,colaborador_id,estado,colaboradores(id,nome,email,departamento_id)),formacao_departamentos(id,departamento_id,departamentos(id,codigo,nome)),formacao_favoritos(id,colaborador_id),formacao_presencas(id,colaborador_id,presente),formacao_resultados(id,colaborador_id,resultado),formacao_avaliacoes(id,colaborador_id,score_conteudo,score_formador,score_organizacao,comentario,created_at),formacao_formadores(id,formador_id,entidade_id,principal,formadores(id,nome),entidades_formadoras(id,nome)),formacao_anexos(id,nome,tipo,url,tamanho_bytes)';
+    const select = '*,entidades_formadoras(id,codigo,nome),formadores(id,nome,especialidade,tipo,colaborador_id),formacao_sessoes(id,data,hora_inicio,hora_fim,estado,codigo_entrada,codigo_saida,hora_abertura_entrada,hora_abertura_saida,hora_conclusao),formacao_inscricoes(id,colaborador_id,estado,colaboradores(id,nome,email,departamento_id)),formacao_departamentos(id,departamento_id,departamentos(id,codigo,nome)),formacao_favoritos(id,colaborador_id),formacao_presencas(id,colaborador_id,sessao_id,presente,hora_entrada,hora_saida,validado,colaboradores(id,nome)),formacao_resultados(id,colaborador_id,resultado),formacao_avaliacoes(id,colaborador_id,score_conteudo,score_formador,score_organizacao,comentario,created_at),formacao_formadores(id,formador_id,entidade_id,principal,formadores(id,nome,colaborador_id),entidades_formadoras(id,nome)),formacao_anexos(id,nome,tipo,url,tamanho_bytes)';
     const result = await retrieveWithRelations('formacoes', select, { id });
     return result.length > 0 ? result[0] : null;
   }
@@ -260,7 +260,8 @@ const DataService = (function() {
           formacao_id: formacao.id,
           data: sessao.data,
           hora_inicio: sessao.hora_inicio || sessao.horaInicio,
-          hora_fim: sessao.hora_fim || sessao.horaFim
+          hora_fim: sessao.hora_fim || sessao.horaFim,
+          estado: 'Agendada'
         });
       }
     }
@@ -369,6 +370,188 @@ const DataService = (function() {
       comentario: avaliacao.comentario,
       recomendaria: avaliacao.recomendaria
     });
+  }
+  
+  // --- SESSÕES DE FORMAÇÃO ---
+  
+  // Gerar código de 6 dígitos aleatório
+  function gerarCodigo6Digitos() {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+  }
+  
+  // Obter sessão por ID com presenças
+  async function getSessaoById(sessaoId) {
+    const select = '*,formacoes(id,titulo),formacao_presencas(id,colaborador_id,hora_entrada,hora_saida,validado,colaboradores(id,nome))';
+    const result = await retrieveWithRelations('formacao_sessoes', select, { id: sessaoId });
+    return result.length > 0 ? result[0] : null;
+  }
+  
+  // Obter presenças de uma sessão
+  async function getPresencasSessao(sessaoId) {
+    const select = '*,colaboradores(id,nome,email,departamentos(id,nome))';
+    return retrieveWithRelations('formacao_presencas', select, { sessao_id: sessaoId });
+  }
+  
+  // Iniciar sessão (gera código de entrada)
+  async function iniciarSessao(sessaoId, userId) {
+    const codigoEntrada = gerarCodigo6Digitos();
+    return updateRecord('formacao_sessoes', sessaoId, {
+      estado: 'Em Curso',
+      codigo_entrada: codigoEntrada,
+      hora_abertura_entrada: new Date().toISOString()
+    });
+  }
+  
+  // Abrir saída (gera código de saída)
+  async function abrirSaidaSessao(sessaoId) {
+    const codigoSaida = gerarCodigo6Digitos();
+    return updateRecord('formacao_sessoes', sessaoId, {
+      codigo_saida: codigoSaida,
+      hora_abertura_saida: new Date().toISOString()
+    });
+  }
+  
+  // Regenerar código de entrada
+  async function regenerarCodigoEntrada(sessaoId) {
+    const novoCodigo = gerarCodigo6Digitos();
+    return updateRecord('formacao_sessoes', sessaoId, {
+      codigo_entrada: novoCodigo
+    });
+  }
+  
+  // Regenerar código de saída
+  async function regenerarCodigoSaida(sessaoId) {
+    const novoCodigo = gerarCodigo6Digitos();
+    return updateRecord('formacao_sessoes', sessaoId, {
+      codigo_saida: novoCodigo
+    });
+  }
+  
+  // Concluir sessão
+  async function concluirSessao(sessaoId, userId) {
+    return updateRecord('formacao_sessoes', sessaoId, {
+      estado: 'Concluída',
+      hora_conclusao: new Date().toISOString(),
+      concluida_por: userId
+    });
+  }
+  
+  // Cancelar sessão
+  async function cancelarSessao(sessaoId, motivo, userId) {
+    return updateRecord('formacao_sessoes', sessaoId, {
+      estado: 'Cancelada',
+      motivo_cancelamento: motivo,
+      hora_conclusao: new Date().toISOString(),
+      concluida_por: userId
+    });
+  }
+  
+  // Verificar e atualizar estado da formação baseado nas sessões
+  async function verificarEstadoFormacao(formacaoId) {
+    const formacao = await getFormacaoById(formacaoId);
+    if (!formacao) return null;
+    
+    const sessoes = formacao.formacao_sessoes || [];
+    if (sessoes.length === 0) return formacao;
+    
+    const todasConcluidas = sessoes.every(s => s.estado === 'Concluída');
+    const todasCanceladas = sessoes.every(s => s.estado === 'Cancelada');
+    const algumaEmCurso = sessoes.some(s => s.estado === 'Em Curso');
+    
+    let novoEstado = formacao.estado;
+    
+    if (todasConcluidas) {
+      novoEstado = 'Concluída';
+    } else if (todasCanceladas) {
+      novoEstado = 'Cancelada';
+    } else if (algumaEmCurso) {
+      novoEstado = 'Em Curso';
+    }
+    
+    if (novoEstado !== formacao.estado) {
+      await updateFormacao(formacaoId, { estado: novoEstado });
+    }
+    
+    return { ...formacao, estado: novoEstado };
+  }
+  
+  // Registar presença manual (pelo formador)
+  async function registarPresencaManual(sessaoId, formacaoId, colaboradorId, tipoMarcacao, userId) {
+    const presencas = await retrieveMultipleRecords('formacao_presencas', {
+      filter: { sessao_id: sessaoId, colaborador_id: colaboradorId }
+    });
+    
+    const agora = new Date().toISOString();
+    
+    if (presencas.length > 0) {
+      const updateData = {};
+      if (tipoMarcacao === 'entrada') {
+        updateData.hora_entrada = agora;
+        updateData.metodo_entrada = 'manual';
+      } else if (tipoMarcacao === 'saida') {
+        updateData.hora_saida = agora;
+        updateData.metodo_saida = 'manual';
+        updateData.validado = true;
+      } else if (tipoMarcacao === 'ambos') {
+        updateData.hora_entrada = agora;
+        updateData.hora_saida = agora;
+        updateData.metodo_entrada = 'manual';
+        updateData.metodo_saida = 'manual';
+        updateData.validado = true;
+      }
+      return updateRecord('formacao_presencas', presencas[0].id, updateData);
+    } else {
+      const createData = {
+        formacao_id: formacaoId,
+        sessao_id: sessaoId,
+        colaborador_id: colaboradorId,
+        presente: true,
+        metodo_entrada: 'manual'
+      };
+      if (tipoMarcacao === 'entrada' || tipoMarcacao === 'ambos') {
+        createData.hora_entrada = agora;
+      }
+      if (tipoMarcacao === 'saida' || tipoMarcacao === 'ambos') {
+        createData.hora_saida = agora;
+        createData.metodo_saida = 'manual';
+        createData.validado = true;
+      }
+      return createRecord('formacao_presencas', createData);
+    }
+  }
+  
+  // Remover presença
+  async function removerPresenca(presencaId) {
+    return deleteRecord('formacao_presencas', presencaId);
+  }
+  
+  // Obter formações onde o utilizador é formador
+  async function getFormacoesDoFormador(colaboradorId) {
+    // Primeiro encontrar o formador associado ao colaborador
+    const formadores = await retrieveMultipleRecords('formadores', {
+      filter: { colaborador_id: colaboradorId, ativo: true }
+    });
+    
+    if (formadores.length === 0) {
+      return [];
+    }
+    
+    const formadorId = formadores[0].id;
+    
+    // Buscar formações onde este formador está associado
+    const formacaoFormadores = await retrieveMultipleRecords('formacao_formadores', {
+      filter: { formador_id: formadorId }
+    });
+    
+    if (formacaoFormadores.length === 0) {
+      return [];
+    }
+    
+    // Buscar detalhes completos das formações
+    const formacaoIds = formacaoFormadores.map(ff => ff.formacao_id);
+    const formacoes = await getFormacoes();
+    
+    return formacoes.filter(f => formacaoIds.includes(f.id));
   }
   
   // --- ANEXOS DE FORMAÇÃO ---
@@ -598,7 +781,7 @@ const DataService = (function() {
   // Função auxiliar para limpar prefixos de nomes
   function cleanFormadorName(nome) {
     if (!nome) return '';
-    return nome.replace(/^(Dra?\.?|Eng\.?|Prof\.?|Sr\.?a?)\s*/gi, '').trim();
+    return nome.replace(/^(Dra?\\.?|Eng\\.?|Prof\\.?|Sr\\.?a?)\\s*/gi, '').trim();
   }
   
   // ==========================================
@@ -650,6 +833,21 @@ const DataService = (function() {
     registarPresenca,
     submeterAvaliacao,
     getFormacaoStats,
+    getFormacoesDoFormador,
+    
+    // Sessões de Formação
+    getSessaoById,
+    getPresencasSessao,
+    iniciarSessao,
+    abrirSaidaSessao,
+    regenerarCodigoEntrada,
+    regenerarCodigoSaida,
+    concluirSessao,
+    cancelarSessao,
+    verificarEstadoFormacao,
+    registarPresencaManual,
+    removerPresenca,
+    gerarCodigo6Digitos,
     
     // Anexos de Formação
     getFormacaoAnexos,
