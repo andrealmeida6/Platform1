@@ -1,0 +1,695 @@
+---
+layout: default
+title: Marcar Presença
+---
+
+<link rel="stylesheet" href="{{ '/web-files/css/formacao.css' | relative_url }}">
+
+<div class="presenca-page">
+  <div class="presenca-container">
+    <!-- Header -->
+    <div class="presenca-header">
+      <div class="presenca-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+          <path d="M22 4L12 14.01l-3-3"/>
+        </svg>
+      </div>
+      <h1>Marcar Presença</h1>
+      <p class="presenca-subtitle">Introduza o código fornecido pelo formador</p>
+    </div>
+
+    <!-- Formulário -->
+    <div class="presenca-form-container">
+      <div class="presenca-code-input">
+        <input type="text" 
+               id="codigoPresenca" 
+               maxlength="6" 
+               pattern="[0-9]*" 
+               inputmode="numeric"
+               placeholder="000000"
+               autocomplete="off"
+               oninput="handleCodeInput(this)">
+      </div>
+      
+      <button class="presenca-submit-btn" id="btnMarcarPresenca" onclick="marcarPresenca()" disabled>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+          <path d="M22 4L12 14.01l-3-3"/>
+        </svg>
+        Confirmar Presença
+      </button>
+    </div>
+
+    <!-- Estado: Loading -->
+    <div class="presenca-state loading" id="stateLoading" style="display: none;">
+      <div class="spinner"></div>
+      <p>A validar código...</p>
+    </div>
+
+    <!-- Estado: Sucesso Entrada -->
+    <div class="presenca-state success" id="stateSuccessEntrada" style="display: none;">
+      <div class="state-icon success">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+          <path d="M22 4L12 14.01l-3-3"/>
+        </svg>
+      </div>
+      <h2>Entrada Registada!</h2>
+      <p class="success-formacao" id="successFormacaoEntrada"></p>
+      <p class="success-time" id="successTimeEntrada"></p>
+      <div class="success-info">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="16" x2="12" y2="12"/>
+          <line x1="12" y1="8" x2="12.01" y2="8"/>
+        </svg>
+        <span>Não se esqueça de marcar a <strong>saída</strong> no final da sessão!</span>
+      </div>
+      <button class="presenca-reset-btn" onclick="resetForm()">Marcar Outra Presença</button>
+    </div>
+
+    <!-- Estado: Sucesso Saída -->
+    <div class="presenca-state success" id="stateSuccessSaida" style="display: none;">
+      <div class="state-icon success">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+          <path d="M22 4L12 14.01l-3-3"/>
+        </svg>
+      </div>
+      <h2>Saída Registada!</h2>
+      <p class="success-formacao" id="successFormacaoSaida"></p>
+      <div class="success-times">
+        <div class="time-item">
+          <span class="time-label">Entrada</span>
+          <span class="time-value" id="successEntradaTime"></span>
+        </div>
+        <div class="time-divider">→</div>
+        <div class="time-item">
+          <span class="time-label">Saída</span>
+          <span class="time-value" id="successSaidaTime"></span>
+        </div>
+      </div>
+      <div class="success-badge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
+        Presença Validada
+      </div>
+      <button class="presenca-reset-btn" onclick="resetForm()">Marcar Outra Presença</button>
+    </div>
+
+    <!-- Estado: Erro -->
+    <div class="presenca-state error" id="stateError" style="display: none;">
+      <div class="state-icon error">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="15" y1="9" x2="9" y2="15"/>
+          <line x1="9" y1="9" x2="15" y2="15"/>
+        </svg>
+      </div>
+      <h2>Código Inválido</h2>
+      <p class="error-message" id="errorMessage">Verifique o código e tente novamente.</p>
+      <button class="presenca-reset-btn" onclick="resetForm()">Tentar Novamente</button>
+    </div>
+
+    <!-- Info do utilizador -->
+    <div class="presenca-user-info" id="userInfo">
+      <div class="user-avatar" id="userAvatar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+          <circle cx="12" cy="7" r="4"/>
+        </svg>
+      </div>
+      <div class="user-details">
+        <span class="user-name" id="userName">A carregar...</span>
+        <span class="user-dept" id="userDept"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let currentUser = null;
+
+// Aguardar serviços
+async function waitForServices() {
+  return new Promise((resolve) => {
+    const check = () => {
+      if (typeof DataService !== 'undefined' && typeof AuthService !== 'undefined') {
+        resolve();
+      } else {
+        setTimeout(check, 100);
+      }
+    };
+    check();
+  });
+}
+
+// Inicialização
+document.addEventListener('DOMContentLoaded', async function() {
+  try {
+    await waitForServices();
+    currentUser = await AuthService.getCurrentUser();
+    
+    if (currentUser) {
+      document.getElementById('userName').textContent = currentUser.nome;
+      document.getElementById('userDept').textContent = currentUser.departamentos?.nome || '';
+      if (currentUser.foto_url) {
+        document.getElementById('userAvatar').innerHTML = `<img src="${currentUser.foto_url}" alt="${currentUser.nome}">`;
+      }
+    } else {
+      document.getElementById('userName').textContent = 'Não autenticado';
+      document.getElementById('userDept').textContent = 'Faça login para marcar presença';
+      document.getElementById('btnMarcarPresenca').disabled = true;
+    }
+    
+    // Focus no input
+    document.getElementById('codigoPresenca').focus();
+    
+  } catch (error) {
+    console.error('Erro na inicialização:', error);
+  }
+});
+
+// Tratar input do código
+function handleCodeInput(input) {
+  // Apenas números
+  input.value = input.value.replace(/[^0-9]/g, '');
+  
+  // Habilitar/desabilitar botão
+  const btn = document.getElementById('btnMarcarPresenca');
+  btn.disabled = input.value.length !== 6 || !currentUser;
+}
+
+// Permitir Enter para submeter
+document.getElementById('codigoPresenca').addEventListener('keypress', function(e) {
+  if (e.key === 'Enter' && this.value.length === 6 && currentUser) {
+    marcarPresenca();
+  }
+});
+
+// Marcar presença
+async function marcarPresenca() {
+  if (!currentUser) {
+    showError('É necessário estar autenticado para marcar presença.');
+    return;
+  }
+  
+  const codigo = document.getElementById('codigoPresenca').value;
+  if (codigo.length !== 6) {
+    showError('O código deve ter 6 dígitos.');
+    return;
+  }
+  
+  // Mostrar loading
+  hideAllStates();
+  document.getElementById('stateLoading').style.display = 'flex';
+  document.querySelector('.presenca-form-container').style.display = 'none';
+  
+  try {
+    // Procurar sessão com este código (entrada ou saída)
+    const sessoes = await DataService.retrieveMultipleRecords('formacao_sessoes', {
+      select: '*,formacoes(id,titulo)'
+    });
+    
+    // Verificar se é código de entrada ou saída
+    let sessaoEncontrada = null;
+    let tipoMarcacao = null;
+    
+    for (const sessao of sessoes) {
+      if (sessao.codigo_entrada === codigo && sessao.estado === 'Em Curso') {
+        sessaoEncontrada = sessao;
+        tipoMarcacao = 'entrada';
+        break;
+      }
+      if (sessao.codigo_saida === codigo && sessao.estado === 'Em Curso') {
+        sessaoEncontrada = sessao;
+        tipoMarcacao = 'saida';
+        break;
+      }
+    }
+    
+    if (!sessaoEncontrada) {
+      showError('Código inválido ou sessão não está ativa. Verifique com o formador.');
+      return;
+    }
+    
+    // Verificar se colaborador já tem registo para esta sessão
+    const presencasExistentes = await DataService.retrieveMultipleRecords('formacao_presencas', {
+      filter: {
+        sessao_id: sessaoEncontrada.id,
+        colaborador_id: currentUser.id
+      }
+    });
+    
+    const presencaExistente = presencasExistentes.length > 0 ? presencasExistentes[0] : null;
+    
+    if (tipoMarcacao === 'entrada') {
+      if (presencaExistente && presencaExistente.hora_entrada) {
+        showError('Já registou entrada nesta sessão às ' + formatTime(presencaExistente.hora_entrada));
+        return;
+      }
+      
+      // Registar entrada
+      if (presencaExistente) {
+        await DataService.updateRecord('formacao_presencas', presencaExistente.id, {
+          hora_entrada: new Date().toISOString(),
+          metodo_entrada: 'codigo'
+        });
+      } else {
+        await DataService.createRecord('formacao_presencas', {
+          formacao_id: sessaoEncontrada.formacao_id,
+          sessao_id: sessaoEncontrada.id,
+          colaborador_id: currentUser.id,
+          hora_entrada: new Date().toISOString(),
+          metodo_entrada: 'codigo',
+          presente: true
+        });
+      }
+      
+      showSuccessEntrada(sessaoEncontrada.formacoes?.titulo || 'Formação');
+      
+    } else if (tipoMarcacao === 'saida') {
+      if (!presencaExistente || !presencaExistente.hora_entrada) {
+        showError('Precisa registar a entrada primeiro antes de marcar saída.');
+        return;
+      }
+      
+      if (presencaExistente.hora_saida) {
+        showError('Já registou saída nesta sessão às ' + formatTime(presencaExistente.hora_saida));
+        return;
+      }
+      
+      // Registar saída
+      await DataService.updateRecord('formacao_presencas', presencaExistente.id, {
+        hora_saida: new Date().toISOString(),
+        metodo_saida: 'codigo',
+        validado: true
+      });
+      
+      showSuccessSaida(
+        sessaoEncontrada.formacoes?.titulo || 'Formação',
+        presencaExistente.hora_entrada,
+        new Date().toISOString()
+      );
+    }
+    
+  } catch (error) {
+    console.error('Erro ao marcar presença:', error);
+    showError('Ocorreu um erro. Por favor tente novamente.');
+  }
+}
+
+function hideAllStates() {
+  document.getElementById('stateLoading').style.display = 'none';
+  document.getElementById('stateSuccessEntrada').style.display = 'none';
+  document.getElementById('stateSuccessSaida').style.display = 'none';
+  document.getElementById('stateError').style.display = 'none';
+}
+
+function showSuccessEntrada(formacaoTitulo) {
+  hideAllStates();
+  document.getElementById('successFormacaoEntrada').textContent = formacaoTitulo;
+  document.getElementById('successTimeEntrada').textContent = 'Entrada às ' + formatTime(new Date().toISOString());
+  document.getElementById('stateSuccessEntrada').style.display = 'flex';
+}
+
+function showSuccessSaida(formacaoTitulo, horaEntrada, horaSaida) {
+  hideAllStates();
+  document.getElementById('successFormacaoSaida').textContent = formacaoTitulo;
+  document.getElementById('successEntradaTime').textContent = formatTime(horaEntrada);
+  document.getElementById('successSaidaTime').textContent = formatTime(horaSaida);
+  document.getElementById('stateSuccessSaida').style.display = 'flex';
+}
+
+function showError(message) {
+  hideAllStates();
+  document.getElementById('errorMessage').textContent = message;
+  document.getElementById('stateError').style.display = 'flex';
+}
+
+function resetForm() {
+  hideAllStates();
+  document.querySelector('.presenca-form-container').style.display = 'block';
+  document.getElementById('codigoPresenca').value = '';
+  document.getElementById('btnMarcarPresenca').disabled = true;
+  document.getElementById('codigoPresenca').focus();
+}
+
+function formatTime(isoString) {
+  if (!isoString) return '--:--';
+  const date = new Date(isoString);
+  return date.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' });
+}
+</script>
+
+<style>
+.presenca-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 50%, #d1fae5 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.presenca-container {
+  background: white;
+  border-radius: 24px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+  padding: 3rem;
+  max-width: 450px;
+  width: 100%;
+  text-align: center;
+}
+
+.presenca-header {
+  margin-bottom: 2rem;
+}
+
+.presenca-icon {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #00b276 0%, #059669 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem;
+  box-shadow: 0 10px 30px rgba(0, 178, 118, 0.3);
+}
+
+.presenca-icon svg {
+  width: 40px;
+  height: 40px;
+  color: white;
+}
+
+.presenca-header h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 0.5rem;
+}
+
+.presenca-subtitle {
+  color: #64748b;
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+/* Input do código */
+.presenca-code-input {
+  margin-bottom: 1.5rem;
+}
+
+.presenca-code-input input {
+  width: 100%;
+  font-size: 2.5rem;
+  font-weight: 700;
+  text-align: center;
+  letter-spacing: 0.5rem;
+  padding: 1rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 16px;
+  outline: none;
+  transition: all 0.3s;
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+}
+
+.presenca-code-input input:focus {
+  border-color: #00b276;
+  box-shadow: 0 0 0 4px rgba(0, 178, 118, 0.1);
+}
+
+.presenca-code-input input::placeholder {
+  color: #cbd5e1;
+}
+
+/* Botão submit */
+.presenca-submit-btn {
+  width: 100%;
+  padding: 1rem 2rem;
+  background: linear-gradient(135deg, #00b276 0%, #059669 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.3s;
+}
+
+.presenca-submit-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(0, 178, 118, 0.3);
+}
+
+.presenca-submit-btn:disabled {
+  background: #cbd5e1;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.presenca-submit-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Estados */
+.presenca-state {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem 0;
+}
+
+.presenca-state.loading .spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid #e2e8f0;
+  border-top-color: #00b276;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.presenca-state.loading p {
+  margin-top: 1rem;
+  color: #64748b;
+}
+
+.state-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.state-icon.success {
+  background: linear-gradient(135deg, #00b276 0%, #059669 100%);
+  box-shadow: 0 10px 30px rgba(0, 178, 118, 0.3);
+}
+
+.state-icon.error {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  box-shadow: 0 10px 30px rgba(239, 68, 68, 0.3);
+}
+
+.state-icon svg {
+  width: 40px;
+  height: 40px;
+  color: white;
+}
+
+.presenca-state h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 0.5rem;
+}
+
+.success-formacao {
+  color: #00b276;
+  font-weight: 600;
+  font-size: 1.1rem;
+  margin: 0 0 0.5rem;
+}
+
+.success-time {
+  color: #64748b;
+  font-size: 0.9rem;
+  margin: 0 0 1.5rem;
+}
+
+.success-info {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 12px;
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-align: left;
+  margin-bottom: 1.5rem;
+}
+
+.success-info svg {
+  width: 20px;
+  height: 20px;
+  color: #00b276;
+  flex-shrink: 0;
+}
+
+.success-info span {
+  font-size: 0.875rem;
+  color: #166534;
+}
+
+.success-times {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.time-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.time-label {
+  font-size: 0.75rem;
+  color: #64748b;
+  text-transform: uppercase;
+}
+
+.time-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.time-divider {
+  font-size: 1.5rem;
+  color: #00b276;
+}
+
+.success-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, #00b276 0%, #059669 100%);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 30px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-bottom: 1.5rem;
+}
+
+.success-badge svg {
+  width: 18px;
+  height: 18px;
+}
+
+.error-message {
+  color: #64748b;
+  margin: 0 0 1.5rem;
+}
+
+.presenca-reset-btn {
+  background: #f1f5f9;
+  color: #475569;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.presenca-reset-btn:hover {
+  background: #e2e8f0;
+}
+
+/* Info utilizador */
+.presenca-user-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #f1f5f9;
+}
+
+.user-avatar {
+  width: 44px;
+  height: 44px;
+  background: #f1f5f9;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.user-avatar svg {
+  width: 24px;
+  height: 24px;
+  color: #94a3b8;
+}
+
+.user-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.user-details {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.user-name {
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 0.9rem;
+}
+
+.user-dept {
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .presenca-page {
+    padding: 1rem;
+  }
+  
+  .presenca-container {
+    padding: 2rem 1.5rem;
+  }
+  
+  .presenca-code-input input {
+    font-size: 2rem;
+    letter-spacing: 0.3rem;
+  }
+}
+</style>
