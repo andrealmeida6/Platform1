@@ -240,12 +240,12 @@ const DataService = (function() {
   
   // --- FORMAÇÕES ---
   async function getFormacoes() {
-    const select = '*,entidades_formadoras(id,codigo,nome),formadores(id,nome,especialidade,tipo),formacao_sessoes(id,data,hora_inicio,hora_fim),formacao_inscricoes(id,colaborador_id,estado),formacao_departamentos(id,departamento_id,departamentos(id,codigo,nome)),formacao_favoritos(id,colaborador_id),formacao_presencas(id,colaborador_id,presente),formacao_resultados(id,colaborador_id,resultado),formacao_avaliacoes(id,colaborador_id,score_conteudo,score_formador,score_organizacao,comentario,created_at),formacao_formadores(id,formador_id,entidade_id,principal,formadores(id,nome),entidades_formadoras(id,nome))';
+    const select = '*,entidades_formadoras(id,codigo,nome),formadores(id,nome,especialidade,tipo),formacao_sessoes(id,data,hora_inicio,hora_fim),formacao_inscricoes(id,colaborador_id,estado),formacao_departamentos(id,departamento_id,departamentos(id,codigo,nome)),formacao_favoritos(id,colaborador_id),formacao_presencas(id,colaborador_id,presente),formacao_resultados(id,colaborador_id,resultado),formacao_avaliacoes(id,colaborador_id,score_conteudo,score_formador,score_organizacao,comentario,created_at),formacao_formadores(id,formador_id,entidade_id,principal,formadores(id,nome),entidades_formadoras(id,nome)),formacao_anexos(id,nome,tipo,url,tamanho_bytes)';
     return retrieveWithRelations('formacoes', select);
   }
   
   async function getFormacaoById(id) {
-    const select = '*,entidades_formadoras(id,codigo,nome),formadores(id,nome,especialidade,tipo),formacao_sessoes(id,data,hora_inicio,hora_fim),formacao_inscricoes(id,colaborador_id,estado,colaboradores(id,nome,email,departamento_id)),formacao_departamentos(id,departamento_id,departamentos(id,codigo,nome)),formacao_favoritos(id,colaborador_id),formacao_presencas(id,colaborador_id,presente),formacao_resultados(id,colaborador_id,resultado),formacao_avaliacoes(id,colaborador_id,score_conteudo,score_formador,score_organizacao,comentario,created_at),formacao_formadores(id,formador_id,entidade_id,principal,formadores(id,nome),entidades_formadoras(id,nome))';
+    const select = '*,entidades_formadoras(id,codigo,nome),formadores(id,nome,especialidade,tipo),formacao_sessoes(id,data,hora_inicio,hora_fim),formacao_inscricoes(id,colaborador_id,estado,colaboradores(id,nome,email,departamento_id)),formacao_departamentos(id,departamento_id,departamentos(id,codigo,nome)),formacao_favoritos(id,colaborador_id),formacao_presencas(id,colaborador_id,presente),formacao_resultados(id,colaborador_id,resultado),formacao_avaliacoes(id,colaborador_id,score_conteudo,score_formador,score_organizacao,comentario,created_at),formacao_formadores(id,formador_id,entidade_id,principal,formadores(id,nome),entidades_formadoras(id,nome)),formacao_anexos(id,nome,tipo,url,tamanho_bytes)';
     const result = await retrieveWithRelations('formacoes', select, { id });
     return result.length > 0 ? result[0] : null;
   }
@@ -369,6 +369,29 @@ const DataService = (function() {
       comentario: avaliacao.comentario,
       recomendaria: avaliacao.recomendaria
     });
+  }
+  
+  // --- ANEXOS DE FORMAÇÃO ---
+  async function getFormacaoAnexos(formacaoId) {
+    return retrieveMultipleRecords('formacao_anexos', {
+      filter: { formacao_id: formacaoId },
+      orderby: 'created_at.desc'
+    });
+  }
+  
+  async function createFormacaoAnexo(formacaoId, nome, tipo, url, tamanhoBytes = null, createdBy = null) {
+    return createRecord('formacao_anexos', {
+      formacao_id: formacaoId,
+      nome,
+      tipo,
+      url,
+      tamanho_bytes: tamanhoBytes,
+      created_by: createdBy
+    });
+  }
+  
+  async function deleteFormacaoAnexo(anexoId) {
+    return deleteRecord('formacao_anexos', anexoId);
   }
   
   // --- PEDIDOS DE FORMAÇÃO ---
@@ -627,6 +650,11 @@ const DataService = (function() {
     registarPresenca,
     submeterAvaliacao,
     getFormacaoStats,
+    
+    // Anexos de Formação
+    getFormacaoAnexos,
+    createFormacaoAnexo,
+    deleteFormacaoAnexo,
     
     // Pedidos de Formação
     getPedidosFormacao,
