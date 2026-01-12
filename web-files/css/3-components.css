@@ -1,11 +1,12 @@
 /* ===================================================================
    3. COMPONENTS (Profile, Quick Actions, Calendar Section)
    Power Pages: Web File - components.css
+   Usando variáveis de tema dinâmicas
    =================================================================== */
 
 /* === PROFILE SECTION === */
 .profile-section {
-  background: var(--white);
+  background: var(--bg-card, var(--white));
   border-radius: 12px;
   padding: 1.5rem;
   display: flex;
@@ -18,7 +19,7 @@
   width: 80px;
   height: 80px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--primary-color) 0%, #007a62 100%);
+  background: var(--gradient-primary, linear-gradient(135deg, var(--primary-color) 0%, #007a62 100%));
   color: white;
   display: flex;
   align-items: center;
@@ -71,7 +72,7 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 1rem;
-  background: #e6f7f1;
+  background: var(--primary-light, #e6f7f1);
   border-radius: 20px;
   font-size: 0.875rem;
   font-weight: 600;
@@ -101,7 +102,7 @@
 }
 
 .quick-action-btn {
-  background: var(--white);
+  background: var(--bg-card, var(--white));
   border-radius: 12px;
   padding: 1.25rem;
   text-decoration: none;
@@ -116,22 +117,30 @@
 .quick-action-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  background: var(--quick-action-hover-bg, #f0fdf4);
 }
 
+/* QUICK ACTION ICON - USANDO VARIÁVEIS DE TEMA */
 .quick-action-icon {
   width: 40px;
   height: 40px;
   border-radius: 10px;
-  background: linear-gradient(135deg, var(--primary-color) 0%, #007a62 100%);
+  background: var(--quick-action-icon-bg, var(--primary-color));
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
+  color: var(--quick-action-icon-color, white);
+  transition: all 0.2s ease;
 }
 
 .quick-action-icon svg {
   width: 20px;
   height: 20px;
+}
+
+.quick-action-btn:hover .quick-action-icon {
+  transform: scale(1.05);
+  box-shadow: var(--shadow-primary, 0 4px 15px rgba(0, 178, 118, 0.3));
 }
 
 .quick-action-title {
@@ -147,7 +156,7 @@
 
 /* === CALENDAR SECTION === */
 .calendar-section {
-  background: var(--white);
+  background: var(--bg-card, var(--white));
   border-radius: 12px;
   padding: 1.5rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
@@ -180,16 +189,17 @@
   border-radius: 50%;
 }
 
+/* Calendar cards com possibilidade de usar cores primárias do tema */
 .calendar-card.green { 
-  background: linear-gradient(135deg, #00b276 0%, #007a62 100%); 
+  background: var(--gradient-primary, linear-gradient(135deg, #00b276 0%, #007a62 100%)); 
 }
 
 .calendar-card.blue { 
-  background: linear-gradient(135deg, #5b9cf5 0%, #4285f4 100%); 
+  background: linear-gradient(135deg, var(--info-color, #5b9cf5) 0%, #4285f4 100%); 
 }
 
 .calendar-card.orange { 
-  background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%); 
+  background: linear-gradient(135deg, var(--warning-color, #ffc107) 0%, #ff9800 100%); 
 }
 
 .calendar-card.purple { 
@@ -226,10 +236,10 @@
   gap: 0.5rem;
   width: 100%;
   padding: 0.875rem 1.25rem;
-  background: white;
-  border: 1.5px solid #e9ecf4;
+  background: var(--bg-card, white);
+  border: 1.5px solid var(--border-color);
   border-radius: 12px;
-  color: #00b276;
+  color: var(--primary-color);
   font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
@@ -238,9 +248,9 @@
 }
 
 .calendar-toggle-btn:hover {
-  background: #f8fafb;
-  border-color: #00b276;
-  box-shadow: 0 2px 6px rgba(0, 178, 118, 0.08);
+  background: var(--bg-gray);
+  border-color: var(--primary-color);
+  box-shadow: var(--shadow-primary, 0 2px 6px rgba(0, 178, 118, 0.08));
 }
 
 .calendar-toggle-btn svg {
@@ -276,15 +286,15 @@
 }
 
 .dual-calendar-container {
-  background: white;
+  background: var(--bg-card, white);
   border-radius: 16px;
   padding: 1.75rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
-  border: 1px solid #f1f3f5;
+  border: 1px solid var(--border-color, #f1f3f5);
 }
 
 .calendar-heading {
-  color: #1e293b;
+  color: var(--text-primary, #1e293b);
   text-align: center;
   margin-bottom: 1.5rem;
   font-size: 1rem;
