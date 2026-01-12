@@ -4,10 +4,22 @@
 
 const ThemeService = (function() {
   
+  // Configuração Supabase (duplicada para independência do DataService)
+  const SUPABASE_URL = 'https://yujhfscnnngaivwwunom.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl1amhmc2Nubm5nYWl2d3d1bm9tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUzODA5OTEsImV4cCI6MjA4MDk1Njk5MX0.wpWiNx6ck_gEujMoodbFTswjBjMbuEHeAO8lMtLes2c';
+  
+  const headers = {
+    'apikey': SUPABASE_ANON_KEY,
+    'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+    'Content-Type': 'application/json',
+    'Prefer': 'return=representation'
+  };
+  
   const CACHE_KEY = 'platform_theme_config';
   const CACHE_DURATION = 5 * 60 * 1000; // 5 minutos
   
   let themeConfig = null;
+  let isInitialized = false;
   
   // Mapeamento de chaves BD para variáveis CSS
   const CSS_VAR_MAP = {
@@ -40,28 +52,35 @@ const ThemeService = (function() {
   };
   
   // Carregar configurações da BD
-  async function loadConfig() {
+  async function loadConfig(forceRefresh = false) {
     try {
-      // Verificar cache
-      const cached = localStorage.getItem(CACHE_KEY);
-      if (cached) {
-        const { data, timestamp } = JSON.parse(cached);
-        if (Date.now() - timestamp < CACHE_DURATION) {
-          themeConfig = data;
-          return data;
+      // Verificar cache (a menos que forçar refresh)
+      if (!forceRefresh) {
+        const cached = localStorage.getItem(CACHE_KEY);
+        if (cached) {
+          const { data, timestamp } = JSON.parse(cached);
+          if (Date.now() - timestamp < CACHE_DURATION) {
+            themeConfig = data;
+            console.log('[ThemeService] Config carregada do cache');
+            return data;
+          }
         }
       }
       
       // Carregar da BD
-      const response = await fetch(`${DataService.getBaseUrl()}/rest/v1/configuracoes_tema?select=*`, {
-        headers: DataService.getHeaders()
-      });
+      const url = `${SUPABASE_URL}/rest/v1/configuracoes_tema?select=*`;
+      console.log('[ThemeService] A carregar config da BD...');
+      
+      const response = await fetch(url, { headers });
       
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error('[ThemeService] Erro response:', response.status, errorText);
         throw new Error('Erro ao carregar configurações de tema');
       }
       
       const configs = await response.json();
+      console.log('[ThemeService] Configs carregadas:', configs.length);
       
       // Converter array para objeto
       themeConfig = {};
@@ -83,7 +102,7 @@ const ThemeService = (function() {
       return themeConfig;
       
     } catch (error) {
-      console.warn('[ThemeService] Erro ao carregar config, usando defaults:', error);
+      console.warn('[ThemeService] Erro ao carregar config:', error);
       return null;
     }
   }
@@ -91,7 +110,10 @@ const ThemeService = (function() {
   // Aplicar tema às variáveis CSS
   function applyTheme(config = null) {
     const cfg = config || themeConfig;
-    if (!cfg) return;
+    if (!cfg) {
+      console.warn('[ThemeService] Sem config para aplicar');
+      return;
+    }
     
     const root = document.documentElement;
     
@@ -121,7 +143,7 @@ const ThemeService = (function() {
     // Aplicar logo
     applyLogo(cfg);
     
-    console.log('[ThemeService] Tema aplicado');
+    console.log('[ThemeService] Tema aplicado com sucesso');
   }
   
   // Aplicar logo no header
@@ -132,38 +154,68 @@ const ThemeService = (function() {
     const logoUrl = cfg.logo_url?.valor;
     const logoHeight = cfg.logo_height?.valor || '40';
     
-    // Procurar container do logo no header
-    const logoContainer = document.querySelector('.header-logo, .logo-container, #headerLogo');
-    
-    if (logoContainer && logoUrl) {
-      logoContainer.innerHTML = `<img src="${logoUrl}" alt="Logo" style="height: ${logoHeight}px; width: auto;">`;
+    if (!logoUrl || logoUrl.trim() === '') {
+      console.log('[ThemeService] Sem logo URL configurado');
+      return;
     }
     
-    // Também procurar por qualquer elemento com data-theme-logo
-    document.querySelectorAll('[data-theme-logo]').forEach(el => {
-      if (logoUrl) {
-        el.innerHTML = `<img src="${logoUrl}" alt="Logo" style="height: ${logoHeight}px; width: auto;">`;
+    // Procurar container do logo no header
+    const logoContainers = document.querySelectorAll('.header-logo, #headerLogo, [data-theme-logo]');
+    
+    logoContainers.forEach(container => {
+      // Verificar se já tem imagem do tema
+      const existingImg = container.querySelector('img[data-theme-logo-img]');
+      if (existingImg) {
+        existingImg.src = logoUrl;
+        existingImg.style.height = logoHeight + 'px';
+      } else {
+        // Esconder elementos padrão e adicionar imagem
+        const defaultIcon = container.querySelector('.default-logo-icon');
+        const defaultText = container.querySelector('.default-logo-text');
+        
+        if (defaultIcon) defaultIcon.style.display = 'none';
+        if (defaultText) defaultText.style.display = 'none';
+        
+        const img = document.createElement('img');
+        img.src = logoUrl;
+        img.alt = 'Logo';
+        img.style.height = logoHeight + 'px';
+        img.style.width = 'auto';
+        img.setAttribute('data-theme-logo-img', 'true');
+        img.onerror = function() {
+          console.warn('[ThemeService] Erro ao carregar logo:', logoUrl);
+          this.style.display = 'none';
+          if (defaultIcon) defaultIcon.style.display = '';
+          if (defaultText) defaultText.style.display = '';
+        };
+        
+        container.insertBefore(img, container.firstChild);
       }
     });
+    
+    console.log('[ThemeService] Logo aplicado');
   }
   
-  // Guardar configuração
+  // Guardar uma configuração
   async function saveConfig(chave, valor) {
     try {
-      const response = await fetch(
-        `${DataService.getBaseUrl()}/rest/v1/configuracoes_tema?chave=eq.${chave}`,
-        {
-          method: 'PATCH',
-          headers: DataService.getHeaders(),
-          body: JSON.stringify({
-            valor: valor,
-            updated_at: new Date().toISOString()
-          })
-        }
-      );
+      console.log('[ThemeService] A guardar:', chave, '=', valor);
+      
+      const url = `${SUPABASE_URL}/rest/v1/configuracoes_tema?chave=eq.${chave}`;
+      
+      const response = await fetch(url, {
+        method: 'PATCH',
+        headers,
+        body: JSON.stringify({
+          valor: valor,
+          updated_at: new Date().toISOString()
+        })
+      });
       
       if (!response.ok) {
-        throw new Error('Erro ao guardar configuração');
+        const errorText = await response.text();
+        console.error('[ThemeService] Erro ao guardar:', response.status, errorText);
+        throw new Error('Erro ao guardar configuração: ' + errorText);
       }
       
       // Atualizar cache local
@@ -171,10 +223,9 @@ const ThemeService = (function() {
         themeConfig[chave].valor = valor;
       }
       
-      // Limpar cache
-      localStorage.removeItem(CACHE_KEY);
-      
+      console.log('[ThemeService] Guardado com sucesso:', chave);
       return true;
+      
     } catch (error) {
       console.error('[ThemeService] Erro ao guardar:', error);
       throw error;
@@ -184,17 +235,24 @@ const ThemeService = (function() {
   // Guardar múltiplas configurações
   async function saveMultipleConfigs(configs) {
     try {
+      console.log('[ThemeService] A guardar múltiplas configs:', Object.keys(configs).length);
+      
       const promises = Object.keys(configs).map(chave => 
         saveConfig(chave, configs[chave])
       );
       
       await Promise.all(promises);
       
+      // Limpar cache para forçar reload
+      localStorage.removeItem(CACHE_KEY);
+      
       // Recarregar e aplicar
-      await loadConfig();
+      await loadConfig(true);
       applyTheme();
       
+      console.log('[ThemeService] Todas as configs guardadas com sucesso');
       return true;
+      
     } catch (error) {
       console.error('[ThemeService] Erro ao guardar múltiplas configs:', error);
       throw error;
@@ -252,7 +310,8 @@ const ThemeService = (function() {
       'btn_primary_text': '#ffffff',
       'gradient_start': '#00b276',
       'gradient_end': '#059669',
-      'logo_height': '40'
+      'logo_height': '40',
+      'logo_url': ''
     };
     
     await saveMultipleConfigs(defaults);
@@ -263,27 +322,44 @@ const ThemeService = (function() {
   function clearCache() {
     localStorage.removeItem(CACHE_KEY);
     themeConfig = null;
+    isInitialized = false;
+    console.log('[ThemeService] Cache limpo');
   }
   
   // Utilitário: hex para rgba
   function hexToRgba(hex, alpha = 1) {
+    if (!hex || hex.length < 7) return `rgba(0, 178, 118, ${alpha})`;
     const r = parseInt(hex.slice(1, 3), 16);
     const g = parseInt(hex.slice(3, 5), 16);
     const b = parseInt(hex.slice(5, 7), 16);
     return `rgba(${r}, ${g}, ${b}, ${alpha})`;
   }
   
-  // Inicialização automática
+  // Inicialização
   async function init() {
-    await loadConfig();
-    applyTheme();
+    if (isInitialized) {
+      console.log('[ThemeService] Já inicializado');
+      return;
+    }
+    
+    console.log('[ThemeService] A inicializar...');
+    
+    try {
+      await loadConfig();
+      applyTheme();
+      isInitialized = true;
+      console.log('[ThemeService] Inicializado com sucesso');
+    } catch (error) {
+      console.error('[ThemeService] Erro na inicialização:', error);
+    }
   }
   
   // Auto-inicializar quando DOM estiver pronto
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {
-    init();
+    // DOM já está pronto, inicializar com pequeno delay para garantir que outros scripts carregaram
+    setTimeout(init, 100);
   }
   
   // API Pública
