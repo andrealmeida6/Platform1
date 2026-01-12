@@ -12,7 +12,7 @@ title: Gestão de Formações
     <div class="access-denied-content">
       <div class="access-denied-icon">🔒</div>
       <h2>Acesso Restrito</h2>
-      <p>Esta página é reservada à equipa AFR - RH.</p>
+      <p>Esta página é reservada à equipa AFR - RH e formadores.</p>
       <a href="{{ '/formacao' | relative_url }}" class="btn btn-primary">Voltar às Formações</a>
     </div>
   </div>
@@ -34,7 +34,7 @@ title: Gestão de Formações
         </div>
       </div>
       <div class="page-header-right">
-        <button class="btn btn-primary" onclick="openModalNovaFormacao()">
+        <button class="btn btn-primary" onclick="openModalNovaFormacao()" id="btnNovaFormacao">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <line x1="12" y1="5" x2="12" y2="19"/>
             <line x1="5" y1="12" x2="19" y2="12"/>
@@ -101,7 +101,7 @@ title: Gestão de Formações
 
     <!-- Tabs -->
     <div class="content-tabs">
-      <button class="tab-btn active" data-tab="pedidos" onclick="switchTab('pedidos')">
+      <button class="tab-btn active" data-tab="pedidos" onclick="switchTab('pedidos')" id="tabBtnPedidos">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
           <polyline points="14 2 14 8 20 8"/>
@@ -118,7 +118,7 @@ title: Gestão de Formações
         </svg>
         Formações
       </button>
-      <button class="tab-btn" data-tab="historico" onclick="switchTab('historico')">
+      <button class="tab-btn" data-tab="historico" onclick="switchTab('historico')" id="tabBtnHistorico">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="12" cy="12" r="10"/>
           <polyline points="12 6 12 12 16 14"/>
@@ -316,6 +316,19 @@ title: Gestão de Formações
   </div>
 </div>
 
+<!-- Modal: Detalhes da Formação com Sessões e Presenças -->
+<div class="modal-overlay" id="modalDetalhesFormacao">
+  <div class="modal-content modal-xlarge">
+    <div class="modal-header">
+      <h3 id="modalFormacaoTitle">Detalhes da Formação</h3>
+      <button class="modal-close" onclick="closeModal('modalDetalhesFormacao')">&times;</button>
+    </div>
+    <div class="modal-body" id="modalFormacaoBody">
+      <!-- Conteúdo preenchido por JavaScript -->
+    </div>
+  </div>
+</div>
+
 <!-- Modal: Ação de Aprovação/Rejeição -->
 <div class="modal-overlay" id="modalAcao">
   <div class="modal-content">
@@ -349,7 +362,11 @@ let currentUser = null;
 let allPedidos = [];
 let allFormacoes = [];
 let selectedPedido = null;
+let selectedFormacao = null;
 let currentAcao = null;
+let isGestor = false;
+let isFormador = false;
+let formadorId = null;
 
 // Aguardar serviços
 async function waitForServices() {
@@ -371,13 +388,35 @@ document.addEventListener('DOMContentLoaded', async function() {
     await waitForServices();
     currentUser = await AuthService.getCurrentUser();
     
-    // Verificar acesso (AFR-RH ou Núcleo)
-    if (!AuthService.canAccessFormacaoManagement(currentUser)) {
+    // Verificar acesso (AFR-RH, Admin ou Formador)
+    isGestor = AuthService.canAccessFormacaoManagement(currentUser);
+    
+    // Verificar se é formador
+    if (currentUser) {
+      const formadores = await DataService.retrieveMultipleRecords('formadores', {
+        filter: { colaborador_id: currentUser.id, ativo: true }
+      });
+      if (formadores.length > 0) {
+        isFormador = true;
+        formadorId = formadores[0].id;
+      }
+    }
+    
+    if (!isGestor && !isFormador) {
       document.getElementById('accessDenied').style.display = 'flex';
       return;
     }
     
     document.getElementById('mainContent').style.display = 'block';
+    
+    // Ajustar UI para formadores (não gestores)
+    if (!isGestor) {
+      document.getElementById('btnNovaFormacao').style.display = 'none';
+      document.getElementById('tabBtnPedidos').style.display = 'none';
+      document.getElementById('tabBtnHistorico').style.display = 'none';
+      // Começar na tab formações
+      switchTab('formacoes');
+    }
     
     await loadData();
     
@@ -388,7 +427,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
 async function loadData() {
   await Promise.all([
-    loadPedidos(),
+    isGestor ? loadPedidos() : Promise.resolve(),
     loadFormacoes()
   ]);
   updateStats();
@@ -772,7 +811,12 @@ async function confirmarAcao() {
 
 async function loadFormacoes() {
   try {
-    allFormacoes = await DataService.getFormacoes();
+    if (isGestor) {
+      allFormacoes = await DataService.getFormacoes();
+    } else if (isFormador) {
+      // Apenas formações onde é formador
+      allFormacoes = await DataService.getFormacoesDoFormador(currentUser.id);
+    }
     console.log('[GestaoFormacoes] Formações carregadas:', allFormacoes.length);
     renderFormacoes(allFormacoes);
   } catch (error) {
@@ -792,7 +836,7 @@ function renderFormacoes(formacoes) {
           <path d="M6 12v5c3 3 9 3 12 0v-5"/>
         </svg>
         <h3>Sem formações</h3>
-        <p>Não existem formações registadas.</p>
+        <p>${isFormador && !isGestor ? 'Não está associado a nenhuma formação como formador.' : 'Não existem formações registadas.'}</p>
       </div>
     `;
     return;
@@ -800,6 +844,9 @@ function renderFormacoes(formacoes) {
   
   container.innerHTML = formacoes.map(f => {
     const inscritos = (f.formacao_inscricoes || []).filter(i => i.estado === 'Inscrito').length;
+    const sessoes = f.formacao_sessoes || [];
+    const sessoesTotal = sessoes.length;
+    const sessoesConcluidas = sessoes.filter(s => s.estado === 'Concluída').length;
     
     // Obter formadores (múltiplos possíveis)
     let formadorNomes = [];
@@ -817,6 +864,9 @@ function renderFormacoes(formacoes) {
       formadorNomes.push(f.entidades_formadoras.nome);
     }
     const formadorDisplay = formadorNomes.length > 0 ? formadorNomes.join(', ') : 'N/D';
+    
+    // Contar presenças validadas
+    const presencasValidadas = (f.formacao_presencas || []).filter(p => p.validado).length;
     
     return `
       <div class="formacao-card-admin">
@@ -839,9 +889,16 @@ function renderFormacoes(formacoes) {
             ${inscritos}/${f.max_participantes || 20}
           </span>
         </div>
+        <div class="formacao-sessoes-info">
+          <span class="sessoes-badge">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            ${sessoesConcluidas}/${sessoesTotal} sessões
+          </span>
+          ${presencasValidadas > 0 ? `<span class="presencas-badge">✓ ${presencasValidadas} presenças</span>` : ''}
+        </div>
         <div class="formacao-card-actions">
-          <button class="btn btn-sm btn-secondary" onclick="editarFormacao('${f.id}')">Editar</button>
-          <button class="btn btn-sm btn-primary" onclick="verInscritos('${f.id}')">Ver Inscritos</button>
+          <button class="btn btn-sm btn-secondary" onclick="abrirDetalhesFormacao('${f.id}')">Ver Detalhes</button>
+          <button class="btn btn-sm btn-primary" onclick="verSessoes('${f.id}')">Gerir Sessões</button>
         </div>
       </div>
     `;
@@ -862,6 +919,179 @@ function filterFormacoes() {
   }
   
   renderFormacoes(filtered);
+}
+
+async function abrirDetalhesFormacao(formacaoId) {
+  selectedFormacao = allFormacoes.find(f => f.id === formacaoId);
+  if (!selectedFormacao) return;
+  
+  const inscritos = (selectedFormacao.formacao_inscricoes || []).filter(i => i.estado === 'Inscrito');
+  const sessoes = selectedFormacao.formacao_sessoes || [];
+  const presencas = selectedFormacao.formacao_presencas || [];
+  
+  // Obter detalhes dos colaboradores inscritos
+  const colaboradores = await DataService.getColaboradores();
+  const colabMap = {};
+  colaboradores.forEach(c => colabMap[c.id] = c);
+  
+  document.getElementById('modalFormacaoTitle').textContent = selectedFormacao.titulo;
+  
+  document.getElementById('modalFormacaoBody').innerHTML = `
+    <div class="formacao-detail-tabs">
+      <button class="detail-tab active" onclick="switchFormacaoTab('info')">Informação</button>
+      <button class="detail-tab" onclick="switchFormacaoTab('inscritos')">Inscritos (${inscritos.length})</button>
+      <button class="detail-tab" onclick="switchFormacaoTab('sessoes')">Sessões (${sessoes.length})</button>
+      <button class="detail-tab" onclick="switchFormacaoTab('presencas')">Presenças</button>
+    </div>
+    
+    <div class="formacao-detail-content">
+      <!-- Tab Info -->
+      <div class="detail-tab-content active" id="tabFormacaoInfo">
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="label">Estado</span>
+            <span class="status-badge ${getFormacaoEstadoClass(selectedFormacao.estado)}">${selectedFormacao.estado}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Tipo</span>
+            <span class="value">${selectedFormacao.tipo || 'N/D'}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Modalidade</span>
+            <span class="value">${selectedFormacao.modalidade || 'N/D'}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Duração</span>
+            <span class="value">${selectedFormacao.duracao_horas || 0} horas</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Vagas</span>
+            <span class="value">${inscritos.length}/${selectedFormacao.max_participantes || 20}</span>
+          </div>
+        </div>
+        ${selectedFormacao.objetivo ? `
+          <div class="info-section">
+            <h5>Objetivo</h5>
+            <p>${selectedFormacao.objetivo}</p>
+          </div>
+        ` : ''}
+      </div>
+      
+      <!-- Tab Inscritos -->
+      <div class="detail-tab-content" id="tabFormacaoInscritos">
+        ${inscritos.length > 0 ? `
+          <table class="simple-table">
+            <thead>
+              <tr>
+                <th>Colaborador</th>
+                <th>Departamento</th>
+                <th>Data Inscrição</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${inscritos.map(i => {
+                const colab = colabMap[i.colaborador_id] || {};
+                return `
+                  <tr>
+                    <td>${colab.nome || 'N/D'}</td>
+                    <td>${colab.departamentos?.nome || 'N/D'}</td>
+                    <td>${formatDate(i.created_at)}</td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        ` : '<p class="empty-msg">Sem inscritos.</p>'}
+      </div>
+      
+      <!-- Tab Sessões -->
+      <div class="detail-tab-content" id="tabFormacaoSessoes">
+        ${sessoes.length > 0 ? `
+          <div class="sessoes-list">
+            ${sessoes.sort((a, b) => new Date(a.data) - new Date(b.data)).map(s => {
+              const estadoSessao = s.estado || 'Agendada';
+              const estadoClass = estadoSessao === 'Concluída' ? 'success' : estadoSessao === 'Em Curso' ? 'active' : estadoSessao === 'Cancelada' ? 'cancelled' : 'pending';
+              return `
+                <div class="sessao-item">
+                  <div class="sessao-info">
+                    <span class="sessao-data-display">${formatDateLong(s.data)}</span>
+                    <span class="sessao-hora">${s.hora_inicio || '09:00'} - ${s.hora_fim || '18:00'}</span>
+                  </div>
+                  <span class="sessao-estado-badge ${estadoClass}">${estadoSessao}</span>
+                  <a href="{{ '/gerir-sessao' | relative_url }}?id=${s.id}" class="btn btn-sm btn-primary">Gerir</a>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        ` : '<p class="empty-msg">Sem sessões definidas.</p>'}
+      </div>
+      
+      <!-- Tab Presenças -->
+      <div class="detail-tab-content" id="tabFormacaoPresencas">
+        ${presencas.length > 0 ? `
+          <table class="simple-table">
+            <thead>
+              <tr>
+                <th>Colaborador</th>
+                <th>Entrada</th>
+                <th>Saída</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${presencas.map(p => {
+                const colab = colabMap[p.colaborador_id] || {};
+                const isValidado = p.validado || (p.hora_entrada && p.hora_saida);
+                return `
+                  <tr>
+                    <td>${colab.nome || 'N/D'}</td>
+                    <td>${p.hora_entrada ? formatTime(p.hora_entrada) : '-'}</td>
+                    <td>${p.hora_saida ? formatTime(p.hora_saida) : '-'}</td>
+                    <td>
+                      <span class="presenca-status ${isValidado ? 'validado' : 'parcial'}">
+                        ${isValidado ? '✓ Validada' : 'Parcial'}
+                      </span>
+                    </td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        ` : '<p class="empty-msg">Sem presenças registadas.</p>'}
+      </div>
+    </div>
+  `;
+  
+  document.getElementById('modalDetalhesFormacao').classList.add('show');
+}
+
+function switchFormacaoTab(tab) {
+  document.querySelectorAll('.detail-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.detail-tab-content').forEach(c => c.classList.remove('active'));
+  
+  document.querySelector(`.detail-tab:nth-child(${tab === 'info' ? 1 : tab === 'inscritos' ? 2 : tab === 'sessoes' ? 3 : 4})`).classList.add('active');
+  document.getElementById(`tabFormacao${tab.charAt(0).toUpperCase() + tab.slice(1)}`).classList.add('active');
+}
+
+function verSessoes(formacaoId) {
+  const formacao = allFormacoes.find(f => f.id === formacaoId);
+  if (!formacao) return;
+  
+  const sessoes = formacao.formacao_sessoes || [];
+  if (sessoes.length === 0) {
+    showToast('Esta formação não tem sessões definidas.', 'info');
+    return;
+  }
+  
+  // Se só tem uma sessão, ir direto
+  if (sessoes.length === 1) {
+    window.location.href = `{{ '/gerir-sessao' | relative_url }}?id=${sessoes[0].id}`;
+    return;
+  }
+  
+  // Múltiplas sessões - abrir modal de detalhes
+  abrirDetalhesFormacao(formacaoId);
+  setTimeout(() => switchFormacaoTab('sessoes'), 100);
 }
 
 // ==========================================
@@ -954,7 +1184,7 @@ async function criarFormacao() {
       titulo,
       tipo,
       modalidade,
-      entidade_formadora: formador, // Será processado para múltiplos
+      entidade_formadora: formador,
       duracao_horas: parseInt(duracao),
       max_participantes: parseInt(maxParticipantes) || 20,
       estado,
@@ -1045,10 +1275,22 @@ function formatDate(dateStr) {
   return date.toLocaleDateString('pt-PT');
 }
 
+function formatDateLong(dateStr) {
+  if (!dateStr) return 'N/D';
+  const date = new Date(dateStr);
+  return date.toLocaleDateString('pt-PT', { weekday: 'short', day: 'numeric', month: 'short' });
+}
+
 function formatDateTime(dateStr) {
   if (!dateStr) return 'N/D';
   const date = new Date(dateStr);
   return date.toLocaleDateString('pt-PT') + ' às ' + date.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' });
+}
+
+function formatTime(dateStr) {
+  if (!dateStr) return '-';
+  const date = new Date(dateStr);
+  return date.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' });
 }
 
 function closeModal(modalId) {
@@ -1070,15 +1312,6 @@ function showToast(message, type = 'success') {
   }, 3000);
 }
 
-// Funções placeholder para ações futuras
-function editarFormacao(id) {
-  showToast('Funcionalidade em desenvolvimento.', 'info');
-}
-
-function verInscritos(id) {
-  showToast('Funcionalidade em desenvolvimento.', 'info');
-}
-
 // Modal click outside
 document.querySelectorAll('.modal-overlay').forEach(modal => {
   modal.addEventListener('click', function(e) {
@@ -1086,3 +1319,196 @@ document.querySelectorAll('.modal-overlay').forEach(modal => {
   });
 });
 </script>
+
+<style>
+/* Estilos adicionais para gestão */
+.formacao-sessoes-info {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #f1f5f9;
+}
+
+.sessoes-badge,
+.presencas-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.sessoes-badge svg {
+  width: 14px;
+  height: 14px;
+}
+
+.presencas-badge {
+  color: #059669;
+  font-weight: 500;
+}
+
+/* Tabs de detalhes */
+.formacao-detail-tabs {
+  display: flex;
+  gap: 0.25rem;
+  border-bottom: 1px solid #e2e8f0;
+  margin-bottom: 1.5rem;
+}
+
+.detail-tab {
+  padding: 0.75rem 1rem;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  font-size: 0.875rem;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.detail-tab:hover {
+  color: #1e293b;
+}
+
+.detail-tab.active {
+  color: #00b276;
+  border-bottom-color: #00b276;
+}
+
+.detail-tab-content {
+  display: none;
+}
+
+.detail-tab-content.active {
+  display: block;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.info-item .label {
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.info-item .value {
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.info-section h5 {
+  font-size: 0.875rem;
+  color: #1e293b;
+  margin-bottom: 0.5rem;
+}
+
+.info-section p {
+  color: #475569;
+  line-height: 1.6;
+}
+
+/* Simple table */
+.simple-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.simple-table th,
+.simple-table td {
+  padding: 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.simple-table th {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+}
+
+.simple-table td {
+  font-size: 0.875rem;
+  color: #1e293b;
+}
+
+.presenca-status {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 500;
+}
+
+.presenca-status.validado {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.presenca-status.parcial {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+/* Sessões list */
+.sessoes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.sessao-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: #f8fafc;
+  border-radius: 10px;
+}
+
+.sessao-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.sessao-data-display {
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.sessao-hora {
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+.sessao-estado-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.sessao-estado-badge.pending { background: #fef3c7; color: #92400e; }
+.sessao-estado-badge.active { background: #dbeafe; color: #1e40af; }
+.sessao-estado-badge.success { background: #d1fae5; color: #065f46; }
+.sessao-estado-badge.cancelled { background: #fee2e2; color: #991b1b; }
+
+.empty-msg {
+  text-align: center;
+  padding: 2rem;
+  color: #64748b;
+}
+</style>
