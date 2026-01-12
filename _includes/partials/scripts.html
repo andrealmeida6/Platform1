@@ -1,6 +1,7 @@
 <!-- Serviços Base (devem carregar primeiro) -->
 <script src="{{ '/web-files/js/dataService.js' | relative_url }}"></script>
 <script src="{{ '/web-files/js/authService.js' | relative_url }}"></script>
+<script src="{{ '/web-files/js/themeService.js' | relative_url }}"></script>
 
 <!-- Scripts da Aplicação -->
 <script src="{{ '/web-files/js/app.js' | relative_url }}"></script>
@@ -17,6 +18,11 @@ document.addEventListener('DOMContentLoaded', async function() {
     if (window.initViewAsSelector) {
       window.initViewAsSelector();
     }
+  }
+  
+  // Inicializar ThemeService (carrega e aplica tema da BD)
+  if (window.ThemeService) {
+    await ThemeService.init();
   }
 });
 </script>
