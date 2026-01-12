@@ -1,0 +1,1269 @@
+---
+layout: default
+title: Gerir Sessão
+---
+
+<link rel="stylesheet" href="{{ '/web-files/css/formacao.css' | relative_url }}">
+
+<div class="sessao-page">
+  <!-- Loading State -->
+  <div class="sessao-loading" id="loadingState">
+    <div class="spinner"></div>
+    <p>A carregar...</p>
+  </div>
+
+  <!-- Access Denied -->
+  <div class="sessao-access-denied" id="accessDenied" style="display: none;">
+    <div class="access-icon">🔒</div>
+    <h2>Acesso Restrito</h2>
+    <p>Não tem permissão para gerir esta sessão.</p>
+    <a href="{{ '/formacao' | relative_url }}" class="btn btn-primary">Voltar às Formações</a>
+  </div>
+
+  <!-- Main Content -->
+  <div class="sessao-content" id="mainContent" style="display: none;">
+    <!-- Header -->
+    <div class="sessao-header">
+      <a href="{{ '/minhas-formacoes' | relative_url }}" class="back-link" id="backLink">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+        Voltar
+      </a>
+      <div class="sessao-header-info">
+        <h1 id="formacaoTitulo">-</h1>
+        <div class="sessao-meta">
+          <span id="sessaoData">-</span>
+          <span class="sessao-estado" id="sessaoEstado">-</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Painel de Controlo da Sessão -->
+    <div class="sessao-control-panel">
+      <!-- Estado: Agendada -->
+      <div class="control-state" id="stateAgendada" style="display: none;">
+        <div class="state-icon pending">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+        </div>
+        <h2>Sessão Agendada</h2>
+        <p>Inicie a sessão para permitir o registo de presenças.</p>
+        <button class="btn btn-success btn-large" onclick="iniciarSessao()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="5 3 19 12 5 21 5 3"/>
+          </svg>
+          Iniciar Sessão
+        </button>
+      </div>
+
+      <!-- Estado: Em Curso - Entrada -->
+      <div class="control-state" id="stateEmCursoEntrada" style="display: none;">
+        <div class="codigo-display">
+          <div class="codigo-header">
+            <span class="codigo-type entrada">ENTRADA</span>
+            <button class="btn-regenerar" onclick="regenerarCodigoEntrada()" title="Gerar novo código">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="1 4 1 10 7 10"/>
+                <path d="M3.51 15a9 9 0 102.13-9.36L1 10"/>
+              </svg>
+            </button>
+          </div>
+          <div class="codigo-value" id="codigoEntrada">------</div>
+          <p class="codigo-instrucao">Mostre este código para os participantes registarem entrada</p>
+        </div>
+        
+        <div class="control-actions">
+          <button class="btn btn-primary btn-large" onclick="abrirSaida()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
+              <polyline points="16 17 21 12 16 7"/>
+              <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+            Abrir Registo de Saída
+          </button>
+        </div>
+      </div>
+
+      <!-- Estado: Em Curso - Saída -->
+      <div class="control-state" id="stateEmCursoSaida" style="display: none;">
+        <div class="codigos-dual">
+          <div class="codigo-display mini disabled">
+            <div class="codigo-header">
+              <span class="codigo-type entrada">ENTRADA</span>
+            </div>
+            <div class="codigo-value" id="codigoEntradaMini">------</div>
+            <span class="codigo-status">Encerrado</span>
+          </div>
+          
+          <div class="codigo-display">
+            <div class="codigo-header">
+              <span class="codigo-type saida">SAÍDA</span>
+              <button class="btn-regenerar" onclick="regenerarCodigoSaida()" title="Gerar novo código">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="1 4 1 10 7 10"/>
+                  <path d="M3.51 15a9 9 0 102.13-9.36L1 10"/>
+                </svg>
+              </button>
+            </div>
+            <div class="codigo-value" id="codigoSaida">------</div>
+            <p class="codigo-instrucao">Mostre este código para os participantes registarem saída</p>
+          </div>
+        </div>
+        
+        <div class="control-actions dual">
+          <button class="btn btn-danger" onclick="abrirModalCancelar()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="15" y1="9" x2="9" y2="15"/>
+              <line x1="9" y1="9" x2="15" y2="15"/>
+            </svg>
+            Cancelar Sessão
+          </button>
+          <button class="btn btn-success btn-large" onclick="concluirSessao()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+              <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+            Concluir Sessão
+          </button>
+        </div>
+      </div>
+
+      <!-- Estado: Concluída -->
+      <div class="control-state" id="stateConcluida" style="display: none;">
+        <div class="state-icon success">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+            <polyline points="22 4 12 14.01 9 11.01"/>
+          </svg>
+        </div>
+        <h2>Sessão Concluída</h2>
+        <p id="concluidaInfo">-</p>
+      </div>
+
+      <!-- Estado: Cancelada -->
+      <div class="control-state" id="stateCancelada" style="display: none;">
+        <div class="state-icon cancelled">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="15" y1="9" x2="9" y2="15"/>
+            <line x1="9" y1="9" x2="15" y2="15"/>
+          </svg>
+        </div>
+        <h2>Sessão Cancelada</h2>
+        <p id="canceladaMotivo">-</p>
+      </div>
+    </div>
+
+    <!-- Lista de Presenças -->
+    <div class="presencas-panel">
+      <div class="presencas-header">
+        <h3>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 00-3-3.87"/>
+            <path d="M16 3.13a4 4 0 010 7.75"/>
+          </svg>
+          Presenças
+          <span class="presencas-count" id="presencasCount">0</span>
+        </h3>
+        <button class="btn btn-secondary btn-sm" onclick="abrirModalAdicionarPresenca()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          Adicionar Manual
+        </button>
+      </div>
+      
+      <div class="presencas-table">
+        <div class="presencas-table-header">
+          <div>Colaborador</div>
+          <div>Entrada</div>
+          <div>Saída</div>
+          <div>Estado</div>
+          <div>Ações</div>
+        </div>
+        <div class="presencas-table-body" id="presencasTableBody">
+          <div class="presencas-empty">
+            <p>Ainda não existem presenças registadas.</p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Legenda -->
+      <div class="presencas-legend">
+        <span class="legend-item">
+          <span class="legend-dot validado"></span>
+          Presença Validada (entrada + saída)
+        </span>
+        <span class="legend-item">
+          <span class="legend-dot parcial"></span>
+          Apenas Entrada
+        </span>
+        <span class="legend-item">
+          <span class="legend-dot manual"></span>
+          Registo Manual
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Cancelar Sessão -->
+<div class="modal-overlay" id="modalCancelar">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Cancelar Sessão</h3>
+      <button class="modal-close" onclick="closeModal('modalCancelar')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p>Tem a certeza que pretende cancelar esta sessão? Esta ação não pode ser revertida.</p>
+      <div class="form-group">
+        <label>Motivo do cancelamento *</label>
+        <textarea id="motivoCancelamento" rows="3" placeholder="Indique o motivo..." required></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modalCancelar')">Voltar</button>
+      <button class="btn btn-danger" onclick="confirmarCancelar()">Confirmar Cancelamento</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Adicionar Presença Manual -->
+<div class="modal-overlay" id="modalAdicionarPresenca">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Adicionar Presença Manual</h3>
+      <button class="modal-close" onclick="closeModal('modalAdicionarPresenca')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Colaborador *</label>
+        <select id="selectColaborador" class="form-control">
+          <option value="">Selecione...</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Tipo de Marcação *</label>
+        <div class="radio-group">
+          <label class="radio-option">
+            <input type="radio" name="tipoMarcacao" value="entrada" checked>
+            <span>Apenas Entrada</span>
+          </label>
+          <label class="radio-option">
+            <input type="radio" name="tipoMarcacao" value="saida">
+            <span>Apenas Saída</span>
+          </label>
+          <label class="radio-option">
+            <input type="radio" name="tipoMarcacao" value="ambos">
+            <span>Entrada e Saída (validar presença)</span>
+          </label>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modalAdicionarPresenca')">Cancelar</button>
+      <button class="btn btn-primary" onclick="confirmarAdicionarPresenca()">Adicionar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container"></div>
+
+<script>
+let currentUser = null;
+let sessaoId = null;
+let sessaoData = null;
+let formacaoData = null;
+let allColaboradores = [];
+let inscritosIds = [];
+
+// Aguardar serviços
+async function waitForServices() {
+  return new Promise((resolve) => {
+    const check = () => {
+      if (typeof DataService !== 'undefined' && typeof AuthService !== 'undefined') {
+        resolve();
+      } else {
+        setTimeout(check, 100);
+      }
+    };
+    check();
+  });
+}
+
+// Inicialização
+document.addEventListener('DOMContentLoaded', async function() {
+  try {
+    await waitForServices();
+    currentUser = await AuthService.getCurrentUser();
+    
+    // Obter ID da sessão da URL
+    const urlParams = new URLSearchParams(window.location.search);
+    sessaoId = urlParams.get('id');
+    
+    if (!sessaoId) {
+      showAccessDenied();
+      return;
+    }
+    
+    await loadSessao();
+    
+  } catch (error) {
+    console.error('[GerirSessao] Erro:', error);
+    showAccessDenied();
+  }
+});
+
+async function loadSessao() {
+  try {
+    // Buscar sessão
+    sessaoData = await DataService.getSessaoById(sessaoId);
+    
+    if (!sessaoData) {
+      showAccessDenied();
+      return;
+    }
+    
+    // Buscar formação completa
+    formacaoData = await DataService.getFormacaoById(sessaoData.formacao_id);
+    
+    if (!formacaoData) {
+      showAccessDenied();
+      return;
+    }
+    
+    // Verificar se é formador ou gestor
+    const isGestor = AuthService.canAccessFormacaoManagement(currentUser);
+    const isFormador = isFormadorDaFormacao(formacaoData, currentUser?.id);
+    
+    if (!isGestor && !isFormador) {
+      showAccessDenied();
+      return;
+    }
+    
+    // Guardar lista de inscritos
+    inscritosIds = (formacaoData.formacao_inscricoes || [])
+      .filter(i => i.estado === 'Inscrito')
+      .map(i => i.colaborador_id);
+    
+    // Mostrar conteúdo
+    document.getElementById('loadingState').style.display = 'none';
+    document.getElementById('mainContent').style.display = 'block';
+    
+    // Preencher header
+    document.getElementById('formacaoTitulo').textContent = formacaoData.titulo;
+    document.getElementById('sessaoData').textContent = formatarDataSessao(sessaoData);
+    
+    // Configurar link de voltar
+    if (isGestor) {
+      document.getElementById('backLink').href = '{{ "/gestao-formacoes" | relative_url }}';
+    } else {
+      document.getElementById('backLink').href = '{{ "/minhas-formacoes" | relative_url }}';
+    }
+    
+    // Carregar colaboradores para dropdown
+    allColaboradores = await DataService.getColaboradores();
+    preencherDropdownColaboradores();
+    
+    // Renderizar estado
+    renderizarEstado();
+    
+    // Carregar presenças
+    await loadPresencas();
+    
+  } catch (error) {
+    console.error('Erro ao carregar sessão:', error);
+    showAccessDenied();
+  }
+}
+
+function isFormadorDaFormacao(formacao, userId) {
+  if (!formacao || !userId) return false;
+  
+  // Verificar em formacao_formadores
+  if (formacao.formacao_formadores) {
+    for (const ff of formacao.formacao_formadores) {
+      if (ff.formadores?.colaborador_id === userId) return true;
+    }
+  }
+  
+  // Verificar formador direto (legacy)
+  if (formacao.formadores?.colaborador_id === userId) return true;
+  
+  return false;
+}
+
+function showAccessDenied() {
+  document.getElementById('loadingState').style.display = 'none';
+  document.getElementById('accessDenied').style.display = 'flex';
+}
+
+function renderizarEstado() {
+  // Esconder todos os estados
+  document.querySelectorAll('.control-state').forEach(el => el.style.display = 'none');
+  
+  const estado = sessaoData.estado || 'Agendada';
+  
+  // Atualizar badge de estado
+  const estadoBadge = document.getElementById('sessaoEstado');
+  estadoBadge.textContent = estado;
+  estadoBadge.className = 'sessao-estado ' + getEstadoClass(estado);
+  
+  if (estado === 'Agendada') {
+    document.getElementById('stateAgendada').style.display = 'flex';
+    
+  } else if (estado === 'Em Curso') {
+    if (sessaoData.codigo_saida) {
+      // Já tem código de saída
+      document.getElementById('stateEmCursoSaida').style.display = 'flex';
+      document.getElementById('codigoEntradaMini').textContent = sessaoData.codigo_entrada || '------';
+      document.getElementById('codigoSaida').textContent = sessaoData.codigo_saida || '------';
+    } else {
+      // Apenas entrada
+      document.getElementById('stateEmCursoEntrada').style.display = 'flex';
+      document.getElementById('codigoEntrada').textContent = sessaoData.codigo_entrada || '------';
+    }
+    
+  } else if (estado === 'Concluída') {
+    document.getElementById('stateConcluida').style.display = 'flex';
+    const concluidaEm = sessaoData.hora_conclusao ? formatarHora(sessaoData.hora_conclusao) : 'N/D';
+    document.getElementById('concluidaInfo').textContent = `Concluída em ${concluidaEm}`;
+    
+  } else if (estado === 'Cancelada') {
+    document.getElementById('stateCancelada').style.display = 'flex';
+    document.getElementById('canceladaMotivo').textContent = sessaoData.motivo_cancelamento || 'Sem motivo registado.';
+  }
+}
+
+// ==========================================
+// AÇÕES DA SESSÃO
+// ==========================================
+
+async function iniciarSessao() {
+  try {
+    sessaoData = await DataService.iniciarSessao(sessaoId, currentUser.id);
+    await DataService.verificarEstadoFormacao(formacaoData.id);
+    showToast('Sessão iniciada! Código de entrada gerado.', 'success');
+    renderizarEstado();
+  } catch (error) {
+    console.error('Erro ao iniciar sessão:', error);
+    showToast('Erro ao iniciar sessão.', 'error');
+  }
+}
+
+async function abrirSaida() {
+  try {
+    sessaoData = await DataService.abrirSaidaSessao(sessaoId);
+    showToast('Código de saída gerado!', 'success');
+    renderizarEstado();
+  } catch (error) {
+    console.error('Erro ao abrir saída:', error);
+    showToast('Erro ao gerar código de saída.', 'error');
+  }
+}
+
+async function regenerarCodigoEntrada() {
+  if (!confirm('Tem a certeza? O código anterior deixará de funcionar.')) return;
+  
+  try {
+    sessaoData = await DataService.regenerarCodigoEntrada(sessaoId);
+    document.getElementById('codigoEntrada').textContent = sessaoData.codigo_entrada;
+    showToast('Novo código de entrada gerado!', 'success');
+  } catch (error) {
+    console.error('Erro ao regenerar código:', error);
+    showToast('Erro ao gerar novo código.', 'error');
+  }
+}
+
+async function regenerarCodigoSaida() {
+  if (!confirm('Tem a certeza? O código anterior deixará de funcionar.')) return;
+  
+  try {
+    sessaoData = await DataService.regenerarCodigoSaida(sessaoId);
+    document.getElementById('codigoSaida').textContent = sessaoData.codigo_saida;
+    showToast('Novo código de saída gerado!', 'success');
+  } catch (error) {
+    console.error('Erro ao regenerar código:', error);
+    showToast('Erro ao gerar novo código.', 'error');
+  }
+}
+
+async function concluirSessao() {
+  if (!confirm('Tem a certeza que pretende concluir esta sessão?')) return;
+  
+  try {
+    sessaoData = await DataService.concluirSessao(sessaoId, currentUser.id);
+    await DataService.verificarEstadoFormacao(formacaoData.id);
+    showToast('Sessão concluída com sucesso!', 'success');
+    renderizarEstado();
+  } catch (error) {
+    console.error('Erro ao concluir sessão:', error);
+    showToast('Erro ao concluir sessão.', 'error');
+  }
+}
+
+function abrirModalCancelar() {
+  document.getElementById('motivoCancelamento').value = '';
+  document.getElementById('modalCancelar').classList.add('show');
+}
+
+async function confirmarCancelar() {
+  const motivo = document.getElementById('motivoCancelamento').value.trim();
+  if (!motivo) {
+    showToast('Indique o motivo do cancelamento.', 'error');
+    return;
+  }
+  
+  try {
+    sessaoData = await DataService.cancelarSessao(sessaoId, motivo, currentUser.id);
+    await DataService.verificarEstadoFormacao(formacaoData.id);
+    closeModal('modalCancelar');
+    showToast('Sessão cancelada.', 'info');
+    renderizarEstado();
+  } catch (error) {
+    console.error('Erro ao cancelar sessão:', error);
+    showToast('Erro ao cancelar sessão.', 'error');
+  }
+}
+
+// ==========================================
+// PRESENÇAS
+// ==========================================
+
+async function loadPresencas() {
+  try {
+    const presencas = await DataService.getPresencasSessao(sessaoId);
+    renderPresencas(presencas);
+  } catch (error) {
+    console.error('Erro ao carregar presenças:', error);
+  }
+}
+
+function renderPresencas(presencas) {
+  const tbody = document.getElementById('presencasTableBody');
+  document.getElementById('presencasCount').textContent = presencas.length;
+  
+  if (presencas.length === 0) {
+    tbody.innerHTML = '<div class="presencas-empty"><p>Ainda não existem presenças registadas.</p></div>';
+    return;
+  }
+  
+  tbody.innerHTML = presencas.map(p => {
+    const nome = p.colaboradores?.nome || 'Colaborador';
+    const dept = p.colaboradores?.departamentos?.nome || '';
+    const entrada = p.hora_entrada ? formatarHora(p.hora_entrada) : '-';
+    const saida = p.hora_saida ? formatarHora(p.hora_saida) : '-';
+    const isValidado = p.validado || (p.hora_entrada && p.hora_saida);
+    const isManual = p.metodo_entrada === 'manual' || p.metodo_saida === 'manual';
+    
+    let estadoClass = 'parcial';
+    let estadoLabel = 'Apenas Entrada';
+    if (isValidado) {
+      estadoClass = 'validado';
+      estadoLabel = 'Validada';
+    } else if (!p.hora_entrada) {
+      estadoClass = 'pendente';
+      estadoLabel = 'Sem registo';
+    }
+    
+    return `
+      <div class="presencas-table-row">
+        <div class="presenca-colaborador">
+          <span class="presenca-nome">${nome}</span>
+          <span class="presenca-dept">${dept}</span>
+        </div>
+        <div class="presenca-hora ${p.hora_entrada ? '' : 'empty'}">${entrada}</div>
+        <div class="presenca-hora ${p.hora_saida ? '' : 'empty'}">${saida}</div>
+        <div>
+          <span class="presenca-estado ${estadoClass}">
+            ${estadoLabel}
+            ${isManual ? '<span class="tag-manual">M</span>' : ''}
+          </span>
+        </div>
+        <div class="presenca-actions">
+          ${!p.hora_entrada ? `<button class="btn-mini" onclick="marcarEntradaManual('${p.id}', '${p.colaborador_id}')" title="Marcar entrada"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg></button>` : ''}
+          ${p.hora_entrada && !p.hora_saida ? `<button class="btn-mini" onclick="marcarSaidaManual('${p.id}', '${p.colaborador_id}')" title="Marcar saída"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>` : ''}
+          <button class="btn-mini danger" onclick="removerPresenca('${p.id}')" title="Remover"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function preencherDropdownColaboradores() {
+  const select = document.getElementById('selectColaborador');
+  
+  // Filtrar apenas inscritos que ainda não têm presença completa
+  const colaboradoresDisponiveis = allColaboradores.filter(c => inscritosIds.includes(c.id));
+  
+  select.innerHTML = '<option value="">Selecione um colaborador...</option>' +
+    colaboradoresDisponiveis.map(c => `<option value="${c.id}">${c.nome}</option>`).join('');
+}
+
+function abrirModalAdicionarPresenca() {
+  document.getElementById('selectColaborador').value = '';
+  document.querySelector('input[name="tipoMarcacao"][value="entrada"]').checked = true;
+  document.getElementById('modalAdicionarPresenca').classList.add('show');
+}
+
+async function confirmarAdicionarPresenca() {
+  const colaboradorId = document.getElementById('selectColaborador').value;
+  const tipoMarcacao = document.querySelector('input[name="tipoMarcacao"]:checked').value;
+  
+  if (!colaboradorId) {
+    showToast('Selecione um colaborador.', 'error');
+    return;
+  }
+  
+  try {
+    await DataService.registarPresencaManual(
+      sessaoId, 
+      formacaoData.id, 
+      colaboradorId, 
+      tipoMarcacao, 
+      currentUser.id
+    );
+    
+    closeModal('modalAdicionarPresenca');
+    showToast('Presença registada!', 'success');
+    await loadPresencas();
+  } catch (error) {
+    console.error('Erro ao registar presença:', error);
+    showToast('Erro ao registar presença.', 'error');
+  }
+}
+
+async function marcarEntradaManual(presencaId, colaboradorId) {
+  try {
+    await DataService.registarPresencaManual(
+      sessaoId,
+      formacaoData.id,
+      colaboradorId,
+      'entrada',
+      currentUser.id
+    );
+    showToast('Entrada registada!', 'success');
+    await loadPresencas();
+  } catch (error) {
+    console.error('Erro:', error);
+    showToast('Erro ao registar entrada.', 'error');
+  }
+}
+
+async function marcarSaidaManual(presencaId, colaboradorId) {
+  try {
+    await DataService.registarPresencaManual(
+      sessaoId,
+      formacaoData.id,
+      colaboradorId,
+      'saida',
+      currentUser.id
+    );
+    showToast('Saída registada!', 'success');
+    await loadPresencas();
+  } catch (error) {
+    console.error('Erro:', error);
+    showToast('Erro ao registar saída.', 'error');
+  }
+}
+
+async function removerPresenca(presencaId) {
+  if (!confirm('Tem a certeza que pretende remover este registo de presença?')) return;
+  
+  try {
+    await DataService.removerPresenca(presencaId);
+    showToast('Presença removida.', 'info');
+    await loadPresencas();
+  } catch (error) {
+    console.error('Erro:', error);
+    showToast('Erro ao remover presença.', 'error');
+  }
+}
+
+// ==========================================
+// HELPERS
+// ==========================================
+
+function formatarDataSessao(sessao) {
+  if (!sessao.data) return 'Data não definida';
+  const date = new Date(sessao.data);
+  const dataStr = date.toLocaleDateString('pt-PT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  const horaInicio = sessao.hora_inicio || '09:00';
+  const horaFim = sessao.hora_fim || '18:00';
+  return `${dataStr}, ${horaInicio} - ${horaFim}`;
+}
+
+function formatarHora(isoString) {
+  if (!isoString) return '-';
+  const date = new Date(isoString);
+  return date.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' });
+}
+
+function getEstadoClass(estado) {
+  const classes = {
+    'Agendada': 'pending',
+    'Em Curso': 'active',
+    'Concluída': 'success',
+    'Cancelada': 'cancelled'
+  };
+  return classes[estado] || '';
+}
+
+function closeModal(modalId) {
+  document.getElementById(modalId).classList.remove('show');
+}
+
+function showToast(message, type = 'success') {
+  let container = document.querySelector('.toast-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.className = 'toast-container';
+    document.body.appendChild(container);
+  }
+  
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.innerHTML = `<span class="toast-message">${message}</span>`;
+  container.appendChild(toast);
+  
+  setTimeout(() => toast.classList.add('show'), 10);
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
+}
+
+// Modal click outside
+document.querySelectorAll('.modal-overlay').forEach(modal => {
+  modal.addEventListener('click', function(e) {
+    if (e.target === this) this.classList.remove('show');
+  });
+});
+
+// Auto-refresh presenças a cada 30 segundos quando em curso
+setInterval(async () => {
+  if (sessaoData?.estado === 'Em Curso') {
+    await loadPresencas();
+  }
+}, 30000);
+</script>
+
+<style>
+.sessao-page {
+  min-height: 100vh;
+  background: #f8fafc;
+  padding: 2rem;
+}
+
+.sessao-loading,
+.sessao-access-denied {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  text-align: center;
+}
+
+.sessao-loading .spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid #e2e8f0;
+  border-top-color: #00b276;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.access-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+}
+
+.sessao-access-denied h2 {
+  font-size: 1.5rem;
+  color: #1e293b;
+  margin-bottom: 0.5rem;
+}
+
+.sessao-access-denied p {
+  color: #64748b;
+  margin-bottom: 1.5rem;
+}
+
+/* Header */
+.sessao-header {
+  max-width: 900px;
+  margin: 0 auto 2rem;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #64748b;
+  text-decoration: none;
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+}
+
+.back-link:hover {
+  color: #00b276;
+}
+
+.back-link svg {
+  width: 18px;
+  height: 18px;
+}
+
+.sessao-header h1 {
+  font-size: 1.75rem;
+  color: #1e293b;
+  margin: 0 0 0.5rem;
+}
+
+.sessao-meta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.sessao-estado {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.sessao-estado.pending { background: #fef3c7; color: #92400e; }
+.sessao-estado.active { background: #dbeafe; color: #1e40af; }
+.sessao-estado.success { background: #d1fae5; color: #065f46; }
+.sessao-estado.cancelled { background: #fee2e2; color: #991b1b; }
+
+/* Control Panel */
+.sessao-control-panel {
+  max-width: 900px;
+  margin: 0 auto 2rem;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  padding: 2rem;
+}
+
+.control-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.state-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.state-icon.pending { background: #fef3c7; }
+.state-icon.pending svg { color: #d97706; }
+.state-icon.success { background: #d1fae5; }
+.state-icon.success svg { color: #059669; }
+.state-icon.cancelled { background: #fee2e2; }
+.state-icon.cancelled svg { color: #dc2626; }
+
+.state-icon svg {
+  width: 40px;
+  height: 40px;
+}
+
+.control-state h2 {
+  font-size: 1.5rem;
+  color: #1e293b;
+  margin: 0 0 0.5rem;
+}
+
+.control-state p {
+  color: #64748b;
+  margin: 0 0 1.5rem;
+}
+
+/* Código Display */
+.codigo-display {
+  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+  border: 2px solid #00b276;
+  border-radius: 16px;
+  padding: 1.5rem 2rem;
+  margin-bottom: 1.5rem;
+  min-width: 300px;
+}
+
+.codigo-display.mini {
+  padding: 1rem;
+  min-width: auto;
+}
+
+.codigo-display.disabled {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  opacity: 0.7;
+}
+
+.codigo-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.codigo-type {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.codigo-type.entrada { color: #059669; }
+.codigo-type.saida { color: #dc2626; }
+
+.btn-regenerar {
+  background: rgba(0, 178, 118, 0.1);
+  border: none;
+  padding: 0.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-regenerar:hover {
+  background: rgba(0, 178, 118, 0.2);
+}
+
+.btn-regenerar svg {
+  width: 18px;
+  height: 18px;
+  color: #00b276;
+}
+
+.codigo-value {
+  font-family: 'SF Mono', 'Monaco', monospace;
+  font-size: 3rem;
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  color: #1e293b;
+  text-align: center;
+}
+
+.codigo-display.mini .codigo-value {
+  font-size: 1.5rem;
+}
+
+.codigo-instrucao {
+  color: #64748b;
+  font-size: 0.8rem;
+  margin: 0.5rem 0 0;
+  text-align: center;
+}
+
+.codigo-status {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  text-transform: uppercase;
+}
+
+.codigos-dual {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* Control Actions */
+.control-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.control-actions.dual {
+  width: 100%;
+}
+
+.btn-large {
+  padding: 1rem 2rem;
+  font-size: 1rem;
+}
+
+.btn-large svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Presenças Panel */
+.presencas-panel {
+  max-width: 900px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  padding: 1.5rem;
+}
+
+.presencas-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.presencas-header h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+  color: #1e293b;
+  margin: 0;
+}
+
+.presencas-header h3 svg {
+  width: 20px;
+  height: 20px;
+  color: #64748b;
+}
+
+.presencas-count {
+  background: #00b276;
+  color: white;
+  padding: 0.125rem 0.5rem;
+  border-radius: 10px;
+  font-size: 0.75rem;
+}
+
+/* Presenças Table */
+.presencas-table {
+  overflow-x: auto;
+}
+
+.presencas-table-header {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 100px;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  background: #f8fafc;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+}
+
+.presencas-table-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 100px;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #f1f5f9;
+  align-items: center;
+}
+
+.presencas-table-row:hover {
+  background: #f8fafc;
+}
+
+.presenca-colaborador {
+  display: flex;
+  flex-direction: column;
+}
+
+.presenca-nome {
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 0.875rem;
+}
+
+.presenca-dept {
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+.presenca-hora {
+  font-family: 'SF Mono', monospace;
+  font-size: 0.875rem;
+  color: #1e293b;
+}
+
+.presenca-hora.empty {
+  color: #cbd5e1;
+}
+
+.presenca-estado {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 500;
+}
+
+.presenca-estado.validado { background: #d1fae5; color: #065f46; }
+.presenca-estado.parcial { background: #fef3c7; color: #92400e; }
+.presenca-estado.pendente { background: #f1f5f9; color: #64748b; }
+
+.tag-manual {
+  background: #e2e8f0;
+  color: #475569;
+  padding: 0 0.25rem;
+  border-radius: 4px;
+  font-size: 0.6rem;
+  font-weight: 700;
+}
+
+.presenca-actions {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.btn-mini {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  background: #f1f5f9;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.btn-mini:hover {
+  background: #e2e8f0;
+}
+
+.btn-mini.danger:hover {
+  background: #fee2e2;
+}
+
+.btn-mini svg {
+  width: 14px;
+  height: 14px;
+  color: #64748b;
+}
+
+.btn-mini.danger svg {
+  color: #dc2626;
+}
+
+.presencas-empty {
+  text-align: center;
+  padding: 3rem;
+  color: #64748b;
+}
+
+.presencas-legend {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #f1f5f9;
+  flex-wrap: wrap;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.legend-dot.validado { background: #10b981; }
+.legend-dot.parcial { background: #f59e0b; }
+.legend-dot.manual { background: #94a3b8; }
+
+/* Radio Group */
+.radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.radio-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: #f8fafc;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.radio-option:hover {
+  background: #f1f5f9;
+}
+
+.radio-option input[type="radio"] {
+  accent-color: #00b276;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .sessao-page {
+    padding: 1rem;
+  }
+  
+  .sessao-control-panel,
+  .presencas-panel {
+    padding: 1rem;
+  }
+  
+  .codigo-value {
+    font-size: 2rem;
+    letter-spacing: 0.2em;
+  }
+  
+  .codigos-dual {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .presencas-table-header,
+  .presencas-table-row {
+    grid-template-columns: 1fr 1fr 1fr;
+    font-size: 0.75rem;
+  }
+  
+  .presencas-table-header > div:nth-child(2),
+  .presencas-table-header > div:nth-child(3),
+  .presencas-table-row > div:nth-child(2),
+  .presencas-table-row > div:nth-child(3) {
+    display: none;
+  }
+}
+</style>
