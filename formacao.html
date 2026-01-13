@@ -293,6 +293,60 @@ title: Centro de Formação
     </div>
   </section>
 
+  <!-- ================================================================
+       SECÇÃO: MINHAS PROPOSTAS DE FORMAÇÃO
+       Esta secção só aparece se o utilizador tiver pelo menos 1 pedido
+       ================================================================ -->
+  <section class="my-proposals-section" id="minhasPropostas" style="display: none;">
+    <div class="table-wrapper">
+      <div class="table-header-section">
+        <h3>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 24px; height: 24px; vertical-align: middle; margin-right: 8px;">
+            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="12" y1="18" x2="12" y2="12"/>
+            <line x1="9" y1="15" x2="15" y2="15"/>
+          </svg>
+          Minhas Propostas de Formação
+        </h3>
+        <div class="table-actions">
+          <div class="table-tabs">
+            <button class="table-tab active" data-filter-propostas="all" onclick="filterMyPropostas('all')">Todas</button>
+            <button class="table-tab" data-filter-propostas="pendente" onclick="filterMyPropostas('pendente')">Pendentes</button>
+            <button class="table-tab" data-filter-propostas="aprovado" onclick="filterMyPropostas('aprovado')">Aprovadas</button>
+            <button class="table-tab" data-filter-propostas="rejeitado" onclick="filterMyPropostas('rejeitado')">Rejeitadas</button>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="openModalProporFormacao()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px; margin-right: 4px;">
+              <line x1="12" y1="5" x2="12" y2="19"/>
+              <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Nova Proposta
+          </button>
+        </div>
+      </div>
+
+      <div class="table-content">
+        <div class="propostas-table-header">
+          <div>Título</div>
+          <div>Tipo</div>
+          <div>Entidade</div>
+          <div>Duração</div>
+          <div>Custo</div>
+          <div>Data Pedido</div>
+          <div>Estado</div>
+          <div>Ações</div>
+        </div>
+        <div class="propostas-table-body" id="myPropostasTable">
+          <div class="table-loading">
+            <div class="spinner"></div>
+            <p>A carregar propostas...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
 </div>
 
 <!-- Modal: Detalhes do Curso com Tabs -->
@@ -454,6 +508,22 @@ title: Centro de Formação
   </div>
 </div>
 
+<!-- Modal: Detalhes da Proposta -->
+<div class="modal-overlay" id="modalDetalhesProposta">
+  <div class="modal-content" style="max-width: 650px;">
+    <div class="modal-header">
+      <h3 class="modal-title" id="modalPropostaTitulo">Detalhes da Proposta</h3>
+      <button class="modal-close" onclick="closeModal('modalDetalhesProposta')">&times;</button>
+    </div>
+    <div class="modal-body" id="modalPropostaContent">
+      <!-- Preenchido por JavaScript -->
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modalDetalhesProposta')">Fechar</button>
+    </div>
+  </div>
+</div>
+
 <!-- Toast Container -->
 <div class="toast-container"></div>
 
@@ -464,14 +534,14 @@ title: Centro de Formação
 
 let allFormacoes = [];
 let myFormacoes = [];
+let myPropostas = []; // Propostas do utilizador
 let currentUser = null;
 let selectedFormacao = null;
 let formacaoCalendarDate = new Date();
 let formacaoEvents = {};
-let calendarExpanded = true; // Visível por defeito
-let canViewInscritos = false; // Controla se pode ver número de inscritos
+let calendarExpanded = true;
+let canViewInscritos = false;
 
-// Nomes dos meses abreviados em português
 const MONTH_NAMES_SHORT = ['JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ'];
 
 // Aguardar serviços
@@ -491,31 +561,20 @@ async function waitForServices() {
 // Verificar se utilizador é formador de uma formação específica
 function isFormadorOf(formacao, userId) {
   if (!formacao || !userId) return false;
-  
-  // Verificar na relação formacao_formadores
   if (formacao.formacao_formadores && formacao.formacao_formadores.length > 0) {
     return formacao.formacao_formadores.some(ff => {
       if (ff.formadores?.colaborador_id === userId) return true;
       return false;
     });
   }
-  
-  // Verificar no formador direto (legacy)
   if (formacao.formadores?.colaborador_id === userId) return true;
-  
   return false;
 }
 
-// Verificar se utilizador pode ver inscritos (é formador ou tem permissão de gestão)
 function canSeeInscritos(formacao) {
   if (!currentUser) return false;
-  
-  // Tem permissão de gestão de formações
   if (canViewInscritos) return true;
-  
-  // É formador desta formação específica
   if (isFormadorOf(formacao, currentUser.id)) return true;
-  
   return false;
 }
 
@@ -526,13 +585,13 @@ document.addEventListener('DOMContentLoaded', async function() {
     currentUser = await AuthService.getCurrentUser();
     console.log('[Formação] Utilizador:', currentUser?.nome);
     
-    // Verificar permissão de gestão
     if (currentUser && AuthService.canAccessFormacaoManagement(currentUser)) {
       document.getElementById('btnGestaoFormacoes').style.display = 'inline-flex';
       canViewInscritos = true;
     }
     
     await loadFormacoes();
+    await loadMyPropostas(); // Carregar propostas do utilizador
     initFormacaoCalendar();
     
   } catch (error) {
@@ -545,17 +604,13 @@ async function loadFormacoes() {
     allFormacoes = await DataService.getFormacoes();
     console.log('[Formação] Carregadas:', allFormacoes.length, 'formações');
     
-    // Filtrar minhas formações
     if (currentUser) {
       myFormacoes = allFormacoes.filter(f => 
         (f.formacao_inscricoes || []).some(i => i.colaborador_id === currentUser.id && i.estado === 'Inscrito')
       );
     }
     
-    // Construir eventos do calendário
     buildFormacaoEvents();
-    
-    // Atualizar UI
     updateStats();
     renderCatalog(allFormacoes);
     renderMyFormacoes(myFormacoes);
@@ -564,6 +619,309 @@ async function loadFormacoes() {
   } catch (error) {
     console.error('[Formação] Erro ao carregar:', error);
   }
+}
+
+// ==========================================
+// CARREGAR MINHAS PROPOSTAS DE FORMAÇÃO
+// ==========================================
+
+async function loadMyPropostas() {
+  /*
+  // =====================================================
+  // POWER PAGES - FetchXML Query para obter pedidos do utilizador
+  // =====================================================
+  // 
+  // var fetchXml = '<fetch>' +
+  //   '<entity name="cr_pedidos_formacao">' +
+  //     '<attribute name="cr_pedidos_formacaoid" />' +
+  //     '<attribute name="cr_titulo" />' +
+  //     '<attribute name="cr_tipo" />' +
+  //     '<attribute name="cr_modalidade" />' +
+  //     '<attribute name="cr_entidade_formadora" />' +
+  //     '<attribute name="cr_duracao_horas" />' +
+  //     '<attribute name="cr_data_prevista_inicio" />' +
+  //     '<attribute name="cr_custo_estimado" />' +
+  //     '<attribute name="cr_estado" />' +
+  //     '<attribute name="cr_justificacao" />' +
+  //     '<attribute name="cr_objetivo" />' +
+  //     '<attribute name="cr_dirigente_comentario" />' +
+  //     '<attribute name="cr_rh_comentario" />' +
+  //     '<attribute name="createdon" />' +
+  //     '<filter type="and">' +
+  //       '<condition attribute="cr_solicitante_id" operator="eq" value="{{user.id}}" />' +
+  //     '</filter>' +
+  //     '<order attribute="createdon" descending="true" />' +
+  //   '</entity>' +
+  // '</fetch>';
+  //
+  // webapi.safeAjax({
+  //   type: "GET",
+  //   url: "/_api/cr_pedidos_formacao?fetchXml=" + encodeURIComponent(fetchXml),
+  //   contentType: "application/json",
+  //   success: function(data) {
+  //     myPropostas = data.value || [];
+  //     renderMyPropostas(myPropostas);
+  //     
+  //     // Mostrar secção se tiver propostas
+  //     if (myPropostas.length > 0) {
+  //       document.getElementById('minhasPropostas').style.display = 'block';
+  //     }
+  //   },
+  //   error: function(xhr) {
+  //     console.error("Erro ao carregar propostas:", xhr);
+  //   }
+  // });
+  // =====================================================
+  */
+  
+  if (!currentUser) {
+    console.log('[Propostas] Utilizador não autenticado');
+    return;
+  }
+  
+  try {
+    // Supabase: Obter pedidos do utilizador atual
+    myPropostas = await DataService.getMyPedidosFormacao(currentUser.id);
+    console.log('[Propostas] Carregadas:', myPropostas.length, 'propostas');
+    
+    // Mostrar secção apenas se tiver pelo menos 1 proposta
+    if (myPropostas.length > 0) {
+      document.getElementById('minhasPropostas').style.display = 'block';
+      renderMyPropostas(myPropostas);
+    } else {
+      document.getElementById('minhasPropostas').style.display = 'none';
+    }
+    
+  } catch (error) {
+    console.error('[Propostas] Erro ao carregar:', error);
+  }
+}
+
+// ==========================================
+// RENDER MINHAS PROPOSTAS
+// ==========================================
+
+function renderMyPropostas(propostas) {
+  /*
+  // =====================================================
+  // POWER PAGES - Liquid Template Alternative
+  // =====================================================
+  // Se preferir usar Liquid em vez de JavaScript:
+  //
+  // {% fetchxml pedidos %}
+  // <fetch>
+  //   <entity name="cr_pedidos_formacao">
+  //     <attribute name="cr_titulo" />
+  //     <attribute name="cr_tipo" />
+  //     <attribute name="cr_entidade_formadora" />
+  //     <attribute name="cr_duracao_horas" />
+  //     <attribute name="cr_custo_estimado" />
+  //     <attribute name="cr_estado" />
+  //     <attribute name="createdon" />
+  //     <filter>
+  //       <condition attribute="cr_solicitante_id" operator="eq" value="{{user.id}}" />
+  //     </filter>
+  //     <order attribute="createdon" descending="true" />
+  //   </entity>
+  // </fetch>
+  // {% endfetchxml %}
+  //
+  // {% if pedidos.results.entities.size > 0 %}
+  //   {% for pedido in pedidos.results.entities %}
+  //     <div class="propostas-table-row">
+  //       <div>{{ pedido.cr_titulo }}</div>
+  //       <div>{{ pedido.cr_tipo }}</div>
+  //       <!-- ... outros campos ... -->
+  //     </div>
+  //   {% endfor %}
+  // {% endif %}
+  // =====================================================
+  */
+  
+  const tbody = document.getElementById('myPropostasTable');
+  
+  if (propostas.length === 0) {
+    tbody.innerHTML = `
+      <div class="table-empty">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 48px; height: 48px; color: #94a3b8; margin-bottom: 1rem;">
+          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+        </svg>
+        <p>Ainda não submeteu nenhuma proposta de formação.</p>
+        <button class="btn btn-primary" onclick="openModalProporFormacao()">Propor Formação</button>
+      </div>
+    `;
+    return;
+  }
+  
+  tbody.innerHTML = propostas.map(p => {
+    const estadoClass = getEstadoPedidoClass(p.estado);
+    const estadoLabel = getEstadoPedidoLabel(p.estado);
+    const dataPedido = p.created_at ? new Date(p.created_at).toLocaleDateString('pt-PT') : '-';
+    const custo = p.custo_estimado ? `${parseFloat(p.custo_estimado).toFixed(2)}€` : '-';
+    const duracao = p.duracao_horas ? `${p.duracao_horas}h` : '-';
+    
+    return `
+      <div class="propostas-table-row" data-estado="${p.estado}">
+        <div class="proposta-title-cell">
+          <strong>${p.titulo}</strong>
+          ${p.modalidade === 'Obrigatória' ? '<span class="badge-mandatory">Obrigatória</span>' : ''}
+        </div>
+        <div>${p.tipo || '-'}</div>
+        <div>${p.entidade_formadora || '-'}</div>
+        <div>${duracao}</div>
+        <div>${custo}</div>
+        <div>${dataPedido}</div>
+        <div><span class="status-badge ${estadoClass}">${estadoLabel}</span></div>
+        <div>
+          <button class="btn-action" onclick="verDetalhesProposta('${p.id}')" title="Ver detalhes">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// Filtrar propostas por estado
+function filterMyPropostas(filter) {
+  document.querySelectorAll('[data-filter-propostas]').forEach(t => t.classList.remove('active'));
+  document.querySelector(`[data-filter-propostas="${filter}"]`).classList.add('active');
+  
+  let filtered = myPropostas;
+  if (filter === 'pendente') {
+    filtered = myPropostas.filter(p => p.estado === 'pendente_dirigente' || p.estado === 'pendente_rh' || p.estado === 'devolvido');
+  } else if (filter === 'aprovado') {
+    filtered = myPropostas.filter(p => p.estado === 'aprovado');
+  } else if (filter === 'rejeitado') {
+    filtered = myPropostas.filter(p => p.estado === 'rejeitado');
+  }
+  
+  renderMyPropostas(filtered);
+}
+
+// Ver detalhes da proposta
+function verDetalhesProposta(propostaId) {
+  const proposta = myPropostas.find(p => p.id === propostaId);
+  if (!proposta) return;
+  
+  const estadoClass = getEstadoPedidoClass(proposta.estado);
+  const estadoLabel = getEstadoPedidoLabel(proposta.estado);
+  const dataPedido = proposta.created_at ? new Date(proposta.created_at).toLocaleDateString('pt-PT', { day: 'numeric', month: 'long', year: 'numeric' }) : '-';
+  
+  let historicoHtml = '';
+  if (proposta.pedidos_formacao_historico && proposta.pedidos_formacao_historico.length > 0) {
+    const historico = proposta.pedidos_formacao_historico.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    historicoHtml = `
+      <div style="margin-top: 1.5rem; border-top: 1px solid #e2e8f0; padding-top: 1.5rem;">
+        <h4 style="font-size: 0.875rem; font-weight: 600; color: #1e293b; margin-bottom: 1rem;">Histórico do Pedido</h4>
+        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+          ${historico.map(h => `
+            <div style="display: flex; gap: 1rem; padding: 0.75rem; background: #f8fafc; border-radius: 8px;">
+              <div style="width: 8px; height: 8px; background: #00b276; border-radius: 50%; margin-top: 6px; flex-shrink: 0;"></div>
+              <div style="flex: 1;">
+                <div style="font-weight: 600; color: #1e293b; font-size: 0.875rem;">${h.acao}</div>
+                ${h.comentario ? `<div style="color: #64748b; font-size: 0.8rem; margin-top: 0.25rem;">${h.comentario}</div>` : ''}
+                <div style="color: #94a3b8; font-size: 0.75rem; margin-top: 0.25rem;">
+                  ${h.user_nome || 'Sistema'} • ${new Date(h.created_at).toLocaleDateString('pt-PT', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                </div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }
+  
+  document.getElementById('modalPropostaTitulo').textContent = proposta.titulo;
+  document.getElementById('modalPropostaContent').innerHTML = `
+    <div style="margin-bottom: 1.5rem;">
+      <span class="status-badge ${estadoClass}" style="font-size: 0.8rem; padding: 0.5rem 1rem;">${estadoLabel}</span>
+    </div>
+    
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.25rem; margin-bottom: 1.5rem;">
+      <div>
+        <div style="font-size: 0.75rem; font-weight: 600; color: #64748b; text-transform: uppercase; margin-bottom: 0.25rem;">Tipo</div>
+        <div style="color: #1e293b;">${proposta.tipo || '-'}</div>
+      </div>
+      <div>
+        <div style="font-size: 0.75rem; font-weight: 600; color: #64748b; text-transform: uppercase; margin-bottom: 0.25rem;">Modalidade</div>
+        <div style="color: #1e293b;">${proposta.modalidade || '-'}</div>
+      </div>
+      <div>
+        <div style="font-size: 0.75rem; font-weight: 600; color: #64748b; text-transform: uppercase; margin-bottom: 0.25rem;">Entidade Formadora</div>
+        <div style="color: #1e293b;">${proposta.entidade_formadora || '-'}</div>
+      </div>
+      <div>
+        <div style="font-size: 0.75rem; font-weight: 600; color: #64748b; text-transform: uppercase; margin-bottom: 0.25rem;">Duração</div>
+        <div style="color: #1e293b;">${proposta.duracao_horas ? proposta.duracao_horas + ' horas' : '-'}</div>
+      </div>
+      <div>
+        <div style="font-size: 0.75rem; font-weight: 600; color: #64748b; text-transform: uppercase; margin-bottom: 0.25rem;">Custo Estimado</div>
+        <div style="color: #1e293b;">${proposta.custo_estimado ? parseFloat(proposta.custo_estimado).toFixed(2) + '€' : '-'}</div>
+      </div>
+      <div>
+        <div style="font-size: 0.75rem; font-weight: 600; color: #64748b; text-transform: uppercase; margin-bottom: 0.25rem;">Data do Pedido</div>
+        <div style="color: #1e293b;">${dataPedido}</div>
+      </div>
+    </div>
+    
+    ${proposta.objetivo ? `
+      <div style="margin-bottom: 1.25rem;">
+        <div style="font-size: 0.75rem; font-weight: 600; color: #64748b; text-transform: uppercase; margin-bottom: 0.5rem;">Objetivo</div>
+        <div style="color: #475569; line-height: 1.6; background: #f8fafc; padding: 1rem; border-radius: 8px;">${proposta.objetivo}</div>
+      </div>
+    ` : ''}
+    
+    <div style="margin-bottom: 1.25rem;">
+      <div style="font-size: 0.75rem; font-weight: 600; color: #64748b; text-transform: uppercase; margin-bottom: 0.5rem;">Justificação</div>
+      <div style="color: #475569; line-height: 1.6; background: #f8fafc; padding: 1rem; border-radius: 8px;">${proposta.justificacao || '-'}</div>
+    </div>
+    
+    ${proposta.dirigente_comentario ? `
+      <div style="margin-bottom: 1.25rem; padding: 1rem; background: #fef3c7; border-radius: 8px; border-left: 4px solid #f59e0b;">
+        <div style="font-size: 0.75rem; font-weight: 600; color: #92400e; margin-bottom: 0.5rem;">Comentário do Dirigente</div>
+        <div style="color: #78350f;">${proposta.dirigente_comentario}</div>
+      </div>
+    ` : ''}
+    
+    ${proposta.rh_comentario ? `
+      <div style="margin-bottom: 1.25rem; padding: 1rem; background: #dbeafe; border-radius: 8px; border-left: 4px solid #3b82f6;">
+        <div style="font-size: 0.75rem; font-weight: 600; color: #1e40af; margin-bottom: 0.5rem;">Comentário RH</div>
+        <div style="color: #1e3a8a;">${proposta.rh_comentario}</div>
+      </div>
+    ` : ''}
+    
+    ${historicoHtml}
+  `;
+  
+  document.getElementById('modalDetalhesProposta').classList.add('show');
+}
+
+// Helpers para estado do pedido
+function getEstadoPedidoClass(estado) {
+  const classes = {
+    'pendente_dirigente': 'status-pending',
+    'pendente_rh': 'status-pending-rh',
+    'aprovado': 'status-approved',
+    'rejeitado': 'status-rejected',
+    'devolvido': 'status-returned'
+  };
+  return classes[estado] || 'status-pending';
+}
+
+function getEstadoPedidoLabel(estado) {
+  const labels = {
+    'pendente_dirigente': 'Pendente Dirigente',
+    'pendente_rh': 'Pendente RH',
+    'aprovado': 'Aprovado',
+    'rejeitado': 'Rejeitado',
+    'devolvido': 'Devolvido'
+  };
+  return labels[estado] || estado;
 }
 
 // ==========================================
@@ -576,7 +934,6 @@ function openModalProporFormacao() {
     return;
   }
   
-  // Reset form
   document.getElementById('formProporFormacao').reset();
   document.getElementById('fileUploadText').textContent = 'Clique para carregar documento (PDF, DOC, DOCX)';
   document.getElementById('fileUploadArea').style.borderColor = '#e2e8f0';
@@ -596,6 +953,45 @@ function handlePedidoFileSelect(input) {
 }
 
 async function submeterPedidoFormacao() {
+  /*
+  // =====================================================
+  // POWER PAGES - Create Record
+  // =====================================================
+  // 
+  // var recordData = {
+  //   "cr_titulo": document.getElementById('pedidoTitulo').value,
+  //   "cr_tipo": document.getElementById('pedidoTipo').value,
+  //   "cr_modalidade": document.getElementById('pedidoModalidade').value,
+  //   "cr_entidade_formadora": document.getElementById('pedidoEntidade').value,
+  //   "cr_duracao_horas": parseInt(document.getElementById('pedidoDuracao').value) || null,
+  //   "cr_data_prevista_inicio": document.getElementById('pedidoDataInicio').value || null,
+  //   "cr_custo_estimado": parseFloat(document.getElementById('pedidoCusto').value) || null,
+  //   "cr_objetivo": document.getElementById('pedidoObjetivo').value,
+  //   "cr_justificacao": document.getElementById('pedidoJustificacao').value,
+  //   "cr_solicitante_id@odata.bind": "/contacts({{user.id}})",
+  //   "cr_departamento_id@odata.bind": "/cr_departamentos({{user.departamento_id}})",
+  //   "cr_estado": 100000000  // Valor do OptionSet para "Pendente Dirigente"
+  // };
+  //
+  // webapi.safeAjax({
+  //   type: "POST",
+  //   url: "/_api/cr_pedidos_formacao",
+  //   contentType: "application/json",
+  //   data: JSON.stringify(recordData),
+  //   success: function(data, textStatus, xhr) {
+  //     var newId = xhr.getResponseHeader("entityid");
+  //     closeModal('modalProporFormacao');
+  //     showToast('Pedido submetido com sucesso!', 'success');
+  //     loadMyPropostas(); // Recarregar lista
+  //   },
+  //   error: function(xhr) {
+  //     console.error("Erro ao criar pedido:", xhr);
+  //     showToast('Erro ao submeter pedido.', 'error');
+  //   }
+  // });
+  // =====================================================
+  */
+  
   if (!currentUser) {
     showToast('É necessário estar autenticado.', 'error');
     return;
@@ -634,7 +1030,6 @@ async function submeterPedidoFormacao() {
     
     const result = await DataService.createPedidoFormacao(pedido);
     
-    // Adicionar ao histórico
     await DataService.addHistoricoPedido(
       result.id,
       'Pedido submetido',
@@ -647,6 +1042,9 @@ async function submeterPedidoFormacao() {
     
     closeModal('modalProporFormacao');
     showToast('Pedido de formação submetido com sucesso! Aguarde aprovação.', 'success');
+    
+    // Recarregar propostas para mostrar a nova
+    await loadMyPropostas();
     
   } catch (error) {
     console.error('Erro ao submeter pedido:', error);
@@ -682,7 +1080,6 @@ function updateStats() {
 
 function buildFormacaoEvents() {
   formacaoEvents = {};
-  
   allFormacoes.forEach(f => {
     const sessoes = f.formacao_sessoes || [];
     sessoes.forEach(s => {
@@ -755,17 +1152,14 @@ function renderFormacaoCalendar() {
   const currentMonth = formacaoCalendarDate.getMonth();
   const currentYear = formacaoCalendarDate.getFullYear();
   
-  // Mês atual
   document.getElementById('formacaoCurrentMonthName').textContent = `${months[currentMonth]} ${currentYear}`;
   renderFormacaoMonthDays('formacaoCurrentMonthGrid', currentYear, currentMonth);
   
-  // Próximo mês
   const nextMonth = currentMonth === 11 ? 0 : currentMonth + 1;
   const nextYear = currentMonth === 11 ? currentYear + 1 : currentYear;
   document.getElementById('formacaoNextMonthName').textContent = `${months[nextMonth]} ${nextYear}`;
   renderFormacaoMonthDays('formacaoNextMonthGrid', nextYear, nextMonth);
   
-  // Renderizar eventos próximos
   renderFormacaoUpcomingEvents();
 }
 
@@ -777,12 +1171,10 @@ function renderFormacaoMonthDays(containerId, year, month) {
   
   let html = '';
   
-  // Dias vazios no início
   for (let i = 0; i < firstDay; i++) {
     html += '<p class="day-number other-month"></p>';
   }
   
-  // Dias do mês
   for (let day = 1; day <= daysInMonth; day++) {
     const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     const hasEvents = formacaoEvents[dateStr] && formacaoEvents[dateStr].length > 0;
@@ -799,13 +1191,9 @@ function renderFormacaoMonthDays(containerId, year, month) {
 }
 
 function selectFormacaoDate(dateStr) {
-  // Remover seleção anterior
   document.querySelectorAll('.calendar-grid .day-number.active').forEach(el => el.classList.remove('active'));
-  
-  // Adicionar seleção
   document.querySelectorAll(`[data-date="${dateStr}"]`).forEach(el => el.classList.add('active'));
   
-  // Mostrar eventos do dia
   const events = formacaoEvents[dateStr] || [];
   const dateParts = dateStr.split('-');
   const dateObj = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
@@ -851,7 +1239,6 @@ function renderFormacaoUpcomingEvents() {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   
-  // Obter próximos eventos
   const upcomingEvents = [];
   Object.keys(formacaoEvents).sort().forEach(dateStr => {
     const eventDate = new Date(dateStr);
@@ -862,7 +1249,6 @@ function renderFormacaoUpcomingEvents() {
     }
   });
   
-  // Limitar a 5 eventos
   const eventsToShow = upcomingEvents.slice(0, 5);
   
   if (eventsToShow.length === 0) {
@@ -911,7 +1297,6 @@ function renderCatalog(formacoes) {
   grid.innerHTML = disponiveis.map(f => {
     const categoria = getCategoriaClass(f.titulo);
     
-    // Obter formadores (múltiplos possíveis)
     let formadorDisplay = 'Formador interno';
     if (f.formacao_formadores && f.formacao_formadores.length > 0) {
       const nomes = f.formacao_formadores.map(ff => {
@@ -942,7 +1327,6 @@ function renderCatalog(formacoes) {
     if (f.modalidade === 'Obrigatória') badges += '<span class="course-badge mandatory">Obrigatória</span>';
     if (isNew(f.created_at)) badges += '<span class="course-badge new">Nova</span>';
     
-    // Mostrar inscritos apenas para quem tem permissão
     const showInscritos = canSeeInscritos(f);
     const inscritosDisplay = showInscritos ? `${inscritos}/${vagas}` : `${vagas} vagas`;
     
@@ -1036,7 +1420,6 @@ function renderMyFormacoes(formacoes) {
   }
   
   tbody.innerHTML = formacoes.map(f => {
-    // Obter formador (limpo de prefixos)
     let formadorDisplay = 'Formador interno';
     if (f.formacao_formadores && f.formacao_formadores.length > 0) {
       const nomes = f.formacao_formadores.map(ff => {
@@ -1181,11 +1564,9 @@ function scrollToMinhasFormacoes() {
 // ==========================================
 
 function switchCourseTab(tabName) {
-  // Remover active de todas as tabs
   document.querySelectorAll('.modal-tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
   
-  // Adicionar active à tab selecionada
   document.querySelector(`.modal-tab[data-tab="${tabName}"]`).classList.add('active');
   document.getElementById(`tab${tabName.charAt(0).toUpperCase() + tabName.slice(1)}`).classList.add('active');
 }
@@ -1194,7 +1575,6 @@ async function openCourseDetails(formacaoId) {
   selectedFormacao = allFormacoes.find(f => f.id === formacaoId);
   if (!selectedFormacao) return;
   
-  // Obter formador (limpo de prefixos)
   let formadorDisplay = 'Formador interno';
   if (selectedFormacao.formacao_formadores && selectedFormacao.formacao_formadores.length > 0) {
     const nomes = selectedFormacao.formacao_formadores.map(ff => {
@@ -1215,12 +1595,10 @@ async function openCourseDetails(formacaoId) {
     i => i.colaborador_id === currentUser.id && i.estado === 'Inscrito'
   );
   
-  // Verificar se pode ver inscritos
   const showInscritos = canSeeInscritos(selectedFormacao);
   
   document.getElementById('modalCourseTitle').textContent = selectedFormacao.titulo;
   
-  // Tab: Detalhes - mostrar inscritos apenas se tiver permissão
   const inscritosHtml = showInscritos ? `
     <div style="text-align: center;">
       <div style="font-size: 1.25rem; font-weight: 700; color: #1e293b;">${inscritos}/${vagas}</div>
@@ -1279,12 +1657,9 @@ async function openCourseDetails(formacaoId) {
     ` : ''}
   `;
   
-  // Tab: Conteúdo Programático
   const conteudoProgramatico = selectedFormacao.conteudo_programatico || null;
   document.getElementById('tabConteudo').innerHTML = conteudoProgramatico ? `
-    <div class="conteudo-programatico">
-      ${conteudoProgramatico}
-    </div>
+    <div class="conteudo-programatico">${conteudoProgramatico}</div>
   ` : `
     <div class="empty-tab-state">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 48px; height: 48px; color: #94a3b8; margin-bottom: 1rem;">
@@ -1297,7 +1672,6 @@ async function openCourseDetails(formacaoId) {
     </div>
   `;
   
-  // Tab: Anexos
   const anexos = selectedFormacao.formacao_anexos || [];
   document.getElementById('tabAnexos').innerHTML = anexos.length > 0 ? `
     <div class="anexos-list">
@@ -1332,7 +1706,6 @@ async function openCourseDetails(formacaoId) {
     </div>
   `;
   
-  // Reset para tab Detalhes
   switchCourseTab('detalhes');
   
   const btnInscrever = document.getElementById('btnInscrever');
@@ -1416,12 +1789,9 @@ document.querySelectorAll('.modal-overlay').forEach(modal => {
   white-space: nowrap;
   text-decoration: none;
 }
-
 .hero-btn span {
   white-space: nowrap;
 }
-
-/* Botão outline */
 .hero-btn-outline {
   background: transparent;
   border: 2px solid rgba(255, 255, 255, 0.5);
@@ -1431,8 +1801,6 @@ document.querySelectorAll('.modal-overlay').forEach(modal => {
   background: rgba(255, 255, 255, 0.1);
   border-color: white;
 }
-
-/* Botão Gestão */
 .hero-btn-gestao {
   background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
   color: white;
@@ -1450,22 +1818,18 @@ document.querySelectorAll('.modal-overlay').forEach(modal => {
   align-items: center;
   gap: 0.5rem;
 }
-
 .calendar-toggle-btn .toggle-label {
   font-weight: 600;
   color: #1e293b;
 }
-
 .calendar-toggle-btn .toggle-separator {
   color: #94a3b8;
 }
-
 .calendar-toggle-btn .toggle-icon {
   width: 16px;
   height: 16px;
   transition: transform 0.3s;
 }
-
 .calendar-toggle-btn .toggle-action {
   color: #64748b;
 }
@@ -1474,7 +1838,6 @@ document.querySelectorAll('.modal-overlay').forEach(modal => {
 .modal-course-details {
   max-width: 750px;
 }
-
 .modal-tabs {
   display: flex;
   gap: 0.25rem;
@@ -1483,7 +1846,6 @@ document.querySelectorAll('.modal-overlay').forEach(modal => {
   margin: 0 -1.5rem;
   padding: 0.5rem 1.5rem;
 }
-
 .modal-tab {
   display: flex;
   align-items: center;
@@ -1499,32 +1861,26 @@ document.querySelectorAll('.modal-overlay').forEach(modal => {
   transition: all 0.2s;
   white-space: nowrap;
 }
-
 .modal-tab svg {
   width: 16px;
   height: 16px;
 }
-
 .modal-tab:hover {
   color: #1e293b;
   background: rgba(0, 178, 118, 0.05);
 }
-
 .modal-tab.active {
   color: #00b276;
   background: white;
   border-bottom: 2px solid #00b276;
   margin-bottom: -1px;
 }
-
 .tab-content {
   display: none;
 }
-
 .tab-content.active {
   display: block;
 }
-
 .empty-tab-state {
   text-align: center;
   padding: 3rem 2rem;
@@ -1535,19 +1891,16 @@ document.querySelectorAll('.modal-overlay').forEach(modal => {
   line-height: 1.7;
   color: #475569;
 }
-
 .conteudo-programatico h4,
 .conteudo-programatico h5 {
   color: #1e293b;
   margin: 1rem 0 0.5rem;
 }
-
 .conteudo-programatico ul,
 .conteudo-programatico ol {
   padding-left: 1.5rem;
   margin: 0.5rem 0;
 }
-
 .conteudo-programatico li {
   margin-bottom: 0.25rem;
 }
@@ -1558,7 +1911,6 @@ document.querySelectorAll('.modal-overlay').forEach(modal => {
   flex-direction: column;
   gap: 0.75rem;
 }
-
 .anexo-item {
   display: flex;
   align-items: center;
@@ -1569,12 +1921,10 @@ document.querySelectorAll('.modal-overlay').forEach(modal => {
   border: 1px solid #e2e8f0;
   transition: all 0.2s;
 }
-
 .anexo-item:hover {
   background: #f1f5f9;
   border-color: #cbd5e1;
 }
-
 .anexo-icon {
   width: 40px;
   height: 40px;
@@ -1585,20 +1935,17 @@ document.querySelectorAll('.modal-overlay').forEach(modal => {
   justify-content: center;
   flex-shrink: 0;
 }
-
 .anexo-icon svg {
   width: 20px;
   height: 20px;
   color: #2563eb;
 }
-
 .anexo-info {
   flex: 1;
   display: flex;
   flex-direction: column;
   min-width: 0;
 }
-
 .anexo-nome {
   font-weight: 600;
   color: #1e293b;
@@ -1607,12 +1954,10 @@ document.querySelectorAll('.modal-overlay').forEach(modal => {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
 .anexo-tipo {
   font-size: 0.75rem;
   color: #64748b;
 }
-
 .anexo-download {
   width: 36px;
   height: 36px;
@@ -1626,14 +1971,134 @@ document.querySelectorAll('.modal-overlay').forEach(modal => {
   transition: all 0.2s;
   flex-shrink: 0;
 }
-
 .anexo-download:hover {
   background: #009966;
   transform: translateY(-2px);
 }
-
 .anexo-download svg {
   width: 18px;
   height: 18px;
+}
+
+/* ==========================================
+   ESTILOS: MINHAS PROPOSTAS DE FORMAÇÃO
+   ========================================== */
+.my-proposals-section {
+  margin-top: 2rem;
+}
+
+.propostas-table-header {
+  display: grid;
+  grid-template-columns: 2fr 0.8fr 1.2fr 0.8fr 0.8fr 1fr 1.2fr 0.8fr;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  background: #f8fafc;
+  border-radius: 10px 10px 0 0;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.propostas-table-body {
+  background: white;
+  border-radius: 0 0 10px 10px;
+}
+
+.propostas-table-row {
+  display: grid;
+  grid-template-columns: 2fr 0.8fr 1.2fr 0.8fr 0.8fr 1fr 1.2fr 0.8fr;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  align-items: center;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 0.875rem;
+  color: #475569;
+  transition: all 0.15s ease;
+}
+
+.propostas-table-row:hover {
+  background: #f8fafc;
+}
+
+.propostas-table-row:last-child {
+  border-bottom: none;
+}
+
+.proposta-title-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.proposta-title-cell strong {
+  color: #1e293b;
+  font-weight: 600;
+}
+
+/* Status badges para propostas */
+.status-pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status-pending-rh {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.status-approved {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.status-rejected {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.status-returned {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+/* Botão pequeno */
+.btn-sm {
+  padding: 0.5rem 1rem;
+  font-size: 0.8rem;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .propostas-table-header,
+  .propostas-table-row {
+    grid-template-columns: 1.5fr 0.7fr 1fr 0.7fr 0.7fr 0.9fr 1fr 0.7fr;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .propostas-table-header {
+    display: none;
+  }
+  
+  .propostas-table-row {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+    padding: 1rem;
+  }
+  
+  .propostas-table-row > div::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: #64748b;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 0.25rem;
+  }
 }
 </style>
