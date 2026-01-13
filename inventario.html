@@ -5,104 +5,52 @@ title: Inventário
 
 <link rel="stylesheet" href="{{ '/web-files/css/inventario.css' | relative_url }}">
 
-<div class="inventario-page">
-  <!-- Page Header -->
-  <div class="page-header-inv">
-    <div class="page-header-content">
-      <div class="page-header-left">
-        <h1>Inventário</h1>
-        <p>Gerir artigos atribuídos, pedidos em curso e histórico</p>
-      </div>
-      <div class="page-header-right">
-        <a href="{{ '/novo-pedido-inventario' | relative_url }}" class="btn-primary-inv">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="12" y1="5" x2="12" y2="19"></line>
-            <line x1="5" y1="12" x2="19" y2="12"></line>
-          </svg>
-          Novo Pedido
+<main class="main-inv">
+  <div class="responsive-wrapper-inv">
+    <!-- Header -->
+    <div class="main-header-inv">
+      <h1>Inventários</h1>
+      <div class="header-actions-inv">
+        <a href="{{ '/novo-pedido-inventario' | relative_url }}" class="button-inv">
+          <span>+</span>
+          Nova Requisição
         </a>
       </div>
     </div>
-  </div>
 
-  <!-- Stats Cards -->
-  <div class="stats-grid">
-    <div class="stat-card green" onclick="changeTabFromCard('atribuidos')">
-      <div class="stat-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/>
-          <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
-          <line x1="12" y1="22.08" x2="12" y2="12"/>
-        </svg>
+    <!-- Stats Cards -->
+    <div class="stats-row-inv">
+      <div class="stat-card-inv green" onclick="changeTabFromCard('atribuidos')">
+        <div class="stat-icon-inv">📦</div>
+        <div class="stat-content-inv">
+          <span class="stat-number-inv" id="statAtribuidos">0</span>
+          <span class="stat-label-inv">Artigos Atribuídos</span>
+        </div>
       </div>
-      <div class="stat-content">
-        <span class="stat-number" id="statAtribuidos">0</span>
-        <span class="stat-label">Artigos Atribuídos</span>
+      <div class="stat-card-inv blue" onclick="changeTabFromCard('emcurso')">
+        <div class="stat-icon-inv">⏳</div>
+        <div class="stat-content-inv">
+          <span class="stat-number-inv" id="statEmCurso">0</span>
+          <span class="stat-label-inv">Pedidos em Curso</span>
+        </div>
       </div>
-    </div>
-    
-    <div class="stat-card blue" onclick="changeTabFromCard('emcurso')">
-      <div class="stat-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="10"/>
-          <polyline points="12 6 12 12 16 14"/>
-        </svg>
+      <div class="stat-card-inv orange" onclick="changeTabFromCard('historico')">
+        <div class="stat-icon-inv">📋</div>
+        <div class="stat-content-inv">
+          <span class="stat-number-inv" id="statHistorico">0</span>
+          <span class="stat-label-inv">Histórico</span>
+        </div>
       </div>
-      <div class="stat-content">
-        <span class="stat-number" id="statEmCurso">0</span>
-        <span class="stat-label">Pedidos em Curso</span>
-      </div>
-    </div>
-    
-    <div class="stat-card orange" onclick="changeTabFromCard('historico')">
-      <div class="stat-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-          <polyline points="14 2 14 8 20 8"/>
-          <line x1="16" y1="13" x2="8" y2="13"/>
-          <line x1="16" y1="17" x2="8" y2="17"/>
-        </svg>
-      </div>
-      <div class="stat-content">
-        <span class="stat-number" id="statHistorico">0</span>
-        <span class="stat-label">Histórico</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- Tabs -->
-  <div class="tabs-container">
-    <div class="tabs-header">
-      <button class="tab-button active" onclick="changeTab('atribuidos')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/>
-        </svg>
-        Artigos Atribuídos
-      </button>
-      <button class="tab-button" onclick="changeTab('emcurso')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="10"/>
-          <polyline points="12 6 12 12 16 14"/>
-        </svg>
-        Pedidos em Curso
-      </button>
-      <button class="tab-button" onclick="changeTab('historico')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-          <polyline points="14 2 14 8 20 8"/>
-        </svg>
-        Histórico
-      </button>
     </div>
 
     <!-- Filters -->
-    <div class="filters-bar">
-      <div class="search-box">
+    <div class="filters-row-inv">
+      <div class="search-wrapper-inv">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="11" cy="11" r="8"/>
           <path d="m21 21-4.35-4.35"/>
         </svg>
-        <input type="text" id="searchInput" placeholder="Pesquisar..." oninput="filtrarTabela()">
+        <input type="text" id="searchInput" placeholder="Pesquisar por código, descrição ou artigo..." oninput="filtrarTabela()">
       </div>
       <select id="filterCategoria" onchange="filtrarTabela()">
         <option value="">Todas as Categorias</option>
@@ -115,83 +63,98 @@ title: Inventário
       </select>
     </div>
 
-    <!-- Tab Contents -->
-    <div id="tab-atribuidos" class="tab-content active">
-      <div class="table-container">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Código</th>
-              <th>Descrição</th>
-              <th>Categoria</th>
-              <th>Qtd</th>
-              <th>Nº Série</th>
-              <th>Data Atribuição</th>
-              <th>Localização</th>
-              <th>Estado</th>
-              <th>Ações</th>
-            </tr>
-          </thead>
-          <tbody id="bodyAtribuidos"></tbody>
-        </table>
+    <!-- Tabs Container -->
+    <div class="tabs-container-inv">
+      <div class="tabs-header-inv">
+        <button class="tab-button-inv active" onclick="changeTab('atribuidos')">
+          📦 Artigos Atribuídos
+        </button>
+        <button class="tab-button-inv" onclick="changeTab('emcurso')">
+          ⏳ Pedidos em Curso
+        </button>
+        <button class="tab-button-inv" onclick="changeTab('historico')">
+          📋 Histórico
+        </button>
       </div>
-    </div>
 
-    <div id="tab-emcurso" class="tab-content">
-      <div class="table-container">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Nº Pedido</th>
-              <th>Tipo</th>
-              <th>Artigo</th>
-              <th>Qtd</th>
-              <th>Local Destino</th>
-              <th>Data Pedido</th>
-              <th>Estado</th>
-              <th>Ações</th>
-            </tr>
-          </thead>
-          <tbody id="bodyEmCurso"></tbody>
-        </table>
+      <!-- Tab: Artigos Atribuídos -->
+      <div id="tab-atribuidos" class="tab-content-inv active">
+        <div class="table-wrapper-inv">
+          <table class="table-inv">
+            <thead>
+              <tr>
+                <th>Código</th>
+                <th>Descrição</th>
+                <th>Categoria</th>
+                <th>Qtd</th>
+                <th>Nº Série</th>
+                <th>Data Atribuição</th>
+                <th>Localização</th>
+                <th>Estado</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="bodyAtribuidos"></tbody>
+          </table>
+        </div>
       </div>
-    </div>
 
-    <div id="tab-historico" class="tab-content">
-      <div class="table-container">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Nº Pedido</th>
-              <th>Tipo</th>
-              <th>Artigo</th>
-              <th>Qtd</th>
-              <th>Local Destino</th>
-              <th>Data Pedido</th>
-              <th>Data Conclusão</th>
-              <th>Estado</th>
-              <th>Ações</th>
-            </tr>
-          </thead>
-          <tbody id="bodyHistorico"></tbody>
-        </table>
+      <!-- Tab: Pedidos em Curso -->
+      <div id="tab-emcurso" class="tab-content-inv">
+        <div class="table-wrapper-inv">
+          <table class="table-inv">
+            <thead>
+              <tr>
+                <th>Nº Pedido</th>
+                <th>Tipo</th>
+                <th>Artigo</th>
+                <th>Qtd</th>
+                <th>Local Destino</th>
+                <th>Data Pedido</th>
+                <th>Estado</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="bodyEmCurso"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Tab: Histórico -->
+      <div id="tab-historico" class="tab-content-inv">
+        <div class="table-wrapper-inv">
+          <table class="table-inv">
+            <thead>
+              <tr>
+                <th>Nº Pedido</th>
+                <th>Tipo</th>
+                <th>Artigo</th>
+                <th>Qtd</th>
+                <th>Local Destino</th>
+                <th>Data Pedido</th>
+                <th>Data Conclusão</th>
+                <th>Estado</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="bodyHistorico"></tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
-</div>
+</main>
 
 <!-- Modal Ver Detalhes -->
-<div class="modal-overlay" id="modalDetalhes">
+<div class="modal-overlay-inv" id="modalDetalhes">
   <div class="modal-inv">
     <div class="modal-header-inv">
       <h3>Detalhes do Artigo</h3>
       <button class="modal-close-inv" onclick="fecharModal('modalDetalhes')">×</button>
     </div>
-    <div class="modal-body-inv" id="modalDetalhesContent">
-      <!-- Conteúdo dinâmico -->
-    </div>
+    <div class="modal-body-inv" id="modalDetalhesContent"></div>
     <div class="modal-footer-inv">
-      <button class="btn-secondary-inv" onclick="fecharModal('modalDetalhes')">Fechar</button>
+      <button class="button-inv secondary" onclick="fecharModal('modalDetalhes')">Fechar</button>
     </div>
   </div>
 </div>
@@ -226,29 +189,27 @@ function atualizarStats() {
 function renderAtribuidos() {
   const tbody = document.getElementById('bodyAtribuidos');
   if (dadosAtribuidos.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="9" class="empty-state-cell"><div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg><h3>Sem artigos atribuídos</h3><p>Não tem artigos de inventário atribuídos de momento.</p></div></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="9" class="empty-state-inv"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg><h3>Sem artigos atribuídos</h3><p>Não tem artigos de inventário atribuídos de momento.</p></td></tr>';
     return;
   }
   
   let html = '';
-  dadosAtribuidos.forEach(a => {
-    const estadoClass = a.estado.toLowerCase();
-    html += `<tr>
-      <td><strong>${a.codigo}</strong></td>
-      <td>${a.descricao}</td>
-      <td><span class="categoria-badge">${a.categoria}</span></td>
-      <td>${a.qtd}</td>
-      <td><code>${a.serie}</code></td>
-      <td>${a.dataAtribuicao}</td>
-      <td>${a.localizacao}</td>
-      <td><span class="status-badge status-${estadoClass}">${a.estado}</span></td>
-      <td>
-        <div class="action-buttons">
-          <button class="action-btn primary" onclick="verDetalhesArtigo('${a.codigo}')">Ver</button>
-          <button class="action-btn" onclick="iniciarDevolucao('${a.codigo}', '${a.descricao}')">Devolver</button>
-        </div>
-      </td>
-    </tr>`;
+  dadosAtribuidos.forEach(function(a) {
+    const estadoClass = a.estado.toLowerCase().replace(/\s+/g, '-');
+    html += '<tr>';
+    html += '<td><strong>' + a.codigo + '</strong></td>';
+    html += '<td>' + a.descricao + '</td>';
+    html += '<td>' + a.categoria + '</td>';
+    html += '<td>' + a.qtd + '</td>';
+    html += '<td><code>' + a.serie + '</code></td>';
+    html += '<td>' + a.dataAtribuicao + '</td>';
+    html += '<td>' + a.localizacao + '</td>';
+    html += '<td><span class="status-badge-inv status-' + estadoClass + '">' + a.estado + '</span></td>';
+    html += '<td><div class="action-buttons-inv">';
+    html += '<button class="action-btn-inv primary" onclick="verDetalhesArtigo(\'' + a.codigo + '\')">Ver</button>';
+    html += '<button class="action-btn-inv" onclick="iniciarDevolucao(\'' + a.codigo + '\', \'' + a.descricao + '\')">Devolver</button>';
+    html += '</div></td>';
+    html += '</tr>';
   });
   tbody.innerHTML = html;
 }
@@ -256,28 +217,28 @@ function renderAtribuidos() {
 function renderEmCurso() {
   const tbody = document.getElementById('bodyEmCurso');
   if (dadosEmCurso.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="8" class="empty-state-cell"><div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg><h3>Sem pedidos em curso</h3><p>Não tem pedidos de inventário pendentes.</p></div></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" class="empty-state-inv"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg><h3>Sem pedidos em curso</h3><p>Não tem pedidos de inventário pendentes.</p></td></tr>';
     return;
   }
   
   let html = '';
-  dadosEmCurso.forEach(p => {
+  dadosEmCurso.forEach(function(p) {
     const estadoClass = p.estado.toLowerCase().replace(/\s+/g, '-');
-    html += `<tr>
-      <td><strong>${p.id}</strong></td>
-      <td>${p.tipo}</td>
-      <td>${p.item}</td>
-      <td>${p.qtd}</td>
-      <td>${p.local}</td>
-      <td>${p.data}</td>
-      <td><span class="status-badge status-${estadoClass}">${p.estado}</span></td>
-      <td>
-        <div class="action-buttons">
-          <button class="action-btn primary" onclick="verPedido('${p.id}')">Ver</button>
-          ${p.estado === 'Pronto para Levantamento' ? '<button class="action-btn success" onclick="confirmarLevantamento(\'' + p.id + '\')">Confirmar</button>' : ''}
-        </div>
-      </td>
-    </tr>`;
+    html += '<tr>';
+    html += '<td><strong>' + p.id + '</strong></td>';
+    html += '<td>' + p.tipo + '</td>';
+    html += '<td>' + p.item + '</td>';
+    html += '<td>' + p.qtd + '</td>';
+    html += '<td>' + p.local + '</td>';
+    html += '<td>' + p.data + '</td>';
+    html += '<td><span class="status-badge-inv status-' + estadoClass + '">' + p.estado + '</span></td>';
+    html += '<td><div class="action-buttons-inv">';
+    html += '<button class="action-btn-inv primary" onclick="verPedido(\'' + p.id + '\')">Ver</button>';
+    if (p.estado === 'Pronto para Levantamento') {
+      html += '<button class="action-btn-inv success" onclick="confirmarLevantamento(\'' + p.id + '\')">Confirmar</button>';
+    }
+    html += '</div></td>';
+    html += '</tr>';
   });
   tbody.innerHTML = html;
 }
@@ -285,50 +246,48 @@ function renderEmCurso() {
 function renderHistorico() {
   const tbody = document.getElementById('bodyHistorico');
   if (dadosHistorico.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="9" class="empty-state-cell"><div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg><h3>Sem histórico</h3><p>Não existem pedidos concluídos no seu histórico.</p></div></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="9" class="empty-state-inv"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg><h3>Sem histórico</h3><p>Não existem pedidos concluídos no seu histórico.</p></td></tr>';
     return;
   }
   
   let html = '';
-  dadosHistorico.forEach(p => {
-    const estadoClass = p.estado.toLowerCase();
-    html += `<tr>
-      <td><strong>${p.id}</strong></td>
-      <td>${p.tipo}</td>
-      <td>${p.item}</td>
-      <td>${p.qtd}</td>
-      <td>${p.local}</td>
-      <td>${p.data}</td>
-      <td>${p.dataConclusao}</td>
-      <td><span class="status-badge status-${estadoClass}">${p.estado}</span></td>
-      <td>
-        <div class="action-buttons">
-          <button class="action-btn primary" onclick="verPedido('${p.id}')">Ver</button>
-        </div>
-      </td>
-    </tr>`;
+  dadosHistorico.forEach(function(p) {
+    const estadoClass = p.estado.toLowerCase().replace(/\s+/g, '-');
+    html += '<tr>';
+    html += '<td><strong>' + p.id + '</strong></td>';
+    html += '<td>' + p.tipo + '</td>';
+    html += '<td>' + p.item + '</td>';
+    html += '<td>' + p.qtd + '</td>';
+    html += '<td>' + p.local + '</td>';
+    html += '<td>' + p.data + '</td>';
+    html += '<td>' + p.dataConclusao + '</td>';
+    html += '<td><span class="status-badge-inv status-' + estadoClass + '">' + p.estado + '</span></td>';
+    html += '<td><div class="action-buttons-inv">';
+    html += '<button class="action-btn-inv primary" onclick="verPedido(\'' + p.id + '\')">Ver</button>';
+    html += '</div></td>';
+    html += '</tr>';
   });
   tbody.innerHTML = html;
 }
 
 // Tab navigation
 function changeTab(tabName) {
-  document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
-  document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+  document.querySelectorAll('.tab-button-inv').forEach(function(btn) { btn.classList.remove('active'); });
+  document.querySelectorAll('.tab-content-inv').forEach(function(content) { content.classList.remove('active'); });
   
-  event.target.closest('.tab-button').classList.add('active');
+  event.target.closest('.tab-button-inv').classList.add('active');
   document.getElementById('tab-' + tabName).classList.add('active');
   
   atualizarFiltroEstado(tabName);
 }
 
 function changeTabFromCard(tabName) {
-  document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
-  document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+  document.querySelectorAll('.tab-button-inv').forEach(function(btn) { btn.classList.remove('active'); });
+  document.querySelectorAll('.tab-content-inv').forEach(function(content) { content.classList.remove('active'); });
   
-  const tabButtons = document.querySelectorAll('.tab-button');
-  tabButtons.forEach(btn => {
-    if (btn.getAttribute('onclick').includes(tabName)) {
+  var tabButtons = document.querySelectorAll('.tab-button-inv');
+  tabButtons.forEach(function(btn) {
+    if (btn.getAttribute('onclick').indexOf(tabName) !== -1) {
       btn.classList.add('active');
     }
   });
@@ -336,86 +295,55 @@ function changeTabFromCard(tabName) {
   document.getElementById('tab-' + tabName).classList.add('active');
   atualizarFiltroEstado(tabName);
   
-  document.querySelector('.tabs-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  document.querySelector('.tabs-container-inv').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function atualizarFiltroEstado(tabName) {
-  const filterEstado = document.getElementById('filterEstado');
+  var filterEstado = document.getElementById('filterEstado');
   filterEstado.innerHTML = '<option value="">Todos os Estados</option>';
   
   if (tabName === 'atribuidos') {
     filterEstado.innerHTML += '<option value="Ativo">Ativo</option><option value="Em Manutenção">Em Manutenção</option>';
   } else if (tabName === 'emcurso') {
-    const estados = ['Rascunho', 'Submetido', 'Em Preparação', 'Pronto para Levantamento'];
-    estados.forEach(e => filterEstado.innerHTML += `<option value="${e}">${e}</option>`);
+    var estados = ['Rascunho', 'Submetido', 'Em Preparação', 'Pronto para Levantamento'];
+    estados.forEach(function(e) { filterEstado.innerHTML += '<option value="' + e + '">' + e + '</option>'; });
   } else if (tabName === 'historico') {
-    const estados = ['Entregue', 'Devolvido', 'Indeferido', 'Cancelado'];
-    estados.forEach(e => filterEstado.innerHTML += `<option value="${e}">${e}</option>`);
+    var estados = ['Entregue', 'Devolvido', 'Indeferido', 'Cancelado'];
+    estados.forEach(function(e) { filterEstado.innerHTML += '<option value="' + e + '">' + e + '</option>'; });
   }
 }
 
 // Filtrar tabela
 function filtrarTabela() {
-  const search = document.getElementById('searchInput').value.toLowerCase();
-  const categoria = document.getElementById('filterCategoria').value;
-  const estado = document.getElementById('filterEstado').value;
-  
-  // Implementar filtro nas tabelas visíveis
+  var search = document.getElementById('searchInput').value.toLowerCase();
+  var categoria = document.getElementById('filterCategoria').value;
+  var estado = document.getElementById('filterEstado').value;
   console.log('Filtrar:', search, categoria, estado);
 }
 
 // Ações
 function verDetalhesArtigo(codigo) {
-  const artigo = dadosAtribuidos.find(a => a.codigo === codigo);
+  var artigo = dadosAtribuidos.find(function(a) { return a.codigo === codigo; });
   if (!artigo) return;
   
-  const content = `
-    <div class="detalhe-grid">
-      <div class="detalhe-item">
-        <span class="detalhe-label">Código</span>
-        <span class="detalhe-value">${artigo.codigo}</span>
-      </div>
-      <div class="detalhe-item">
-        <span class="detalhe-label">Descrição</span>
-        <span class="detalhe-value">${artigo.descricao}</span>
-      </div>
-      <div class="detalhe-item">
-        <span class="detalhe-label">Categoria</span>
-        <span class="detalhe-value">${artigo.categoria}</span>
-      </div>
-      <div class="detalhe-item">
-        <span class="detalhe-label">Quantidade</span>
-        <span class="detalhe-value">${artigo.qtd}</span>
-      </div>
-      <div class="detalhe-item">
-        <span class="detalhe-label">Nº de Série</span>
-        <span class="detalhe-value"><code>${artigo.serie}</code></span>
-      </div>
-      <div class="detalhe-item">
-        <span class="detalhe-label">Data de Atribuição</span>
-        <span class="detalhe-value">${artigo.dataAtribuicao}</span>
-      </div>
-      <div class="detalhe-item">
-        <span class="detalhe-label">Localização</span>
-        <span class="detalhe-value">${artigo.localizacao}</span>
-      </div>
-      <div class="detalhe-item">
-        <span class="detalhe-label">Estado</span>
-        <span class="detalhe-value"><span class="status-badge status-${artigo.estado.toLowerCase()}">${artigo.estado}</span></span>
-      </div>
-      <div class="detalhe-item">
-        <span class="detalhe-label">Alocado a</span>
-        <span class="detalhe-value">${artigo.alocadoA}</span>
-      </div>
-    </div>
-  `;
+  var content = '<div class="detalhe-grid-inv">' +
+    '<div class="detalhe-item-inv"><span class="detalhe-label-inv">Código</span><span class="detalhe-value-inv">' + artigo.codigo + '</span></div>' +
+    '<div class="detalhe-item-inv"><span class="detalhe-label-inv">Descrição</span><span class="detalhe-value-inv">' + artigo.descricao + '</span></div>' +
+    '<div class="detalhe-item-inv"><span class="detalhe-label-inv">Categoria</span><span class="detalhe-value-inv">' + artigo.categoria + '</span></div>' +
+    '<div class="detalhe-item-inv"><span class="detalhe-label-inv">Quantidade</span><span class="detalhe-value-inv">' + artigo.qtd + '</span></div>' +
+    '<div class="detalhe-item-inv"><span class="detalhe-label-inv">Nº de Série</span><span class="detalhe-value-inv"><code>' + artigo.serie + '</code></span></div>' +
+    '<div class="detalhe-item-inv"><span class="detalhe-label-inv">Data de Atribuição</span><span class="detalhe-value-inv">' + artigo.dataAtribuicao + '</span></div>' +
+    '<div class="detalhe-item-inv"><span class="detalhe-label-inv">Localização</span><span class="detalhe-value-inv">' + artigo.localizacao + '</span></div>' +
+    '<div class="detalhe-item-inv"><span class="detalhe-label-inv">Estado</span><span class="detalhe-value-inv"><span class="status-badge-inv status-' + artigo.estado.toLowerCase() + '">' + artigo.estado + '</span></span></div>' +
+    '<div class="detalhe-item-inv"><span class="detalhe-label-inv">Alocado a</span><span class="detalhe-value-inv">' + artigo.alocadoA + '</span></div>' +
+    '</div>';
   
   document.getElementById('modalDetalhesContent').innerHTML = content;
   document.getElementById('modalDetalhes').classList.add('show');
 }
 
 function verPedido(id) {
-  showToast('A carregar detalhes do pedido ' + id + '...', 'info');
+  alert('A carregar detalhes do pedido ' + id + '...');
 }
 
 function iniciarDevolucao(codigo, descricao) {
@@ -426,7 +354,7 @@ function iniciarDevolucao(codigo, descricao) {
 
 function confirmarLevantamento(id) {
   if (confirm('Confirmar o levantamento do pedido ' + id + '?\n\nAo confirmar, declara que recebeu o(s) item(ns).')) {
-    showToast('Levantamento confirmado com sucesso!', 'success');
+    alert('Levantamento confirmado com sucesso!');
   }
 }
 
@@ -434,31 +362,9 @@ function fecharModal(modalId) {
   document.getElementById(modalId).classList.remove('show');
 }
 
-// Toast
-function showToast(message, type) {
-  const container = document.querySelector('.toast-container') || createToastContainer();
-  const toast = document.createElement('div');
-  toast.className = 'toast ' + (type || 'success');
-  toast.textContent = message;
-  container.appendChild(toast);
-  
-  setTimeout(() => toast.classList.add('show'), 10);
-  setTimeout(() => {
-    toast.classList.remove('show');
-    setTimeout(() => toast.remove(), 300);
-  }, 4000);
-}
-
-function createToastContainer() {
-  const container = document.createElement('div');
-  container.className = 'toast-container';
-  document.body.appendChild(container);
-  return container;
-}
-
 // Fechar modal ao clicar fora
 document.addEventListener('click', function(e) {
-  if (e.target.classList.contains('modal-overlay')) {
+  if (e.target.classList.contains('modal-overlay-inv')) {
     e.target.classList.remove('show');
   }
 });
