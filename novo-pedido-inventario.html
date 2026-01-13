@@ -1,0 +1,1498 @@
+---
+layout: default
+title: Novo Pedido de Inventário
+---
+
+<link rel="stylesheet" href="{{ '/web-files/css/inventario.css' | relative_url }}">
+
+<div class="novo-pedido-inv-page">
+  <!-- Page Header -->
+  <div class="page-header-inv compact">
+    <div class="page-header-content">
+      <div class="page-header-left">
+        <a href="{{ '/inventario' | relative_url }}" class="back-link-inv">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+          Voltar
+        </a>
+        <div>
+          <h1>Novo Pedido de Inventário</h1>
+          <p>Selecione o artigo e preencha os detalhes do pedido</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Timeline -->
+  <div class="timeline-container">
+    <div class="timeline-wrapper">
+      <div class="timeline-step">
+        <div class="timeline-circle active">1</div>
+        <span class="timeline-label">Criar Pedido</span>
+      </div>
+      <div class="timeline-line"></div>
+      <div class="timeline-step">
+        <div class="timeline-circle">2</div>
+        <span class="timeline-label">Aprovação</span>
+      </div>
+      <div class="timeline-line"></div>
+      <div class="timeline-step">
+        <div class="timeline-circle">3</div>
+        <span class="timeline-label">Validação</span>
+      </div>
+      <div class="timeline-line"></div>
+      <div class="timeline-step">
+        <div class="timeline-circle">4</div>
+        <span class="timeline-label">Preparação</span>
+      </div>
+      <div class="timeline-line"></div>
+      <div class="timeline-step">
+        <div class="timeline-circle">5</div>
+        <span class="timeline-label">Entrega</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Alert Container -->
+  <div id="alertContainer" class="alert-inv"></div>
+
+  <!-- Main Content -->
+  <div class="form-layout">
+    <!-- Form Main -->
+    <div class="form-main-inv">
+      <!-- Secção: Artigo -->
+      <div class="form-section-inv">
+        <h2>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/>
+          </svg>
+          Selecione o Artigo
+        </h2>
+        
+        <div class="form-group-inv">
+          <label class="required">Artigo a Requisitar</label>
+          <button type="button" class="select-artigo-btn" id="btnAbrirCatalogo" onclick="abrirModalCatalogo()">
+            <div class="select-artigo-icon">🔍</div>
+            <div class="select-artigo-text">Pesquisar no Catálogo</div>
+            <div class="select-artigo-hint">Clique para explorar artigos por categoria</div>
+          </button>
+        </div>
+
+        <!-- Item Selecionado -->
+        <div id="itemSelecionado" class="item-selecionado-box">
+          <div class="item-selecionado-header">
+            <div>
+              <div class="item-selecionado-nome" id="itemNome"></div>
+              <div class="item-selecionado-codigo" id="itemCodigo"></div>
+            </div>
+            <button type="button" class="item-selecionado-remover" onclick="removerItemSelecionado()">✕ Remover</button>
+          </div>
+        </div>
+
+        <!-- Item Personalizado -->
+        <div id="itemPersonalizadoSection" class="item-personalizado-box">
+          <div class="item-personalizado-header">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+            </svg>
+            Artigo não catalogado - Especifique os detalhes
+          </div>
+          
+          <div class="form-group-inv">
+            <label for="itemNomePersonalizado" class="required">Nome do Artigo</label>
+            <input type="text" id="itemNomePersonalizado" placeholder="Ex: Monitor LG 27 polegadas" oninput="atualizarResumo()">
+          </div>
+          
+          <div class="form-group-inv">
+            <label for="itemDescricao">Descrição / Especificações</label>
+            <textarea id="itemDescricao" placeholder="Descreva as características do artigo pretendido..." rows="3" oninput="atualizarResumo()"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Secção: Quantidade e Destino -->
+      <div class="form-section-inv">
+        <h2>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
+            <circle cx="12" cy="10" r="3"/>
+          </svg>
+          Quantidade e Destino
+        </h2>
+        
+        <div class="form-row-inv">
+          <div class="form-group-inv">
+            <label for="quantidade" class="required">Quantidade</label>
+            <input type="number" id="quantidade" value="1" min="1" max="99" oninput="atualizarResumo()">
+          </div>
+          
+          <div class="form-group-inv">
+            <label for="dataPretendida">Data Pretendida</label>
+            <input type="date" id="dataPretendida">
+          </div>
+        </div>
+
+        <div class="form-group-inv">
+          <label class="required">Tipo de Alocação</label>
+          <div class="alocacao-toggle">
+            <div class="toggle-options">
+              <div class="toggle-option">
+                <input type="radio" name="tipoAlocacao" id="alocacaoPessoal" value="pessoal" checked onchange="toggleAlocacao()">
+                <label for="alocacaoPessoal">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                  </svg>
+                  Pessoal
+                </label>
+              </div>
+              <div class="toggle-option">
+                <input type="radio" name="tipoAlocacao" id="alocacaoUO" value="unidade" onchange="toggleAlocacao()">
+                <label for="alocacaoUO">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <path d="M23 21v-2a4 4 0 00-3-3.87"/>
+                    <path d="M16 3.13a4 4 0 010 7.75"/>
+                  </svg>
+                  Unidade Orgânica
+                </label>
+              </div>
+              <div class="toggle-option">
+                <input type="radio" name="tipoAlocacao" id="alocacaoLocal" value="local" onchange="toggleAlocacao()">
+                <label for="alocacaoLocal">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
+                    <circle cx="12" cy="10" r="3"/>
+                  </svg>
+                  Local Específico
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="fieldUnidadeOrganica" class="alocacao-field">
+          <div class="form-group-inv">
+            <label for="unidadeOrganica" class="required">Unidade Orgânica</label>
+            <select id="unidadeOrganica" onchange="atualizarResumo()">
+              <option value="">Selecione...</option>
+              <option value="DRCP">DRCP - Direção Regional de Contratação Pública</option>
+              <option value="DSI">DSI - Direção de Sistemas de Informação</option>
+              <option value="DRH">DRH - Direção de Recursos Humanos</option>
+              <option value="DAF">DAF - Direção Administrativa e Financeira</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="fieldLocalEspecifico" class="alocacao-field">
+          <div class="form-group-inv">
+            <label for="localEspecifico" class="required">Local Específico</label>
+            <input type="text" id="localEspecifico" placeholder="Ex: Sala de Reuniões 3.1" oninput="atualizarResumo()">
+          </div>
+        </div>
+      </div>
+
+      <!-- Secção: Observações -->
+      <div class="form-section-inv">
+        <h2>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+          </svg>
+          Observações
+        </h2>
+        
+        <div class="form-group-inv">
+          <label for="observacoes">Justificação / Observações</label>
+          <textarea id="observacoes" placeholder="Indique o motivo do pedido ou outras informações relevantes..." rows="4" oninput="atualizarContador()"></textarea>
+          <div class="char-count"><span id="charCount">0</span>/500</div>
+        </div>
+      </div>
+
+      <!-- Secção: Anexos -->
+      <div class="form-section-inv">
+        <h2>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/>
+          </svg>
+          Anexos
+        </h2>
+        
+        <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
+          <input type="file" id="fileInput" multiple accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" onchange="handleFileUpload(event)">
+          <div class="upload-icon">📎</div>
+          <div class="upload-text">
+            <strong>Clique para anexar</strong> ou arraste ficheiros
+          </div>
+          <div class="upload-hint">PDF, DOC, JPG ou PNG até 10MB</div>
+        </div>
+        
+        <div class="files-list" id="filesList"></div>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="form-sidebar-inv">
+      <!-- Resumo -->
+      <div class="summary-card-inv">
+        <h3>📋 Resumo do Pedido</h3>
+        <div class="summary-item">
+          <span class="summary-label">Artigo</span>
+          <span class="summary-value" id="resumoArtigo">-</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Quantidade</span>
+          <span class="summary-value" id="resumoQuantidade">1</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Alocação</span>
+          <span class="summary-value" id="resumoAlocacao">Pessoal</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Anexos</span>
+          <span class="summary-value" id="resumoAnexos">0</span>
+        </div>
+      </div>
+
+      <!-- Validação -->
+      <div class="validation-panel-inv">
+        <h3>✓ Validação</h3>
+        <ul class="validation-list" id="validationList">
+          <li class="validation-item warning">⚠️ Selecione um artigo</li>
+        </ul>
+      </div>
+
+      <!-- Info -->
+      <div class="info-panel-inv">
+        <h3>ℹ️ Próximos Passos</h3>
+        <div class="info-panel-content">
+          <p><strong>1. Aprovação do Responsável</strong><br>O responsável da sua área irá analisar o pedido.</p>
+          <p><strong>2. Validação Central</strong><br>A equipa de inventário fará a validação final.</p>
+          <p>Receberá notificações em cada etapa.</p>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="sidebar-actions">
+        <button type="button" class="btn-submit-inv" onclick="submeterPedido()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+          </svg>
+          Submeter Pedido
+        </button>
+        <button type="button" class="btn-rascunho-inv" onclick="guardarRascunho()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
+            <polyline points="17 21 17 13 7 13 7 21"/>
+            <polyline points="7 3 7 8 15 8"/>
+          </svg>
+          Guardar Rascunho
+        </button>
+        <button type="button" class="btn-cancelar-inv" onclick="cancelarPedido()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Catálogo -->
+<div class="modal-overlay" id="modalCatalogo">
+  <div class="modal-catalogo">
+    <div class="modal-header-inv">
+      <h3>Catálogo de Artigos</h3>
+      <button class="modal-close-inv" onclick="fecharModalCatalogo()">×</button>
+    </div>
+    
+    <div class="modal-search-inv">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"/>
+        <path d="m21 21-4.35-4.35"/>
+      </svg>
+      <input type="text" id="searchModal" placeholder="Pesquisar artigos..." oninput="filtrarArtigosModal(this.value)">
+    </div>
+    
+    <div class="modal-tabs-inv">
+      <button class="modal-tab-inv active" onclick="changeTabModal('todos')">Todos</button>
+      <button class="modal-tab-inv" onclick="changeTabModal('informatica')">Informática</button>
+      <button class="modal-tab-inv" onclick="changeTabModal('mobiliario')">Mobiliário</button>
+      <button class="modal-tab-inv" onclick="changeTabModal('economato')">Economato</button>
+    </div>
+    
+    <div class="modal-body-inv">
+      <div id="gridArtigos" class="artigos-grid"></div>
+    </div>
+    
+    <div class="modal-footer-inv">
+      <button class="btn-outro-artigo" onclick="selecionarOutroArtigo()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        Artigo não encontrado? Especificar outro
+      </button>
+    </div>
+  </div>
+</div>
+
+<style>
+/* Estilos específicos para novo pedido */
+.novo-pedido-inv-page {
+  padding-bottom: 3rem;
+}
+
+.page-header-inv.compact {
+  padding: 1.5rem 0;
+}
+
+.page-header-inv.compact .page-header-left {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.back-link-inv {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: rgba(255,255,255,0.9);
+  text-decoration: none;
+  font-size: 0.875rem;
+  padding: 0.5rem 1rem;
+  background: rgba(255,255,255,0.1);
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.back-link-inv:hover {
+  background: rgba(255,255,255,0.2);
+}
+
+.back-link-inv svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Timeline */
+.timeline-container {
+  max-width: 1280px;
+  margin: 0 auto 2rem;
+  padding: 0 2rem;
+}
+
+.timeline-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: white;
+  padding: 1.5rem 2rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  overflow-x: auto;
+}
+
+.timeline-step {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+}
+
+.timeline-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #e2e8f0;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.timeline-circle.active {
+  background: linear-gradient(135deg, #00b276 0%, #009661 100%);
+  color: white;
+}
+
+.timeline-label {
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.timeline-line {
+  width: 40px;
+  height: 2px;
+  background: #e2e8f0;
+}
+
+/* Alert */
+.alert-inv {
+  max-width: 1280px;
+  margin: 0 auto 1.5rem;
+  padding: 0 2rem;
+  display: none;
+}
+
+.alert-inv.show {
+  display: block;
+}
+
+.alert-inv-content {
+  padding: 1rem 1.5rem;
+  border-radius: 10px;
+  font-weight: 500;
+}
+
+.alert-inv-content.success {
+  background: #d1fae5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+}
+
+.alert-inv-content.error {
+  background: #fee2e2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+
+/* Form Layout */
+.form-layout {
+  display: grid;
+  grid-template-columns: 1fr 350px;
+  gap: 2rem;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+.form-main-inv {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.form-section-inv {
+  background: white;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+
+.form-section-inv h2 {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1.125rem;
+  color: #1e293b;
+  margin: 0 0 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.form-section-inv h2 svg {
+  width: 22px;
+  height: 22px;
+  color: #00b276;
+}
+
+.form-group-inv {
+  margin-bottom: 1.25rem;
+}
+
+.form-group-inv:last-child {
+  margin-bottom: 0;
+}
+
+.form-group-inv label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.5rem;
+}
+
+.form-group-inv label.required::after {
+  content: " *";
+  color: #dc2626;
+}
+
+.form-group-inv input,
+.form-group-inv select,
+.form-group-inv textarea {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+}
+
+.form-group-inv input:focus,
+.form-group-inv select:focus,
+.form-group-inv textarea:focus {
+  outline: none;
+  border-color: #00b276;
+  box-shadow: 0 0 0 3px rgba(0,178,118,0.1);
+}
+
+.form-row-inv {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.char-count {
+  text-align: right;
+  font-size: 0.75rem;
+  color: #94a3b8;
+  margin-top: 0.25rem;
+}
+
+/* Select Artigo Button */
+.select-artigo-btn {
+  width: 100%;
+  padding: 1.5rem;
+  background: white;
+  border: 2px dashed #cbd5e1;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.select-artigo-btn:hover {
+  border-color: #00b276;
+  background: rgba(0,178,118,0.02);
+}
+
+.select-artigo-icon {
+  font-size: 2.5rem;
+}
+
+.select-artigo-text {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #00b276;
+}
+
+.select-artigo-hint {
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+/* Item Selecionado */
+.item-selecionado-box {
+  display: none;
+  background: #f0fdf4;
+  border: 2px solid #86efac;
+  border-radius: 12px;
+  padding: 1rem;
+  margin-top: 1rem;
+}
+
+.item-selecionado-box.show {
+  display: block;
+}
+
+.item-selecionado-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.item-selecionado-nome {
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.item-selecionado-codigo {
+  font-size: 0.75rem;
+  color: #64748b;
+  margin-top: 0.25rem;
+}
+
+.item-selecionado-remover {
+  background: none;
+  border: none;
+  color: #dc2626;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.item-selecionado-remover:hover {
+  text-decoration: underline;
+}
+
+/* Item Personalizado */
+.item-personalizado-box {
+  display: none;
+  background: #fffbeb;
+  border: 2px dashed #fbbf24;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-top: 1rem;
+}
+
+.item-personalizado-box.show {
+  display: block;
+}
+
+.item-personalizado-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #92400e;
+  margin-bottom: 1rem;
+}
+
+.item-personalizado-header svg {
+  width: 20px;
+  height: 20px;
+  color: #f59e0b;
+}
+
+/* Alocação Toggle */
+.alocacao-toggle {
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.toggle-options {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+}
+
+.toggle-option {
+  position: relative;
+}
+
+.toggle-option input {
+  position: absolute;
+  opacity: 0;
+}
+
+.toggle-option label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: white;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #475569;
+}
+
+.toggle-option label svg {
+  width: 24px;
+  height: 24px;
+  color: #94a3b8;
+}
+
+.toggle-option input:checked + label {
+  background: linear-gradient(135deg, #00b276 0%, #009661 100%);
+  border-color: #00b276;
+  color: white;
+}
+
+.toggle-option input:checked + label svg {
+  color: white;
+}
+
+.toggle-option label:hover {
+  border-color: #00b276;
+}
+
+.alocacao-field {
+  display: none;
+  margin-top: 1rem;
+}
+
+.alocacao-field.show {
+  display: block;
+}
+
+/* Upload Area */
+.upload-area {
+  border: 2px dashed #cbd5e1;
+  border-radius: 12px;
+  padding: 2rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.upload-area:hover {
+  border-color: #00b276;
+  background: rgba(0,178,118,0.02);
+}
+
+.upload-area input {
+  display: none;
+}
+
+.upload-icon {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.upload-text {
+  color: #64748b;
+  font-size: 0.875rem;
+}
+
+.upload-text strong {
+  color: #00b276;
+}
+
+.upload-hint {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  margin-top: 0.25rem;
+}
+
+.files-list {
+  margin-top: 1rem;
+}
+
+.file-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem;
+  background: #f8fafc;
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+}
+
+.file-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.file-icon {
+  font-size: 1.5rem;
+}
+
+.file-name {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #1e293b;
+}
+
+.file-size {
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+.file-remove {
+  background: none;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+  padding: 0.375rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.file-remove:hover {
+  background: #dc2626;
+  color: white;
+}
+
+/* Sidebar */
+.form-sidebar-inv {
+  position: sticky;
+  top: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  height: fit-content;
+}
+
+.summary-card-inv,
+.validation-panel-inv,
+.info-panel-inv {
+  background: white;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+
+.summary-card-inv h3,
+.validation-panel-inv h3,
+.info-panel-inv h3 {
+  font-size: 1rem;
+  color: #1e293b;
+  margin: 0 0 1rem;
+}
+
+.summary-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 0.875rem;
+}
+
+.summary-item:last-child {
+  border-bottom: none;
+}
+
+.summary-label {
+  color: #64748b;
+}
+
+.summary-value {
+  color: #1e293b;
+  font-weight: 600;
+  text-align: right;
+  max-width: 60%;
+  word-break: break-word;
+}
+
+.validation-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.validation-item {
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  margin-bottom: 0.5rem;
+}
+
+.validation-item.success {
+  background: #d1fae5;
+  color: #047857;
+}
+
+.validation-item.warning {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.validation-item.error {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.info-panel-inv {
+  background: linear-gradient(135deg, #eff6ff 0%, #f8fafc 100%);
+}
+
+.info-panel-content {
+  font-size: 0.8rem;
+  color: #475569;
+  line-height: 1.6;
+}
+
+.info-panel-content p {
+  margin: 0 0 0.75rem;
+}
+
+.info-panel-content p:last-child {
+  margin-bottom: 0;
+}
+
+.sidebar-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.btn-submit-inv {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: linear-gradient(135deg, #00b276 0%, #009661 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 15px rgba(0,178,118,0.3);
+}
+
+.btn-submit-inv:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,178,118,0.4);
+}
+
+.btn-submit-inv svg {
+  width: 18px;
+  height: 18px;
+}
+
+.btn-rascunho-inv {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.875rem;
+  background: white;
+  color: #475569;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-rascunho-inv:hover {
+  border-color: #00b276;
+  color: #00b276;
+}
+
+.btn-rascunho-inv svg {
+  width: 18px;
+  height: 18px;
+}
+
+.btn-cancelar-inv {
+  padding: 0.75rem;
+  background: none;
+  color: #dc2626;
+  border: none;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-cancelar-inv:hover {
+  text-decoration: underline;
+}
+
+/* Modal Catálogo */
+.modal-catalogo {
+  background: white;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 900px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+
+.modal-search-inv {
+  padding: 1rem 1.5rem;
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+  position: relative;
+}
+
+.modal-search-inv svg {
+  position: absolute;
+  left: 2rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 18px;
+  height: 18px;
+  color: #94a3b8;
+}
+
+.modal-search-inv input {
+  width: 100%;
+  padding: 0.75rem 1rem 0.75rem 2.5rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 0.875rem;
+}
+
+.modal-search-inv input:focus {
+  outline: none;
+  border-color: #00b276;
+}
+
+.modal-tabs-inv {
+  display: flex;
+  padding: 0 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+  overflow-x: auto;
+}
+
+.modal-tab-inv {
+  padding: 1rem 1.5rem;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.modal-tab-inv:hover {
+  color: #1e293b;
+}
+
+.modal-tab-inv.active {
+  color: #00b276;
+  border-bottom-color: #00b276;
+}
+
+.artigos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1rem;
+}
+
+.artigo-card {
+  background: white;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.artigo-card:hover {
+  border-color: #00b276;
+  box-shadow: 0 4px 15px rgba(0,178,118,0.15);
+  transform: translateY(-2px);
+}
+
+.artigo-card-nome {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 0.5rem;
+}
+
+.artigo-card-codigo {
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.artigo-card-categoria {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  background: #f1f5f9;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  color: #475569;
+  margin-top: 0.5rem;
+}
+
+.btn-outro-artigo {
+  width: 100%;
+  padding: 1rem;
+  background: linear-gradient(135deg, #00b276 0%, #009661 100%);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.2s;
+}
+
+.btn-outro-artigo:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0,178,118,0.3);
+}
+
+.btn-outro-artigo svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .form-layout {
+    grid-template-columns: 1fr;
+  }
+  
+  .form-sidebar-inv {
+    position: static;
+  }
+  
+  .toggle-options {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .timeline-container,
+  .form-layout {
+    padding: 0 1rem;
+  }
+  
+  .form-row-inv {
+    grid-template-columns: 1fr;
+  }
+  
+  .page-header-inv.compact .page-header-left {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+</style>
+
+<script>
+// Catálogo de Artigos
+const catalogoArtigos = [
+  { nome: 'Portátil Dell Latitude 5520 14" i5 16GB', categoria: 'Informática', codigo: 'INF-001' },
+  { nome: 'Portátil HP EliteBook 15" i7 32GB', categoria: 'Informática', codigo: 'INF-002' },
+  { nome: 'Telemóvel Samsung Galaxy S23 128GB', categoria: 'Informática', codigo: 'INF-003' },
+  { nome: 'Telemóvel iPhone 14 256GB', categoria: 'Informática', codigo: 'INF-004' },
+  { nome: 'Monitor LG 27" 4K UltraHD', categoria: 'Informática', codigo: 'INF-005' },
+  { nome: 'Monitor Dell 24" Full HD', categoria: 'Informática', codigo: 'INF-006' },
+  { nome: 'Teclado e Rato Wireless Logitech MK850', categoria: 'Informática', codigo: 'INF-007' },
+  { nome: 'Webcam HD Logitech C920', categoria: 'Informática', codigo: 'INF-008' },
+  { nome: 'Headset USB Jabra Evolve2 65', categoria: 'Informática', codigo: 'INF-009' },
+  { nome: 'Impressora Multifunções HP LaserJet Pro', categoria: 'Informática', codigo: 'INF-010' },
+  { nome: 'Tablet Samsung Galaxy Tab S8', categoria: 'Informática', codigo: 'INF-011' },
+  { nome: 'Docking Station USB-C', categoria: 'Informática', codigo: 'INF-012' },
+  { nome: 'Cadeira Ergonómica Herman Miller', categoria: 'Mobiliário', codigo: 'MOB-001' },
+  { nome: 'Secretária Ajustável em Altura 160x80cm', categoria: 'Mobiliário', codigo: 'MOB-002' },
+  { nome: 'Estante para Livros 5 Prateleiras', categoria: 'Mobiliário', codigo: 'MOB-003' },
+  { nome: 'Apoio para Monitor Ajustável', categoria: 'Mobiliário', codigo: 'MOB-004' },
+  { nome: 'Armário de Arquivo com Chave', categoria: 'Mobiliário', codigo: 'MOB-005' },
+  { nome: 'Mesa de Reuniões 8 Lugares', categoria: 'Mobiliário', codigo: 'MOB-006' },
+  { nome: 'Cadeira de Visitas Empilhável', categoria: 'Mobiliário', codigo: 'MOB-007' },
+  { nome: 'Papel A4 80g (Caixa 5 Resmas)', categoria: 'Economato', codigo: 'ECO-001' },
+  { nome: 'Canetas Esferográficas (Pack 10)', categoria: 'Economato', codigo: 'ECO-002' },
+  { nome: 'Marcadores Fluorescentes (Pack 4)', categoria: 'Economato', codigo: 'ECO-003' },
+  { nome: 'Bloco de Notas A5 Pautado', categoria: 'Economato', codigo: 'ECO-004' },
+  { nome: 'Agrafador de Secretária', categoria: 'Economato', codigo: 'ECO-005' },
+  { nome: 'Perfurador de 2 Furos', categoria: 'Economato', codigo: 'ECO-006' },
+  { nome: 'Clips e Elásticos Sortidos', categoria: 'Economato', codigo: 'ECO-007' }
+];
+
+let itemSelecionado = null;
+let ficheirosAnexados = [];
+let categoriaAtual = 'todos';
+
+// Modal Catálogo
+function abrirModalCatalogo() {
+  document.getElementById('modalCatalogo').classList.add('show');
+  renderizarArtigos(catalogoArtigos);
+}
+
+function fecharModalCatalogo() {
+  document.getElementById('modalCatalogo').classList.remove('show');
+}
+
+function renderizarArtigos(artigos) {
+  const grid = document.getElementById('gridArtigos');
+  
+  if (artigos.length === 0) {
+    grid.innerHTML = '<div class="empty-state"><p>Nenhum artigo encontrado</p></div>';
+    return;
+  }
+  
+  grid.innerHTML = artigos.map(a => `
+    <div class="artigo-card" onclick="selecionarArtigo('${a.codigo}')">
+      <div class="artigo-card-nome">${a.nome}</div>
+      <div class="artigo-card-codigo">${a.codigo}</div>
+      <div class="artigo-card-categoria">${a.categoria}</div>
+    </div>
+  `).join('');
+}
+
+function filtrarArtigosModal(termo) {
+  termo = termo.toLowerCase();
+  let filtrados = catalogoArtigos.filter(a => 
+    a.nome.toLowerCase().includes(termo) || 
+    a.codigo.toLowerCase().includes(termo)
+  );
+  
+  if (categoriaAtual !== 'todos') {
+    filtrados = filtrados.filter(a => a.categoria.toLowerCase() === categoriaAtual);
+  }
+  
+  renderizarArtigos(filtrados);
+}
+
+function changeTabModal(categoria) {
+  document.querySelectorAll('.modal-tab-inv').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  
+  categoriaAtual = categoria;
+  const termo = document.getElementById('searchModal').value;
+  
+  let filtrados = catalogoArtigos;
+  if (categoria !== 'todos') {
+    const catMap = { informatica: 'Informática', mobiliario: 'Mobiliário', economato: 'Economato' };
+    filtrados = catalogoArtigos.filter(a => a.categoria === catMap[categoria]);
+  }
+  
+  if (termo) {
+    filtrados = filtrados.filter(a => 
+      a.nome.toLowerCase().includes(termo.toLowerCase()) || 
+      a.codigo.toLowerCase().includes(termo.toLowerCase())
+    );
+  }
+  
+  renderizarArtigos(filtrados);
+}
+
+function selecionarArtigo(codigo) {
+  const artigo = catalogoArtigos.find(a => a.codigo === codigo);
+  if (!artigo) return;
+  
+  itemSelecionado = artigo;
+  
+  document.getElementById('btnAbrirCatalogo').style.display = 'none';
+  document.getElementById('itemSelecionado').classList.add('show');
+  document.getElementById('itemPersonalizadoSection').classList.remove('show');
+  
+  document.getElementById('itemNome').textContent = artigo.nome;
+  document.getElementById('itemCodigo').textContent = artigo.codigo + ' • ' + artigo.categoria;
+  
+  fecharModalCatalogo();
+  atualizarResumo();
+  validarFormulario();
+}
+
+function selecionarOutroArtigo() {
+  itemSelecionado = { codigo: 'CUSTOM', nome: 'Artigo Personalizado', categoria: 'Outro' };
+  
+  document.getElementById('btnAbrirCatalogo').style.display = 'none';
+  document.getElementById('itemSelecionado').classList.remove('show');
+  document.getElementById('itemPersonalizadoSection').classList.add('show');
+  
+  fecharModalCatalogo();
+  atualizarResumo();
+  validarFormulario();
+}
+
+function removerItemSelecionado() {
+  itemSelecionado = null;
+  
+  document.getElementById('btnAbrirCatalogo').style.display = 'flex';
+  document.getElementById('itemSelecionado').classList.remove('show');
+  document.getElementById('itemPersonalizadoSection').classList.remove('show');
+  
+  atualizarResumo();
+  validarFormulario();
+}
+
+// Alocação
+function toggleAlocacao() {
+  const tipo = document.querySelector('input[name="tipoAlocacao"]:checked').value;
+  
+  document.querySelectorAll('.alocacao-field').forEach(f => f.classList.remove('show'));
+  
+  if (tipo === 'unidade') {
+    document.getElementById('fieldUnidadeOrganica').classList.add('show');
+  } else if (tipo === 'local') {
+    document.getElementById('fieldLocalEspecifico').classList.add('show');
+  }
+  
+  atualizarResumo();
+}
+
+// Upload
+function handleFileUpload(event) {
+  const files = Array.from(event.target.files);
+  
+  files.forEach(file => {
+    if (file.size > 10 * 1024 * 1024) {
+      showAlert('error', 'Ficheiro ' + file.name + ' excede 10MB');
+      return;
+    }
+    
+    ficheirosAnexados.push({
+      name: file.name,
+      size: file.size,
+      type: file.type
+    });
+  });
+  
+  renderizarFicheiros();
+  atualizarResumo();
+  event.target.value = '';
+}
+
+function renderizarFicheiros() {
+  const lista = document.getElementById('filesList');
+  
+  if (ficheirosAnexados.length === 0) {
+    lista.innerHTML = '';
+    return;
+  }
+  
+  lista.innerHTML = ficheirosAnexados.map((f, i) => {
+    const icone = f.type.includes('pdf') ? '📄' : f.type.includes('image') ? '🖼️' : '📎';
+    const tamanho = (f.size / 1024 / 1024).toFixed(2);
+    
+    return `
+      <div class="file-item">
+        <div class="file-info">
+          <span class="file-icon">${icone}</span>
+          <div>
+            <div class="file-name">${f.name}</div>
+            <div class="file-size">${tamanho} MB</div>
+          </div>
+        </div>
+        <button type="button" class="file-remove" onclick="removerFicheiro(${i})">Remover</button>
+      </div>
+    `;
+  }).join('');
+}
+
+function removerFicheiro(index) {
+  ficheirosAnexados.splice(index, 1);
+  renderizarFicheiros();
+  atualizarResumo();
+}
+
+// Resumo e Validação
+function atualizarResumo() {
+  let artigoTexto = '-';
+  if (itemSelecionado) {
+    if (itemSelecionado.codigo === 'CUSTOM') {
+      artigoTexto = document.getElementById('itemNomePersonalizado').value || 'Personalizado';
+    } else {
+      artigoTexto = itemSelecionado.nome;
+    }
+  }
+  
+  document.getElementById('resumoArtigo').textContent = artigoTexto.substring(0, 30) + (artigoTexto.length > 30 ? '...' : '');
+  document.getElementById('resumoQuantidade').textContent = document.getElementById('quantidade').value || '1';
+  
+  const tipoAlocacao = document.querySelector('input[name="tipoAlocacao"]:checked').value;
+  let alocacaoTexto = 'Pessoal';
+  if (tipoAlocacao === 'unidade') {
+    const uo = document.getElementById('unidadeOrganica');
+    alocacaoTexto = uo.selectedOptions[0]?.text || 'Unidade Orgânica';
+  } else if (tipoAlocacao === 'local') {
+    alocacaoTexto = document.getElementById('localEspecifico').value || 'Local Específico';
+  }
+  document.getElementById('resumoAlocacao').textContent = alocacaoTexto.substring(0, 20) + (alocacaoTexto.length > 20 ? '...' : '');
+  
+  document.getElementById('resumoAnexos').textContent = ficheirosAnexados.length;
+  
+  validarFormulario();
+}
+
+function atualizarContador() {
+  const texto = document.getElementById('observacoes').value;
+  document.getElementById('charCount').textContent = texto.length;
+}
+
+function validarFormulario() {
+  const erros = [];
+  
+  if (!itemSelecionado) {
+    erros.push('Selecione um artigo');
+  } else if (itemSelecionado.codigo === 'CUSTOM') {
+    if (!document.getElementById('itemNomePersonalizado').value.trim()) {
+      erros.push('Nome do artigo é obrigatório');
+    }
+  }
+  
+  const qtd = parseInt(document.getElementById('quantidade').value);
+  if (!qtd || qtd < 1) {
+    erros.push('Quantidade inválida');
+  }
+  
+  const tipoAlocacao = document.querySelector('input[name="tipoAlocacao"]:checked').value;
+  if (tipoAlocacao === 'unidade' && !document.getElementById('unidadeOrganica').value) {
+    erros.push('Selecione a unidade orgânica');
+  }
+  if (tipoAlocacao === 'local' && !document.getElementById('localEspecifico').value.trim()) {
+    erros.push('Especifique o local');
+  }
+  
+  const lista = document.getElementById('validationList');
+  
+  if (erros.length === 0) {
+    lista.innerHTML = '<li class="validation-item success">✓ Formulário válido</li>';
+  } else {
+    lista.innerHTML = erros.map(e => `<li class="validation-item warning">⚠️ ${e}</li>`).join('');
+  }
+  
+  return erros.length === 0;
+}
+
+// Ações
+function submeterPedido() {
+  if (!validarFormulario()) {
+    showAlert('error', 'Por favor, corrija os erros no formulário.');
+    return;
+  }
+  
+  showAlert('success', 'Pedido submetido com sucesso!');
+  
+  setTimeout(() => {
+    window.location.href = '{{ "/inventario" | relative_url }}';
+  }, 2000);
+}
+
+function guardarRascunho() {
+  showAlert('success', 'Rascunho guardado com sucesso!');
+}
+
+function cancelarPedido() {
+  if (confirm('Tem a certeza que pretende cancelar? As alterações não guardadas serão perdidas.')) {
+    window.location.href = '{{ "/inventario" | relative_url }}';
+  }
+}
+
+function showAlert(type, message) {
+  const container = document.getElementById('alertContainer');
+  container.innerHTML = `<div class="alert-inv-content ${type}">${message}</div>`;
+  container.classList.add('show');
+  
+  setTimeout(() => {
+    container.classList.remove('show');
+  }, 5000);
+}
+
+// Fechar modais ao clicar fora
+document.addEventListener('click', function(e) {
+  if (e.target.id === 'modalCatalogo') {
+    fecharModalCatalogo();
+  }
+});
+
+// Inicialização
+document.addEventListener('DOMContentLoaded', function() {
+  atualizarResumo();
+  
+  // Verificar parâmetros URL
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('tipo') === 'devolucao') {
+    // Pré-selecionar tipo de pedido se necessário
+  }
+});
+</script>
