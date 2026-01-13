@@ -3,378 +3,1030 @@ layout: default
 title: Inventário
 ---
 
-<link rel="stylesheet" href="{{ '/web-files/css/inventario.css' | relative_url }}">
+<style>
+/* === CSS VARIABLES === */
+:root {
+    --c-text-primary: #282a32;
+    --c-text-secondary: #686b87;
+    --c-text-action: #5b9cf5;
+    --c-accent-primary: #00b276;
+    --c-border-primary: #eff1f6;
+    --c-background-primary: #f8f9fa;
+    --c-background-secondary: #ffffff;
+}
+
+/* === MAIN LAYOUT === */
+.main-inv {
+    padding: 2rem 0;
+    background: #f8f9fa;
+    min-height: calc(100vh - 200px);
+}
+
+.responsive-wrapper-inv {
+    width: 90%;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* === HEADER === */
+.main-header-inv {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+}
+
+.main-header-inv h1 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    line-height: 1.25;
+    color: var(--c-text-primary);
+    margin: 0;
+    letter-spacing: -0.02em;
+}
+
+.header-actions-inv {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+/* === BUTTON === */
+.button-inv {
+    font: inherit;
+    color: inherit;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 1em;
+    height: 40px;
+    border-radius: 8px;
+    line-height: 1;
+    border: 2px solid var(--c-accent-primary);
+    background-color: var(--c-accent-primary);
+    color: #fff;
+    font-size: 0.875rem;
+    font-weight: 600;
+    transition: 0.15s ease;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.button-inv:hover {
+    background-color: #009879;
+    border-color: #009879;
+}
+
+.button-inv span {
+    margin-right: 8px;
+    font-size: 1.25em;
+}
+
+/* === SUMMARY CARDS === */
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.summary-card {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.08);
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.summary-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.summary-card.featured {
+    background: linear-gradient(135deg, #00b276 0%, #007a62 100%);
+    color: white;
+    position: relative;
+    overflow: hidden;
+}
+
+.summary-card.featured::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 250px;
+    height: 250px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.summary-card.featured > * {
+    position: relative;
+    z-index: 1;
+}
+
+.summary-card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.summary-card-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    background: rgba(0, 178, 118, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #00b276;
+}
+
+.summary-card.featured .summary-card-icon {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+.summary-card-icon svg {
+    width: 20px;
+    height: 20px;
+}
+
+.summary-card-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.summary-card.featured .summary-card-title {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.summary-card-value {
+    font-size: 32px;
+    font-weight: 700;
+    color: #00b276;
+    margin-bottom: 8px;
+}
+
+.summary-card.featured .summary-card-value {
+    color: white;
+}
+
+.summary-card-label {
+    font-size: 14px;
+    color: #686b87;
+}
+
+.summary-card.featured .summary-card-label {
+    color: rgba(255, 255, 255, 0.85);
+}
+
+/* === FILTERS === */
+.filters-section {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: flex-end;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    min-width: 200px;
+    flex: 1;
+}
+
+.filter-group.search {
+    flex: 2;
+    min-width: 300px;
+}
+
+.filter-group label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--c-text-primary);
+}
+
+.filter-group input,
+.filter-group select {
+    padding: 0.625rem 0.875rem;
+    border: 2px solid var(--c-border-primary);
+    border-radius: 8px;
+    font-size: 0.875rem;
+    color: var(--c-text-primary);
+    transition: 0.15s ease;
+    background: white;
+}
+
+.filter-group input:focus,
+.filter-group select:focus {
+    border-color: var(--c-accent-primary);
+    outline: none;
+}
+
+/* === TABS === */
+.tabs-container-inv {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.08);
+}
+
+.tabs-nav {
+    display: flex;
+    gap: 8px;
+    padding: 16px 20px;
+    background: #fafbfc;
+    border-bottom: 1px solid #e9ecf4;
+}
+
+.tab-btn {
+    padding: 8px 20px;
+    border: none;
+    background: transparent;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--c-text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-radius: 20px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: inherit;
+}
+
+.tab-btn:hover {
+    color: var(--c-accent-primary);
+    background: rgba(0, 178, 118, 0.08);
+}
+
+.tab-btn.active {
+    color: white;
+    background: linear-gradient(135deg, #00b276 0%, #007a62 100%);
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(0, 178, 118, 0.25);
+}
+
+.tab-badge {
+    padding: 2px 8px;
+    background: rgba(255, 255, 255, 0.25);
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 700;
+    min-width: 20px;
+    text-align: center;
+}
+
+.tab-btn:not(.active) .tab-badge {
+    background: #e9ecf4;
+    color: #686b87;
+}
+
+.tab-content-inv {
+    display: none;
+    padding: 1.5rem;
+}
+
+.tab-content-inv.active {
+    display: block;
+}
+
+/* === TABLE === */
+.table-wrapper-inv {
+    overflow-x: auto;
+}
+
+.table-inv {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 800px;
+}
+
+.table-inv thead {
+    background: #f8f9fa;
+}
+
+.table-inv th {
+    padding: 12px 16px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 700;
+    color: #686b87;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid #e9ecf4;
+}
+
+.table-inv td {
+    padding: 16px;
+    border-bottom: 1px solid #e9ecf4;
+    font-size: 14px;
+    color: #282a32;
+}
+
+.table-inv tbody tr:hover {
+    background: #f8f9fa;
+}
+
+.table-inv td strong {
+    color: #00b276;
+    font-weight: 600;
+}
+
+.table-inv code {
+    background: #f1f5f9;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    color: #475569;
+}
+
+/* === STATUS BADGES === */
+.status-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.status-atribuido,
+.status-ativo {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.status-rascunho {
+    background: #e9ecf4;
+    color: #686b87;
+}
+
+.status-submetido {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.status-em-preparacao,
+.status-em-preparação {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.status-pronto-para-levantamento {
+    background: #e0e7ff;
+    color: #3730a3;
+}
+
+.status-entregue {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.status-devolvido {
+    background: #e9ecf4;
+    color: #686b87;
+}
+
+.status-indeferido,
+.status-cancelado {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+/* === ACTION BUTTONS === */
+.action-buttons {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.action-btn {
+    padding: 6px 12px;
+    border: 1px solid #e9ecf4;
+    background: white;
+    color: #686b87;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.action-btn:hover {
+    background: #f8f9fa;
+    border-color: #00b276;
+    color: #00b276;
+}
+
+.action-btn.primary {
+    background: #00b276;
+    color: white;
+    border-color: #00b276;
+}
+
+.action-btn.primary:hover {
+    background: #007a62;
+}
+
+.action-btn.success {
+    background: #059669;
+    color: white;
+    border-color: #059669;
+}
+
+.action-btn.success:hover {
+    background: #047857;
+}
+
+/* === EMPTY STATE === */
+.empty-state {
+    padding: 60px 20px;
+    text-align: center;
+}
+
+.empty-state svg {
+    width: 80px;
+    height: 80px;
+    color: #e9ecf4;
+    margin-bottom: 16px;
+}
+
+.empty-state h3 {
+    font-size: 18px;
+    color: #282a32;
+    margin-bottom: 8px;
+}
+
+.empty-state p {
+    font-size: 14px;
+    color: #686b87;
+    margin-bottom: 20px;
+}
+
+/* === MODAL === */
+.modal-overlay-inv {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.modal-overlay-inv.show {
+    display: flex;
+}
+
+.modal-inv {
+    background: white;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 600px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.modal-header-inv {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid #eff1f6;
+}
+
+.modal-header-inv h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--c-text-primary);
+    margin: 0;
+}
+
+.modal-close-inv {
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: #f8f9fa;
+    border-radius: 8px;
+    font-size: 1.5rem;
+    color: #686b87;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+}
+
+.modal-close-inv:hover {
+    background: #eff1f6;
+    color: var(--c-text-primary);
+}
+
+.modal-body-inv {
+    padding: 1.5rem;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.modal-footer-inv {
+    padding: 1.5rem;
+    border-top: 1px solid #eff1f6;
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+}
+
+/* === DETALHE GRID === */
+.detalhe-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
+}
+
+.detalhe-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.detalhe-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #686b87;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.detalhe-value {
+    font-size: 0.875rem;
+    color: var(--c-text-primary);
+    font-weight: 500;
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 768px) {
+    .summary-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .tabs-nav {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+    }
+
+    .filters-section {
+        flex-direction: column;
+    }
+
+    .filter-group {
+        width: 100%;
+    }
+
+    .table-inv {
+        font-size: 12px;
+    }
+
+    .table-inv th, 
+    .table-inv td {
+        padding: 10px;
+    }
+
+    .detalhe-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
 
 <main class="main-inv">
-  <div class="responsive-wrapper-inv">
-    <!-- Header -->
-    <div class="main-header-inv">
-      <h1>Inventários</h1>
-      <div class="header-actions-inv">
-        <a href="{{ '/novo-pedido-inventario' | relative_url }}" class="button-inv">
-          <span>+</span>
-          Nova Requisição
-        </a>
-      </div>
+    <div class="responsive-wrapper-inv">
+        <!-- Header -->
+        <div class="main-header-inv">
+            <h1>Meu Inventário</h1>
+            <div class="header-actions-inv">
+                <a href="{{ '/novo-pedido-inventario' | relative_url }}" class="button-inv">
+                    <span>+</span>
+                    Novo Pedido de Inventário
+                </a>
+            </div>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="summary-grid">
+            <div class="summary-card featured" onclick="changeTabFromCard('atribuidos')">
+                <div class="summary-card-header">
+                    <div class="summary-card-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/>
+                        </svg>
+                    </div>
+                    <div class="summary-card-title">Itens Atribuídos</div>
+                </div>
+                <div class="summary-card-value" id="statAtribuidos">0</div>
+                <div class="summary-card-label">Equipamentos e materiais sob sua responsabilidade</div>
+            </div>
+            
+            <div class="summary-card" onclick="changeTabFromCard('emcurso')">
+                <div class="summary-card-header">
+                    <div class="summary-card-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <polyline points="12 6 12 12 16 14"/>
+                        </svg>
+                    </div>
+                    <div class="summary-card-title">Pedidos em Curso</div>
+                </div>
+                <div class="summary-card-value" id="statEmCurso">0</div>
+                <div class="summary-card-label">Requisições pendentes de entrega</div>
+            </div>
+            
+            <div class="summary-card" onclick="changeTabFromCard('historico')">
+                <div class="summary-card-header">
+                    <div class="summary-card-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                        </svg>
+                    </div>
+                    <div class="summary-card-title">Histórico</div>
+                </div>
+                <div class="summary-card-value" id="statHistorico">0</div>
+                <div class="summary-card-label">Pedidos concluídos</div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters-section">
+            <div class="filter-group search">
+                <label for="searchInput">Pesquisar</label>
+                <input type="text" id="searchInput" placeholder="Pesquisar por código, descrição ou artigo..." oninput="filtrarTabela()">
+            </div>
+            <div class="filter-group">
+                <label for="filterCategoria">Categoria</label>
+                <select id="filterCategoria" onchange="filtrarTabela()">
+                    <option value="">Todas</option>
+                    <option value="Informática">Informática</option>
+                    <option value="Mobiliário">Mobiliário</option>
+                    <option value="Economato">Economato</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="filterEstado">Estado</label>
+                <select id="filterEstado" onchange="filtrarTabela()">
+                    <option value="">Todos</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Tabs Container -->
+        <div class="tabs-container-inv">
+            <div class="tabs-nav">
+                <button class="tab-btn active" onclick="changeTab('atribuidos')">
+                    📦 Itens Atribuídos
+                    <span class="tab-badge" id="badgeAtribuidos">0</span>
+                </button>
+                <button class="tab-btn" onclick="changeTab('emcurso')">
+                    ⏳ Pedidos em Curso
+                    <span class="tab-badge" id="badgeEmCurso">0</span>
+                </button>
+                <button class="tab-btn" onclick="changeTab('historico')">
+                    📋 Histórico
+                    <span class="tab-badge" id="badgeHistorico">0</span>
+                </button>
+            </div>
+
+            <!-- Tab: Artigos Atribuídos -->
+            <div id="tab-atribuidos" class="tab-content-inv active">
+                <div class="table-wrapper-inv">
+                    <table class="table-inv">
+                        <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th>Descrição</th>
+                                <th>Categoria</th>
+                                <th>Qtd</th>
+                                <th>Nº Série</th>
+                                <th>Data Atribuição</th>
+                                <th>Localização</th>
+                                <th>Estado</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bodyAtribuidos"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab: Pedidos em Curso -->
+            <div id="tab-emcurso" class="tab-content-inv">
+                <div class="table-wrapper-inv">
+                    <table class="table-inv">
+                        <thead>
+                            <tr>
+                                <th>Nº Pedido</th>
+                                <th>Tipo</th>
+                                <th>Artigo</th>
+                                <th>Qtd</th>
+                                <th>Local Destino</th>
+                                <th>Data Pedido</th>
+                                <th>Estado</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bodyEmCurso"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab: Histórico -->
+            <div id="tab-historico" class="tab-content-inv">
+                <div class="table-wrapper-inv">
+                    <table class="table-inv">
+                        <thead>
+                            <tr>
+                                <th>Nº Pedido</th>
+                                <th>Tipo</th>
+                                <th>Artigo</th>
+                                <th>Qtd</th>
+                                <th>Local Destino</th>
+                                <th>Data Pedido</th>
+                                <th>Data Conclusão</th>
+                                <th>Estado</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bodyHistorico"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
-
-    <!-- Stats Cards -->
-    <div class="stats-row-inv">
-      <div class="stat-card-inv green" onclick="changeTabFromCard('atribuidos')">
-        <div class="stat-icon-inv">📦</div>
-        <div class="stat-content-inv">
-          <span class="stat-number-inv" id="statAtribuidos">0</span>
-          <span class="stat-label-inv">Artigos Atribuídos</span>
-        </div>
-      </div>
-      <div class="stat-card-inv blue" onclick="changeTabFromCard('emcurso')">
-        <div class="stat-icon-inv">⏳</div>
-        <div class="stat-content-inv">
-          <span class="stat-number-inv" id="statEmCurso">0</span>
-          <span class="stat-label-inv">Pedidos em Curso</span>
-        </div>
-      </div>
-      <div class="stat-card-inv orange" onclick="changeTabFromCard('historico')">
-        <div class="stat-icon-inv">📋</div>
-        <div class="stat-content-inv">
-          <span class="stat-number-inv" id="statHistorico">0</span>
-          <span class="stat-label-inv">Histórico</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Filters -->
-    <div class="filters-row-inv">
-      <div class="search-wrapper-inv">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="11" cy="11" r="8"/>
-          <path d="m21 21-4.35-4.35"/>
-        </svg>
-        <input type="text" id="searchInput" placeholder="Pesquisar por código, descrição ou artigo..." oninput="filtrarTabela()">
-      </div>
-      <select id="filterCategoria" onchange="filtrarTabela()">
-        <option value="">Todas as Categorias</option>
-        <option value="Informática">Informática</option>
-        <option value="Mobiliário">Mobiliário</option>
-        <option value="Economato">Economato</option>
-      </select>
-      <select id="filterEstado" onchange="filtrarTabela()">
-        <option value="">Todos os Estados</option>
-      </select>
-    </div>
-
-    <!-- Tabs Container -->
-    <div class="tabs-container-inv">
-      <div class="tabs-header-inv">
-        <button class="tab-button-inv active" onclick="changeTab('atribuidos')">
-          📦 Artigos Atribuídos
-        </button>
-        <button class="tab-button-inv" onclick="changeTab('emcurso')">
-          ⏳ Pedidos em Curso
-        </button>
-        <button class="tab-button-inv" onclick="changeTab('historico')">
-          📋 Histórico
-        </button>
-      </div>
-
-      <!-- Tab: Artigos Atribuídos -->
-      <div id="tab-atribuidos" class="tab-content-inv active">
-        <div class="table-wrapper-inv">
-          <table class="table-inv">
-            <thead>
-              <tr>
-                <th>Código</th>
-                <th>Descrição</th>
-                <th>Categoria</th>
-                <th>Qtd</th>
-                <th>Nº Série</th>
-                <th>Data Atribuição</th>
-                <th>Localização</th>
-                <th>Estado</th>
-                <th>Ações</th>
-              </tr>
-            </thead>
-            <tbody id="bodyAtribuidos"></tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- Tab: Pedidos em Curso -->
-      <div id="tab-emcurso" class="tab-content-inv">
-        <div class="table-wrapper-inv">
-          <table class="table-inv">
-            <thead>
-              <tr>
-                <th>Nº Pedido</th>
-                <th>Tipo</th>
-                <th>Artigo</th>
-                <th>Qtd</th>
-                <th>Local Destino</th>
-                <th>Data Pedido</th>
-                <th>Estado</th>
-                <th>Ações</th>
-              </tr>
-            </thead>
-            <tbody id="bodyEmCurso"></tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- Tab: Histórico -->
-      <div id="tab-historico" class="tab-content-inv">
-        <div class="table-wrapper-inv">
-          <table class="table-inv">
-            <thead>
-              <tr>
-                <th>Nº Pedido</th>
-                <th>Tipo</th>
-                <th>Artigo</th>
-                <th>Qtd</th>
-                <th>Local Destino</th>
-                <th>Data Pedido</th>
-                <th>Data Conclusão</th>
-                <th>Estado</th>
-                <th>Ações</th>
-              </tr>
-            </thead>
-            <tbody id="bodyHistorico"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  </div>
 </main>
 
 <!-- Modal Ver Detalhes -->
 <div class="modal-overlay-inv" id="modalDetalhes">
-  <div class="modal-inv">
-    <div class="modal-header-inv">
-      <h3>Detalhes do Artigo</h3>
-      <button class="modal-close-inv" onclick="fecharModal('modalDetalhes')">×</button>
+    <div class="modal-inv">
+        <div class="modal-header-inv">
+            <h3>Detalhes do Artigo</h3>
+            <button class="modal-close-inv" onclick="fecharModal('modalDetalhes')">×</button>
+        </div>
+        <div class="modal-body-inv" id="modalDetalhesContent"></div>
+        <div class="modal-footer-inv">
+            <button class="button-inv" onclick="fecharModal('modalDetalhes')" style="background: #686b87; border-color: #686b87;">Fechar</button>
+        </div>
     </div>
-    <div class="modal-body-inv" id="modalDetalhesContent"></div>
-    <div class="modal-footer-inv">
-      <button class="button-inv secondary" onclick="fecharModal('modalDetalhes')">Fechar</button>
-    </div>
-  </div>
 </div>
 
 <script>
 // Dados de exemplo
-const dadosAtribuidos = [
-  { codigo: 'INF-001', descricao: 'Portátil Dell Latitude 5520', categoria: 'Informática', qtd: 1, serie: 'DL5520-2024-0142', dataAtribuicao: '15/03/2024', localizacao: 'Escritório Lisboa', estado: 'Ativo', alocadoA: 'João Silva', tipoAlocacao: 'pessoal' },
-  { codigo: 'INF-005', descricao: 'Monitor LG 27" 4K', categoria: 'Informática', qtd: 2, serie: 'LG27-2024-0089', dataAtribuicao: '15/03/2024', localizacao: 'Escritório Lisboa', estado: 'Ativo', alocadoA: 'João Silva', tipoAlocacao: 'pessoal' },
-  { codigo: 'MOB-001', descricao: 'Cadeira Ergonómica Herman Miller', categoria: 'Mobiliário', qtd: 1, serie: 'HM-2024-0567', dataAtribuicao: '20/01/2024', localizacao: 'Escritório Lisboa', estado: 'Ativo', alocadoA: 'João Silva', tipoAlocacao: 'pessoal' },
-  { codigo: 'INF-007', descricao: 'Teclado e Rato Wireless Logitech', categoria: 'Informática', qtd: 1, serie: 'LOG-2024-0234', dataAtribuicao: '15/03/2024', localizacao: 'Escritório Lisboa', estado: 'Ativo', alocadoA: 'João Silva', tipoAlocacao: 'pessoal' }
+var dadosAtribuidos = [
+    { codigo: 'INF-001', descricao: 'Portátil Dell Latitude 5520', categoria: 'Informática', qtd: 1, serie: 'DL5520-2024-0142', dataAtribuicao: '15/03/2024', localizacao: 'Escritório Lisboa', estado: 'Ativo', alocadoA: 'João Silva', tipoAlocacao: 'pessoal' },
+    { codigo: 'INF-005', descricao: 'Monitor LG 27" 4K', categoria: 'Informática', qtd: 2, serie: 'LG27-2024-0089', dataAtribuicao: '15/03/2024', localizacao: 'Escritório Lisboa', estado: 'Ativo', alocadoA: 'João Silva', tipoAlocacao: 'pessoal' },
+    { codigo: 'MOB-001', descricao: 'Cadeira Ergonómica Herman Miller', categoria: 'Mobiliário', qtd: 1, serie: 'HM-2024-0567', dataAtribuicao: '20/01/2024', localizacao: 'Escritório Lisboa', estado: 'Ativo', alocadoA: 'João Silva', tipoAlocacao: 'pessoal' },
+    { codigo: 'INF-007', descricao: 'Teclado e Rato Wireless Logitech', categoria: 'Informática', qtd: 1, serie: 'LOG-2024-0234', dataAtribuicao: '15/03/2024', localizacao: 'Escritório Lisboa', estado: 'Ativo', alocadoA: 'João Silva', tipoAlocacao: 'pessoal' }
 ];
 
-const dadosEmCurso = [
-  { id: 'PED-2024-0089', tipo: 'Requisição', item: 'Headset USB Jabra Evolve2', qtd: 1, local: 'Escritório Lisboa', data: '10/01/2025', estado: 'Em Preparação' },
-  { id: 'PED-2024-0091', tipo: 'Substituição', item: 'Monitor Dell 24"', qtd: 1, local: 'Escritório Porto', data: '08/01/2025', estado: 'Pronto para Levantamento' }
+var dadosEmCurso = [
+    { id: 'PED-2024-0089', tipo: 'Requisição', item: 'Headset USB Jabra Evolve2', qtd: 1, local: 'Escritório Lisboa', data: '10/01/2025', estado: 'Em Preparação' },
+    { id: 'PED-2024-0091', tipo: 'Substituição', item: 'Monitor Dell 24"', qtd: 1, local: 'Escritório Porto', data: '08/01/2025', estado: 'Pronto para Levantamento' }
 ];
 
-const dadosHistorico = [
-  { id: 'PED-2024-0075', tipo: 'Requisição', item: 'Portátil Dell Latitude', qtd: 1, local: 'Escritório Lisboa', data: '01/03/2024', dataConclusao: '15/03/2024', estado: 'Entregue' },
-  { id: 'PED-2024-0042', tipo: 'Devolução', item: 'Telemóvel Samsung S21', qtd: 1, local: 'Armazém Central', data: '15/02/2024', dataConclusao: '20/02/2024', estado: 'Devolvido' }
+var dadosHistorico = [
+    { id: 'PED-2024-0075', tipo: 'Requisição', item: 'Portátil Dell Latitude', qtd: 1, local: 'Escritório Lisboa', data: '01/03/2024', dataConclusao: '15/03/2024', estado: 'Entregue' },
+    { id: 'PED-2024-0042', tipo: 'Devolução', item: 'Telemóvel Samsung S21', qtd: 1, local: 'Armazém Central', data: '15/02/2024', dataConclusao: '20/02/2024', estado: 'Devolvido' }
 ];
 
 // Atualizar estatísticas
 function atualizarStats() {
-  document.getElementById('statAtribuidos').textContent = dadosAtribuidos.length;
-  document.getElementById('statEmCurso').textContent = dadosEmCurso.length;
-  document.getElementById('statHistorico').textContent = dadosHistorico.length;
+    document.getElementById('statAtribuidos').textContent = dadosAtribuidos.length;
+    document.getElementById('statEmCurso').textContent = dadosEmCurso.length;
+    document.getElementById('statHistorico').textContent = dadosHistorico.length;
+    document.getElementById('badgeAtribuidos').textContent = dadosAtribuidos.length;
+    document.getElementById('badgeEmCurso').textContent = dadosEmCurso.length;
+    document.getElementById('badgeHistorico').textContent = dadosHistorico.length;
 }
 
 // Render tabelas
 function renderAtribuidos() {
-  const tbody = document.getElementById('bodyAtribuidos');
-  if (dadosAtribuidos.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="9" class="empty-state-inv"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg><h3>Sem artigos atribuídos</h3><p>Não tem artigos de inventário atribuídos de momento.</p></td></tr>';
-    return;
-  }
-  
-  let html = '';
-  dadosAtribuidos.forEach(function(a) {
-    const estadoClass = a.estado.toLowerCase().replace(/\s+/g, '-');
-    html += '<tr>';
-    html += '<td><strong>' + a.codigo + '</strong></td>';
-    html += '<td>' + a.descricao + '</td>';
-    html += '<td>' + a.categoria + '</td>';
-    html += '<td>' + a.qtd + '</td>';
-    html += '<td><code>' + a.serie + '</code></td>';
-    html += '<td>' + a.dataAtribuicao + '</td>';
-    html += '<td>' + a.localizacao + '</td>';
-    html += '<td><span class="status-badge-inv status-' + estadoClass + '">' + a.estado + '</span></td>';
-    html += '<td><div class="action-buttons-inv">';
-    html += '<button class="action-btn-inv primary" onclick="verDetalhesArtigo(\'' + a.codigo + '\')">Ver</button>';
-    html += '<button class="action-btn-inv" onclick="iniciarDevolucao(\'' + a.codigo + '\', \'' + a.descricao + '\')">Devolver</button>';
-    html += '</div></td>';
-    html += '</tr>';
-  });
-  tbody.innerHTML = html;
+    var tbody = document.getElementById('bodyAtribuidos');
+    if (dadosAtribuidos.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="9"><div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg><h3>Sem artigos atribuídos</h3><p>Não tem artigos de inventário atribuídos de momento.</p></div></td></tr>';
+        return;
+    }
+    
+    var html = '';
+    dadosAtribuidos.forEach(function(a) {
+        var estadoClass = a.estado.toLowerCase().replace(/\s+/g, '-');
+        html += '<tr>';
+        html += '<td><strong>' + a.codigo + '</strong></td>';
+        html += '<td>' + a.descricao + '</td>';
+        html += '<td>' + a.categoria + '</td>';
+        html += '<td>' + a.qtd + '</td>';
+        html += '<td><code>' + a.serie + '</code></td>';
+        html += '<td>' + a.dataAtribuicao + '</td>';
+        html += '<td>' + a.localizacao + '</td>';
+        html += '<td><span class="status-badge status-' + estadoClass + '">' + a.estado + '</span></td>';
+        html += '<td><div class="action-buttons">';
+        html += '<button class="action-btn primary" onclick="verDetalhesArtigo(\'' + a.codigo + '\')">Ver</button>';
+        html += '<button class="action-btn" onclick="iniciarDevolucao(\'' + a.codigo + '\', \'' + a.descricao + '\')">Devolver</button>';
+        html += '</div></td>';
+        html += '</tr>';
+    });
+    tbody.innerHTML = html;
 }
 
 function renderEmCurso() {
-  const tbody = document.getElementById('bodyEmCurso');
-  if (dadosEmCurso.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="8" class="empty-state-inv"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg><h3>Sem pedidos em curso</h3><p>Não tem pedidos de inventário pendentes.</p></td></tr>';
-    return;
-  }
-  
-  let html = '';
-  dadosEmCurso.forEach(function(p) {
-    const estadoClass = p.estado.toLowerCase().replace(/\s+/g, '-');
-    html += '<tr>';
-    html += '<td><strong>' + p.id + '</strong></td>';
-    html += '<td>' + p.tipo + '</td>';
-    html += '<td>' + p.item + '</td>';
-    html += '<td>' + p.qtd + '</td>';
-    html += '<td>' + p.local + '</td>';
-    html += '<td>' + p.data + '</td>';
-    html += '<td><span class="status-badge-inv status-' + estadoClass + '">' + p.estado + '</span></td>';
-    html += '<td><div class="action-buttons-inv">';
-    html += '<button class="action-btn-inv primary" onclick="verPedido(\'' + p.id + '\')">Ver</button>';
-    if (p.estado === 'Pronto para Levantamento') {
-      html += '<button class="action-btn-inv success" onclick="confirmarLevantamento(\'' + p.id + '\')">Confirmar</button>';
+    var tbody = document.getElementById('bodyEmCurso');
+    if (dadosEmCurso.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg><h3>Sem pedidos em curso</h3><p>Não tem pedidos de inventário pendentes.</p></div></td></tr>';
+        return;
     }
-    html += '</div></td>';
-    html += '</tr>';
-  });
-  tbody.innerHTML = html;
+    
+    var html = '';
+    dadosEmCurso.forEach(function(p) {
+        var estadoClass = p.estado.toLowerCase().replace(/\s+/g, '-');
+        html += '<tr>';
+        html += '<td><strong>' + p.id + '</strong></td>';
+        html += '<td>' + p.tipo + '</td>';
+        html += '<td>' + p.item + '</td>';
+        html += '<td>' + p.qtd + '</td>';
+        html += '<td>' + p.local + '</td>';
+        html += '<td>' + p.data + '</td>';
+        html += '<td><span class="status-badge status-' + estadoClass + '">' + p.estado + '</span></td>';
+        html += '<td><div class="action-buttons">';
+        html += '<button class="action-btn primary" onclick="verPedido(\'' + p.id + '\')">Ver</button>';
+        if (p.estado === 'Pronto para Levantamento') {
+            html += '<button class="action-btn success" onclick="confirmarLevantamento(\'' + p.id + '\')">Confirmar</button>';
+        }
+        html += '</div></td>';
+        html += '</tr>';
+    });
+    tbody.innerHTML = html;
 }
 
 function renderHistorico() {
-  const tbody = document.getElementById('bodyHistorico');
-  if (dadosHistorico.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="9" class="empty-state-inv"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg><h3>Sem histórico</h3><p>Não existem pedidos concluídos no seu histórico.</p></td></tr>';
-    return;
-  }
-  
-  let html = '';
-  dadosHistorico.forEach(function(p) {
-    const estadoClass = p.estado.toLowerCase().replace(/\s+/g, '-');
-    html += '<tr>';
-    html += '<td><strong>' + p.id + '</strong></td>';
-    html += '<td>' + p.tipo + '</td>';
-    html += '<td>' + p.item + '</td>';
-    html += '<td>' + p.qtd + '</td>';
-    html += '<td>' + p.local + '</td>';
-    html += '<td>' + p.data + '</td>';
-    html += '<td>' + p.dataConclusao + '</td>';
-    html += '<td><span class="status-badge-inv status-' + estadoClass + '">' + p.estado + '</span></td>';
-    html += '<td><div class="action-buttons-inv">';
-    html += '<button class="action-btn-inv primary" onclick="verPedido(\'' + p.id + '\')">Ver</button>';
-    html += '</div></td>';
-    html += '</tr>';
-  });
-  tbody.innerHTML = html;
+    var tbody = document.getElementById('bodyHistorico');
+    if (dadosHistorico.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="9"><div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg><h3>Sem histórico</h3><p>Não existem pedidos concluídos no seu histórico.</p></div></td></tr>';
+        return;
+    }
+    
+    var html = '';
+    dadosHistorico.forEach(function(p) {
+        var estadoClass = p.estado.toLowerCase().replace(/\s+/g, '-');
+        html += '<tr>';
+        html += '<td><strong>' + p.id + '</strong></td>';
+        html += '<td>' + p.tipo + '</td>';
+        html += '<td>' + p.item + '</td>';
+        html += '<td>' + p.qtd + '</td>';
+        html += '<td>' + p.local + '</td>';
+        html += '<td>' + p.data + '</td>';
+        html += '<td>' + p.dataConclusao + '</td>';
+        html += '<td><span class="status-badge status-' + estadoClass + '">' + p.estado + '</span></td>';
+        html += '<td><div class="action-buttons">';
+        html += '<button class="action-btn primary" onclick="verPedido(\'' + p.id + '\')">Ver</button>';
+        html += '</div></td>';
+        html += '</tr>';
+    });
+    tbody.innerHTML = html;
 }
 
 // Tab navigation
 function changeTab(tabName) {
-  document.querySelectorAll('.tab-button-inv').forEach(function(btn) { btn.classList.remove('active'); });
-  document.querySelectorAll('.tab-content-inv').forEach(function(content) { content.classList.remove('active'); });
-  
-  event.target.closest('.tab-button-inv').classList.add('active');
-  document.getElementById('tab-' + tabName).classList.add('active');
-  
-  atualizarFiltroEstado(tabName);
+    document.querySelectorAll('.tab-btn').forEach(function(btn) { btn.classList.remove('active'); });
+    document.querySelectorAll('.tab-content-inv').forEach(function(content) { content.classList.remove('active'); });
+    
+    event.target.closest('.tab-btn').classList.add('active');
+    document.getElementById('tab-' + tabName).classList.add('active');
+    
+    atualizarFiltroEstado(tabName);
 }
 
 function changeTabFromCard(tabName) {
-  document.querySelectorAll('.tab-button-inv').forEach(function(btn) { btn.classList.remove('active'); });
-  document.querySelectorAll('.tab-content-inv').forEach(function(content) { content.classList.remove('active'); });
-  
-  var tabButtons = document.querySelectorAll('.tab-button-inv');
-  tabButtons.forEach(function(btn) {
-    if (btn.getAttribute('onclick').indexOf(tabName) !== -1) {
-      btn.classList.add('active');
-    }
-  });
-  
-  document.getElementById('tab-' + tabName).classList.add('active');
-  atualizarFiltroEstado(tabName);
-  
-  document.querySelector('.tabs-container-inv').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    document.querySelectorAll('.tab-btn').forEach(function(btn) { btn.classList.remove('active'); });
+    document.querySelectorAll('.tab-content-inv').forEach(function(content) { content.classList.remove('active'); });
+    
+    var tabButtons = document.querySelectorAll('.tab-btn');
+    tabButtons.forEach(function(btn) {
+        if (btn.getAttribute('onclick').indexOf(tabName) !== -1) {
+            btn.classList.add('active');
+        }
+    });
+    
+    document.getElementById('tab-' + tabName).classList.add('active');
+    atualizarFiltroEstado(tabName);
+    
+    document.querySelector('.tabs-container-inv').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function atualizarFiltroEstado(tabName) {
-  var filterEstado = document.getElementById('filterEstado');
-  filterEstado.innerHTML = '<option value="">Todos os Estados</option>';
-  
-  if (tabName === 'atribuidos') {
-    filterEstado.innerHTML += '<option value="Ativo">Ativo</option><option value="Em Manutenção">Em Manutenção</option>';
-  } else if (tabName === 'emcurso') {
-    var estados = ['Rascunho', 'Submetido', 'Em Preparação', 'Pronto para Levantamento'];
-    estados.forEach(function(e) { filterEstado.innerHTML += '<option value="' + e + '">' + e + '</option>'; });
-  } else if (tabName === 'historico') {
-    var estados = ['Entregue', 'Devolvido', 'Indeferido', 'Cancelado'];
-    estados.forEach(function(e) { filterEstado.innerHTML += '<option value="' + e + '">' + e + '</option>'; });
-  }
+    var filterEstado = document.getElementById('filterEstado');
+    filterEstado.innerHTML = '<option value="">Todos</option>';
+    
+    if (tabName === 'atribuidos') {
+        filterEstado.innerHTML += '<option value="Ativo">Ativo</option><option value="Em Manutenção">Em Manutenção</option>';
+    } else if (tabName === 'emcurso') {
+        var estados = ['Rascunho', 'Submetido', 'Em Preparação', 'Pronto para Levantamento'];
+        estados.forEach(function(e) { filterEstado.innerHTML += '<option value="' + e + '">' + e + '</option>'; });
+    } else if (tabName === 'historico') {
+        var estados = ['Entregue', 'Devolvido', 'Indeferido', 'Cancelado'];
+        estados.forEach(function(e) { filterEstado.innerHTML += '<option value="' + e + '">' + e + '</option>'; });
+    }
 }
 
 // Filtrar tabela
 function filtrarTabela() {
-  var search = document.getElementById('searchInput').value.toLowerCase();
-  var categoria = document.getElementById('filterCategoria').value;
-  var estado = document.getElementById('filterEstado').value;
-  console.log('Filtrar:', search, categoria, estado);
+    var search = document.getElementById('searchInput').value.toLowerCase();
+    var categoria = document.getElementById('filterCategoria').value;
+    var estado = document.getElementById('filterEstado').value;
+    console.log('Filtrar:', search, categoria, estado);
 }
 
 // Ações
 function verDetalhesArtigo(codigo) {
-  var artigo = dadosAtribuidos.find(function(a) { return a.codigo === codigo; });
-  if (!artigo) return;
-  
-  var content = '<div class="detalhe-grid-inv">' +
-    '<div class="detalhe-item-inv"><span class="detalhe-label-inv">Código</span><span class="detalhe-value-inv">' + artigo.codigo + '</span></div>' +
-    '<div class="detalhe-item-inv"><span class="detalhe-label-inv">Descrição</span><span class="detalhe-value-inv">' + artigo.descricao + '</span></div>' +
-    '<div class="detalhe-item-inv"><span class="detalhe-label-inv">Categoria</span><span class="detalhe-value-inv">' + artigo.categoria + '</span></div>' +
-    '<div class="detalhe-item-inv"><span class="detalhe-label-inv">Quantidade</span><span class="detalhe-value-inv">' + artigo.qtd + '</span></div>' +
-    '<div class="detalhe-item-inv"><span class="detalhe-label-inv">Nº de Série</span><span class="detalhe-value-inv"><code>' + artigo.serie + '</code></span></div>' +
-    '<div class="detalhe-item-inv"><span class="detalhe-label-inv">Data de Atribuição</span><span class="detalhe-value-inv">' + artigo.dataAtribuicao + '</span></div>' +
-    '<div class="detalhe-item-inv"><span class="detalhe-label-inv">Localização</span><span class="detalhe-value-inv">' + artigo.localizacao + '</span></div>' +
-    '<div class="detalhe-item-inv"><span class="detalhe-label-inv">Estado</span><span class="detalhe-value-inv"><span class="status-badge-inv status-' + artigo.estado.toLowerCase() + '">' + artigo.estado + '</span></span></div>' +
-    '<div class="detalhe-item-inv"><span class="detalhe-label-inv">Alocado a</span><span class="detalhe-value-inv">' + artigo.alocadoA + '</span></div>' +
-    '</div>';
-  
-  document.getElementById('modalDetalhesContent').innerHTML = content;
-  document.getElementById('modalDetalhes').classList.add('show');
+    var artigo = dadosAtribuidos.find(function(a) { return a.codigo === codigo; });
+    if (!artigo) return;
+    
+    var content = '<div class="detalhe-grid">' +
+        '<div class="detalhe-item"><span class="detalhe-label">Código</span><span class="detalhe-value">' + artigo.codigo + '</span></div>' +
+        '<div class="detalhe-item"><span class="detalhe-label">Descrição</span><span class="detalhe-value">' + artigo.descricao + '</span></div>' +
+        '<div class="detalhe-item"><span class="detalhe-label">Categoria</span><span class="detalhe-value">' + artigo.categoria + '</span></div>' +
+        '<div class="detalhe-item"><span class="detalhe-label">Quantidade</span><span class="detalhe-value">' + artigo.qtd + '</span></div>' +
+        '<div class="detalhe-item"><span class="detalhe-label">Nº de Série</span><span class="detalhe-value"><code>' + artigo.serie + '</code></span></div>' +
+        '<div class="detalhe-item"><span class="detalhe-label">Data de Atribuição</span><span class="detalhe-value">' + artigo.dataAtribuicao + '</span></div>' +
+        '<div class="detalhe-item"><span class="detalhe-label">Localização</span><span class="detalhe-value">' + artigo.localizacao + '</span></div>' +
+        '<div class="detalhe-item"><span class="detalhe-label">Estado</span><span class="detalhe-value"><span class="status-badge status-' + artigo.estado.toLowerCase() + '">' + artigo.estado + '</span></span></div>' +
+        '<div class="detalhe-item"><span class="detalhe-label">Alocado a</span><span class="detalhe-value">' + artigo.alocadoA + '</span></div>' +
+        '</div>';
+    
+    document.getElementById('modalDetalhesContent').innerHTML = content;
+    document.getElementById('modalDetalhes').classList.add('show');
 }
 
 function verPedido(id) {
-  alert('A carregar detalhes do pedido ' + id + '...');
+    alert('A carregar detalhes do pedido ' + id + '...');
 }
 
 function iniciarDevolucao(codigo, descricao) {
-  if (confirm('Pretende iniciar o processo de devolução do artigo:\n\n' + codigo + ' - ' + descricao + '?')) {
-    window.location.href = '{{ "/novo-pedido-inventario" | relative_url }}?tipo=devolucao&codigo=' + codigo;
-  }
+    if (confirm('Pretende iniciar o processo de devolução do artigo:\n\n' + codigo + ' - ' + descricao + '?')) {
+        window.location.href = '{{ "/novo-pedido-inventario" | relative_url }}?tipo=devolucao&codigo=' + codigo;
+    }
 }
 
 function confirmarLevantamento(id) {
-  if (confirm('Confirmar o levantamento do pedido ' + id + '?\n\nAo confirmar, declara que recebeu o(s) item(ns).')) {
-    alert('Levantamento confirmado com sucesso!');
-  }
+    if (confirm('Confirmar o levantamento do pedido ' + id + '?\n\nAo confirmar, declara que recebeu o(s) item(ns).')) {
+        alert('Levantamento confirmado com sucesso!');
+    }
 }
 
 function fecharModal(modalId) {
-  document.getElementById(modalId).classList.remove('show');
+    document.getElementById(modalId).classList.remove('show');
 }
 
 // Fechar modal ao clicar fora
 document.addEventListener('click', function(e) {
-  if (e.target.classList.contains('modal-overlay-inv')) {
-    e.target.classList.remove('show');
-  }
+    if (e.target.classList.contains('modal-overlay-inv')) {
+        e.target.classList.remove('show');
+    }
 });
 
 // Inicialização
 document.addEventListener('DOMContentLoaded', function() {
-  atualizarStats();
-  renderAtribuidos();
-  renderEmCurso();
-  renderHistorico();
-  atualizarFiltroEstado('atribuidos');
+    atualizarStats();
+    renderAtribuidos();
+    renderEmCurso();
+    renderHistorico();
+    atualizarFiltroEstado('atribuidos');
 });
 </script>
