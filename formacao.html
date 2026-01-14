@@ -74,10 +74,6 @@ title: Centro de Formação
   <!-- Calendar Section -->
   <section class="calendar-section">
     <div class="calendar-section-header">
-      <h2 class="calendar-section-title">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-        Calendário de Formações
-      </h2>
       <button class="calendar-toggle-btn" id="calendarToggleBtn" onclick="toggleFormacaoCalendar()">
         <span class="toggle-label">Calendário de Formações</span>
         <svg class="toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"/></svg>
@@ -323,30 +319,6 @@ title: Centro de Formação
     <div class="modal-body" id="modalPropostaContent"></div>
     <div class="modal-footer">
       <button class="btn btn-secondary" onclick="closeModal('modalDetalhesProposta')">Fechar</button>
-    </div>
-  </div>
-</div>
-
-<!-- Modal: Detalhes do Curso -->
-<div class="modal-overlay" id="modalCourse">
-  <div class="modal-content" style="max-width: 700px;">
-    <div class="modal-header">
-      <h3 class="modal-title" id="modalCourseTitle"></h3>
-      <button class="modal-close" onclick="closeModal('modalCourse')">&times;</button>
-    </div>
-    <div class="modal-tabs">
-      <button class="modal-tab active" data-tab="detalhes" onclick="switchCourseTab('detalhes')">Detalhes</button>
-      <button class="modal-tab" data-tab="conteudo" onclick="switchCourseTab('conteudo')">Conteúdo</button>
-      <button class="modal-tab" data-tab="anexos" onclick="switchCourseTab('anexos')">Anexos</button>
-    </div>
-    <div class="modal-body">
-      <div class="tab-content active" id="tabDetalhes"></div>
-      <div class="tab-content" id="tabConteudo"></div>
-      <div class="tab-content" id="tabAnexos"></div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="closeModal('modalCourse')">Fechar</button>
-      <button class="btn btn-primary" id="btnInscrever" onclick="inscreverFormacao()">Inscrever-me</button>
     </div>
   </div>
 </div>
