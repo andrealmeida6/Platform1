@@ -1,11 +1,19 @@
 // ===================================================================
 // AUTH SERVICE - Gestão de Autenticação e Permissões (v2)
 // ===================================================================
+// Power Pages Equivalent:
+// - Web Role: Define permissões baseadas em roles
+// - Contact Entity: Representa os utilizadores/colaboradores
+// - Entity Permissions: Controla acesso a registos
+// ===================================================================
 
 const AuthService = (function() {
   
   const STORAGE_KEY = 'platform1_current_user';
   const VIEW_AS_KEY = 'platform1_view_as';
+  
+  // ID do utilizador padrão - André Borges
+  const DEFAULT_USER_ID = 'ab123456-7890-abcd-ef01-234567890abc';
   
   let currentUserCache = null;
   let viewAsUserCache = null;
@@ -15,6 +23,19 @@ const AuthService = (function() {
   // FUNÇÕES DE ROLES
   // ==========================================
   
+  /**
+   * Buscar todos os roles activos
+   * Power Pages FetchXML:
+   * <fetch>
+   *   <entity name="adx_webrole">
+   *     <attribute name="adx_name"/>
+   *     <filter>
+   *       <condition attribute="statecode" operator="eq" value="0"/>
+   *     </filter>
+   *     <order attribute="adx_name"/>
+   *   </entity>
+   * </fetch>
+   */
   async function getRoles() {
     if (rolesCache) return rolesCache;
     
@@ -30,6 +51,24 @@ const AuthService = (function() {
     }
   }
   
+  /**
+   * Buscar colaboradores com os seus roles
+   * Power Pages FetchXML:
+   * <fetch>
+   *   <entity name="contact">
+   *     <attribute name="fullname"/>
+   *     <attribute name="emailaddress1"/>
+   *     <link-entity name="adx_contactwebrole" from="adx_contactid" to="contactid">
+   *       <link-entity name="adx_webrole" from="adx_webroleid" to="adx_webroleid">
+   *         <attribute name="adx_name" alias="role_name"/>
+   *       </link-entity>
+   *     </link-entity>
+   *     <filter>
+   *       <condition attribute="statecode" operator="eq" value="0"/>
+   *     </filter>
+   *   </entity>
+   * </fetch>
+   */
   async function getColaboradoresComRoles() {
     try {
       // Buscar colaboradores
@@ -71,6 +110,19 @@ const AuthService = (function() {
     }
   }
   
+  /**
+   * Buscar um colaborador específico com os seus roles
+   * Power Pages FetchXML:
+   * <fetch>
+   *   <entity name="contact">
+   *     <attribute name="fullname"/>
+   *     <attribute name="emailaddress1"/>
+   *     <filter>
+   *       <condition attribute="contactid" operator="eq" value="{colaboradorId}"/>
+   *     </filter>
+   *   </entity>
+   * </fetch>
+   */
   async function getColaboradorComRoles(colaboradorId) {
     try {
       // Buscar colaborador
@@ -107,6 +159,10 @@ const AuthService = (function() {
     }
   }
   
+  /**
+   * Atribuir role a um colaborador
+   * Power Pages: Requer gestão via Web Role assignment
+   */
   async function atribuirRole(colaboradorId, roleId) {
     try {
       const url = `${DataService.getBaseUrl()}/rest/v1/colaborador_roles`;
@@ -181,8 +237,15 @@ const AuthService = (function() {
       if (currentUserCache) return currentUserCache;
     }
     
-    // Default: primeiro utilizador com role Núcleo
+    // Default: André Borges
     try {
+      const andreBorges = await getColaboradorComRoles(DEFAULT_USER_ID);
+      if (andreBorges) {
+        await setCurrentUser(DEFAULT_USER_ID);
+        return currentUserCache;
+      }
+      
+      // Fallback: primeiro utilizador com role Núcleo
       const colaboradores = await getColaboradoresComRoles();
       if (colaboradores.length === 0) return null;
       
@@ -338,7 +401,8 @@ const AuthService = (function() {
     isDirigente,
     canApproveFormacaoLevel1,
     canApproveFormacaoLevel2,
-    init
+    init,
+    DEFAULT_USER_ID
   };
   
 })();
