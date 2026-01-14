@@ -2,356 +2,297 @@
 layout: default
 title: Inventário
 ---
+<!-- 
+  Power Pages: Esta página equivale a uma Entity List com Entity Form
+  FetchXML para listar inventário atribuído:
+  <fetch>
+    <entity name="inv_atribuicoes">
+      <attribute name="numero_serie"/>
+      <attribute name="quantidade"/>
+      <attribute name="data_atribuicao"/>
+      <attribute name="estado"/>
+      <link-entity name="inv_artigos" from="id" to="artigo_id">
+        <attribute name="codigo" alias="artigo_codigo"/>
+        <attribute name="nome" alias="artigo_nome"/>
+        <link-entity name="inv_categorias" from="id" to="categoria_id">
+          <attribute name="nome" alias="categoria_nome"/>
+        </link-entity>
+      </link-entity>
+      <filter>
+        <condition attribute="colaborador_id" operator="eq" value="{{user.id}}"/>
+        <condition attribute="estado" operator="eq" value="Ativo"/>
+      </filter>
+    </entity>
+  </fetch>
+-->
+
+<link rel="stylesheet" href="{{ '/web-files/css/formacao.css' | relative_url }}">
 
 <style>
-/* === CSS VARIABLES === */
-:root {
-    --c-text-primary: #282a32;
-    --c-text-secondary: #686b87;
-    --c-text-action: #5b9cf5;
-    --c-accent-primary: #00b276;
-    --c-border-primary: #eff1f6;
-    --c-background-primary: #f8f9fa;
-    --c-background-secondary: #ffffff;
+/* === INVENTÁRIO - Estilos específicos === */
+/* Usar estrutura consistente com formacao.css */
+
+.inventario-page {
+    padding: 0;
 }
 
-/* === MAIN LAYOUT === */
-.main-inv {
-    padding: 2rem 0;
-    background: #f8f9fa;
-    min-height: calc(100vh - 200px);
-}
-
-.responsive-wrapper-inv {
-    width: 90%;
-    max-width: 1200px;
+/* Summary Grid */
+.inv-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding: 0 2rem;
+    max-width: 1400px;
     margin-left: auto;
     margin-right: auto;
 }
 
-/* === HEADER === */
-.main-header-inv {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 1.5rem;
-}
-
-.main-header-inv h1 {
-    font-size: 1.5rem;
-    font-weight: 600;
-    line-height: 1.25;
-    color: var(--c-text-primary);
-    margin: 0;
-    letter-spacing: -0.02em;
-}
-
-.header-actions-inv {
-    display: flex;
-    gap: 1rem;
-    align-items: center;
-}
-
-/* === BUTTON === */
-.button-inv {
-    font: inherit;
-    color: inherit;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0 1em;
-    height: 40px;
-    border-radius: 8px;
-    line-height: 1;
-    border: 2px solid var(--c-accent-primary);
-    background-color: var(--c-accent-primary);
-    color: #fff;
-    font-size: 0.875rem;
-    font-weight: 600;
-    transition: 0.15s ease;
-    cursor: pointer;
-    white-space: nowrap;
-}
-
-.button-inv:hover {
-    background-color: #009879;
-    border-color: #009879;
-}
-
-.button-inv span {
-    margin-right: 8px;
-    font-size: 1.25em;
-}
-
-/* === SUMMARY CARDS === */
-.summary-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 16px;
-    margin-bottom: 24px;
-}
-
-.summary-card {
+.inv-summary-card {
     background: white;
-    border-radius: 10px;
-    padding: 20px;
-    box-shadow: 0 0 4px rgba(0, 0, 0, 0.08);
+    border-radius: 12px;
+    padding: 1.25rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
     transition: all 0.2s ease;
     cursor: pointer;
 }
 
-.summary-card:hover {
+.inv-summary-card:hover {
     transform: translateY(-3px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
-.summary-card.featured {
-    background: linear-gradient(135deg, #00b276 0%, #007a62 100%);
+.inv-summary-card.featured {
+    background: linear-gradient(135deg, var(--primary-color, #00b276) 0%, var(--primary-hover, #009661) 100%);
     color: white;
-    position: relative;
-    overflow: hidden;
 }
 
-.summary-card.featured::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    right: -20%;
-    width: 250px;
-    height: 250px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 50%;
-    pointer-events: none;
-}
-
-.summary-card.featured > * {
-    position: relative;
-    z-index: 1;
-}
-
-.summary-card-header {
+.inv-summary-card-header {
     display: flex;
     align-items: center;
-    gap: 12px;
-    margin-bottom: 12px;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
 }
 
-.summary-card-icon {
+.inv-summary-card-icon {
     width: 40px;
     height: 40px;
-    border-radius: 8px;
+    border-radius: 10px;
     background: rgba(0, 178, 118, 0.1);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #00b276;
+    color: var(--primary-color, #00b276);
 }
 
-.summary-card.featured .summary-card-icon {
+.inv-summary-card.featured .inv-summary-card-icon {
     background: rgba(255, 255, 255, 0.2);
     color: white;
 }
 
-.summary-card-icon svg {
+.inv-summary-card-icon svg {
     width: 20px;
     height: 20px;
 }
 
-.summary-card-title {
-    font-size: 13px;
+.inv-summary-card-title {
+    font-size: 0.75rem;
     font-weight: 600;
     color: #64748b;
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
-.summary-card.featured .summary-card-title {
+.inv-summary-card.featured .inv-summary-card-title {
     color: rgba(255, 255, 255, 0.9);
 }
 
-.summary-card-value {
-    font-size: 32px;
+.inv-summary-card-value {
+    font-size: 2rem;
     font-weight: 700;
-    color: #00b276;
-    margin-bottom: 8px;
+    color: var(--primary-color, #00b276);
+    margin-bottom: 0.25rem;
 }
 
-.summary-card.featured .summary-card-value {
+.inv-summary-card.featured .inv-summary-card-value {
     color: white;
 }
 
-.summary-card-label {
-    font-size: 14px;
-    color: #686b87;
+.inv-summary-card-label {
+    font-size: 0.8rem;
+    color: #64748b;
 }
 
-.summary-card.featured .summary-card-label {
+.inv-summary-card.featured .inv-summary-card-label {
     color: rgba(255, 255, 255, 0.85);
 }
 
-/* === FILTERS === */
-.filters-section {
+/* Content Wrapper */
+.inv-content-wrapper {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 2rem 2rem;
+}
+
+/* Filters */
+.inv-filters {
     background: white;
     border-radius: 12px;
-    padding: 1.5rem;
+    padding: 1.25rem;
     margin-bottom: 1.5rem;
-    box-shadow: 0 0 4px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
     display: flex;
     flex-wrap: wrap;
     gap: 1rem;
     align-items: flex-end;
 }
 
-.filter-group {
+.inv-filter-group {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-    min-width: 200px;
+    min-width: 180px;
     flex: 1;
 }
 
-.filter-group.search {
+.inv-filter-group.search {
     flex: 2;
-    min-width: 300px;
+    min-width: 280px;
 }
 
-.filter-group label {
-    font-size: 0.875rem;
+.inv-filter-group label {
+    font-size: 0.8rem;
     font-weight: 600;
-    color: var(--c-text-primary);
+    color: #374151;
 }
 
-.filter-group input,
-.filter-group select {
+.inv-filter-group input,
+.inv-filter-group select {
     padding: 0.625rem 0.875rem;
-    border: 2px solid var(--c-border-primary);
+    border: 2px solid #e2e8f0;
     border-radius: 8px;
     font-size: 0.875rem;
-    color: var(--c-text-primary);
     transition: 0.15s ease;
-    background: white;
 }
 
-.filter-group input:focus,
-.filter-group select:focus {
-    border-color: var(--c-accent-primary);
+.inv-filter-group input:focus,
+.inv-filter-group select:focus {
+    border-color: var(--primary-color, #00b276);
     outline: none;
 }
 
-/* === TABS === */
-.tabs-container-inv {
+/* Tabs */
+.inv-tabs-container {
     background: white;
     border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 0 4px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
-.tabs-nav {
+.inv-tabs-nav {
     display: flex;
-    gap: 8px;
-    padding: 16px 20px;
-    background: #fafbfc;
-    border-bottom: 1px solid #e9ecf4;
+    gap: 0.5rem;
+    padding: 1rem 1.25rem;
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+    overflow-x: auto;
 }
 
-.tab-btn {
-    padding: 8px 20px;
+.inv-tab-btn {
+    padding: 0.5rem 1rem;
     border: none;
     background: transparent;
     font-size: 0.875rem;
     font-weight: 500;
-    color: var(--c-text-secondary);
+    color: #64748b;
     cursor: pointer;
     transition: all 0.2s ease;
     border-radius: 20px;
-    position: relative;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 0.5rem;
+    white-space: nowrap;
     font-family: inherit;
 }
 
-.tab-btn:hover {
-    color: var(--c-accent-primary);
+.inv-tab-btn:hover {
+    color: var(--primary-color, #00b276);
     background: rgba(0, 178, 118, 0.08);
 }
 
-.tab-btn.active {
+.inv-tab-btn.active {
     color: white;
-    background: linear-gradient(135deg, #00b276 0%, #007a62 100%);
+    background: linear-gradient(135deg, var(--primary-color, #00b276) 0%, var(--primary-hover, #009661) 100%);
     font-weight: 600;
-    box-shadow: 0 2px 8px rgba(0, 178, 118, 0.25);
 }
 
-.tab-badge {
-    padding: 2px 8px;
+.inv-tab-badge {
+    padding: 0.125rem 0.5rem;
     background: rgba(255, 255, 255, 0.25);
     border-radius: 10px;
-    font-size: 11px;
+    font-size: 0.7rem;
     font-weight: 700;
-    min-width: 20px;
+    min-width: 18px;
     text-align: center;
 }
 
-.tab-btn:not(.active) .tab-badge {
-    background: #e9ecf4;
-    color: #686b87;
+.inv-tab-btn:not(.active) .inv-tab-badge {
+    background: #e2e8f0;
+    color: #64748b;
 }
 
-.tab-content-inv {
+.inv-tab-content {
     display: none;
-    padding: 1.5rem;
+    padding: 1.25rem;
 }
 
-.tab-content-inv.active {
+.inv-tab-content.active {
     display: block;
 }
 
-/* === TABLE === */
-.table-wrapper-inv {
+/* Table */
+.inv-table-wrapper {
     overflow-x: auto;
 }
 
-.table-inv {
+.inv-table {
     width: 100%;
     border-collapse: collapse;
     min-width: 800px;
 }
 
-.table-inv thead {
-    background: #f8f9fa;
+.inv-table thead {
+    background: #f8fafc;
 }
 
-.table-inv th {
-    padding: 12px 16px;
+.inv-table th {
+    padding: 0.75rem 1rem;
     text-align: left;
-    font-size: 11px;
+    font-size: 0.7rem;
     font-weight: 700;
-    color: #686b87;
+    color: #64748b;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    border-bottom: 2px solid #e9ecf4;
+    border-bottom: 2px solid #e2e8f0;
 }
 
-.table-inv td {
-    padding: 16px;
-    border-bottom: 1px solid #e9ecf4;
-    font-size: 14px;
-    color: #282a32;
+.inv-table td {
+    padding: 1rem;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 0.875rem;
+    color: #1e293b;
 }
 
-.table-inv tbody tr:hover {
-    background: #f8f9fa;
+.inv-table tbody tr:hover {
+    background: #f8fafc;
 }
 
-.table-inv td strong {
-    color: #00b276;
+.inv-table td strong {
+    color: var(--primary-color, #00b276);
     font-weight: 600;
 }
 
-.table-inv code {
+.inv-table code {
     background: #f1f5f9;
     padding: 0.25rem 0.5rem;
     border-radius: 4px;
@@ -359,133 +300,94 @@ title: Inventário
     color: #475569;
 }
 
-/* === STATUS BADGES === */
-.status-badge {
+/* Status Badges */
+.inv-status-badge {
     display: inline-block;
-    padding: 4px 12px;
-    border-radius: 16px;
-    font-size: 11px;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.7rem;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.3px;
 }
 
-.status-atribuido,
-.status-ativo {
-    background: #d1fae5;
-    color: #065f46;
-}
+.inv-status-ativo { background: #d1fae5; color: #065f46; }
+.inv-status-rascunho { background: #f1f5f9; color: #64748b; }
+.inv-status-submetido { background: #dbeafe; color: #1e40af; }
+.inv-status-em-preparacao, .inv-status-em-preparação { background: #fef3c7; color: #92400e; }
+.inv-status-pronto-para-levantamento { background: #e0e7ff; color: #3730a3; }
+.inv-status-entregue { background: #d1fae5; color: #065f46; }
+.inv-status-devolvido { background: #f1f5f9; color: #64748b; }
+.inv-status-indeferido, .inv-status-cancelado { background: #fee2e2; color: #991b1b; }
 
-.status-rascunho {
-    background: #e9ecf4;
-    color: #686b87;
-}
-
-.status-submetido {
-    background: #dbeafe;
-    color: #1e40af;
-}
-
-.status-em-preparacao,
-.status-em-preparação {
-    background: #fef3c7;
-    color: #92400e;
-}
-
-.status-pronto-para-levantamento {
-    background: #e0e7ff;
-    color: #3730a3;
-}
-
-.status-entregue {
-    background: #d1fae5;
-    color: #065f46;
-}
-
-.status-devolvido {
-    background: #e9ecf4;
-    color: #686b87;
-}
-
-.status-indeferido,
-.status-cancelado {
-    background: #fee2e2;
-    color: #991b1b;
-}
-
-/* === ACTION BUTTONS === */
-.action-buttons {
+/* Action Buttons */
+.inv-action-buttons {
     display: flex;
-    gap: 8px;
+    gap: 0.5rem;
     flex-wrap: wrap;
 }
 
-.action-btn {
-    padding: 6px 12px;
-    border: 1px solid #e9ecf4;
+.inv-action-btn {
+    padding: 0.375rem 0.75rem;
+    border: 1px solid #e2e8f0;
     background: white;
-    color: #686b87;
+    color: #64748b;
     border-radius: 6px;
-    font-size: 13px;
+    font-size: 0.75rem;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
     font-family: inherit;
 }
 
-.action-btn:hover {
-    background: #f8f9fa;
-    border-color: #00b276;
-    color: #00b276;
+.inv-action-btn:hover {
+    background: #f8fafc;
+    border-color: var(--primary-color, #00b276);
+    color: var(--primary-color, #00b276);
 }
 
-.action-btn.primary {
-    background: #00b276;
+.inv-action-btn.primary {
+    background: var(--primary-color, #00b276);
     color: white;
-    border-color: #00b276;
+    border-color: var(--primary-color, #00b276);
 }
 
-.action-btn.primary:hover {
-    background: #007a62;
+.inv-action-btn.primary:hover {
+    background: var(--primary-hover, #009661);
 }
 
-.action-btn.success {
+.inv-action-btn.success {
     background: #059669;
     color: white;
     border-color: #059669;
 }
 
-.action-btn.success:hover {
-    background: #047857;
-}
-
-/* === EMPTY STATE === */
-.empty-state {
-    padding: 60px 20px;
+/* Empty State */
+.inv-empty-state {
+    padding: 3rem 1rem;
     text-align: center;
 }
 
-.empty-state svg {
-    width: 80px;
-    height: 80px;
-    color: #e9ecf4;
-    margin-bottom: 16px;
+.inv-empty-state svg {
+    width: 60px;
+    height: 60px;
+    color: #e2e8f0;
+    margin-bottom: 1rem;
 }
 
-.empty-state h3 {
-    font-size: 18px;
-    color: #282a32;
-    margin-bottom: 8px;
+.inv-empty-state h3 {
+    font-size: 1rem;
+    color: #1e293b;
+    margin-bottom: 0.5rem;
 }
 
-.empty-state p {
-    font-size: 14px;
-    color: #686b87;
-    margin-bottom: 20px;
+.inv-empty-state p {
+    font-size: 0.875rem;
+    color: #64748b;
 }
 
-/* === MODAL === */
-.modal-overlay-inv {
+/* Modal */
+.inv-modal-overlay {
     display: none;
     position: fixed;
     top: 0;
@@ -499,209 +401,276 @@ title: Inventário
     padding: 2rem;
 }
 
-.modal-overlay-inv.show {
+.inv-modal-overlay.show {
     display: flex;
 }
 
-.modal-inv {
+.inv-modal {
     background: white;
-    border-radius: 12px;
+    border-radius: 16px;
     width: 100%;
-    max-width: 600px;
+    max-width: 550px;
     max-height: 90vh;
     display: flex;
     flex-direction: column;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-    animation: modalSlideIn 0.3s ease;
 }
 
-@keyframes modalSlideIn {
-    from { opacity: 0; transform: translateY(-20px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-.modal-header-inv {
+.inv-modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1.5rem;
-    border-bottom: 1px solid #eff1f6;
+    padding: 1.25rem;
+    border-bottom: 1px solid #f1f5f9;
 }
 
-.modal-header-inv h3 {
-    font-size: 1.25rem;
+.inv-modal-header h3 {
+    font-size: 1.125rem;
     font-weight: 600;
-    color: var(--c-text-primary);
+    color: #1e293b;
     margin: 0;
 }
 
-.modal-close-inv {
-    width: 36px;
-    height: 36px;
+.inv-modal-close {
+    width: 32px;
+    height: 32px;
     border: none;
-    background: #f8f9fa;
+    background: #f8fafc;
     border-radius: 8px;
-    font-size: 1.5rem;
-    color: #686b87;
+    font-size: 1.25rem;
+    color: #64748b;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.15s ease;
 }
 
-.modal-close-inv:hover {
-    background: #eff1f6;
-    color: var(--c-text-primary);
+.inv-modal-close:hover {
+    background: #f1f5f9;
+    color: #1e293b;
 }
 
-.modal-body-inv {
-    padding: 1.5rem;
+.inv-modal-body {
+    padding: 1.25rem;
     overflow-y: auto;
     flex: 1;
 }
 
-.modal-footer-inv {
-    padding: 1.5rem;
-    border-top: 1px solid #eff1f6;
+.inv-modal-footer {
+    padding: 1.25rem;
+    border-top: 1px solid #f1f5f9;
     display: flex;
     justify-content: flex-end;
+    gap: 0.75rem;
+}
+
+/* Detalhe Grid */
+.inv-detalhe-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
     gap: 1rem;
 }
 
-/* === DETALHE GRID === */
-.detalhe-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1.25rem;
-}
-
-.detalhe-item {
+.inv-detalhe-item {
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
 }
 
-.detalhe-label {
-    font-size: 0.75rem;
+.inv-detalhe-label {
+    font-size: 0.7rem;
     font-weight: 600;
-    color: #686b87;
+    color: #64748b;
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
-.detalhe-value {
+.inv-detalhe-value {
     font-size: 0.875rem;
-    color: var(--c-text-primary);
+    color: #1e293b;
     font-weight: 500;
 }
 
-/* === RESPONSIVE === */
+/* Page Header */
+.inv-page-header {
+    background: linear-gradient(135deg, var(--primary-color, #00b276) 0%, var(--primary-hover, #009661) 100%);
+    padding: 2rem 2rem;
+    color: white;
+    margin-bottom: 1.5rem;
+}
+
+.inv-page-header-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.inv-page-header h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.inv-page-header-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 10px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.inv-page-header-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+.inv-page-header-btn svg {
+    width: 18px;
+    height: 18px;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .inv-summary-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
 @media (max-width: 768px) {
-    .summary-grid {
+    .inv-summary-grid,
+    .inv-content-wrapper {
+        padding: 0 1rem;
+    }
+    
+    .inv-summary-grid {
         grid-template-columns: 1fr;
     }
-
-    .tabs-nav {
-        overflow-x: auto;
-        flex-wrap: nowrap;
-    }
-
-    .filters-section {
+    
+    .inv-filters {
         flex-direction: column;
     }
-
-    .filter-group {
+    
+    .inv-filter-group {
         width: 100%;
     }
-
-    .table-inv {
-        font-size: 12px;
+    
+    .inv-tabs-nav {
+        padding: 0.75rem;
     }
-
-    .table-inv th, 
-    .table-inv td {
-        padding: 10px;
+    
+    .inv-tab-btn {
+        font-size: 0.8rem;
+        padding: 0.5rem 0.75rem;
     }
-
-    .detalhe-grid {
+    
+    .inv-table th,
+    .inv-table td {
+        padding: 0.75rem 0.5rem;
+        font-size: 0.75rem;
+    }
+    
+    .inv-detalhe-grid {
         grid-template-columns: 1fr;
+    }
+    
+    .inv-page-header {
+        padding: 1.5rem 1rem;
+    }
+    
+    .inv-page-header h1 {
+        font-size: 1.5rem;
     }
 }
 </style>
 
-<main class="main-inv">
-    <div class="responsive-wrapper-inv">
-        <!-- Header -->
-        <div class="main-header-inv">
+<div class="inventario-page">
+    <!-- Page Header -->
+    <div class="inv-page-header">
+        <div class="inv-page-header-content">
             <h1>Meu Inventário</h1>
-            <div class="header-actions-inv">
-                <a href="{{ '/novo-pedido-inventario' | relative_url }}" class="button-inv">
-                    <span>+</span>
-                    Novo Pedido de Inventário
-                </a>
-            </div>
+            <a href="{{ '/novo-pedido-inventario' | relative_url }}" class="inv-page-header-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                Novo Pedido
+            </a>
         </div>
+    </div>
 
-        <!-- Summary Cards -->
-        <div class="summary-grid">
-            <div class="summary-card featured" onclick="changeTabFromCard('atribuidos')">
-                <div class="summary-card-header">
-                    <div class="summary-card-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/>
-                        </svg>
-                    </div>
-                    <div class="summary-card-title">Itens Atribuídos</div>
+    <!-- Summary Cards -->
+    <div class="inv-summary-grid">
+        <div class="inv-summary-card featured" onclick="changeTabFromCard('atribuidos')">
+            <div class="inv-summary-card-header">
+                <div class="inv-summary-card-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/>
+                    </svg>
                 </div>
-                <div class="summary-card-value" id="statAtribuidos">0</div>
-                <div class="summary-card-label">Equipamentos e materiais sob sua responsabilidade</div>
+                <div class="inv-summary-card-title">Itens Atribuídos</div>
             </div>
-            
-            <div class="summary-card" onclick="changeTabFromCard('emcurso')">
-                <div class="summary-card-header">
-                    <div class="summary-card-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="12" cy="12" r="10"/>
-                            <polyline points="12 6 12 12 16 14"/>
-                        </svg>
-                    </div>
-                    <div class="summary-card-title">Pedidos em Curso</div>
-                </div>
-                <div class="summary-card-value" id="statEmCurso">0</div>
-                <div class="summary-card-label">Requisições pendentes de entrega</div>
-            </div>
-            
-            <div class="summary-card" onclick="changeTabFromCard('historico')">
-                <div class="summary-card-header">
-                    <div class="summary-card-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-                        </svg>
-                    </div>
-                    <div class="summary-card-title">Histórico</div>
-                </div>
-                <div class="summary-card-value" id="statHistorico">0</div>
-                <div class="summary-card-label">Pedidos concluídos</div>
-            </div>
+            <div class="inv-summary-card-value" id="statAtribuidos">0</div>
+            <div class="inv-summary-card-label">Equipamentos sob sua responsabilidade</div>
         </div>
+        
+        <div class="inv-summary-card" onclick="changeTabFromCard('emcurso')">
+            <div class="inv-summary-card-header">
+                <div class="inv-summary-card-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                </div>
+                <div class="inv-summary-card-title">Pedidos em Curso</div>
+            </div>
+            <div class="inv-summary-card-value" id="statEmCurso">0</div>
+            <div class="inv-summary-card-label">Requisições pendentes</div>
+        </div>
+        
+        <div class="inv-summary-card" onclick="changeTabFromCard('historico')">
+            <div class="inv-summary-card-header">
+                <div class="inv-summary-card-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                    </svg>
+                </div>
+                <div class="inv-summary-card-title">Histórico</div>
+            </div>
+            <div class="inv-summary-card-value" id="statHistorico">0</div>
+            <div class="inv-summary-card-label">Pedidos concluídos</div>
+        </div>
+    </div>
 
+    <!-- Content -->
+    <div class="inv-content-wrapper">
         <!-- Filters -->
-        <div class="filters-section">
-            <div class="filter-group search">
+        <div class="inv-filters">
+            <div class="inv-filter-group search">
                 <label for="searchInput">Pesquisar</label>
-                <input type="text" id="searchInput" placeholder="Pesquisar por código, descrição ou artigo..." oninput="filtrarTabela()">
+                <input type="text" id="searchInput" placeholder="Pesquisar por código, descrição..." oninput="filtrarTabela()">
             </div>
-            <div class="filter-group">
+            <div class="inv-filter-group">
                 <label for="filterCategoria">Categoria</label>
                 <select id="filterCategoria" onchange="filtrarTabela()">
                     <option value="">Todas</option>
                     <option value="Informática">Informática</option>
                     <option value="Mobiliário">Mobiliário</option>
                     <option value="Economato">Economato</option>
+                    <option value="Telemóveis">Telemóveis</option>
                 </select>
             </div>
-            <div class="filter-group">
+            <div class="inv-filter-group">
                 <label for="filterEstado">Estado</label>
                 <select id="filterEstado" onchange="filtrarTabela()">
                     <option value="">Todos</option>
@@ -710,26 +679,26 @@ title: Inventário
         </div>
 
         <!-- Tabs Container -->
-        <div class="tabs-container-inv">
-            <div class="tabs-nav">
-                <button class="tab-btn active" onclick="changeTab('atribuidos')">
-                    📦 Itens Atribuídos
-                    <span class="tab-badge" id="badgeAtribuidos">0</span>
+        <div class="inv-tabs-container">
+            <div class="inv-tabs-nav">
+                <button class="inv-tab-btn active" onclick="changeTab('atribuidos')">
+                    📦 Atribuídos
+                    <span class="inv-tab-badge" id="badgeAtribuidos">0</span>
                 </button>
-                <button class="tab-btn" onclick="changeTab('emcurso')">
-                    ⏳ Pedidos em Curso
-                    <span class="tab-badge" id="badgeEmCurso">0</span>
+                <button class="inv-tab-btn" onclick="changeTab('emcurso')">
+                    ⏳ Em Curso
+                    <span class="inv-tab-badge" id="badgeEmCurso">0</span>
                 </button>
-                <button class="tab-btn" onclick="changeTab('historico')">
+                <button class="inv-tab-btn" onclick="changeTab('historico')">
                     📋 Histórico
-                    <span class="tab-badge" id="badgeHistorico">0</span>
+                    <span class="inv-tab-badge" id="badgeHistorico">0</span>
                 </button>
             </div>
 
-            <!-- Tab: Artigos Atribuídos -->
-            <div id="tab-atribuidos" class="tab-content-inv active">
-                <div class="table-wrapper-inv">
-                    <table class="table-inv">
+            <!-- Tab: Atribuídos -->
+            <div id="tab-atribuidos" class="inv-tab-content active">
+                <div class="inv-table-wrapper">
+                    <table class="inv-table">
                         <thead>
                             <tr>
                                 <th>Código</th>
@@ -748,10 +717,10 @@ title: Inventário
                 </div>
             </div>
 
-            <!-- Tab: Pedidos em Curso -->
-            <div id="tab-emcurso" class="tab-content-inv">
-                <div class="table-wrapper-inv">
-                    <table class="table-inv">
+            <!-- Tab: Em Curso -->
+            <div id="tab-emcurso" class="inv-tab-content">
+                <div class="inv-table-wrapper">
+                    <table class="inv-table">
                         <thead>
                             <tr>
                                 <th>Nº Pedido</th>
@@ -770,9 +739,9 @@ title: Inventário
             </div>
 
             <!-- Tab: Histórico -->
-            <div id="tab-historico" class="tab-content-inv">
-                <div class="table-wrapper-inv">
-                    <table class="table-inv">
+            <div id="tab-historico" class="inv-tab-content">
+                <div class="inv-table-wrapper">
+                    <table class="inv-table">
                         <thead>
                             <tr>
                                 <th>Nº Pedido</th>
@@ -792,29 +761,43 @@ title: Inventário
             </div>
         </div>
     </div>
-</main>
+</div>
 
 <!-- Modal Ver Detalhes -->
-<div class="modal-overlay-inv" id="modalDetalhes">
-    <div class="modal-inv">
-        <div class="modal-header-inv">
+<div class="inv-modal-overlay" id="modalDetalhes">
+    <div class="inv-modal">
+        <div class="inv-modal-header">
             <h3>Detalhes do Artigo</h3>
-            <button class="modal-close-inv" onclick="fecharModal('modalDetalhes')">×</button>
+            <button class="inv-modal-close" onclick="fecharModal('modalDetalhes')">×</button>
         </div>
-        <div class="modal-body-inv" id="modalDetalhesContent"></div>
-        <div class="modal-footer-inv">
-            <button class="button-inv" onclick="fecharModal('modalDetalhes')" style="background: #686b87; border-color: #686b87;">Fechar</button>
+        <div class="inv-modal-body" id="modalDetalhesContent"></div>
+        <div class="inv-modal-footer">
+            <button class="inv-action-btn" onclick="fecharModal('modalDetalhes')">Fechar</button>
         </div>
     </div>
 </div>
 
 <script>
+/**
+ * Power Pages: Dados seriam carregados via Liquid/FetchXML
+ * {% fetchxml atribuicoes_query %}
+ *   <fetch>
+ *     <entity name="inv_atribuicoes">
+ *       <attribute name="numero_serie"/>
+ *       <filter>
+ *         <condition attribute="colaborador_id" operator="eq" value="{{user.id}}"/>
+ *       </filter>
+ *     </entity>
+ *   </fetch>
+ * {% endfetchxml %}
+ */
+
 // Dados de exemplo
 var dadosAtribuidos = [
-    { codigo: 'INF-001', descricao: 'Portátil Dell Latitude 5520', categoria: 'Informática', qtd: 1, serie: 'DL5520-2024-0142', dataAtribuicao: '15/03/2024', localizacao: 'Escritório Lisboa', estado: 'Ativo', alocadoA: 'João Silva', tipoAlocacao: 'pessoal' },
-    { codigo: 'INF-005', descricao: 'Monitor LG 27" 4K', categoria: 'Informática', qtd: 2, serie: 'LG27-2024-0089', dataAtribuicao: '15/03/2024', localizacao: 'Escritório Lisboa', estado: 'Ativo', alocadoA: 'João Silva', tipoAlocacao: 'pessoal' },
-    { codigo: 'MOB-001', descricao: 'Cadeira Ergonómica Herman Miller', categoria: 'Mobiliário', qtd: 1, serie: 'HM-2024-0567', dataAtribuicao: '20/01/2024', localizacao: 'Escritório Lisboa', estado: 'Ativo', alocadoA: 'João Silva', tipoAlocacao: 'pessoal' },
-    { codigo: 'INF-007', descricao: 'Teclado e Rato Wireless Logitech', categoria: 'Informática', qtd: 1, serie: 'LOG-2024-0234', dataAtribuicao: '15/03/2024', localizacao: 'Escritório Lisboa', estado: 'Ativo', alocadoA: 'João Silva', tipoAlocacao: 'pessoal' }
+    { codigo: 'INF-001', descricao: 'Portátil Dell Latitude 5520', categoria: 'Informática', qtd: 1, serie: 'DL5520-2024-0142', dataAtribuicao: '15/03/2024', localizacao: 'Escritório Lisboa', estado: 'Ativo', alocadoA: 'André Borges', tipoAlocacao: 'pessoal' },
+    { codigo: 'INF-005', descricao: 'Monitor LG 27" 4K', categoria: 'Informática', qtd: 2, serie: 'LG27-2024-0089', dataAtribuicao: '15/03/2024', localizacao: 'Escritório Lisboa', estado: 'Ativo', alocadoA: 'André Borges', tipoAlocacao: 'pessoal' },
+    { codigo: 'MOB-001', descricao: 'Cadeira Ergonómica Herman Miller', categoria: 'Mobiliário', qtd: 1, serie: 'HM-2024-0567', dataAtribuicao: '20/01/2024', localizacao: 'Escritório Lisboa', estado: 'Ativo', alocadoA: 'André Borges', tipoAlocacao: 'pessoal' },
+    { codigo: 'INF-TEC-002', descricao: 'Teclado e Rato Wireless Logitech', categoria: 'Informática', qtd: 1, serie: 'LOG-2024-0234', dataAtribuicao: '15/03/2024', localizacao: 'Escritório Lisboa', estado: 'Ativo', alocadoA: 'André Borges', tipoAlocacao: 'pessoal' }
 ];
 
 var dadosEmCurso = [
@@ -827,7 +810,6 @@ var dadosHistorico = [
     { id: 'PED-2024-0042', tipo: 'Devolução', item: 'Telemóvel Samsung S21', qtd: 1, local: 'Armazém Central', data: '15/02/2024', dataConclusao: '20/02/2024', estado: 'Devolvido' }
 ];
 
-// Atualizar estatísticas
 function atualizarStats() {
     document.getElementById('statAtribuidos').textContent = dadosAtribuidos.length;
     document.getElementById('statEmCurso').textContent = dadosEmCurso.length;
@@ -837,11 +819,10 @@ function atualizarStats() {
     document.getElementById('badgeHistorico').textContent = dadosHistorico.length;
 }
 
-// Render tabelas
 function renderAtribuidos() {
     var tbody = document.getElementById('bodyAtribuidos');
     if (dadosAtribuidos.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="9"><div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg><h3>Sem artigos atribuídos</h3><p>Não tem artigos de inventário atribuídos de momento.</p></div></td></tr>';
+        tbody.innerHTML = '<tr><td colspan="9"><div class="inv-empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg><h3>Sem artigos atribuídos</h3><p>Não tem artigos de inventário atribuídos.</p></div></td></tr>';
         return;
     }
     
@@ -856,10 +837,10 @@ function renderAtribuidos() {
         html += '<td><code>' + a.serie + '</code></td>';
         html += '<td>' + a.dataAtribuicao + '</td>';
         html += '<td>' + a.localizacao + '</td>';
-        html += '<td><span class="status-badge status-' + estadoClass + '">' + a.estado + '</span></td>';
-        html += '<td><div class="action-buttons">';
-        html += '<button class="action-btn primary" onclick="verDetalhesArtigo(\'' + a.codigo + '\')">Ver</button>';
-        html += '<button class="action-btn" onclick="iniciarDevolucao(\'' + a.codigo + '\', \'' + a.descricao + '\')">Devolver</button>';
+        html += '<td><span class="inv-status-badge inv-status-' + estadoClass + '">' + a.estado + '</span></td>';
+        html += '<td><div class="inv-action-buttons">';
+        html += '<button class="inv-action-btn primary" onclick="verDetalhesArtigo(\'' + a.codigo + '\')">Ver</button>';
+        html += '<button class="inv-action-btn" onclick="iniciarDevolucao(\'' + a.codigo + '\', \'' + a.descricao + '\')">Devolver</button>';
         html += '</div></td>';
         html += '</tr>';
     });
@@ -869,7 +850,7 @@ function renderAtribuidos() {
 function renderEmCurso() {
     var tbody = document.getElementById('bodyEmCurso');
     if (dadosEmCurso.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg><h3>Sem pedidos em curso</h3><p>Não tem pedidos de inventário pendentes.</p></div></td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8"><div class="inv-empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg><h3>Sem pedidos em curso</h3><p>Não tem pedidos pendentes.</p></div></td></tr>';
         return;
     }
     
@@ -883,11 +864,11 @@ function renderEmCurso() {
         html += '<td>' + p.qtd + '</td>';
         html += '<td>' + p.local + '</td>';
         html += '<td>' + p.data + '</td>';
-        html += '<td><span class="status-badge status-' + estadoClass + '">' + p.estado + '</span></td>';
-        html += '<td><div class="action-buttons">';
-        html += '<button class="action-btn primary" onclick="verPedido(\'' + p.id + '\')">Ver</button>';
+        html += '<td><span class="inv-status-badge inv-status-' + estadoClass + '">' + p.estado + '</span></td>';
+        html += '<td><div class="inv-action-buttons">';
+        html += '<button class="inv-action-btn primary" onclick="verPedido(\'' + p.id + '\')">Ver</button>';
         if (p.estado === 'Pronto para Levantamento') {
-            html += '<button class="action-btn success" onclick="confirmarLevantamento(\'' + p.id + '\')">Confirmar</button>';
+            html += '<button class="inv-action-btn success" onclick="confirmarLevantamento(\'' + p.id + '\')">Confirmar</button>';
         }
         html += '</div></td>';
         html += '</tr>';
@@ -898,7 +879,7 @@ function renderEmCurso() {
 function renderHistorico() {
     var tbody = document.getElementById('bodyHistorico');
     if (dadosHistorico.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="9"><div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg><h3>Sem histórico</h3><p>Não existem pedidos concluídos no seu histórico.</p></div></td></tr>';
+        tbody.innerHTML = '<tr><td colspan="9"><div class="inv-empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg><h3>Sem histórico</h3><p>Não existem pedidos concluídos.</p></div></td></tr>';
         return;
     }
     
@@ -913,31 +894,30 @@ function renderHistorico() {
         html += '<td>' + p.local + '</td>';
         html += '<td>' + p.data + '</td>';
         html += '<td>' + p.dataConclusao + '</td>';
-        html += '<td><span class="status-badge status-' + estadoClass + '">' + p.estado + '</span></td>';
-        html += '<td><div class="action-buttons">';
-        html += '<button class="action-btn primary" onclick="verPedido(\'' + p.id + '\')">Ver</button>';
+        html += '<td><span class="inv-status-badge inv-status-' + estadoClass + '">' + p.estado + '</span></td>';
+        html += '<td><div class="inv-action-buttons">';
+        html += '<button class="inv-action-btn primary" onclick="verPedido(\'' + p.id + '\')">Ver</button>';
         html += '</div></td>';
         html += '</tr>';
     });
     tbody.innerHTML = html;
 }
 
-// Tab navigation
 function changeTab(tabName) {
-    document.querySelectorAll('.tab-btn').forEach(function(btn) { btn.classList.remove('active'); });
-    document.querySelectorAll('.tab-content-inv').forEach(function(content) { content.classList.remove('active'); });
+    document.querySelectorAll('.inv-tab-btn').forEach(function(btn) { btn.classList.remove('active'); });
+    document.querySelectorAll('.inv-tab-content').forEach(function(content) { content.classList.remove('active'); });
     
-    event.target.closest('.tab-btn').classList.add('active');
+    event.target.closest('.inv-tab-btn').classList.add('active');
     document.getElementById('tab-' + tabName).classList.add('active');
     
     atualizarFiltroEstado(tabName);
 }
 
 function changeTabFromCard(tabName) {
-    document.querySelectorAll('.tab-btn').forEach(function(btn) { btn.classList.remove('active'); });
-    document.querySelectorAll('.tab-content-inv').forEach(function(content) { content.classList.remove('active'); });
+    document.querySelectorAll('.inv-tab-btn').forEach(function(btn) { btn.classList.remove('active'); });
+    document.querySelectorAll('.inv-tab-content').forEach(function(content) { content.classList.remove('active'); });
     
-    var tabButtons = document.querySelectorAll('.tab-btn');
+    var tabButtons = document.querySelectorAll('.inv-tab-btn');
     tabButtons.forEach(function(btn) {
         if (btn.getAttribute('onclick').indexOf(tabName) !== -1) {
             btn.classList.add('active');
@@ -947,7 +927,7 @@ function changeTabFromCard(tabName) {
     document.getElementById('tab-' + tabName).classList.add('active');
     atualizarFiltroEstado(tabName);
     
-    document.querySelector('.tabs-container-inv').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    document.querySelector('.inv-tabs-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function atualizarFiltroEstado(tabName) {
@@ -957,15 +937,16 @@ function atualizarFiltroEstado(tabName) {
     if (tabName === 'atribuidos') {
         filterEstado.innerHTML += '<option value="Ativo">Ativo</option><option value="Em Manutenção">Em Manutenção</option>';
     } else if (tabName === 'emcurso') {
-        var estados = ['Rascunho', 'Submetido', 'Em Preparação', 'Pronto para Levantamento'];
-        estados.forEach(function(e) { filterEstado.innerHTML += '<option value="' + e + '">' + e + '</option>'; });
+        ['Rascunho', 'Submetido', 'Em Preparação', 'Pronto para Levantamento'].forEach(function(e) {
+            filterEstado.innerHTML += '<option value="' + e + '">' + e + '</option>';
+        });
     } else if (tabName === 'historico') {
-        var estados = ['Entregue', 'Devolvido', 'Indeferido', 'Cancelado'];
-        estados.forEach(function(e) { filterEstado.innerHTML += '<option value="' + e + '">' + e + '</option>'; });
+        ['Entregue', 'Devolvido', 'Indeferido', 'Cancelado'].forEach(function(e) {
+            filterEstado.innerHTML += '<option value="' + e + '">' + e + '</option>';
+        });
     }
 }
 
-// Filtrar tabela
 function filtrarTabela() {
     var search = document.getElementById('searchInput').value.toLowerCase();
     var categoria = document.getElementById('filterCategoria').value;
@@ -973,21 +954,20 @@ function filtrarTabela() {
     console.log('Filtrar:', search, categoria, estado);
 }
 
-// Ações
 function verDetalhesArtigo(codigo) {
     var artigo = dadosAtribuidos.find(function(a) { return a.codigo === codigo; });
     if (!artigo) return;
     
-    var content = '<div class="detalhe-grid">' +
-        '<div class="detalhe-item"><span class="detalhe-label">Código</span><span class="detalhe-value">' + artigo.codigo + '</span></div>' +
-        '<div class="detalhe-item"><span class="detalhe-label">Descrição</span><span class="detalhe-value">' + artigo.descricao + '</span></div>' +
-        '<div class="detalhe-item"><span class="detalhe-label">Categoria</span><span class="detalhe-value">' + artigo.categoria + '</span></div>' +
-        '<div class="detalhe-item"><span class="detalhe-label">Quantidade</span><span class="detalhe-value">' + artigo.qtd + '</span></div>' +
-        '<div class="detalhe-item"><span class="detalhe-label">Nº de Série</span><span class="detalhe-value"><code>' + artigo.serie + '</code></span></div>' +
-        '<div class="detalhe-item"><span class="detalhe-label">Data de Atribuição</span><span class="detalhe-value">' + artigo.dataAtribuicao + '</span></div>' +
-        '<div class="detalhe-item"><span class="detalhe-label">Localização</span><span class="detalhe-value">' + artigo.localizacao + '</span></div>' +
-        '<div class="detalhe-item"><span class="detalhe-label">Estado</span><span class="detalhe-value"><span class="status-badge status-' + artigo.estado.toLowerCase() + '">' + artigo.estado + '</span></span></div>' +
-        '<div class="detalhe-item"><span class="detalhe-label">Alocado a</span><span class="detalhe-value">' + artigo.alocadoA + '</span></div>' +
+    var content = '<div class="inv-detalhe-grid">' +
+        '<div class="inv-detalhe-item"><span class="inv-detalhe-label">Código</span><span class="inv-detalhe-value">' + artigo.codigo + '</span></div>' +
+        '<div class="inv-detalhe-item"><span class="inv-detalhe-label">Descrição</span><span class="inv-detalhe-value">' + artigo.descricao + '</span></div>' +
+        '<div class="inv-detalhe-item"><span class="inv-detalhe-label">Categoria</span><span class="inv-detalhe-value">' + artigo.categoria + '</span></div>' +
+        '<div class="inv-detalhe-item"><span class="inv-detalhe-label">Quantidade</span><span class="inv-detalhe-value">' + artigo.qtd + '</span></div>' +
+        '<div class="inv-detalhe-item"><span class="inv-detalhe-label">Nº de Série</span><span class="inv-detalhe-value"><code>' + artigo.serie + '</code></span></div>' +
+        '<div class="inv-detalhe-item"><span class="inv-detalhe-label">Data Atribuição</span><span class="inv-detalhe-value">' + artigo.dataAtribuicao + '</span></div>' +
+        '<div class="inv-detalhe-item"><span class="inv-detalhe-label">Localização</span><span class="inv-detalhe-value">' + artigo.localizacao + '</span></div>' +
+        '<div class="inv-detalhe-item"><span class="inv-detalhe-label">Estado</span><span class="inv-detalhe-value"><span class="inv-status-badge inv-status-' + artigo.estado.toLowerCase() + '">' + artigo.estado + '</span></span></div>' +
+        '<div class="inv-detalhe-item"><span class="inv-detalhe-label">Alocado a</span><span class="inv-detalhe-value">' + artigo.alocadoA + '</span></div>' +
         '</div>';
     
     document.getElementById('modalDetalhesContent').innerHTML = content;
@@ -1014,14 +994,12 @@ function fecharModal(modalId) {
     document.getElementById(modalId).classList.remove('show');
 }
 
-// Fechar modal ao clicar fora
 document.addEventListener('click', function(e) {
-    if (e.target.classList.contains('modal-overlay-inv')) {
+    if (e.target.classList.contains('inv-modal-overlay')) {
         e.target.classList.remove('show');
     }
 });
 
-// Inicialização
 document.addEventListener('DOMContentLoaded', function() {
     atualizarStats();
     renderAtribuidos();
