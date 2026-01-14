@@ -24,6 +24,14 @@ const MONTH_NAMES_SHORT = ['JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO
 // INITIALIZATION
 // ==========================================
 
+function getBaseUrl() {
+  const path = window.location.pathname;
+  if (path.includes('/Platform1')) {
+    return '/Platform1';
+  }
+  return '';
+}
+
 async function waitForServices() {
   return new Promise((resolve) => {
     const check = () => {
@@ -191,6 +199,15 @@ function getEstadoClass(estado) {
 }
 
 // ==========================================
+// NAVIGATION TO DETAIL PAGE
+// ==========================================
+
+function goToFormacaoDetalhe(formacaoId) {
+  const baseUrl = getBaseUrl();
+  window.location.href = `${baseUrl}/formacao-detalhe?id=${formacaoId}`;
+}
+
+// ==========================================
 // CATALOG RENDERING
 // ==========================================
 
@@ -230,7 +247,7 @@ function renderCatalog(formacoes) {
     const inscritosDisplay = showInscritos ? `${inscritos}/${vagas}` : `${vagas} vagas`;
     
     return `
-      <div class="course-card" onclick="openCourseDetails('${f.id}')">
+      <div class="course-card" onclick="goToFormacaoDetalhe('${f.id}')">
         <div class="course-card-banner ${categoria}">
           ${getCategoriaIcon(categoria)}
           <div class="course-card-badges">${badges}</div>
@@ -335,7 +352,7 @@ function renderMyFormacoes(formacoes) {
     else if (f.estado === 'Em Curso') { progresso = 50; progressoClass = 'in-progress'; }
     
     return `
-      <div class="formacoes-table-row" onclick="openCourseDetails('${f.id}')">
+      <div class="formacoes-table-row" onclick="goToFormacaoDetalhe('${f.id}')">
         <div class="formacao-title-cell">
           <strong>${f.titulo}</strong>
           ${f.modalidade === 'Obrigatória' ? '<span class="badge-mandatory">Obrigatória</span>' : ''}
@@ -350,7 +367,7 @@ function renderMyFormacoes(formacoes) {
         </div>
         <div><span class="status-badge ${getEstadoClass(f.estado)}">${f.estado}</span></div>
         <div>
-          <button class="btn-action" onclick="event.stopPropagation(); openCourseDetails('${f.id}')">
+          <button class="btn-action" onclick="event.stopPropagation(); goToFormacaoDetalhe('${f.id}')">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
             </svg>
@@ -652,10 +669,10 @@ function toggleFormacaoCalendar() {
   
   if (calendarExpanded) {
     content.classList.add('expanded');
-    btn.innerHTML = `<span class="toggle-label">Calendário de Formações</span><span class="toggle-separator">•</span><svg class="toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"/></svg><span class="toggle-action">Esconder</span>`;
+    btn.innerHTML = `<span class="toggle-label">Calendário de Formações</span><svg class="toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"/></svg><span class="toggle-action">Esconder</span>`;
   } else {
     content.classList.remove('expanded');
-    btn.innerHTML = `<span class="toggle-label">Calendário de Formações</span><span class="toggle-separator">•</span><svg class="toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg><span class="toggle-action">Mostrar</span>`;
+    btn.innerHTML = `<span class="toggle-label">Calendário de Formações</span><svg class="toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg><span class="toggle-action">Mostrar</span>`;
   }
 }
 
@@ -727,7 +744,7 @@ function selectFormacaoDate(dateStr) {
     container.innerHTML = '<div class="no-events">Sem formações agendadas para este dia.</div>';
   } else {
     container.innerHTML = events.map(e => `
-      <div class="event-item formacao" onclick="openCourseDetails('${e.formacaoId}')" style="--event-color: #00b276;">
+      <div class="event-item formacao" onclick="goToFormacaoDetalhe('${e.formacaoId}')" style="--event-color: #00b276;">
         <div class="event-date"><div class="event-day">${dateObj.getDate()}</div><div class="event-month">${MONTH_NAMES_SHORT[dateObj.getMonth()]}</div></div>
         <div class="event-details"><div class="event-title">${e.titulo}</div><div class="event-meta">${e.hora} • ${e.tipo || 'Formação'}</div></div>
       </div>
@@ -769,7 +786,7 @@ function renderFormacaoUpcomingEvents() {
     container.innerHTML = eventsToShow.map(e => {
       const dateObj = new Date(e.date);
       return `
-        <div class="event-item formacao" onclick="openCourseDetails('${e.formacaoId}')" style="--event-color: #00b276;">
+        <div class="event-item formacao" onclick="goToFormacaoDetalhe('${e.formacaoId}')" style="--event-color: #00b276;">
           <div class="event-date"><div class="event-day">${dateObj.getDate()}</div><div class="event-month">${MONTH_NAMES_SHORT[dateObj.getMonth()]}</div></div>
           <div class="event-details"><div class="event-title">${e.titulo}</div><div class="event-meta">${e.hora} • ${e.tipo || 'Formação'}</div></div>
         </div>
@@ -779,98 +796,8 @@ function renderFormacaoUpcomingEvents() {
 }
 
 // ==========================================
-// COURSE DETAILS MODAL
+// FAVORITES
 // ==========================================
-
-function switchCourseTab(tabName) {
-  document.querySelectorAll('.modal-tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-  
-  document.querySelector(`.modal-tab[data-tab="${tabName}"]`)?.classList.add('active');
-  document.getElementById(`tab${tabName.charAt(0).toUpperCase() + tabName.slice(1)}`)?.classList.add('active');
-}
-
-async function openCourseDetails(formacaoId) {
-  selectedFormacao = allFormacoes.find(f => f.id === formacaoId);
-  if (!selectedFormacao) return;
-  
-  const f = selectedFormacao;
-  const formadorDisplay = getFormadorDisplay(f);
-  const sessoes = (f.formacao_sessoes || []).sort((a, b) => new Date(a.data) - new Date(b.data));
-  const inscritos = (f.formacao_inscricoes || []).filter(i => i.estado === 'Inscrito').length;
-  const vagas = f.max_participantes || 20;
-  const jaInscrito = currentUser && (f.formacao_inscricoes || []).some(i => i.colaborador_id === currentUser.id && i.estado === 'Inscrito');
-  const showInscritos = canSeeInscritos(f);
-  
-  document.getElementById('modalCourseTitle').textContent = f.titulo;
-  
-  const inscritosHtml = showInscritos
-    ? `<div style="text-align: center;"><div style="font-size: 1.25rem; font-weight: 700; color: #1e293b;">${inscritos}/${vagas}</div><div style="font-size: 0.75rem; color: #64748b;">Inscritos</div></div>`
-    : `<div style="text-align: center;"><div style="font-size: 1.25rem; font-weight: 700; color: #1e293b;">${vagas}</div><div style="font-size: 0.75rem; color: #64748b;">Vagas</div></div>`;
-  
-  document.getElementById('tabDetalhes').innerHTML = `
-    <div style="margin-bottom: 1.5rem;">
-      <span style="display: inline-block; padding: 0.25rem 0.75rem; background: #d1fae5; color: #065f46; border-radius: 20px; font-size: 0.75rem; font-weight: 600; margin-right: 0.5rem;">${f.tipo || 'Formação'}</span>
-      <span style="display: inline-block; padding: 0.25rem 0.75rem; background: #dbeafe; color: #1e40af; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">${f.estado}</span>
-    </div>
-    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem; padding: 1rem; background: #f8fafc; border-radius: 12px;">
-      <div style="text-align: center;"><div style="font-size: 1.25rem; font-weight: 700; color: #1e293b;">${f.duracao_horas || 0}h</div><div style="font-size: 0.75rem; color: #64748b;">Duração</div></div>
-      ${inscritosHtml}
-      <div style="text-align: center;"><div style="font-size: 1.25rem; font-weight: 700; color: #1e293b;">${sessoes.length}</div><div style="font-size: 0.75rem; color: #64748b;">Sessões</div></div>
-    </div>
-    <div style="margin-bottom: 1.5rem;"><h4 style="font-size: 0.875rem; font-weight: 600; color: #1e293b; margin-bottom: 0.5rem;">Formador</h4><p style="color: #475569;">${formadorDisplay}</p></div>
-    <div style="margin-bottom: 1.5rem;"><h4 style="font-size: 0.875rem; font-weight: 600; color: #1e293b; margin-bottom: 0.5rem;">Objetivo</h4><p style="color: #475569; line-height: 1.6;">${f.objetivo || 'Sem descrição disponível.'}</p></div>
-    ${sessoes.length > 0 ? `<div><h4 style="font-size: 0.875rem; font-weight: 600; color: #1e293b; margin-bottom: 0.75rem;">Sessões</h4>${sessoes.map(s => `<div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem; background: #f8fafc; border-radius: 8px; margin-bottom: 0.5rem;"><div style="width: 40px; height: 40px; background: #00b276; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg></div><div><div style="font-weight: 600; color: #1e293b;">${new Date(s.data).toLocaleDateString('pt-PT', { weekday: 'long', day: 'numeric', month: 'long' })}</div><div style="font-size: 0.75rem; color: #64748b;">${s.hora_inicio || '09:00'} - ${s.hora_fim || '18:00'}</div></div></div>`).join('')}</div>` : ''}
-  `;
-  
-  // Tab: Conteúdo
-  const cp = f.conteudo_programatico;
-  document.getElementById('tabConteudo').innerHTML = cp
-    ? `<div class="conteudo-programatico">${cp}</div>`
-    : `<div class="empty-tab-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 48px; height: 48px; color: #94a3b8; margin-bottom: 1rem;"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><p style="color: #64748b; font-size: 0.875rem;">Conteúdo programático não disponível.</p></div>`;
-  
-  // Tab: Anexos
-  const anexos = f.formacao_anexos || [];
-  document.getElementById('tabAnexos').innerHTML = anexos.length > 0
-    ? `<div class="anexos-list">${anexos.map(a => `<div class="anexo-item"><div class="anexo-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div class="anexo-info"><span class="anexo-nome">${a.nome || 'Documento'}</span><span class="anexo-tipo">${a.tipo || 'PDF'}</span></div><a href="${a.url}" target="_blank" class="anexo-download" title="Descarregar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></a></div>`).join('')}</div>`
-    : `<div class="empty-tab-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 48px; height: 48px; color: #94a3b8; margin-bottom: 1rem;"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg><p style="color: #64748b; font-size: 0.875rem;">Sem anexos disponíveis.</p></div>`;
-  
-  switchCourseTab('detalhes');
-  
-  // Botão inscrever
-  const btnInscrever = document.getElementById('btnInscrever');
-  if (btnInscrever) {
-    if (jaInscrito) {
-      btnInscrever.textContent = 'Já Inscrito';
-      btnInscrever.disabled = true;
-      btnInscrever.className = 'btn btn-secondary';
-    } else if (inscritos >= vagas) {
-      btnInscrever.textContent = 'Esgotado';
-      btnInscrever.disabled = true;
-      btnInscrever.className = 'btn btn-secondary';
-    } else {
-      btnInscrever.textContent = 'Inscrever-me';
-      btnInscrever.disabled = false;
-      btnInscrever.className = 'btn btn-primary';
-    }
-  }
-  
-  document.getElementById('modalCourse')?.classList.add('show');
-}
-
-async function inscreverFormacao() {
-  if (!selectedFormacao || !currentUser) return;
-  
-  try {
-    await DataService.inscreverFormacao(selectedFormacao.id, currentUser.id);
-    showToast('Inscrição realizada com sucesso!', 'success');
-    closeModal('modalCourse');
-    await loadFormacoes();
-  } catch (error) {
-    console.error('Erro ao inscrever:', error);
-    showToast('Erro ao realizar inscrição', 'error');
-  }
-}
 
 async function toggleFavorite(event, formacaoId) {
   event.stopPropagation();
