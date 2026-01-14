@@ -2,6 +2,21 @@
 layout: default
 title: Novo Pedido de Inventário
 ---
+<!--
+  Power Pages: Esta página equivale a um Entity Form para criar novo pedido
+  FetchXML para carregar categorias:
+  <fetch>
+    <entity name="inv_categorias">
+      <attribute name="codigo"/>
+      <attribute name="nome"/>
+      <attribute name="categoria_pai_id"/>
+      <filter>
+        <condition attribute="ativo" operator="eq" value="1"/>
+      </filter>
+      <order attribute="ordem"/>
+    </entity>
+  </fetch>
+-->
 
 <link rel="stylesheet" href="{{ '/web-files/css/inventario.css' | relative_url }}">
 
@@ -314,11 +329,18 @@ title: Novo Pedido de Inventário
       <input type="text" id="searchModal" placeholder="Pesquisar artigos..." oninput="filtrarArtigosModal(this.value)">
     </div>
     
-    <div class="modal-tabs-inv">
-      <button class="modal-tab-inv active" onclick="changeTabModal('todos')">Todos</button>
-      <button class="modal-tab-inv" onclick="changeTabModal('informatica')">Informática</button>
-      <button class="modal-tab-inv" onclick="changeTabModal('mobiliario')">Mobiliário</button>
-      <button class="modal-tab-inv" onclick="changeTabModal('economato')">Economato</button>
+    <!-- Tabs de Categorias Principais - Sem scroll vertical -->
+    <div class="modal-tabs-inv" id="modalTabsInv">
+      <button class="modal-tab-inv active" data-categoria="todos" onclick="changeTabModal('todos')">Todos</button>
+      <button class="modal-tab-inv" data-categoria="informatica" onclick="changeTabModal('informatica')">💻 Informática</button>
+      <button class="modal-tab-inv" data-categoria="telemoveis" onclick="changeTabModal('telemoveis')">📱 Telemóveis</button>
+      <button class="modal-tab-inv" data-categoria="mobiliario" onclick="changeTabModal('mobiliario')">🪑 Mobiliário</button>
+      <button class="modal-tab-inv" data-categoria="economato" onclick="changeTabModal('economato')">📎 Economato</button>
+    </div>
+    
+    <!-- Subcategorias (aparecem quando Informática ou Telemóveis são selecionados) -->
+    <div class="modal-subtabs-inv" id="modalSubtabs" style="display: none;">
+      <div id="subtabsContainer"></div>
     </div>
     
     <div class="modal-body-inv">
@@ -344,13 +366,32 @@ title: Novo Pedido de Inventário
 }
 
 .page-header-inv.compact {
-  padding: 1.5rem 0;
+  background: linear-gradient(135deg, var(--primary-color, #00b276) 0%, var(--primary-hover, #009661) 100%);
+  padding: 1.5rem 2rem;
+  color: white;
+}
+
+.page-header-inv.compact .page-header-content {
+  max-width: 1280px;
+  margin: 0 auto;
 }
 
 .page-header-inv.compact .page-header-left {
   display: flex;
   align-items: center;
   gap: 1.5rem;
+}
+
+.page-header-inv.compact h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.page-header-inv.compact p {
+  margin: 0.25rem 0 0;
+  opacity: 0.9;
+  font-size: 0.875rem;
 }
 
 .back-link-inv {
@@ -379,7 +420,7 @@ title: Novo Pedido de Inventário
 .timeline-container {
   max-width: 1280px;
   margin: 0 auto 2rem;
-  padding: 0 2rem;
+  padding: 1.5rem 2rem 0;
 }
 
 .timeline-wrapper {
@@ -415,7 +456,7 @@ title: Novo Pedido de Inventário
 }
 
 .timeline-circle.active {
-  background: linear-gradient(135deg, #00b276 0%, #009661 100%);
+  background: linear-gradient(135deg, var(--primary-color, #00b276) 0%, var(--primary-hover, #009661) 100%);
   color: white;
 }
 
@@ -439,9 +480,7 @@ title: Novo Pedido de Inventário
   display: none;
 }
 
-.alert-inv.show {
-  display: block;
-}
+.alert-inv.show { display: block; }
 
 .alert-inv-content {
   padding: 1rem 1.5rem;
@@ -449,17 +488,8 @@ title: Novo Pedido de Inventário
   font-weight: 500;
 }
 
-.alert-inv-content.success {
-  background: #d1fae5;
-  color: #047857;
-  border: 1px solid #a7f3d0;
-}
-
-.alert-inv-content.error {
-  background: #fee2e2;
-  color: #b91c1c;
-  border: 1px solid #fecaca;
-}
+.alert-inv-content.success { background: #d1fae5; color: #047857; border: 1px solid #a7f3d0; }
+.alert-inv-content.error { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
 
 /* Form Layout */
 .form-layout {
@@ -498,16 +528,14 @@ title: Novo Pedido de Inventário
 .form-section-inv h2 svg {
   width: 22px;
   height: 22px;
-  color: #00b276;
+  color: var(--primary-color, #00b276);
 }
 
 .form-group-inv {
   margin-bottom: 1.25rem;
 }
 
-.form-group-inv:last-child {
-  margin-bottom: 0;
-}
+.form-group-inv:last-child { margin-bottom: 0; }
 
 .form-group-inv label {
   display: block;
@@ -531,13 +559,14 @@ title: Novo Pedido de Inventário
   border-radius: 10px;
   font-size: 0.875rem;
   transition: all 0.2s;
+  font-family: inherit;
 }
 
 .form-group-inv input:focus,
 .form-group-inv select:focus,
 .form-group-inv textarea:focus {
   outline: none;
-  border-color: #00b276;
+  border-color: var(--primary-color, #00b276);
   box-shadow: 0 0 0 3px rgba(0,178,118,0.1);
 }
 
@@ -567,27 +596,17 @@ title: Novo Pedido de Inventário
   flex-direction: column;
   align-items: center;
   gap: 0.5rem;
+  font-family: inherit;
 }
 
 .select-artigo-btn:hover {
-  border-color: #00b276;
+  border-color: var(--primary-color, #00b276);
   background: rgba(0,178,118,0.02);
 }
 
-.select-artigo-icon {
-  font-size: 2.5rem;
-}
-
-.select-artigo-text {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #00b276;
-}
-
-.select-artigo-hint {
-  font-size: 0.75rem;
-  color: #94a3b8;
-}
+.select-artigo-icon { font-size: 2.5rem; }
+.select-artigo-text { font-size: 0.875rem; font-weight: 600; color: var(--primary-color, #00b276); }
+.select-artigo-hint { font-size: 0.75rem; color: #94a3b8; }
 
 /* Item Selecionado */
 .item-selecionado-box {
@@ -599,9 +618,7 @@ title: Novo Pedido de Inventário
   margin-top: 1rem;
 }
 
-.item-selecionado-box.show {
-  display: block;
-}
+.item-selecionado-box.show { display: block; }
 
 .item-selecionado-header {
   display: flex;
@@ -609,16 +626,8 @@ title: Novo Pedido de Inventário
   align-items: flex-start;
 }
 
-.item-selecionado-nome {
-  font-weight: 600;
-  color: #1e293b;
-}
-
-.item-selecionado-codigo {
-  font-size: 0.75rem;
-  color: #64748b;
-  margin-top: 0.25rem;
-}
+.item-selecionado-nome { font-weight: 600; color: #1e293b; }
+.item-selecionado-codigo { font-size: 0.75rem; color: #64748b; margin-top: 0.25rem; }
 
 .item-selecionado-remover {
   background: none;
@@ -627,10 +636,6 @@ title: Novo Pedido de Inventário
   font-size: 0.75rem;
   font-weight: 600;
   cursor: pointer;
-}
-
-.item-selecionado-remover:hover {
-  text-decoration: underline;
 }
 
 /* Item Personalizado */
@@ -643,9 +648,7 @@ title: Novo Pedido de Inventário
   margin-top: 1rem;
 }
 
-.item-personalizado-box.show {
-  display: block;
-}
+.item-personalizado-box.show { display: block; }
 
 .item-personalizado-header {
   display: flex;
@@ -657,11 +660,7 @@ title: Novo Pedido de Inventário
   margin-bottom: 1rem;
 }
 
-.item-personalizado-header svg {
-  width: 20px;
-  height: 20px;
-  color: #f59e0b;
-}
+.item-personalizado-header svg { width: 20px; height: 20px; color: #f59e0b; }
 
 /* Alocação Toggle */
 .alocacao-toggle {
@@ -676,14 +675,8 @@ title: Novo Pedido de Inventário
   gap: 0.75rem;
 }
 
-.toggle-option {
-  position: relative;
-}
-
-.toggle-option input {
-  position: absolute;
-  opacity: 0;
-}
+.toggle-option { position: relative; }
+.toggle-option input { position: absolute; opacity: 0; }
 
 .toggle-option label {
   display: flex;
@@ -702,34 +695,19 @@ title: Novo Pedido de Inventário
   color: #475569;
 }
 
-.toggle-option label svg {
-  width: 24px;
-  height: 24px;
-  color: #94a3b8;
-}
+.toggle-option label svg { width: 24px; height: 24px; color: #94a3b8; }
 
 .toggle-option input:checked + label {
-  background: linear-gradient(135deg, #00b276 0%, #009661 100%);
-  border-color: #00b276;
+  background: linear-gradient(135deg, var(--primary-color, #00b276) 0%, var(--primary-hover, #009661) 100%);
+  border-color: var(--primary-color, #00b276);
   color: white;
 }
 
-.toggle-option input:checked + label svg {
-  color: white;
-}
+.toggle-option input:checked + label svg { color: white; }
+.toggle-option label:hover { border-color: var(--primary-color, #00b276); }
 
-.toggle-option label:hover {
-  border-color: #00b276;
-}
-
-.alocacao-field {
-  display: none;
-  margin-top: 1rem;
-}
-
-.alocacao-field.show {
-  display: block;
-}
+.alocacao-field { display: none; margin-top: 1rem; }
+.alocacao-field.show { display: block; }
 
 /* Upload Area */
 .upload-area {
@@ -742,37 +720,17 @@ title: Novo Pedido de Inventário
 }
 
 .upload-area:hover {
-  border-color: #00b276;
+  border-color: var(--primary-color, #00b276);
   background: rgba(0,178,118,0.02);
 }
 
-.upload-area input {
-  display: none;
-}
+.upload-area input { display: none; }
+.upload-icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
+.upload-text { color: #64748b; font-size: 0.875rem; }
+.upload-text strong { color: var(--primary-color, #00b276); }
+.upload-hint { font-size: 0.75rem; color: #94a3b8; margin-top: 0.25rem; }
 
-.upload-icon {
-  font-size: 2.5rem;
-  margin-bottom: 0.5rem;
-}
-
-.upload-text {
-  color: #64748b;
-  font-size: 0.875rem;
-}
-
-.upload-text strong {
-  color: #00b276;
-}
-
-.upload-hint {
-  font-size: 0.75rem;
-  color: #94a3b8;
-  margin-top: 0.25rem;
-}
-
-.files-list {
-  margin-top: 1rem;
-}
+.files-list { margin-top: 1rem; }
 
 .file-item {
   display: flex;
@@ -784,26 +742,10 @@ title: Novo Pedido de Inventário
   margin-bottom: 0.5rem;
 }
 
-.file-info {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.file-icon {
-  font-size: 1.5rem;
-}
-
-.file-name {
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: #1e293b;
-}
-
-.file-size {
-  font-size: 0.75rem;
-  color: #94a3b8;
-}
+.file-info { display: flex; align-items: center; gap: 0.75rem; }
+.file-icon { font-size: 1.5rem; }
+.file-name { font-size: 0.875rem; font-weight: 500; color: #1e293b; }
+.file-size { font-size: 0.75rem; color: #94a3b8; }
 
 .file-remove {
   background: none;
@@ -817,10 +759,7 @@ title: Novo Pedido de Inventário
   transition: all 0.2s;
 }
 
-.file-remove:hover {
-  background: #dc2626;
-  color: white;
-}
+.file-remove:hover { background: #dc2626; color: white; }
 
 /* Sidebar */
 .form-sidebar-inv {
@@ -857,27 +796,11 @@ title: Novo Pedido de Inventário
   font-size: 0.875rem;
 }
 
-.summary-item:last-child {
-  border-bottom: none;
-}
+.summary-item:last-child { border-bottom: none; }
+.summary-label { color: #64748b; }
+.summary-value { color: #1e293b; font-weight: 600; text-align: right; max-width: 60%; word-break: break-word; }
 
-.summary-label {
-  color: #64748b;
-}
-
-.summary-value {
-  color: #1e293b;
-  font-weight: 600;
-  text-align: right;
-  max-width: 60%;
-  word-break: break-word;
-}
-
-.validation-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
+.validation-list { list-style: none; padding: 0; margin: 0; }
 
 .validation-item {
   padding: 0.5rem 0.75rem;
@@ -886,44 +809,17 @@ title: Novo Pedido de Inventário
   margin-bottom: 0.5rem;
 }
 
-.validation-item.success {
-  background: #d1fae5;
-  color: #047857;
-}
+.validation-item.success { background: #d1fae5; color: #047857; }
+.validation-item.warning { background: #fef3c7; color: #92400e; }
+.validation-item.error { background: #fee2e2; color: #b91c1c; }
 
-.validation-item.warning {
-  background: #fef3c7;
-  color: #92400e;
-}
+.info-panel-inv { background: linear-gradient(135deg, #eff6ff 0%, #f8fafc 100%); }
 
-.validation-item.error {
-  background: #fee2e2;
-  color: #b91c1c;
-}
+.info-panel-content { font-size: 0.8rem; color: #475569; line-height: 1.6; }
+.info-panel-content p { margin: 0 0 0.75rem; }
+.info-panel-content p:last-child { margin-bottom: 0; }
 
-.info-panel-inv {
-  background: linear-gradient(135deg, #eff6ff 0%, #f8fafc 100%);
-}
-
-.info-panel-content {
-  font-size: 0.8rem;
-  color: #475569;
-  line-height: 1.6;
-}
-
-.info-panel-content p {
-  margin: 0 0 0.75rem;
-}
-
-.info-panel-content p:last-child {
-  margin-bottom: 0;
-}
-
-.sidebar-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
+.sidebar-actions { display: flex; flex-direction: column; gap: 0.75rem; }
 
 .btn-submit-inv {
   display: flex;
@@ -931,7 +827,7 @@ title: Novo Pedido de Inventário
   justify-content: center;
   gap: 0.5rem;
   padding: 1rem;
-  background: linear-gradient(135deg, #00b276 0%, #009661 100%);
+  background: linear-gradient(135deg, var(--primary-color, #00b276) 0%, var(--primary-hover, #009661) 100%);
   color: white;
   border: none;
   border-radius: 12px;
@@ -940,6 +836,7 @@ title: Novo Pedido de Inventário
   cursor: pointer;
   transition: all 0.2s;
   box-shadow: 0 4px 15px rgba(0,178,118,0.3);
+  font-family: inherit;
 }
 
 .btn-submit-inv:hover {
@@ -947,10 +844,7 @@ title: Novo Pedido de Inventário
   box-shadow: 0 6px 20px rgba(0,178,118,0.4);
 }
 
-.btn-submit-inv svg {
-  width: 18px;
-  height: 18px;
-}
+.btn-submit-inv svg { width: 18px; height: 18px; }
 
 .btn-rascunho-inv {
   display: flex;
@@ -966,17 +860,15 @@ title: Novo Pedido de Inventário
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
+  font-family: inherit;
 }
 
 .btn-rascunho-inv:hover {
-  border-color: #00b276;
-  color: #00b276;
+  border-color: var(--primary-color, #00b276);
+  color: var(--primary-color, #00b276);
 }
 
-.btn-rascunho-inv svg {
-  width: 18px;
-  height: 18px;
-}
+.btn-rascunho-inv svg { width: 18px; height: 18px; }
 
 .btn-cancelar-inv {
   padding: 0.75rem;
@@ -986,30 +878,60 @@ title: Novo Pedido de Inventário
   font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
+  font-family: inherit;
 }
 
-.btn-cancelar-inv:hover {
-  text-decoration: underline;
-}
+.btn-cancelar-inv:hover { text-decoration: underline; }
 
-/* Modal Catálogo */
+/* Modal Catálogo - CORRIGIDO */
 .modal-catalogo {
   background: white;
   border-radius: 16px;
   width: 100%;
-  max-width: 900px;
+  max-width: 950px;
   max-height: 90vh;
   display: flex;
   flex-direction: column;
   box-shadow: 0 20px 60px rgba(0,0,0,0.3);
 }
 
+.modal-header-inv {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+  flex-shrink: 0;
+}
+
+.modal-header-inv h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+}
+
+.modal-close-inv {
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: #f8fafc;
+  border-radius: 8px;
+  font-size: 1.5rem;
+  color: #64748b;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-close-inv:hover { background: #f1f5f9; color: #1e293b; }
+
 .modal-search-inv {
   padding: 1rem 1.5rem;
   background: #f8fafc;
-  border-bottom: 1px solid #e2e8f0;
   position: relative;
+  flex-shrink: 0;
 }
 
 .modal-search-inv svg {
@@ -1028,22 +950,26 @@ title: Novo Pedido de Inventário
   border: 2px solid #e2e8f0;
   border-radius: 10px;
   font-size: 0.875rem;
+  font-family: inherit;
 }
 
 .modal-search-inv input:focus {
   outline: none;
-  border-color: #00b276;
+  border-color: var(--primary-color, #00b276);
 }
 
+/* Tabs de categorias - SEM SCROLL VERTICAL */
 .modal-tabs-inv {
   display: flex;
   padding: 0 1.5rem;
   border-bottom: 1px solid #e2e8f0;
-  overflow-x: auto;
+  gap: 0.25rem;
+  flex-shrink: 0;
+  flex-wrap: wrap;
 }
 
 .modal-tab-inv {
-  padding: 1rem 1.5rem;
+  padding: 0.875rem 1.25rem;
   background: none;
   border: none;
   border-bottom: 3px solid transparent;
@@ -1053,20 +979,60 @@ title: Novo Pedido de Inventário
   cursor: pointer;
   transition: all 0.2s;
   white-space: nowrap;
+  font-family: inherit;
 }
 
-.modal-tab-inv:hover {
-  color: #1e293b;
-}
+.modal-tab-inv:hover { color: #1e293b; }
 
 .modal-tab-inv.active {
-  color: #00b276;
-  border-bottom-color: #00b276;
+  color: var(--primary-color, #00b276);
+  border-bottom-color: var(--primary-color, #00b276);
+}
+
+/* Subcategorias */
+.modal-subtabs-inv {
+  padding: 0.75rem 1.5rem;
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+  flex-shrink: 0;
+}
+
+.modal-subtabs-inv .subtab-btn {
+  padding: 0.5rem 1rem;
+  margin-right: 0.5rem;
+  margin-bottom: 0.5rem;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.modal-subtabs-inv .subtab-btn:hover {
+  border-color: var(--primary-color, #00b276);
+  color: var(--primary-color, #00b276);
+}
+
+.modal-subtabs-inv .subtab-btn.active {
+  background: var(--primary-color, #00b276);
+  border-color: var(--primary-color, #00b276);
+  color: white;
+}
+
+.modal-body-inv {
+  padding: 1.5rem;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 300px;
 }
 
 .artigos-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 1rem;
 }
 
@@ -1080,7 +1046,7 @@ title: Novo Pedido de Inventário
 }
 
 .artigo-card:hover {
-  border-color: #00b276;
+  border-color: var(--primary-color, #00b276);
   box-shadow: 0 4px 15px rgba(0,178,118,0.15);
   transform: translateY(-2px);
 }
@@ -1107,10 +1073,16 @@ title: Novo Pedido de Inventário
   margin-top: 0.5rem;
 }
 
+.modal-footer-inv {
+  padding: 1.25rem 1.5rem;
+  border-top: 1px solid #e2e8f0;
+  flex-shrink: 0;
+}
+
 .btn-outro-artigo {
   width: 100%;
   padding: 1rem;
-  background: linear-gradient(135deg, #00b276 0%, #009661 100%);
+  background: linear-gradient(135deg, var(--primary-color, #00b276) 0%, var(--primary-hover, #009661) 100%);
   color: white;
   border: none;
   border-radius: 10px;
@@ -1121,6 +1093,7 @@ title: Novo Pedido de Inventário
   justify-content: center;
   gap: 0.5rem;
   transition: all 0.2s;
+  font-family: inherit;
 }
 
 .btn-outro-artigo:hover {
@@ -1128,81 +1101,134 @@ title: Novo Pedido de Inventário
   box-shadow: 0 4px 15px rgba(0,178,118,0.3);
 }
 
-.btn-outro-artigo svg {
-  width: 18px;
-  height: 18px;
-}
+.btn-outro-artigo svg { width: 18px; height: 18px; }
 
 /* Responsive */
 @media (max-width: 1024px) {
-  .form-layout {
-    grid-template-columns: 1fr;
-  }
-  
-  .form-sidebar-inv {
-    position: static;
-  }
-  
-  .toggle-options {
-    grid-template-columns: 1fr;
-  }
+  .form-layout { grid-template-columns: 1fr; }
+  .form-sidebar-inv { position: static; }
+  .toggle-options { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 768px) {
+  .page-header-inv.compact,
   .timeline-container,
   .form-layout {
-    padding: 0 1rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
   }
   
-  .form-row-inv {
-    grid-template-columns: 1fr;
-  }
+  .form-row-inv { grid-template-columns: 1fr; }
   
   .page-header-inv.compact .page-header-left {
     flex-direction: column;
     align-items: flex-start;
   }
+  
+  .modal-tabs-inv {
+    padding: 0.5rem 1rem;
+    gap: 0.125rem;
+  }
+  
+  .modal-tab-inv {
+    padding: 0.625rem 0.75rem;
+    font-size: 0.8rem;
+  }
 }
 </style>
 
 <script>
-// Catálogo de Artigos
+/**
+ * Power Pages: Catálogo seria carregado via FetchXML
+ * {% fetchxml artigos_query %}
+ *   <fetch>
+ *     <entity name="inv_artigos">
+ *       <attribute name="codigo"/>
+ *       <attribute name="nome"/>
+ *       <link-entity name="inv_categorias" from="id" to="categoria_id">
+ *         <attribute name="nome" alias="categoria_nome"/>
+ *         <attribute name="codigo" alias="categoria_codigo"/>
+ *       </link-entity>
+ *       <filter>
+ *         <condition attribute="ativo" operator="eq" value="1"/>
+ *       </filter>
+ *     </entity>
+ *   </fetch>
+ * {% endfetchxml %}
+ */
+
+// Estrutura de categorias e subcategorias
+const categoriasConfig = {
+  informatica: {
+    nome: 'Informática',
+    subcategorias: [
+      { codigo: 'all', nome: 'Tudo' },
+      { codigo: 'ratos', nome: 'Ratos' },
+      { codigo: 'teclados', nome: 'Teclados' },
+      { codigo: 'monitores', nome: 'Monitores' },
+      { codigo: 'portateis', nome: 'Portáteis' },
+      { codigo: 'outros', nome: 'Outros' }
+    ]
+  },
+  telemoveis: {
+    nome: 'Telemóveis e Telecomunicações',
+    subcategorias: [
+      { codigo: 'all', nome: 'Tudo' },
+      { codigo: 'telemoveis', nome: 'Telemóveis' },
+      { codigo: 'telefones', nome: 'Telefones Fixos' },
+      { codigo: 'headsets', nome: 'Headsets' }
+    ]
+  },
+  mobiliario: { nome: 'Mobiliário', subcategorias: [] },
+  economato: { nome: 'Economato', subcategorias: [] }
+};
+
+// Catálogo de artigos
 const catalogoArtigos = [
-  { nome: 'Portátil Dell Latitude 5520 14" i5 16GB', categoria: 'Informática', codigo: 'INF-001' },
-  { nome: 'Portátil HP EliteBook 15" i7 32GB', categoria: 'Informática', codigo: 'INF-002' },
-  { nome: 'Telemóvel Samsung Galaxy S23 128GB', categoria: 'Informática', codigo: 'INF-003' },
-  { nome: 'Telemóvel iPhone 14 256GB', categoria: 'Informática', codigo: 'INF-004' },
-  { nome: 'Monitor LG 27" 4K UltraHD', categoria: 'Informática', codigo: 'INF-005' },
-  { nome: 'Monitor Dell 24" Full HD', categoria: 'Informática', codigo: 'INF-006' },
-  { nome: 'Teclado e Rato Wireless Logitech MK850', categoria: 'Informática', codigo: 'INF-007' },
-  { nome: 'Webcam HD Logitech C920', categoria: 'Informática', codigo: 'INF-008' },
-  { nome: 'Headset USB Jabra Evolve2 65', categoria: 'Informática', codigo: 'INF-009' },
-  { nome: 'Impressora Multifunções HP LaserJet Pro', categoria: 'Informática', codigo: 'INF-010' },
-  { nome: 'Tablet Samsung Galaxy Tab S8', categoria: 'Informática', codigo: 'INF-011' },
-  { nome: 'Docking Station USB-C', categoria: 'Informática', codigo: 'INF-012' },
-  { nome: 'Cadeira Ergonómica Herman Miller', categoria: 'Mobiliário', codigo: 'MOB-001' },
-  { nome: 'Secretária Ajustável em Altura 160x80cm', categoria: 'Mobiliário', codigo: 'MOB-002' },
-  { nome: 'Estante para Livros 5 Prateleiras', categoria: 'Mobiliário', codigo: 'MOB-003' },
-  { nome: 'Apoio para Monitor Ajustável', categoria: 'Mobiliário', codigo: 'MOB-004' },
-  { nome: 'Armário de Arquivo com Chave', categoria: 'Mobiliário', codigo: 'MOB-005' },
-  { nome: 'Mesa de Reuniões 8 Lugares', categoria: 'Mobiliário', codigo: 'MOB-006' },
-  { nome: 'Cadeira de Visitas Empilhável', categoria: 'Mobiliário', codigo: 'MOB-007' },
-  { nome: 'Papel A4 80g (Caixa 5 Resmas)', categoria: 'Economato', codigo: 'ECO-001' },
-  { nome: 'Canetas Esferográficas (Pack 10)', categoria: 'Economato', codigo: 'ECO-002' },
-  { nome: 'Marcadores Fluorescentes (Pack 4)', categoria: 'Economato', codigo: 'ECO-003' },
-  { nome: 'Bloco de Notas A5 Pautado', categoria: 'Economato', codigo: 'ECO-004' },
-  { nome: 'Agrafador de Secretária', categoria: 'Economato', codigo: 'ECO-005' },
-  { nome: 'Perfurador de 2 Furos', categoria: 'Economato', codigo: 'ECO-006' },
-  { nome: 'Clips e Elásticos Sortidos', categoria: 'Economato', codigo: 'ECO-007' }
+  // Informática - Portáteis
+  { nome: 'Portátil Dell Latitude 5520 14" i5 16GB', categoria: 'Informática', subcategoria: 'portateis', codigo: 'INF-001' },
+  { nome: 'Portátil HP EliteBook 15" i7 32GB', categoria: 'Informática', subcategoria: 'portateis', codigo: 'INF-002' },
+  // Informática - Monitores
+  { nome: 'Monitor LG 27" 4K UltraHD', categoria: 'Informática', subcategoria: 'monitores', codigo: 'INF-005' },
+  { nome: 'Monitor Dell 24" Full HD', categoria: 'Informática', subcategoria: 'monitores', codigo: 'INF-006' },
+  // Informática - Ratos
+  { nome: 'Rato Logitech MX Master 3S', categoria: 'Informática', subcategoria: 'ratos', codigo: 'INF-RAT-001' },
+  { nome: 'Rato Microsoft Surface Arc', categoria: 'Informática', subcategoria: 'ratos', codigo: 'INF-RAT-002' },
+  // Informática - Teclados
+  { nome: 'Teclado Logitech K380 Wireless', categoria: 'Informática', subcategoria: 'teclados', codigo: 'INF-TEC-001' },
+  { nome: 'Teclado e Rato Wireless Logitech MK850', categoria: 'Informática', subcategoria: 'teclados', codigo: 'INF-TEC-002' },
+  // Informática - Outros
+  { nome: 'Webcam HD Logitech C920', categoria: 'Informática', subcategoria: 'outros', codigo: 'INF-OUT-001' },
+  { nome: 'Docking Station USB-C', categoria: 'Informática', subcategoria: 'outros', codigo: 'INF-OUT-002' },
+  // Telemóveis
+  { nome: 'Telemóvel Samsung Galaxy S23 128GB', categoria: 'Telemóveis', subcategoria: 'telemoveis', codigo: 'TEL-001' },
+  { nome: 'Telemóvel iPhone 14 256GB', categoria: 'Telemóveis', subcategoria: 'telemoveis', codigo: 'TEL-002' },
+  // Headsets
+  { nome: 'Headset USB Jabra Evolve2 65', categoria: 'Telemóveis', subcategoria: 'headsets', codigo: 'TEL-HEAD-001' },
+  { nome: 'Headset Poly Voyager Focus 2', categoria: 'Telemóveis', subcategoria: 'headsets', codigo: 'TEL-HEAD-002' },
+  // Mobiliário
+  { nome: 'Cadeira Ergonómica Herman Miller', categoria: 'Mobiliário', subcategoria: '', codigo: 'MOB-001' },
+  { nome: 'Secretária Ajustável em Altura 160x80cm', categoria: 'Mobiliário', subcategoria: '', codigo: 'MOB-002' },
+  { nome: 'Estante para Livros 5 Prateleiras', categoria: 'Mobiliário', subcategoria: '', codigo: 'MOB-003' },
+  { nome: 'Apoio para Monitor Ajustável', categoria: 'Mobiliário', subcategoria: '', codigo: 'MOB-004' },
+  // Economato
+  { nome: 'Papel A4 80g (Caixa 5 Resmas)', categoria: 'Economato', subcategoria: '', codigo: 'ECO-001' },
+  { nome: 'Canetas Esferográficas (Pack 10)', categoria: 'Economato', subcategoria: '', codigo: 'ECO-002' },
+  { nome: 'Marcadores Fluorescentes (Pack 4)', categoria: 'Economato', subcategoria: '', codigo: 'ECO-003' },
+  { nome: 'Bloco de Notas A5 Pautado', categoria: 'Economato', subcategoria: '', codigo: 'ECO-004' }
 ];
 
 let itemSelecionado = null;
 let ficheirosAnexados = [];
 let categoriaAtual = 'todos';
+let subcategoriaAtual = 'all';
 
 // Modal Catálogo
 function abrirModalCatalogo() {
   document.getElementById('modalCatalogo').classList.add('show');
+  categoriaAtual = 'todos';
+  subcategoriaAtual = 'all';
+  atualizarSubcategorias();
   renderizarArtigos(catalogoArtigos);
 }
 
@@ -1210,11 +1236,90 @@ function fecharModalCatalogo() {
   document.getElementById('modalCatalogo').classList.remove('show');
 }
 
+function changeTabModal(categoria) {
+  // Atualizar tabs ativos
+  document.querySelectorAll('.modal-tab-inv').forEach(t => t.classList.remove('active'));
+  document.querySelector('[data-categoria="' + categoria + '"]').classList.add('active');
+  
+  categoriaAtual = categoria;
+  subcategoriaAtual = 'all';
+  
+  atualizarSubcategorias();
+  aplicarFiltros();
+}
+
+function atualizarSubcategorias() {
+  const subtabsContainer = document.getElementById('modalSubtabs');
+  const container = document.getElementById('subtabsContainer');
+  
+  // Verificar se categoria tem subcategorias
+  const config = categoriasConfig[categoriaAtual];
+  
+  if (config && config.subcategorias && config.subcategorias.length > 0) {
+    subtabsContainer.style.display = 'block';
+    
+    let html = '';
+    config.subcategorias.forEach(sub => {
+      const activeClass = sub.codigo === subcategoriaAtual ? 'active' : '';
+      html += '<button class="subtab-btn ' + activeClass + '" onclick="changeSubcategoria(\'' + sub.codigo + '\')">' + sub.nome + '</button>';
+    });
+    container.innerHTML = html;
+  } else {
+    subtabsContainer.style.display = 'none';
+  }
+}
+
+function changeSubcategoria(subcategoria) {
+  subcategoriaAtual = subcategoria;
+  
+  // Atualizar subtabs ativos
+  document.querySelectorAll('.subtab-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  
+  aplicarFiltros();
+}
+
+function aplicarFiltros() {
+  const termo = document.getElementById('searchModal').value.toLowerCase();
+  
+  let filtrados = catalogoArtigos;
+  
+  // Filtrar por categoria
+  if (categoriaAtual !== 'todos') {
+    const catMap = {
+      informatica: 'Informática',
+      telemoveis: 'Telemóveis',
+      mobiliario: 'Mobiliário',
+      economato: 'Economato'
+    };
+    filtrados = filtrados.filter(a => a.categoria === catMap[categoriaAtual]);
+  }
+  
+  // Filtrar por subcategoria
+  if (subcategoriaAtual !== 'all' && (categoriaAtual === 'informatica' || categoriaAtual === 'telemoveis')) {
+    filtrados = filtrados.filter(a => a.subcategoria === subcategoriaAtual);
+  }
+  
+  // Filtrar por termo de pesquisa
+  if (termo) {
+    filtrados = filtrados.filter(a => 
+      a.nome.toLowerCase().includes(termo) || 
+      a.codigo.toLowerCase().includes(termo)
+    );
+  }
+  
+  renderizarArtigos(filtrados);
+}
+
+function filtrarArtigosModal(termo) {
+  aplicarFiltros();
+}
+
 function renderizarArtigos(artigos) {
   const grid = document.getElementById('gridArtigos');
   
   if (artigos.length === 0) {
-    grid.innerHTML = '<div class="empty-state"><p>Nenhum artigo encontrado</p></div>';
+    grid.innerHTML = '<div class="inv-empty-state" style="grid-column: 1/-1; padding: 2rem;"><p style="color: #64748b;">Nenhum artigo encontrado</p></div>';
     return;
   }
   
@@ -1225,43 +1330,6 @@ function renderizarArtigos(artigos) {
       <div class="artigo-card-categoria">${a.categoria}</div>
     </div>
   `).join('');
-}
-
-function filtrarArtigosModal(termo) {
-  termo = termo.toLowerCase();
-  let filtrados = catalogoArtigos.filter(a => 
-    a.nome.toLowerCase().includes(termo) || 
-    a.codigo.toLowerCase().includes(termo)
-  );
-  
-  if (categoriaAtual !== 'todos') {
-    filtrados = filtrados.filter(a => a.categoria.toLowerCase() === categoriaAtual);
-  }
-  
-  renderizarArtigos(filtrados);
-}
-
-function changeTabModal(categoria) {
-  document.querySelectorAll('.modal-tab-inv').forEach(t => t.classList.remove('active'));
-  event.target.classList.add('active');
-  
-  categoriaAtual = categoria;
-  const termo = document.getElementById('searchModal').value;
-  
-  let filtrados = catalogoArtigos;
-  if (categoria !== 'todos') {
-    const catMap = { informatica: 'Informática', mobiliario: 'Mobiliário', economato: 'Economato' };
-    filtrados = catalogoArtigos.filter(a => a.categoria === catMap[categoria]);
-  }
-  
-  if (termo) {
-    filtrados = filtrados.filter(a => 
-      a.nome.toLowerCase().includes(termo.toLowerCase()) || 
-      a.codigo.toLowerCase().includes(termo.toLowerCase())
-    );
-  }
-  
-  renderizarArtigos(filtrados);
 }
 
 function selecionarArtigo(codigo) {
