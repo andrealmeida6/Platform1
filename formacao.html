@@ -18,7 +18,7 @@ title: Centro de Formação
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="8.5" cy="7" r="4"/></svg>
             As Minhas Formações
           </button>
-          <a href="/gestao-formacoes" class="hero-btn hero-btn-secondary" id="btnGestaoFormacoes" style="display: none; text-decoration: none;">
+          <a href="{{ '/gestao-formacoes' | relative_url }}" class="hero-btn hero-btn-secondary" id="btnGestaoFormacoes" style="display: none; text-decoration: none;">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
             Gerir Formações
           </a>
@@ -348,8 +348,5 @@ title: Centro de Formação
   </div>
 </div>
 
-<!-- CSS específico da página -->
-<link rel="stylesheet" href="/web-files/css/formacao.css">
-
-<!-- JavaScript -->
-<script src="/web-files/js/formacao-centro.js"></script>
+<!-- JavaScript específico da página (usando relative_url para baseurl correto) -->
+<script src="{{ '/web-files/js/formacao-centro.js' | relative_url }}"></script>
