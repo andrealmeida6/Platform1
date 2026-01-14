@@ -59,7 +59,7 @@
   font-size: 2.5rem;
   font-weight: 800;
   line-height: 1.15;
-  margin-bottom: 2.5rem;
+  margin-bottom: 4rem;
   letter-spacing: -0.02em;
 }
 
@@ -174,22 +174,10 @@
 
 .calendar-section-header {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
   margin-bottom: 1rem;
 }
-
-.calendar-section-title {
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: #1e293b;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin: 0;
-}
-
-.calendar-section-title svg { width: 20px; height: 20px; color: #00b276; }
 
 .calendar-toggle-btn {
   padding: 0.5rem 1rem;
@@ -545,6 +533,8 @@
   border: 1px solid #f1f5f9;
   transition: all 0.3s ease;
   cursor: pointer;
+  text-decoration: none;
+  display: block;
 }
 
 .course-card:hover {
