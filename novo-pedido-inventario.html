@@ -9,6 +9,7 @@ title: Novo Pedido de Inventário
     <entity name="inv_categorias">
       <attribute name="codigo"/>
       <attribute name="nome"/>
+      <attribute name="icone"/>
       <attribute name="categoria_pai_id"/>
       <filter>
         <condition attribute="ativo" operator="eq" value="1"/>
@@ -16,385 +17,50 @@ title: Novo Pedido de Inventário
       <order attribute="ordem"/>
     </entity>
   </fetch>
+  
+  FetchXML para carregar artigos:
+  <fetch>
+    <entity name="inv_artigos">
+      <attribute name="codigo"/>
+      <attribute name="nome"/>
+      <attribute name="descricao"/>
+      <link-entity name="inv_categorias" from="id" to="categoria_id">
+        <attribute name="nome" alias="categoria_nome"/>
+        <attribute name="codigo" alias="categoria_codigo"/>
+      </link-entity>
+      <filter>
+        <condition attribute="ativo" operator="eq" value="1"/>
+      </filter>
+    </entity>
+  </fetch>
 -->
 
-<link rel="stylesheet" href="{{ '/web-files/css/inventario.css' | relative_url }}">
-
-<div class="novo-pedido-inv-page">
-  <!-- Page Header -->
-  <div class="page-header-inv compact">
-    <div class="page-header-content">
-      <div class="page-header-left">
-        <a href="{{ '/inventario' | relative_url }}" class="back-link-inv">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M19 12H5M12 19l-7-7 7-7"/>
-          </svg>
-          Voltar
-        </a>
-        <div>
-          <h1>Novo Pedido de Inventário</h1>
-          <p>Selecione o artigo e preencha os detalhes do pedido</p>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Timeline -->
-  <div class="timeline-container">
-    <div class="timeline-wrapper">
-      <div class="timeline-step">
-        <div class="timeline-circle active">1</div>
-        <span class="timeline-label">Criar Pedido</span>
-      </div>
-      <div class="timeline-line"></div>
-      <div class="timeline-step">
-        <div class="timeline-circle">2</div>
-        <span class="timeline-label">Aprovação</span>
-      </div>
-      <div class="timeline-line"></div>
-      <div class="timeline-step">
-        <div class="timeline-circle">3</div>
-        <span class="timeline-label">Validação</span>
-      </div>
-      <div class="timeline-line"></div>
-      <div class="timeline-step">
-        <div class="timeline-circle">4</div>
-        <span class="timeline-label">Preparação</span>
-      </div>
-      <div class="timeline-line"></div>
-      <div class="timeline-step">
-        <div class="timeline-circle">5</div>
-        <span class="timeline-label">Entrega</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- Alert Container -->
-  <div id="alertContainer" class="alert-inv"></div>
-
-  <!-- Main Content -->
-  <div class="form-layout">
-    <!-- Form Main -->
-    <div class="form-main-inv">
-      <!-- Secção: Artigo -->
-      <div class="form-section-inv">
-        <h2>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/>
-          </svg>
-          Selecione o Artigo
-        </h2>
-        
-        <div class="form-group-inv">
-          <label class="required">Artigo a Requisitar</label>
-          <button type="button" class="select-artigo-btn" id="btnAbrirCatalogo" onclick="abrirModalCatalogo()">
-            <div class="select-artigo-icon">🔍</div>
-            <div class="select-artigo-text">Pesquisar no Catálogo</div>
-            <div class="select-artigo-hint">Clique para explorar artigos por categoria</div>
-          </button>
-        </div>
-
-        <!-- Item Selecionado -->
-        <div id="itemSelecionado" class="item-selecionado-box">
-          <div class="item-selecionado-header">
-            <div>
-              <div class="item-selecionado-nome" id="itemNome"></div>
-              <div class="item-selecionado-codigo" id="itemCodigo"></div>
-            </div>
-            <button type="button" class="item-selecionado-remover" onclick="removerItemSelecionado()">✕ Remover</button>
-          </div>
-        </div>
-
-        <!-- Item Personalizado -->
-        <div id="itemPersonalizadoSection" class="item-personalizado-box">
-          <div class="item-personalizado-header">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-            </svg>
-            Artigo não catalogado - Especifique os detalhes
-          </div>
-          
-          <div class="form-group-inv">
-            <label for="itemNomePersonalizado" class="required">Nome do Artigo</label>
-            <input type="text" id="itemNomePersonalizado" placeholder="Ex: Monitor LG 27 polegadas" oninput="atualizarResumo()">
-          </div>
-          
-          <div class="form-group-inv">
-            <label for="itemDescricao">Descrição / Especificações</label>
-            <textarea id="itemDescricao" placeholder="Descreva as características do artigo pretendido..." rows="3" oninput="atualizarResumo()"></textarea>
-          </div>
-        </div>
-      </div>
-
-      <!-- Secção: Quantidade e Destino -->
-      <div class="form-section-inv">
-        <h2>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
-            <circle cx="12" cy="10" r="3"/>
-          </svg>
-          Quantidade e Destino
-        </h2>
-        
-        <div class="form-row-inv">
-          <div class="form-group-inv">
-            <label for="quantidade" class="required">Quantidade</label>
-            <input type="number" id="quantidade" value="1" min="1" max="99" oninput="atualizarResumo()">
-          </div>
-          
-          <div class="form-group-inv">
-            <label for="dataPretendida">Data Pretendida</label>
-            <input type="date" id="dataPretendida">
-          </div>
-        </div>
-
-        <div class="form-group-inv">
-          <label class="required">Tipo de Alocação</label>
-          <div class="alocacao-toggle">
-            <div class="toggle-options">
-              <div class="toggle-option">
-                <input type="radio" name="tipoAlocacao" id="alocacaoPessoal" value="pessoal" checked onchange="toggleAlocacao()">
-                <label for="alocacaoPessoal">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
-                    <circle cx="12" cy="7" r="4"/>
-                  </svg>
-                  Pessoal
-                </label>
-              </div>
-              <div class="toggle-option">
-                <input type="radio" name="tipoAlocacao" id="alocacaoUO" value="unidade" onchange="toggleAlocacao()">
-                <label for="alocacaoUO">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
-                    <circle cx="9" cy="7" r="4"/>
-                    <path d="M23 21v-2a4 4 0 00-3-3.87"/>
-                    <path d="M16 3.13a4 4 0 010 7.75"/>
-                  </svg>
-                  Unidade Orgânica
-                </label>
-              </div>
-              <div class="toggle-option">
-                <input type="radio" name="tipoAlocacao" id="alocacaoLocal" value="local" onchange="toggleAlocacao()">
-                <label for="alocacaoLocal">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
-                    <circle cx="12" cy="10" r="3"/>
-                  </svg>
-                  Local Específico
-                </label>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div id="fieldUnidadeOrganica" class="alocacao-field">
-          <div class="form-group-inv">
-            <label for="unidadeOrganica" class="required">Unidade Orgânica</label>
-            <select id="unidadeOrganica" onchange="atualizarResumo()">
-              <option value="">Selecione...</option>
-              <option value="DRCP">DRCP - Direção Regional de Contratação Pública</option>
-              <option value="DSI">DSI - Direção de Sistemas de Informação</option>
-              <option value="DRH">DRH - Direção de Recursos Humanos</option>
-              <option value="DAF">DAF - Direção Administrativa e Financeira</option>
-            </select>
-          </div>
-        </div>
-
-        <div id="fieldLocalEspecifico" class="alocacao-field">
-          <div class="form-group-inv">
-            <label for="localEspecifico" class="required">Local Específico</label>
-            <input type="text" id="localEspecifico" placeholder="Ex: Sala de Reuniões 3.1" oninput="atualizarResumo()">
-          </div>
-        </div>
-      </div>
-
-      <!-- Secção: Observações -->
-      <div class="form-section-inv">
-        <h2>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-            <polyline points="14 2 14 8 20 8"/>
-            <line x1="16" y1="13" x2="8" y2="13"/>
-            <line x1="16" y1="17" x2="8" y2="17"/>
-          </svg>
-          Observações
-        </h2>
-        
-        <div class="form-group-inv">
-          <label for="observacoes">Justificação / Observações</label>
-          <textarea id="observacoes" placeholder="Indique o motivo do pedido ou outras informações relevantes..." rows="4" oninput="atualizarContador()"></textarea>
-          <div class="char-count"><span id="charCount">0</span>/500</div>
-        </div>
-      </div>
-
-      <!-- Secção: Anexos -->
-      <div class="form-section-inv">
-        <h2>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/>
-          </svg>
-          Anexos
-        </h2>
-        
-        <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
-          <input type="file" id="fileInput" multiple accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" onchange="handleFileUpload(event)">
-          <div class="upload-icon">📎</div>
-          <div class="upload-text">
-            <strong>Clique para anexar</strong> ou arraste ficheiros
-          </div>
-          <div class="upload-hint">PDF, DOC, JPG ou PNG até 10MB</div>
-        </div>
-        
-        <div class="files-list" id="filesList"></div>
-      </div>
-    </div>
-
-    <!-- Sidebar -->
-    <div class="form-sidebar-inv">
-      <!-- Resumo -->
-      <div class="summary-card-inv">
-        <h3>📋 Resumo do Pedido</h3>
-        <div class="summary-item">
-          <span class="summary-label">Artigo</span>
-          <span class="summary-value" id="resumoArtigo">-</span>
-        </div>
-        <div class="summary-item">
-          <span class="summary-label">Quantidade</span>
-          <span class="summary-value" id="resumoQuantidade">1</span>
-        </div>
-        <div class="summary-item">
-          <span class="summary-label">Alocação</span>
-          <span class="summary-value" id="resumoAlocacao">Pessoal</span>
-        </div>
-        <div class="summary-item">
-          <span class="summary-label">Anexos</span>
-          <span class="summary-value" id="resumoAnexos">0</span>
-        </div>
-      </div>
-
-      <!-- Validação -->
-      <div class="validation-panel-inv">
-        <h3>✓ Validação</h3>
-        <ul class="validation-list" id="validationList">
-          <li class="validation-item warning">⚠️ Selecione um artigo</li>
-        </ul>
-      </div>
-
-      <!-- Info -->
-      <div class="info-panel-inv">
-        <h3>ℹ️ Próximos Passos</h3>
-        <div class="info-panel-content">
-          <p><strong>1. Aprovação do Responsável</strong><br>O responsável da sua área irá analisar o pedido.</p>
-          <p><strong>2. Validação Central</strong><br>A equipa de inventário fará a validação final.</p>
-          <p>Receberá notificações em cada etapa.</p>
-        </div>
-      </div>
-
-      <!-- Actions -->
-      <div class="sidebar-actions">
-        <button type="button" class="btn-submit-inv" onclick="submeterPedido()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
-          </svg>
-          Submeter Pedido
-        </button>
-        <button type="button" class="btn-rascunho-inv" onclick="guardarRascunho()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
-            <polyline points="17 21 17 13 7 13 7 21"/>
-            <polyline points="7 3 7 8 15 8"/>
-          </svg>
-          Guardar Rascunho
-        </button>
-        <button type="button" class="btn-cancelar-inv" onclick="cancelarPedido()">Cancelar</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Modal Catálogo -->
-<div class="modal-overlay" id="modalCatalogo">
-  <div class="modal-catalogo">
-    <div class="modal-header-inv">
-      <h3>Catálogo de Artigos</h3>
-      <button class="modal-close-inv" onclick="fecharModalCatalogo()">×</button>
-    </div>
-    
-    <div class="modal-search-inv">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <circle cx="11" cy="11" r="8"/>
-        <path d="m21 21-4.35-4.35"/>
-      </svg>
-      <input type="text" id="searchModal" placeholder="Pesquisar artigos..." oninput="filtrarArtigosModal(this.value)">
-    </div>
-    
-    <!-- Tabs de Categorias Principais - Sem scroll vertical -->
-    <div class="modal-tabs-inv" id="modalTabsInv">
-      <button class="modal-tab-inv active" data-categoria="todos" onclick="changeTabModal('todos')">Todos</button>
-      <button class="modal-tab-inv" data-categoria="informatica" onclick="changeTabModal('informatica')">💻 Informática</button>
-      <button class="modal-tab-inv" data-categoria="telemoveis" onclick="changeTabModal('telemoveis')">📱 Telemóveis</button>
-      <button class="modal-tab-inv" data-categoria="mobiliario" onclick="changeTabModal('mobiliario')">🪑 Mobiliário</button>
-      <button class="modal-tab-inv" data-categoria="economato" onclick="changeTabModal('economato')">📎 Economato</button>
-    </div>
-    
-    <!-- Subcategorias (aparecem quando Informática ou Telemóveis são selecionados) -->
-    <div class="modal-subtabs-inv" id="modalSubtabs" style="display: none;">
-      <div id="subtabsContainer"></div>
-    </div>
-    
-    <div class="modal-body-inv">
-      <div id="gridArtigos" class="artigos-grid"></div>
-    </div>
-    
-    <div class="modal-footer-inv">
-      <button class="btn-outro-artigo" onclick="selecionarOutroArtigo()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="12" y1="5" x2="12" y2="19"></line>
-          <line x1="5" y1="12" x2="19" y2="12"></line>
-        </svg>
-        Artigo não encontrado? Especificar outro
-      </button>
-    </div>
-  </div>
-</div>
+<link rel="stylesheet" href="{{ '/web-files/css/formacao.css' | relative_url }}">
 
 <style>
-/* Estilos específicos para novo pedido */
-.novo-pedido-inv-page {
+/* === NOVO PEDIDO INVENTÁRIO - Estrutura consistente === */
+.novo-pedido-platform {
+  background-color: var(--bg-color, #f4f6fc);
+  min-height: calc(100vh - 70px);
   padding-bottom: 3rem;
 }
 
-.page-header-inv.compact {
+/* Page Header */
+.np-header {
   background: linear-gradient(135deg, var(--primary-color, #00b276) 0%, var(--primary-hover, #009661) 100%);
-  padding: 1.5rem 2rem;
+  padding: 1.75rem 2rem;
   color: white;
 }
 
-.page-header-inv.compact .page-header-content {
+.np-header-inner {
   max-width: 1280px;
   margin: 0 auto;
-}
-
-.page-header-inv.compact .page-header-left {
   display: flex;
   align-items: center;
   gap: 1.5rem;
 }
 
-.page-header-inv.compact h1 {
-  font-size: 1.5rem;
-  font-weight: 700;
-  margin: 0;
-}
-
-.page-header-inv.compact p {
-  margin: 0.25rem 0 0;
-  opacity: 0.9;
-  font-size: 0.875rem;
-}
-
-.back-link-inv {
+.np-back-link {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -407,23 +73,35 @@ title: Novo Pedido de Inventário
   transition: all 0.2s;
 }
 
-.back-link-inv:hover {
+.np-back-link:hover {
   background: rgba(255,255,255,0.2);
 }
 
-.back-link-inv svg {
+.np-back-link svg {
   width: 18px;
   height: 18px;
 }
 
+.np-header h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.np-header p {
+  margin: 0.25rem 0 0;
+  opacity: 0.9;
+  font-size: 0.875rem;
+}
+
 /* Timeline */
-.timeline-container {
+.np-timeline {
   max-width: 1280px;
   margin: 0 auto 2rem;
   padding: 1.5rem 2rem 0;
 }
 
-.timeline-wrapper {
+.np-timeline-wrapper {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -431,18 +109,18 @@ title: Novo Pedido de Inventário
   background: white;
   padding: 1.5rem 2rem;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.06);
   overflow-x: auto;
 }
 
-.timeline-step {
+.np-timeline-step {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   white-space: nowrap;
 }
 
-.timeline-circle {
+.np-timeline-circle {
   width: 32px;
   height: 32px;
   border-radius: 50%;
@@ -455,44 +133,44 @@ title: Novo Pedido de Inventário
   font-size: 0.875rem;
 }
 
-.timeline-circle.active {
+.np-timeline-circle.active {
   background: linear-gradient(135deg, var(--primary-color, #00b276) 0%, var(--primary-hover, #009661) 100%);
   color: white;
 }
 
-.timeline-label {
+.np-timeline-label {
   font-size: 0.75rem;
   color: #64748b;
   font-weight: 600;
 }
 
-.timeline-line {
+.np-timeline-line {
   width: 40px;
   height: 2px;
   background: #e2e8f0;
 }
 
 /* Alert */
-.alert-inv {
+#alertContainer {
   max-width: 1280px;
   margin: 0 auto 1.5rem;
   padding: 0 2rem;
   display: none;
 }
 
-.alert-inv.show { display: block; }
+#alertContainer.show { display: block; }
 
-.alert-inv-content {
+.alert-content {
   padding: 1rem 1.5rem;
   border-radius: 10px;
   font-weight: 500;
 }
 
-.alert-inv-content.success { background: #d1fae5; color: #047857; border: 1px solid #a7f3d0; }
-.alert-inv-content.error { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+.alert-content.success { background: #d1fae5; color: #047857; border: 1px solid #a7f3d0; }
+.alert-content.error { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
 
 /* Form Layout */
-.form-layout {
+.np-form-layout {
   display: grid;
   grid-template-columns: 1fr 350px;
   gap: 2rem;
@@ -501,20 +179,20 @@ title: Novo Pedido de Inventário
   padding: 0 2rem;
 }
 
-.form-main-inv {
+.np-form-main {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
 }
 
-.form-section-inv {
+.np-form-section {
   background: white;
   border-radius: 16px;
   padding: 1.5rem;
   box-shadow: 0 4px 20px rgba(0,0,0,0.08);
 }
 
-.form-section-inv h2 {
+.np-form-section h2 {
   display: flex;
   align-items: center;
   gap: 0.75rem;
@@ -525,19 +203,19 @@ title: Novo Pedido de Inventário
   border-bottom: 1px solid #f1f5f9;
 }
 
-.form-section-inv h2 svg {
+.np-form-section h2 svg {
   width: 22px;
   height: 22px;
   color: var(--primary-color, #00b276);
 }
 
-.form-group-inv {
+.np-form-group {
   margin-bottom: 1.25rem;
 }
 
-.form-group-inv:last-child { margin-bottom: 0; }
+.np-form-group:last-child { margin-bottom: 0; }
 
-.form-group-inv label {
+.np-form-group label {
   display: block;
   font-size: 0.875rem;
   font-weight: 600;
@@ -545,14 +223,14 @@ title: Novo Pedido de Inventário
   margin-bottom: 0.5rem;
 }
 
-.form-group-inv label.required::after {
+.np-form-group label.required::after {
   content: " *";
   color: #dc2626;
 }
 
-.form-group-inv input,
-.form-group-inv select,
-.form-group-inv textarea {
+.np-form-group input,
+.np-form-group select,
+.np-form-group textarea {
   width: 100%;
   padding: 0.75rem 1rem;
   border: 2px solid #e2e8f0;
@@ -562,15 +240,15 @@ title: Novo Pedido de Inventário
   font-family: inherit;
 }
 
-.form-group-inv input:focus,
-.form-group-inv select:focus,
-.form-group-inv textarea:focus {
+.np-form-group input:focus,
+.np-form-group select:focus,
+.np-form-group textarea:focus {
   outline: none;
   border-color: var(--primary-color, #00b276);
   box-shadow: 0 0 0 3px rgba(0,178,118,0.1);
 }
 
-.form-row-inv {
+.np-form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
@@ -584,7 +262,7 @@ title: Novo Pedido de Inventário
 }
 
 /* Select Artigo Button */
-.select-artigo-btn {
+.np-select-artigo-btn {
   width: 100%;
   padding: 1.5rem;
   background: white;
@@ -599,17 +277,17 @@ title: Novo Pedido de Inventário
   font-family: inherit;
 }
 
-.select-artigo-btn:hover {
+.np-select-artigo-btn:hover {
   border-color: var(--primary-color, #00b276);
   background: rgba(0,178,118,0.02);
 }
 
-.select-artigo-icon { font-size: 2.5rem; }
-.select-artigo-text { font-size: 0.875rem; font-weight: 600; color: var(--primary-color, #00b276); }
-.select-artigo-hint { font-size: 0.75rem; color: #94a3b8; }
+.np-select-artigo-icon { font-size: 2.5rem; }
+.np-select-artigo-text { font-size: 0.875rem; font-weight: 600; color: var(--primary-color, #00b276); }
+.np-select-artigo-hint { font-size: 0.75rem; color: #94a3b8; }
 
 /* Item Selecionado */
-.item-selecionado-box {
+.np-item-selecionado {
   display: none;
   background: #f0fdf4;
   border: 2px solid #86efac;
@@ -618,18 +296,18 @@ title: Novo Pedido de Inventário
   margin-top: 1rem;
 }
 
-.item-selecionado-box.show { display: block; }
+.np-item-selecionado.show { display: block; }
 
-.item-selecionado-header {
+.np-item-selecionado-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
 }
 
-.item-selecionado-nome { font-weight: 600; color: #1e293b; }
-.item-selecionado-codigo { font-size: 0.75rem; color: #64748b; margin-top: 0.25rem; }
+.np-item-nome { font-weight: 600; color: #1e293b; }
+.np-item-codigo { font-size: 0.75rem; color: #64748b; margin-top: 0.25rem; }
 
-.item-selecionado-remover {
+.np-item-remover {
   background: none;
   border: none;
   color: #dc2626;
@@ -639,7 +317,7 @@ title: Novo Pedido de Inventário
 }
 
 /* Item Personalizado */
-.item-personalizado-box {
+.np-item-personalizado {
   display: none;
   background: #fffbeb;
   border: 2px dashed #fbbf24;
@@ -648,9 +326,9 @@ title: Novo Pedido de Inventário
   margin-top: 1rem;
 }
 
-.item-personalizado-box.show { display: block; }
+.np-item-personalizado.show { display: block; }
 
-.item-personalizado-header {
+.np-item-personalizado-header {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -660,25 +338,25 @@ title: Novo Pedido de Inventário
   margin-bottom: 1rem;
 }
 
-.item-personalizado-header svg { width: 20px; height: 20px; color: #f59e0b; }
+.np-item-personalizado-header svg { width: 20px; height: 20px; color: #f59e0b; }
 
 /* Alocação Toggle */
-.alocacao-toggle {
+.np-alocacao-toggle {
   background: #f8fafc;
   border-radius: 12px;
   padding: 1rem;
 }
 
-.toggle-options {
+.np-toggle-options {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 0.75rem;
 }
 
-.toggle-option { position: relative; }
-.toggle-option input { position: absolute; opacity: 0; }
+.np-toggle-option { position: relative; }
+.np-toggle-option input { position: absolute; opacity: 0; }
 
-.toggle-option label {
+.np-toggle-option label {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -695,22 +373,22 @@ title: Novo Pedido de Inventário
   color: #475569;
 }
 
-.toggle-option label svg { width: 24px; height: 24px; color: #94a3b8; }
+.np-toggle-option label svg { width: 24px; height: 24px; color: #94a3b8; }
 
-.toggle-option input:checked + label {
+.np-toggle-option input:checked + label {
   background: linear-gradient(135deg, var(--primary-color, #00b276) 0%, var(--primary-hover, #009661) 100%);
   border-color: var(--primary-color, #00b276);
   color: white;
 }
 
-.toggle-option input:checked + label svg { color: white; }
-.toggle-option label:hover { border-color: var(--primary-color, #00b276); }
+.np-toggle-option input:checked + label svg { color: white; }
+.np-toggle-option label:hover { border-color: var(--primary-color, #00b276); }
 
-.alocacao-field { display: none; margin-top: 1rem; }
-.alocacao-field.show { display: block; }
+.np-alocacao-field { display: none; margin-top: 1rem; }
+.np-alocacao-field.show { display: block; }
 
 /* Upload Area */
-.upload-area {
+.np-upload-area {
   border: 2px dashed #cbd5e1;
   border-radius: 12px;
   padding: 2rem;
@@ -719,20 +397,20 @@ title: Novo Pedido de Inventário
   transition: all 0.2s;
 }
 
-.upload-area:hover {
+.np-upload-area:hover {
   border-color: var(--primary-color, #00b276);
   background: rgba(0,178,118,0.02);
 }
 
-.upload-area input { display: none; }
-.upload-icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
-.upload-text { color: #64748b; font-size: 0.875rem; }
-.upload-text strong { color: var(--primary-color, #00b276); }
-.upload-hint { font-size: 0.75rem; color: #94a3b8; margin-top: 0.25rem; }
+.np-upload-area input { display: none; }
+.np-upload-icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
+.np-upload-text { color: #64748b; font-size: 0.875rem; }
+.np-upload-text strong { color: var(--primary-color, #00b276); }
+.np-upload-hint { font-size: 0.75rem; color: #94a3b8; margin-top: 0.25rem; }
 
-.files-list { margin-top: 1rem; }
+.np-files-list { margin-top: 1rem; }
 
-.file-item {
+.np-file-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -742,12 +420,12 @@ title: Novo Pedido de Inventário
   margin-bottom: 0.5rem;
 }
 
-.file-info { display: flex; align-items: center; gap: 0.75rem; }
-.file-icon { font-size: 1.5rem; }
-.file-name { font-size: 0.875rem; font-weight: 500; color: #1e293b; }
-.file-size { font-size: 0.75rem; color: #94a3b8; }
+.np-file-info { display: flex; align-items: center; gap: 0.75rem; }
+.np-file-icon { font-size: 1.5rem; }
+.np-file-name { font-size: 0.875rem; font-weight: 500; color: #1e293b; }
+.np-file-size { font-size: 0.75rem; color: #94a3b8; }
 
-.file-remove {
+.np-file-remove {
   background: none;
   border: 1px solid #fecaca;
   color: #dc2626;
@@ -759,10 +437,10 @@ title: Novo Pedido de Inventário
   transition: all 0.2s;
 }
 
-.file-remove:hover { background: #dc2626; color: white; }
+.np-file-remove:hover { background: #dc2626; color: white; }
 
 /* Sidebar */
-.form-sidebar-inv {
+.np-form-sidebar {
   position: sticky;
   top: 2rem;
   display: flex;
@@ -771,24 +449,24 @@ title: Novo Pedido de Inventário
   height: fit-content;
 }
 
-.summary-card-inv,
-.validation-panel-inv,
-.info-panel-inv {
+.np-summary-card,
+.np-validation-panel,
+.np-info-panel {
   background: white;
   border-radius: 16px;
   padding: 1.5rem;
   box-shadow: 0 4px 20px rgba(0,0,0,0.08);
 }
 
-.summary-card-inv h3,
-.validation-panel-inv h3,
-.info-panel-inv h3 {
+.np-summary-card h3,
+.np-validation-panel h3,
+.np-info-panel h3 {
   font-size: 1rem;
   color: #1e293b;
   margin: 0 0 1rem;
 }
 
-.summary-item {
+.np-summary-item {
   display: flex;
   justify-content: space-between;
   padding: 0.75rem 0;
@@ -796,32 +474,32 @@ title: Novo Pedido de Inventário
   font-size: 0.875rem;
 }
 
-.summary-item:last-child { border-bottom: none; }
-.summary-label { color: #64748b; }
-.summary-value { color: #1e293b; font-weight: 600; text-align: right; max-width: 60%; word-break: break-word; }
+.np-summary-item:last-child { border-bottom: none; }
+.np-summary-label { color: #64748b; }
+.np-summary-value { color: #1e293b; font-weight: 600; text-align: right; max-width: 60%; word-break: break-word; }
 
-.validation-list { list-style: none; padding: 0; margin: 0; }
+.np-validation-list { list-style: none; padding: 0; margin: 0; }
 
-.validation-item {
+.np-validation-item {
   padding: 0.5rem 0.75rem;
   border-radius: 8px;
   font-size: 0.8rem;
   margin-bottom: 0.5rem;
 }
 
-.validation-item.success { background: #d1fae5; color: #047857; }
-.validation-item.warning { background: #fef3c7; color: #92400e; }
-.validation-item.error { background: #fee2e2; color: #b91c1c; }
+.np-validation-item.success { background: #d1fae5; color: #047857; }
+.np-validation-item.warning { background: #fef3c7; color: #92400e; }
+.np-validation-item.error { background: #fee2e2; color: #b91c1c; }
 
-.info-panel-inv { background: linear-gradient(135deg, #eff6ff 0%, #f8fafc 100%); }
+.np-info-panel { background: linear-gradient(135deg, #eff6ff 0%, #f8fafc 100%); }
 
-.info-panel-content { font-size: 0.8rem; color: #475569; line-height: 1.6; }
-.info-panel-content p { margin: 0 0 0.75rem; }
-.info-panel-content p:last-child { margin-bottom: 0; }
+.np-info-content { font-size: 0.8rem; color: #475569; line-height: 1.6; }
+.np-info-content p { margin: 0 0 0.75rem; }
+.np-info-content p:last-child { margin-bottom: 0; }
 
-.sidebar-actions { display: flex; flex-direction: column; gap: 0.75rem; }
+.np-sidebar-actions { display: flex; flex-direction: column; gap: 0.75rem; }
 
-.btn-submit-inv {
+.np-btn-submit {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -839,14 +517,14 @@ title: Novo Pedido de Inventário
   font-family: inherit;
 }
 
-.btn-submit-inv:hover {
+.np-btn-submit:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(0,178,118,0.4);
 }
 
-.btn-submit-inv svg { width: 18px; height: 18px; }
+.np-btn-submit svg { width: 18px; height: 18px; }
 
-.btn-rascunho-inv {
+.np-btn-rascunho {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -863,14 +541,14 @@ title: Novo Pedido de Inventário
   font-family: inherit;
 }
 
-.btn-rascunho-inv:hover {
+.np-btn-rascunho:hover {
   border-color: var(--primary-color, #00b276);
   color: var(--primary-color, #00b276);
 }
 
-.btn-rascunho-inv svg { width: 18px; height: 18px; }
+.np-btn-rascunho svg { width: 18px; height: 18px; }
 
-.btn-cancelar-inv {
+.np-btn-cancelar {
   padding: 0.75rem;
   background: none;
   color: #dc2626;
@@ -881,9 +559,27 @@ title: Novo Pedido de Inventário
   font-family: inherit;
 }
 
-.btn-cancelar-inv:hover { text-decoration: underline; }
+.np-btn-cancelar:hover { text-decoration: underline; }
 
-/* Modal Catálogo - CORRIGIDO */
+/* === MODAL CATÁLOGO - CORRIGIDO === */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.modal-overlay.show {
+  display: flex;
+}
+
 .modal-catalogo {
   background: white;
   border-radius: 16px;
@@ -895,7 +591,7 @@ title: Novo Pedido de Inventário
   box-shadow: 0 20px 60px rgba(0,0,0,0.3);
 }
 
-.modal-header-inv {
+.modal-header-cat {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -904,14 +600,14 @@ title: Novo Pedido de Inventário
   flex-shrink: 0;
 }
 
-.modal-header-inv h3 {
+.modal-header-cat h3 {
   font-size: 1.25rem;
   font-weight: 600;
   color: #1e293b;
   margin: 0;
 }
 
-.modal-close-inv {
+.modal-close-cat {
   width: 36px;
   height: 36px;
   border: none;
@@ -925,16 +621,16 @@ title: Novo Pedido de Inventário
   justify-content: center;
 }
 
-.modal-close-inv:hover { background: #f1f5f9; color: #1e293b; }
+.modal-close-cat:hover { background: #f1f5f9; color: #1e293b; }
 
-.modal-search-inv {
+.modal-search-cat {
   padding: 1rem 1.5rem;
   background: #f8fafc;
   position: relative;
   flex-shrink: 0;
 }
 
-.modal-search-inv svg {
+.modal-search-cat svg {
   position: absolute;
   left: 2rem;
   top: 50%;
@@ -944,7 +640,7 @@ title: Novo Pedido de Inventário
   color: #94a3b8;
 }
 
-.modal-search-inv input {
+.modal-search-cat input {
   width: 100%;
   padding: 0.75rem 1rem 0.75rem 2.5rem;
   border: 2px solid #e2e8f0;
@@ -953,23 +649,24 @@ title: Novo Pedido de Inventário
   font-family: inherit;
 }
 
-.modal-search-inv input:focus {
+.modal-search-cat input:focus {
   outline: none;
   border-color: var(--primary-color, #00b276);
 }
 
-/* Tabs de categorias - SEM SCROLL VERTICAL */
-.modal-tabs-inv {
+/* TABS CATEGORIAS - SEM SCROLL VERTICAL */
+.modal-tabs-cat {
   display: flex;
-  padding: 0 1.5rem;
-  border-bottom: 1px solid #e2e8f0;
-  gap: 0.25rem;
-  flex-shrink: 0;
   flex-wrap: wrap;
+  padding: 0.75rem 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+  gap: 0.375rem;
+  flex-shrink: 0;
+  background: white;
 }
 
-.modal-tab-inv {
-  padding: 0.875rem 1.25rem;
+.modal-tab-cat {
+  padding: 0.75rem 1.125rem;
   background: none;
   border: none;
   border-bottom: 3px solid transparent;
@@ -980,27 +677,34 @@ title: Novo Pedido de Inventário
   transition: all 0.2s;
   white-space: nowrap;
   font-family: inherit;
+  border-radius: 0;
 }
 
-.modal-tab-inv:hover { color: #1e293b; }
+.modal-tab-cat:hover { color: #1e293b; background: #f8fafc; }
 
-.modal-tab-inv.active {
+.modal-tab-cat.active {
   color: var(--primary-color, #00b276);
   border-bottom-color: var(--primary-color, #00b276);
+  background: white;
 }
 
-/* Subcategorias */
-.modal-subtabs-inv {
+/* SUBTABS - Subcategorias visíveis */
+.modal-subtabs-cat {
+  display: none;
   padding: 0.75rem 1.5rem;
   background: #f8fafc;
   border-bottom: 1px solid #e2e8f0;
   flex-shrink: 0;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
-.modal-subtabs-inv .subtab-btn {
+.modal-subtabs-cat.show {
+  display: flex;
+}
+
+.subtab-cat-btn {
   padding: 0.5rem 1rem;
-  margin-right: 0.5rem;
-  margin-bottom: 0.5rem;
   background: white;
   border: 1px solid #e2e8f0;
   border-radius: 20px;
@@ -1012,18 +716,19 @@ title: Novo Pedido de Inventário
   font-family: inherit;
 }
 
-.modal-subtabs-inv .subtab-btn:hover {
+.subtab-cat-btn:hover {
   border-color: var(--primary-color, #00b276);
   color: var(--primary-color, #00b276);
 }
 
-.modal-subtabs-inv .subtab-btn.active {
+.subtab-cat-btn.active {
   background: var(--primary-color, #00b276);
   border-color: var(--primary-color, #00b276);
   color: white;
 }
 
-.modal-body-inv {
+/* Modal Body */
+.modal-body-cat {
   padding: 1.5rem;
   overflow-y: auto;
   flex: 1;
@@ -1073,7 +778,7 @@ title: Novo Pedido de Inventário
   margin-top: 0.5rem;
 }
 
-.modal-footer-inv {
+.modal-footer-cat {
   padding: 1.25rem 1.5rem;
   border-top: 1px solid #e2e8f0;
   flex-shrink: 0;
@@ -1105,49 +810,407 @@ title: Novo Pedido de Inventário
 
 /* Responsive */
 @media (max-width: 1024px) {
-  .form-layout { grid-template-columns: 1fr; }
-  .form-sidebar-inv { position: static; }
-  .toggle-options { grid-template-columns: 1fr; }
+  .np-form-layout { grid-template-columns: 1fr; }
+  .np-form-sidebar { position: static; }
+  .np-toggle-options { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 768px) {
-  .page-header-inv.compact,
-  .timeline-container,
-  .form-layout {
+  .np-header,
+  .np-timeline,
+  .np-form-layout {
     padding-left: 1rem;
     padding-right: 1rem;
   }
   
-  .form-row-inv { grid-template-columns: 1fr; }
+  .np-form-row { grid-template-columns: 1fr; }
   
-  .page-header-inv.compact .page-header-left {
+  .np-header-inner {
     flex-direction: column;
     align-items: flex-start;
   }
   
-  .modal-tabs-inv {
+  .modal-tabs-cat {
     padding: 0.5rem 1rem;
-    gap: 0.125rem;
+    gap: 0.25rem;
   }
   
-  .modal-tab-inv {
-    padding: 0.625rem 0.75rem;
+  .modal-tab-cat {
+    padding: 0.5rem 0.75rem;
     font-size: 0.8rem;
   }
 }
 </style>
 
+<div class="novo-pedido-platform">
+  <!-- Page Header -->
+  <div class="np-header">
+    <div class="np-header-inner">
+      <a href="{{ '/inventario' | relative_url }}" class="np-back-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+        Voltar
+      </a>
+      <div>
+        <h1>Novo Pedido de Inventário</h1>
+        <p>Selecione o artigo e preencha os detalhes do pedido</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Timeline -->
+  <div class="np-timeline">
+    <div class="np-timeline-wrapper">
+      <div class="np-timeline-step">
+        <div class="np-timeline-circle active">1</div>
+        <span class="np-timeline-label">Criar Pedido</span>
+      </div>
+      <div class="np-timeline-line"></div>
+      <div class="np-timeline-step">
+        <div class="np-timeline-circle">2</div>
+        <span class="np-timeline-label">Aprovação</span>
+      </div>
+      <div class="np-timeline-line"></div>
+      <div class="np-timeline-step">
+        <div class="np-timeline-circle">3</div>
+        <span class="np-timeline-label">Validação</span>
+      </div>
+      <div class="np-timeline-line"></div>
+      <div class="np-timeline-step">
+        <div class="np-timeline-circle">4</div>
+        <span class="np-timeline-label">Preparação</span>
+      </div>
+      <div class="np-timeline-line"></div>
+      <div class="np-timeline-step">
+        <div class="np-timeline-circle">5</div>
+        <span class="np-timeline-label">Entrega</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Alert Container -->
+  <div id="alertContainer"></div>
+
+  <!-- Main Content -->
+  <div class="np-form-layout">
+    <!-- Form Main -->
+    <div class="np-form-main">
+      <!-- Secção: Artigo -->
+      <div class="np-form-section">
+        <h2>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/>
+          </svg>
+          Selecione o Artigo
+        </h2>
+        
+        <div class="np-form-group">
+          <label class="required">Artigo a Requisitar</label>
+          <button type="button" class="np-select-artigo-btn" id="btnAbrirCatalogo" onclick="abrirModalCatalogo()">
+            <div class="np-select-artigo-icon">🔍</div>
+            <div class="np-select-artigo-text">Pesquisar no Catálogo</div>
+            <div class="np-select-artigo-hint">Clique para explorar artigos por categoria</div>
+          </button>
+        </div>
+
+        <!-- Item Selecionado -->
+        <div id="itemSelecionado" class="np-item-selecionado">
+          <div class="np-item-selecionado-header">
+            <div>
+              <div class="np-item-nome" id="itemNome"></div>
+              <div class="np-item-codigo" id="itemCodigo"></div>
+            </div>
+            <button type="button" class="np-item-remover" onclick="removerItemSelecionado()">✕ Remover</button>
+          </div>
+        </div>
+
+        <!-- Item Personalizado -->
+        <div id="itemPersonalizadoSection" class="np-item-personalizado">
+          <div class="np-item-personalizado-header">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+            </svg>
+            Artigo não catalogado - Especifique os detalhes
+          </div>
+          
+          <div class="np-form-group">
+            <label for="itemNomePersonalizado" class="required">Nome do Artigo</label>
+            <input type="text" id="itemNomePersonalizado" placeholder="Ex: Monitor LG 27 polegadas" oninput="atualizarResumo()">
+          </div>
+          
+          <div class="np-form-group">
+            <label for="itemDescricao">Descrição / Especificações</label>
+            <textarea id="itemDescricao" placeholder="Descreva as características do artigo pretendido..." rows="3" oninput="atualizarResumo()"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Secção: Quantidade e Destino -->
+      <div class="np-form-section">
+        <h2>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
+            <circle cx="12" cy="10" r="3"/>
+          </svg>
+          Quantidade e Destino
+        </h2>
+        
+        <div class="np-form-row">
+          <div class="np-form-group">
+            <label for="quantidade" class="required">Quantidade</label>
+            <input type="number" id="quantidade" value="1" min="1" max="99" oninput="atualizarResumo()">
+          </div>
+          
+          <div class="np-form-group">
+            <label for="dataPretendida">Data Pretendida</label>
+            <input type="date" id="dataPretendida">
+          </div>
+        </div>
+
+        <div class="np-form-group">
+          <label class="required">Tipo de Alocação</label>
+          <div class="np-alocacao-toggle">
+            <div class="np-toggle-options">
+              <div class="np-toggle-option">
+                <input type="radio" name="tipoAlocacao" id="alocacaoPessoal" value="pessoal" checked onchange="toggleAlocacao()">
+                <label for="alocacaoPessoal">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                  </svg>
+                  Pessoal
+                </label>
+              </div>
+              <div class="np-toggle-option">
+                <input type="radio" name="tipoAlocacao" id="alocacaoUO" value="unidade" onchange="toggleAlocacao()">
+                <label for="alocacaoUO">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <path d="M23 21v-2a4 4 0 00-3-3.87"/>
+                    <path d="M16 3.13a4 4 0 010 7.75"/>
+                  </svg>
+                  Unidade Orgânica
+                </label>
+              </div>
+              <div class="np-toggle-option">
+                <input type="radio" name="tipoAlocacao" id="alocacaoLocal" value="local" onchange="toggleAlocacao()">
+                <label for="alocacaoLocal">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
+                    <circle cx="12" cy="10" r="3"/>
+                  </svg>
+                  Local Específico
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="fieldUnidadeOrganica" class="np-alocacao-field">
+          <div class="np-form-group">
+            <label for="unidadeOrganica" class="required">Unidade Orgânica</label>
+            <select id="unidadeOrganica" onchange="atualizarResumo()">
+              <option value="">Selecione...</option>
+              <option value="DRCP">DRCP - Direção Regional de Contratação Pública</option>
+              <option value="DSI">DSI - Direção de Sistemas de Informação</option>
+              <option value="DRH">DRH - Direção de Recursos Humanos</option>
+              <option value="DAF">DAF - Direção Administrativa e Financeira</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="fieldLocalEspecifico" class="np-alocacao-field">
+          <div class="np-form-group">
+            <label for="localEspecifico" class="required">Local Específico</label>
+            <input type="text" id="localEspecifico" placeholder="Ex: Sala de Reuniões 3.1" oninput="atualizarResumo()">
+          </div>
+        </div>
+      </div>
+
+      <!-- Secção: Observações -->
+      <div class="np-form-section">
+        <h2>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+          </svg>
+          Observações
+        </h2>
+        
+        <div class="np-form-group">
+          <label for="observacoes">Justificação / Observações</label>
+          <textarea id="observacoes" placeholder="Indique o motivo do pedido ou outras informações relevantes..." rows="4" oninput="atualizarContador()"></textarea>
+          <div class="char-count"><span id="charCount">0</span>/500</div>
+        </div>
+      </div>
+
+      <!-- Secção: Anexos -->
+      <div class="np-form-section">
+        <h2>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/>
+          </svg>
+          Anexos
+        </h2>
+        
+        <div class="np-upload-area" onclick="document.getElementById('fileInput').click()">
+          <input type="file" id="fileInput" multiple accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" onchange="handleFileUpload(event)">
+          <div class="np-upload-icon">📎</div>
+          <div class="np-upload-text">
+            <strong>Clique para anexar</strong> ou arraste ficheiros
+          </div>
+          <div class="np-upload-hint">PDF, DOC, JPG ou PNG até 10MB</div>
+        </div>
+        
+        <div class="np-files-list" id="filesList"></div>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="np-form-sidebar">
+      <!-- Resumo -->
+      <div class="np-summary-card">
+        <h3>📋 Resumo do Pedido</h3>
+        <div class="np-summary-item">
+          <span class="np-summary-label">Artigo</span>
+          <span class="np-summary-value" id="resumoArtigo">-</span>
+        </div>
+        <div class="np-summary-item">
+          <span class="np-summary-label">Quantidade</span>
+          <span class="np-summary-value" id="resumoQuantidade">1</span>
+        </div>
+        <div class="np-summary-item">
+          <span class="np-summary-label">Alocação</span>
+          <span class="np-summary-value" id="resumoAlocacao">Pessoal</span>
+        </div>
+        <div class="np-summary-item">
+          <span class="np-summary-label">Anexos</span>
+          <span class="np-summary-value" id="resumoAnexos">0</span>
+        </div>
+      </div>
+
+      <!-- Validação -->
+      <div class="np-validation-panel">
+        <h3>✓ Validação</h3>
+        <ul class="np-validation-list" id="validationList">
+          <li class="np-validation-item warning">⚠️ Selecione um artigo</li>
+        </ul>
+      </div>
+
+      <!-- Info -->
+      <div class="np-info-panel">
+        <h3>ℹ️ Próximos Passos</h3>
+        <div class="np-info-content">
+          <p><strong>1. Aprovação do Responsável</strong><br>O responsável da sua área irá analisar o pedido.</p>
+          <p><strong>2. Validação Central</strong><br>A equipa de inventário fará a validação final.</p>
+          <p>Receberá notificações em cada etapa.</p>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="np-sidebar-actions">
+        <button type="button" class="np-btn-submit" onclick="submeterPedido()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+          </svg>
+          Submeter Pedido
+        </button>
+        <button type="button" class="np-btn-rascunho" onclick="guardarRascunho()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
+            <polyline points="17 21 17 13 7 13 7 21"/>
+            <polyline points="7 3 7 8 15 8"/>
+          </svg>
+          Guardar Rascunho
+        </button>
+        <button type="button" class="np-btn-cancelar" onclick="cancelarPedido()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Catálogo de Artigos -->
+<div class="modal-overlay" id="modalCatalogo">
+  <div class="modal-catalogo">
+    <div class="modal-header-cat">
+      <h3>Catálogo de Artigos</h3>
+      <button class="modal-close-cat" onclick="fecharModalCatalogo()">×</button>
+    </div>
+    
+    <div class="modal-search-cat">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"/>
+        <path d="m21 21-4.35-4.35"/>
+      </svg>
+      <input type="text" id="searchModal" placeholder="Pesquisar artigos..." oninput="filtrarArtigosModal(this.value)">
+    </div>
+    
+    <!-- Tabs de Categorias Principais -->
+    <div class="modal-tabs-cat" id="modalTabsCat">
+      <button class="modal-tab-cat active" data-categoria="todos" onclick="changeTabModal('todos')">Todos</button>
+      <button class="modal-tab-cat" data-categoria="informatica" onclick="changeTabModal('informatica')">💻 Informática</button>
+      <button class="modal-tab-cat" data-categoria="telemoveis" onclick="changeTabModal('telemoveis')">📱 Telemóveis e Telecomunicações</button>
+      <button class="modal-tab-cat" data-categoria="mobiliario" onclick="changeTabModal('mobiliario')">🪑 Mobiliário</button>
+      <button class="modal-tab-cat" data-categoria="economato" onclick="changeTabModal('economato')">📎 Economato</button>
+    </div>
+    
+    <!-- Subcategorias -->
+    <div class="modal-subtabs-cat" id="modalSubtabs">
+      <!-- Preenchido dinamicamente -->
+    </div>
+    
+    <div class="modal-body-cat">
+      <div id="gridArtigos" class="artigos-grid"></div>
+    </div>
+    
+    <div class="modal-footer-cat">
+      <button class="btn-outro-artigo" onclick="selecionarOutroArtigo()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        Artigo não encontrado? Especificar outro
+      </button>
+    </div>
+  </div>
+</div>
+
 <script>
 /**
  * Power Pages: Catálogo seria carregado via FetchXML
+ * {% fetchxml categorias_query %}
+ *   <fetch>
+ *     <entity name="inv_categorias">
+ *       <attribute name="id"/>
+ *       <attribute name="codigo"/>
+ *       <attribute name="nome"/>
+ *       <attribute name="icone"/>
+ *       <attribute name="categoria_pai_id"/>
+ *       <attribute name="ordem"/>
+ *       <filter>
+ *         <condition attribute="ativo" operator="eq" value="1"/>
+ *       </filter>
+ *       <order attribute="ordem"/>
+ *     </entity>
+ *   </fetch>
+ * {% endfetchxml %}
+ * 
  * {% fetchxml artigos_query %}
  *   <fetch>
  *     <entity name="inv_artigos">
+ *       <attribute name="id"/>
  *       <attribute name="codigo"/>
  *       <attribute name="nome"/>
+ *       <attribute name="descricao"/>
+ *       <attribute name="categoria_id"/>
  *       <link-entity name="inv_categorias" from="id" to="categoria_id">
  *         <attribute name="nome" alias="categoria_nome"/>
  *         <attribute name="codigo" alias="categoria_codigo"/>
+ *         <attribute name="categoria_pai_id" alias="categoria_pai_id"/>
  *       </link-entity>
  *       <filter>
  *         <condition attribute="ativo" operator="eq" value="1"/>
@@ -1157,7 +1220,8 @@ title: Novo Pedido de Inventário
  * {% endfetchxml %}
  */
 
-// Estrutura de categorias e subcategorias
+// Estrutura de categorias com subcategorias
+// Em Power Pages: seriam carregadas do FetchXML acima
 const categoriasConfig = {
   informatica: {
     nome: 'Informática',
@@ -1183,7 +1247,7 @@ const categoriasConfig = {
   economato: { nome: 'Economato', subcategorias: [] }
 };
 
-// Catálogo de artigos
+// Catálogo de artigos (em Power Pages: viria do FetchXML)
 const catalogoArtigos = [
   // Informática - Portáteis
   { nome: 'Portátil Dell Latitude 5520 14" i5 16GB', categoria: 'Informática', subcategoria: 'portateis', codigo: 'INF-001' },
@@ -1206,6 +1270,8 @@ const catalogoArtigos = [
   // Headsets
   { nome: 'Headset USB Jabra Evolve2 65', categoria: 'Telemóveis', subcategoria: 'headsets', codigo: 'TEL-HEAD-001' },
   { nome: 'Headset Poly Voyager Focus 2', categoria: 'Telemóveis', subcategoria: 'headsets', codigo: 'TEL-HEAD-002' },
+  // Telefones Fixos
+  { nome: 'Telefone Fixo Cisco IP Phone 8845', categoria: 'Telemóveis', subcategoria: 'telefones', codigo: 'TEL-FIX-001' },
   // Mobiliário
   { nome: 'Cadeira Ergonómica Herman Miller', categoria: 'Mobiliário', subcategoria: '', codigo: 'MOB-001' },
   { nome: 'Secretária Ajustável em Altura 160x80cm', categoria: 'Mobiliário', subcategoria: '', codigo: 'MOB-002' },
@@ -1238,7 +1304,7 @@ function fecharModalCatalogo() {
 
 function changeTabModal(categoria) {
   // Atualizar tabs ativos
-  document.querySelectorAll('.modal-tab-inv').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.modal-tab-cat').forEach(t => t.classList.remove('active'));
   document.querySelector('[data-categoria="' + categoria + '"]').classList.add('active');
   
   categoriaAtual = categoria;
@@ -1250,22 +1316,22 @@ function changeTabModal(categoria) {
 
 function atualizarSubcategorias() {
   const subtabsContainer = document.getElementById('modalSubtabs');
-  const container = document.getElementById('subtabsContainer');
   
   // Verificar se categoria tem subcategorias
   const config = categoriasConfig[categoriaAtual];
   
   if (config && config.subcategorias && config.subcategorias.length > 0) {
-    subtabsContainer.style.display = 'block';
+    subtabsContainer.classList.add('show');
     
     let html = '';
     config.subcategorias.forEach(sub => {
       const activeClass = sub.codigo === subcategoriaAtual ? 'active' : '';
-      html += '<button class="subtab-btn ' + activeClass + '" onclick="changeSubcategoria(\'' + sub.codigo + '\')">' + sub.nome + '</button>';
+      html += '<button class="subtab-cat-btn ' + activeClass + '" onclick="changeSubcategoria(\'' + sub.codigo + '\')">' + sub.nome + '</button>';
     });
-    container.innerHTML = html;
+    subtabsContainer.innerHTML = html;
   } else {
-    subtabsContainer.style.display = 'none';
+    subtabsContainer.classList.remove('show');
+    subtabsContainer.innerHTML = '';
   }
 }
 
@@ -1273,7 +1339,7 @@ function changeSubcategoria(subcategoria) {
   subcategoriaAtual = subcategoria;
   
   // Atualizar subtabs ativos
-  document.querySelectorAll('.subtab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.subtab-cat-btn').forEach(b => b.classList.remove('active'));
   event.target.classList.add('active');
   
   aplicarFiltros();
@@ -1319,7 +1385,7 @@ function renderizarArtigos(artigos) {
   const grid = document.getElementById('gridArtigos');
   
   if (artigos.length === 0) {
-    grid.innerHTML = '<div class="inv-empty-state" style="grid-column: 1/-1; padding: 2rem;"><p style="color: #64748b;">Nenhum artigo encontrado</p></div>';
+    grid.innerHTML = '<div style="grid-column: 1/-1; padding: 2rem; text-align: center;"><p style="color: #64748b;">Nenhum artigo encontrado</p></div>';
     return;
   }
   
@@ -1377,7 +1443,7 @@ function removerItemSelecionado() {
 function toggleAlocacao() {
   const tipo = document.querySelector('input[name="tipoAlocacao"]:checked').value;
   
-  document.querySelectorAll('.alocacao-field').forEach(f => f.classList.remove('show'));
+  document.querySelectorAll('.np-alocacao-field').forEach(f => f.classList.remove('show'));
   
   if (tipo === 'unidade') {
     document.getElementById('fieldUnidadeOrganica').classList.add('show');
@@ -1423,15 +1489,15 @@ function renderizarFicheiros() {
     const tamanho = (f.size / 1024 / 1024).toFixed(2);
     
     return `
-      <div class="file-item">
-        <div class="file-info">
-          <span class="file-icon">${icone}</span>
+      <div class="np-file-item">
+        <div class="np-file-info">
+          <span class="np-file-icon">${icone}</span>
           <div>
-            <div class="file-name">${f.name}</div>
-            <div class="file-size">${tamanho} MB</div>
+            <div class="np-file-name">${f.name}</div>
+            <div class="np-file-size">${tamanho} MB</div>
           </div>
         </div>
-        <button type="button" class="file-remove" onclick="removerFicheiro(${i})">Remover</button>
+        <button type="button" class="np-file-remove" onclick="removerFicheiro(${i})">Remover</button>
       </div>
     `;
   }).join('');
@@ -1504,9 +1570,9 @@ function validarFormulario() {
   const lista = document.getElementById('validationList');
   
   if (erros.length === 0) {
-    lista.innerHTML = '<li class="validation-item success">✓ Formulário válido</li>';
+    lista.innerHTML = '<li class="np-validation-item success">✓ Formulário válido</li>';
   } else {
-    lista.innerHTML = erros.map(e => `<li class="validation-item warning">⚠️ ${e}</li>`).join('');
+    lista.innerHTML = erros.map(e => `<li class="np-validation-item warning">⚠️ ${e}</li>`).join('');
   }
   
   return erros.length === 0;
@@ -1538,7 +1604,7 @@ function cancelarPedido() {
 
 function showAlert(type, message) {
   const container = document.getElementById('alertContainer');
-  container.innerHTML = `<div class="alert-inv-content ${type}">${message}</div>`;
+  container.innerHTML = `<div class="alert-content ${type}">${message}</div>`;
   container.classList.add('show');
   
   setTimeout(() => {
