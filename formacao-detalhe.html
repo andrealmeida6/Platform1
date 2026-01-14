@@ -1,0 +1,397 @@
+---
+layout: default
+title: Detalhes da Formação
+---
+
+<link rel="stylesheet" href="{{ '/web-files/css/formacao.css' | relative_url }}">
+
+<div class="formacao-detalhe-page">
+  <!-- Page Header -->
+  <div class="page-header-formacao">
+    <div class="page-header-content">
+      <div class="page-header-left">
+        <a href="{{ '/formacao' | relative_url }}" class="back-link-formacao">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+          Voltar ao Centro de Formação
+        </a>
+        <div class="page-header-info">
+          <h1 id="formacaoTitulo">A carregar...</h1>
+          <div class="page-header-badges" id="formacaoBadges"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="formacao-layout">
+    <!-- Main Panel -->
+    <div class="formacao-main">
+      <!-- Stats Cards -->
+      <div class="formacao-stats">
+        <div class="stat-card">
+          <div class="stat-icon blue">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </div>
+          <div class="stat-info">
+            <span class="stat-value" id="statDuracao">0h</span>
+            <span class="stat-label">Duração</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+          </div>
+          <div class="stat-info">
+            <span class="stat-value" id="statInscritos">0</span>
+            <span class="stat-label">Inscritos</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon purple">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
+          </div>
+          <div class="stat-info">
+            <span class="stat-value" id="statSessoes">0</span>
+            <span class="stat-label">Sessões</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="formacao-tabs">
+        <button class="formacao-tab active" data-tab="detalhes" onclick="switchTab('detalhes')">Detalhes</button>
+        <button class="formacao-tab" data-tab="conteudo" onclick="switchTab('conteudo')">Conteúdo Programático</button>
+        <button class="formacao-tab" data-tab="sessoes" onclick="switchTab('sessoes')">Sessões</button>
+        <button class="formacao-tab" data-tab="anexos" onclick="switchTab('anexos')">Anexos</button>
+      </div>
+
+      <!-- Tab Contents -->
+      <div class="formacao-tab-content active" id="tabDetalhes">
+        <div class="content-section">
+          <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg> Sobre esta Formação</h3>
+          <p id="formacaoObjetivo" class="formacao-descricao">A carregar...</p>
+        </div>
+        <div class="content-section">
+          <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Formador</h3>
+          <div class="formador-card">
+            <div class="formador-avatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+            <div class="formador-info">
+              <span class="formador-nome" id="formadorNome">A carregar...</span>
+              <span class="formador-tipo" id="formadorTipo"></span>
+            </div>
+          </div>
+        </div>
+        <div class="content-section">
+          <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg> Informações Adicionais</h3>
+          <div class="info-grid" id="infoGrid"></div>
+        </div>
+      </div>
+
+      <div class="formacao-tab-content" id="tabConteudo">
+        <div class="content-section">
+          <div id="conteudoProgramatico" class="conteudo-programatico">A carregar conteúdo programático...</div>
+        </div>
+      </div>
+
+      <div class="formacao-tab-content" id="tabSessoes">
+        <div class="content-section">
+          <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> Calendário de Sessões</h3>
+          <div id="sessoesLista" class="sessoes-lista">A carregar sessões...</div>
+        </div>
+      </div>
+
+      <div class="formacao-tab-content" id="tabAnexos">
+        <div class="content-section">
+          <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg> Documentos e Materiais</h3>
+          <div id="anexosLista" class="anexos-lista">A carregar anexos...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="formacao-sidebar">
+      <div class="action-card">
+        <div class="action-status" id="actionStatus"></div>
+        <div class="action-buttons" id="actionButtons"></div>
+      </div>
+
+      <div class="info-card">
+        <h4>ℹ️ Informações</h4>
+        <div class="info-list">
+          <div class="info-item"><span class="info-label">Tipo</span><span class="info-value" id="infoTipo">-</span></div>
+          <div class="info-item"><span class="info-label">Modalidade</span><span class="info-value" id="infoModalidade">-</span></div>
+          <div class="info-item"><span class="info-label">Estado</span><span class="info-value" id="infoEstado">-</span></div>
+          <div class="info-item"><span class="info-label">Vagas</span><span class="info-value" id="infoVagas">-</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.formacao-detalhe-page { padding-bottom: 3rem; max-width: 1400px; margin: 0 auto; }
+.page-header-formacao { background: linear-gradient(135deg, #1a1f36 0%, #252d4a 50%, #1e3a5f 100%); padding: 2rem; margin-bottom: 2rem; border-radius: 16px; color: white; position: relative; overflow: hidden; }
+.page-header-formacao::before { content: ''; position: absolute; top: -50px; right: -50px; width: 200px; height: 200px; background: radial-gradient(circle, rgba(0, 178, 118, 0.2) 0%, transparent 70%); border-radius: 50%; }
+.page-header-content { position: relative; z-index: 2; }
+.page-header-left { display: flex; flex-direction: column; gap: 1rem; }
+.back-link-formacao { display: inline-flex; align-items: center; gap: 0.5rem; color: rgba(255,255,255,0.8); text-decoration: none; font-size: 0.875rem; padding: 0.5rem 1rem; background: rgba(255,255,255,0.1); border-radius: 8px; transition: all 0.2s; width: fit-content; }
+.back-link-formacao:hover { background: rgba(255,255,255,0.2); color: white; }
+.back-link-formacao svg { width: 18px; height: 18px; }
+.page-header-info h1 { font-size: 1.75rem; font-weight: 700; margin: 0 0 0.75rem; line-height: 1.3; }
+.page-header-badges { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.header-badge { padding: 0.375rem 0.875rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+.header-badge.tipo { background: rgba(255,255,255,0.2); color: white; }
+.header-badge.estado { background: #4ade80; color: #052e16; }
+.header-badge.obrigatoria { background: #ef4444; color: white; }
+.formacao-layout { display: grid; grid-template-columns: 1fr 350px; gap: 2rem; }
+.formacao-main { display: flex; flex-direction: column; gap: 1.5rem; }
+.formacao-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+.stat-card { background: white; border-radius: 12px; padding: 1.25rem; display: flex; align-items: center; gap: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.04); border: 1px solid #f1f5f9; }
+.stat-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+.stat-icon svg { width: 24px; height: 24px; }
+.stat-icon.blue { background: linear-gradient(135deg, #dbeafe, #bfdbfe); color: #2563eb; }
+.stat-icon.green { background: linear-gradient(135deg, #d1fae5, #a7f3d0); color: #059669; }
+.stat-icon.purple { background: linear-gradient(135deg, #ede9fe, #ddd6fe); color: #7c3aed; }
+.stat-info { display: flex; flex-direction: column; }
+.stat-value { font-size: 1.5rem; font-weight: 700; color: #1e293b; }
+.stat-label { font-size: 0.8rem; color: #64748b; }
+.formacao-tabs { display: flex; gap: 0.5rem; background: white; padding: 0.5rem; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); border: 1px solid #f1f5f9; overflow-x: auto; }
+.formacao-tab { padding: 0.75rem 1.25rem; border: none; background: transparent; border-radius: 8px; font-size: 0.875rem; font-weight: 600; color: #64748b; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+.formacao-tab:hover { color: #1e293b; background: #f8fafc; }
+.formacao-tab.active { background: #00b276; color: white; }
+.formacao-tab-content { display: none; background: white; border-radius: 16px; padding: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.04); border: 1px solid #f1f5f9; }
+.formacao-tab-content.active { display: block; }
+.content-section { margin-bottom: 2rem; }
+.content-section:last-child { margin-bottom: 0; }
+.content-section h3 { display: flex; align-items: center; gap: 0.5rem; font-size: 1rem; font-weight: 600; color: #1e293b; margin: 0 0 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid #f1f5f9; }
+.content-section h3 svg { width: 20px; height: 20px; color: #00b276; }
+.formacao-descricao { color: #475569; line-height: 1.7; font-size: 0.9rem; }
+.formador-card { display: flex; align-items: center; gap: 1rem; padding: 1rem; background: #f8fafc; border-radius: 12px; }
+.formador-avatar { width: 56px; height: 56px; background: linear-gradient(135deg, #00b276, #009661); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; }
+.formador-avatar svg { width: 28px; height: 28px; }
+.formador-info { display: flex; flex-direction: column; }
+.formador-nome { font-weight: 600; color: #1e293b; font-size: 1rem; }
+.formador-tipo { font-size: 0.8rem; color: #64748b; }
+.info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+.info-grid-item { padding: 1rem; background: #f8fafc; border-radius: 10px; }
+.info-grid-label { font-size: 0.75rem; font-weight: 600; color: #64748b; text-transform: uppercase; margin-bottom: 0.25rem; }
+.info-grid-value { font-size: 0.9rem; font-weight: 600; color: #1e293b; }
+.sessoes-lista { display: flex; flex-direction: column; gap: 0.75rem; }
+.sessao-item { display: flex; align-items: center; gap: 1rem; padding: 1rem; background: #f8fafc; border-radius: 12px; border-left: 4px solid #00b276; }
+.sessao-data { display: flex; flex-direction: column; align-items: center; min-width: 60px; padding: 0.5rem; background: white; border-radius: 8px; }
+.sessao-dia { font-size: 1.25rem; font-weight: 700; color: #00b276; }
+.sessao-mes { font-size: 0.7rem; font-weight: 600; color: #64748b; text-transform: uppercase; }
+.sessao-info { flex: 1; }
+.sessao-titulo { font-weight: 600; color: #1e293b; margin-bottom: 0.25rem; }
+.sessao-horario { font-size: 0.8rem; color: #64748b; }
+.anexos-lista { display: flex; flex-direction: column; gap: 0.75rem; }
+.anexo-item { display: flex; align-items: center; gap: 1rem; padding: 1rem; background: #f8fafc; border-radius: 10px; transition: all 0.2s; }
+.anexo-item:hover { background: #f1f5f9; }
+.anexo-icon { width: 44px; height: 44px; background: white; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #00b276; }
+.anexo-icon svg { width: 22px; height: 22px; }
+.anexo-info { flex: 1; }
+.anexo-nome { font-weight: 600; color: #1e293b; }
+.anexo-tipo { font-size: 0.75rem; color: #64748b; }
+.anexo-download { padding: 0.5rem 1rem; background: #00b276; color: white; border: none; border-radius: 8px; font-size: 0.8rem; font-weight: 600; cursor: pointer; text-decoration: none; transition: all 0.2s; }
+.anexo-download:hover { background: #009966; }
+.conteudo-programatico { color: #475569; line-height: 1.8; }
+.formacao-sidebar { display: flex; flex-direction: column; gap: 1.5rem; position: sticky; top: 2rem; height: fit-content; }
+.action-card, .info-card { background: white; border-radius: 16px; padding: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.04); border: 1px solid #f1f5f9; }
+.action-status { text-align: center; padding: 1rem; background: #f8fafc; border-radius: 10px; margin-bottom: 1rem; }
+.action-status-label { font-size: 0.75rem; color: #64748b; text-transform: uppercase; font-weight: 600; }
+.action-status-value { font-size: 1.25rem; font-weight: 700; color: #1e293b; margin-top: 0.25rem; }
+.action-buttons { display: flex; flex-direction: column; gap: 0.75rem; }
+.btn-inscrever { width: 100%; padding: 1rem; background: linear-gradient(135deg, #00b276, #009661); color: white; border: none; border-radius: 12px; font-size: 0.9rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: all 0.2s; box-shadow: 0 4px 15px rgba(0,178,118,0.3); }
+.btn-inscrever:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,178,118,0.4); }
+.btn-inscrever:disabled { background: #e2e8f0; color: #94a3b8; cursor: not-allowed; box-shadow: none; }
+.btn-inscrever:disabled:hover { transform: none; }
+.btn-inscrever svg { width: 18px; height: 18px; }
+.btn-favorito { width: 100%; padding: 0.875rem; background: white; color: #64748b; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 0.875rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: all 0.2s; }
+.btn-favorito:hover { border-color: #ef4444; color: #ef4444; }
+.btn-favorito.active { background: #fef2f2; border-color: #ef4444; color: #ef4444; }
+.btn-favorito svg { width: 18px; height: 18px; }
+.info-card h4 { font-size: 1rem; margin: 0 0 1rem; color: #1e293b; }
+.info-list { display: flex; flex-direction: column; }
+.info-item { display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid #f1f5f9; }
+.info-item:last-child { border-bottom: none; }
+.info-label { font-size: 0.85rem; color: #64748b; }
+.info-value { font-size: 0.85rem; font-weight: 600; color: #1e293b; }
+.empty-tab { text-align: center; padding: 3rem; color: #94a3b8; }
+.empty-tab svg { width: 48px; height: 48px; margin-bottom: 1rem; opacity: 0.5; }
+.toast-container { position: fixed; top: 1rem; right: 1rem; z-index: 9999; }
+.toast { padding: 1rem 1.25rem; border-radius: 10px; font-size: 0.875rem; font-weight: 500; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15); transform: translateX(100%); opacity: 0; transition: all 0.3s ease; }
+.toast.show { transform: translateX(0); opacity: 1; }
+.toast.success { background: #d1fae5; color: #065f46; }
+.toast.error { background: #fee2e2; color: #991b1b; }
+@media (max-width: 1024px) { .formacao-layout { grid-template-columns: 1fr; } .formacao-sidebar { position: static; display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; } .action-card { grid-column: span 2; } }
+@media (max-width: 768px) { .formacao-stats { grid-template-columns: 1fr; } .formacao-sidebar { grid-template-columns: 1fr; } .action-card { grid-column: span 1; } .info-grid { grid-template-columns: 1fr; } .page-header-formacao { padding: 1.5rem; } .page-header-info h1 { font-size: 1.375rem; } }
+</style>
+
+<script>
+let formacaoData = null;
+let currentUser = null;
+const MONTH_NAMES_SHORT = ['JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ'];
+
+async function waitForServices() {
+  return new Promise((resolve) => {
+    const check = () => {
+      if (typeof DataService !== 'undefined' && typeof AuthService !== 'undefined') resolve();
+      else setTimeout(check, 100);
+    };
+    check();
+  });
+}
+
+document.addEventListener('DOMContentLoaded', async function() {
+  try {
+    await waitForServices();
+    currentUser = await AuthService.getCurrentUser();
+    const params = new URLSearchParams(window.location.search);
+    const formacaoId = params.get('id');
+    if (!formacaoId) { window.location.href = '{{ "/formacao" | relative_url }}'; return; }
+    await loadFormacao(formacaoId);
+  } catch (error) { console.error('[Formação Detalhe] Erro:', error); }
+});
+
+async function loadFormacao(formacaoId) {
+  try {
+    const formacoes = await DataService.getFormacoes();
+    formacaoData = formacoes.find(f => f.id === formacaoId);
+    if (!formacaoData) { window.location.href = '{{ "/formacao" | relative_url }}'; return; }
+    renderFormacao();
+  } catch (error) { console.error('Erro ao carregar formação:', error); }
+}
+
+function renderFormacao() {
+  const f = formacaoData;
+  document.getElementById('formacaoTitulo').textContent = f.titulo;
+  let badgesHtml = '<span class="header-badge tipo">' + (f.tipo || 'Formação') + '</span>';
+  badgesHtml += '<span class="header-badge estado">' + f.estado + '</span>';
+  if (f.modalidade === 'Obrigatória') badgesHtml += '<span class="header-badge obrigatoria">Obrigatória</span>';
+  document.getElementById('formacaoBadges').innerHTML = badgesHtml;
+  
+  const inscritos = (f.formacao_inscricoes || []).filter(i => i.estado === 'Inscrito').length;
+  const sessoes = (f.formacao_sessoes || []).length;
+  const vagas = f.max_participantes || 20;
+  
+  document.getElementById('statDuracao').textContent = (f.duracao_horas || 0) + 'h';
+  document.getElementById('statInscritos').textContent = inscritos + '/' + vagas;
+  document.getElementById('statSessoes').textContent = sessoes;
+  
+  const formadorNome = getFormadorDisplay(f);
+  document.getElementById('formadorNome').textContent = formadorNome;
+  document.getElementById('formadorTipo').textContent = f.tipo === 'Interna' ? 'Formador Interno' : 'Entidade Externa';
+  document.getElementById('formacaoObjetivo').textContent = f.objetivo || 'Sem descrição disponível.';
+  
+  document.getElementById('infoGrid').innerHTML = 
+    '<div class="info-grid-item"><div class="info-grid-label">Local</div><div class="info-grid-value">' + (f.local || 'A definir') + '</div></div>' +
+    '<div class="info-grid-item"><div class="info-grid-label">Carga Horária</div><div class="info-grid-value">' + (f.duracao_horas || 0) + ' horas</div></div>' +
+    '<div class="info-grid-item"><div class="info-grid-label">Público-Alvo</div><div class="info-grid-value">' + (f.publico_alvo || 'Todos os colaboradores') + '</div></div>' +
+    '<div class="info-grid-item"><div class="info-grid-label">Certificação</div><div class="info-grid-value">' + (f.certificacao ? 'Sim' : 'Não') + '</div></div>';
+  
+  document.getElementById('infoTipo').textContent = f.tipo || '-';
+  document.getElementById('infoModalidade').textContent = f.modalidade || '-';
+  document.getElementById('infoEstado').textContent = f.estado || '-';
+  document.getElementById('infoVagas').textContent = inscritos + '/' + vagas;
+  
+  const cp = f.conteudo_programatico;
+  document.getElementById('conteudoProgramatico').innerHTML = cp ? cp : '<div class="empty-tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><p>Conteúdo programático não disponível.</p></div>';
+  
+  renderSessoes();
+  renderAnexos();
+  renderActionCard();
+}
+
+function getFormadorDisplay(f) {
+  if (f.formacao_formadores && f.formacao_formadores.length > 0) {
+    const nomes = f.formacao_formadores.map(ff => {
+      if (ff.formadores && ff.formadores.nome) return DataService.cleanFormadorName(ff.formadores.nome);
+      if (ff.entidades_formadoras && ff.entidades_formadoras.nome) return ff.entidades_formadoras.nome;
+      return null;
+    }).filter(Boolean);
+    if (nomes.length > 0) return nomes.join(', ');
+  }
+  if (f.formadores && f.formadores.nome) return DataService.cleanFormadorName(f.formadores.nome);
+  return 'Formador interno';
+}
+
+function renderSessoes() {
+  const sessoes = (formacaoData.formacao_sessoes || []).sort((a, b) => new Date(a.data) - new Date(b.data));
+  const container = document.getElementById('sessoesLista');
+  if (sessoes.length === 0) { container.innerHTML = '<div class="empty-tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg><p>Sem sessões agendadas.</p></div>'; return; }
+  container.innerHTML = sessoes.map(function(s, i) {
+    const date = new Date(s.data);
+    return '<div class="sessao-item"><div class="sessao-data"><span class="sessao-dia">' + date.getDate() + '</span><span class="sessao-mes">' + MONTH_NAMES_SHORT[date.getMonth()] + '</span></div><div class="sessao-info"><div class="sessao-titulo">Sessão ' + (i + 1) + '</div><div class="sessao-horario">' + (s.hora_inicio || '09:00') + ' - ' + (s.hora_fim || '18:00') + '</div></div></div>';
+  }).join('');
+}
+
+function renderAnexos() {
+  const anexos = formacaoData.formacao_anexos || [];
+  const container = document.getElementById('anexosLista');
+  if (anexos.length === 0) { container.innerHTML = '<div class="empty-tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg><p>Sem anexos disponíveis.</p></div>'; return; }
+  container.innerHTML = anexos.map(function(a) {
+    return '<div class="anexo-item"><div class="anexo-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div class="anexo-info"><span class="anexo-nome">' + (a.nome || 'Documento') + '</span><span class="anexo-tipo">' + (a.tipo || 'PDF') + '</span></div><a href="' + a.url + '" target="_blank" class="anexo-download">Descarregar</a></div>';
+  }).join('');
+}
+
+function renderActionCard() {
+  const f = formacaoData;
+  const inscritos = (f.formacao_inscricoes || []).filter(i => i.estado === 'Inscrito').length;
+  const vagas = f.max_participantes || 20;
+  const jaInscrito = currentUser && (f.formacao_inscricoes || []).some(i => i.colaborador_id === currentUser.id && i.estado === 'Inscrito');
+  const favorito = currentUser && (f.formacao_favoritos || []).some(fav => fav.colaborador_id === currentUser.id);
+  const esgotado = inscritos >= vagas;
+  
+  var statusHtml = '';
+  if (jaInscrito) statusHtml = '<div class="action-status-label">Estado</div><div class="action-status-value" style="color: #00b276;">✓ Inscrito</div>';
+  else if (esgotado) statusHtml = '<div class="action-status-label">Vagas</div><div class="action-status-value" style="color: #dc2626;">Esgotado</div>';
+  else statusHtml = '<div class="action-status-label">Vagas Disponíveis</div><div class="action-status-value">' + (vagas - inscritos) + '</div>';
+  document.getElementById('actionStatus').innerHTML = statusHtml;
+  
+  var buttonsHtml = '';
+  if (jaInscrito) buttonsHtml = '<button class="btn-inscrever" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>Já Inscrito</button>';
+  else if (esgotado) buttonsHtml = '<button class="btn-inscrever" disabled>Esgotado</button>';
+  else buttonsHtml = '<button class="btn-inscrever" onclick="inscreverFormacao()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>Inscrever-me</button>';
+  
+  var favoritoIcon = favorito ? 'currentColor' : 'none';
+  buttonsHtml += '<button class="btn-favorito ' + (favorito ? 'active' : '') + '" onclick="toggleFavorito()"><svg viewBox="0 0 24 24" fill="' + favoritoIcon + '" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>' + (favorito ? 'Remover dos Favoritos' : 'Adicionar aos Favoritos') + '</button>';
+  document.getElementById('actionButtons').innerHTML = buttonsHtml;
+}
+
+function switchTab(tabName) {
+  document.querySelectorAll('.formacao-tab').forEach(function(t) { t.classList.remove('active'); });
+  document.querySelectorAll('.formacao-tab-content').forEach(function(c) { c.classList.remove('active'); });
+  var tabBtn = document.querySelector('.formacao-tab[data-tab="' + tabName + '"]');
+  if (tabBtn) tabBtn.classList.add('active');
+  var tabContent = document.getElementById('tab' + tabName.charAt(0).toUpperCase() + tabName.slice(1));
+  if (tabContent) tabContent.classList.add('active');
+}
+
+async function inscreverFormacao() {
+  if (!formacaoData || !currentUser) { showToast('É necessário estar autenticado.', 'error'); return; }
+  try {
+    await DataService.inscreverFormacao(formacaoData.id, currentUser.id);
+    showToast('Inscrição realizada com sucesso!', 'success');
+    await loadFormacao(formacaoData.id);
+  } catch (error) { console.error('Erro ao inscrever:', error); showToast('Erro ao realizar inscrição.', 'error'); }
+}
+
+async function toggleFavorito() {
+  if (!formacaoData || !currentUser) return;
+  try { await DataService.toggleFavoritoFormacao(formacaoData.id, currentUser.id); await loadFormacao(formacaoData.id); } catch (error) { console.error('Erro ao alternar favorito:', error); }
+}
+
+function showToast(message, type) {
+  type = type || 'success';
+  var container = document.querySelector('.toast-container');
+  if (!container) { container = document.createElement('div'); container.className = 'toast-container'; document.body.appendChild(container); }
+  var toast = document.createElement('div');
+  toast.className = 'toast ' + type;
+  toast.innerHTML = '<span>' + message + '</span>';
+  container.appendChild(toast);
+  setTimeout(function() { toast.classList.add('show'); }, 10);
+  setTimeout(function() { toast.classList.remove('show'); setTimeout(function() { toast.remove(); }, 300); }, 3000);
+}
+</script>
