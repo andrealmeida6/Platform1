@@ -3,45 +3,24 @@ layout: default
 title: Centro de Formação
 ---
 
-<link rel="stylesheet" href="{{ '/web-files/css/formacao.css' | relative_url }}">
-
 <div class="learning-platform">
-
-  <!-- Hero Section (título e botões à esquerda) -->
+  <!-- Hero Section -->
   <section class="learning-hero">
     <div class="hero-inner">
       <div class="hero-content">
-        <h1 class="hero-title">Desenvolve as tuas <span>competências</span></h1>
+        <h1 class="hero-title">Desenvolva as suas <span>competências</span></h1>
         <div class="hero-cta">
           <button class="hero-btn hero-btn-primary" onclick="scrollToCatalog()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="11" cy="11" r="8"/>
-              <path d="M21 21l-4.35-4.35"/>
-            </svg>
-            <span>Explorar Catálogo</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+            Explorar Formações
           </button>
           <button class="hero-btn hero-btn-secondary" onclick="scrollToMinhasFormacoes()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-            <span>Minhas Formações</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="8.5" cy="7" r="4"/></svg>
+            As Minhas Formações
           </button>
-          <button class="hero-btn hero-btn-outline" onclick="openModalProporFormacao()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-              <polyline points="14 2 14 8 20 8"/>
-              <line x1="12" y1="18" x2="12" y2="12"/>
-              <line x1="9" y1="15" x2="15" y2="15"/>
-            </svg>
-            <span>Propor Formação</span>
-          </button>
-          <!-- Botão Gestão (apenas AFR-RH/Admin) -->
-          <a href="{{ '/gestao-formacoes' | relative_url }}" class="hero-btn hero-btn-gestao" id="btnGestaoFormacoes" style="display: none;">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M12 20h9"/>
-              <path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/>
-            </svg>
-            <span>Gestão de Formações</span>
+          <a href="/gestao-formacoes" class="hero-btn hero-btn-secondary" id="btnGestaoFormacoes" style="display: none; text-decoration: none;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            Gerir Formações
           </a>
         </div>
       </div>
@@ -52,10 +31,7 @@ title: Centro de Formação
   <section class="quick-stats">
     <div class="quick-stat-card">
       <div class="quick-stat-icon green">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
-          <path d="M22 4L12 14.01l-3-3"/>
-        </svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>
       </div>
       <div class="quick-stat-content">
         <h3 id="statConcluidas">0</h3>
@@ -64,21 +40,16 @@ title: Centro de Formação
     </div>
     <div class="quick-stat-card">
       <div class="quick-stat-icon blue">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M4 19.5A2.5 2.5 0 016.5 17H20"/>
-          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>
-        </svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
       </div>
       <div class="quick-stat-content">
         <h3 id="statEmCurso">0</h3>
-        <p>Em Progresso</p>
+        <p>Em Curso</p>
       </div>
     </div>
     <div class="quick-stat-card">
       <div class="quick-stat-icon orange">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-        </svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
       </div>
       <div class="quick-stat-content">
         <h3 id="statPendentes">0</h3>
@@ -87,80 +58,56 @@ title: Centro de Formação
     </div>
     <div class="quick-stat-card">
       <div class="quick-stat-icon purple">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-          <line x1="16" y1="2" x2="16" y2="6"/>
-          <line x1="8" y1="2" x2="8" y2="6"/>
-          <line x1="3" y1="10" x2="21" y2="10"/>
-        </svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
       </div>
       <div class="quick-stat-content">
         <h3 id="statAgendadas">0</h3>
-        <p>Próximas Formações</p>
+        <p>Formações Disponíveis</p>
       </div>
     </div>
   </section>
 
-  <!-- Calendário de Formações (estilo light, visível por defeito) -->
-  <section class="calendar-section" id="formacaoCalendarSection">
+  <!-- Calendar Section -->
+  <section class="calendar-section">
     <div class="calendar-section-header">
+      <h2 class="calendar-section-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Calendário de Formações
+      </h2>
       <button class="calendar-toggle-btn" id="calendarToggleBtn" onclick="toggleFormacaoCalendar()">
         <span class="toggle-label">Calendário de Formações</span>
         <span class="toggle-separator">•</span>
-        <svg class="toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polyline points="18 15 12 9 6 15"/>
-        </svg>
+        <svg class="toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"/></svg>
         <span class="toggle-action">Esconder</span>
       </button>
     </div>
-
-    <!-- Calendar Content (visível por defeito) -->
     <div class="calendar-content expanded" id="formacaoCalendarContent">
       <div class="calendar-wrapper">
-        <!-- Dual Calendar -->
         <div class="dual-calendar-container">
-          <!-- Legend -->
           <div class="calendar-legend">
-            <span class="legend-chip">
-              <span class="legend-chip-color formacao"></span>
-              Formações agendadas
-            </span>
+            <span class="legend-chip"><span class="legend-chip-color formacao"></span>Formação</span>
           </div>
-          
           <div class="months-container">
-            <!-- Current Month -->
             <div class="calendar-month">
               <div class="month-header">
-                <button class="nav-arrow" id="formacaoPrevMonth">◀</button>
+                <button class="nav-arrow" id="formacaoPrevMonth">‹</button>
                 <span id="formacaoCurrentMonthName">Janeiro 2026</span>
-                <span style="width: 32px;"></span>
+                <div style="width: 32px;"></div>
               </div>
-              
-              <div class="calendar-grid days">
-                <p>D</p><p>S</p><p>T</p><p>Q</p><p>Q</p><p>S</p><p>S</p>
-              </div>
-              
+              <div class="calendar-grid days"><p>Dom</p><p>Seg</p><p>Ter</p><p>Qua</p><p>Qui</p><p>Sex</p><p>Sáb</p></div>
               <div class="calendar-grid" id="formacaoCurrentMonthGrid"></div>
             </div>
-
-            <!-- Next Month -->
             <div class="calendar-month">
               <div class="month-header">
-                <span style="width: 32px;"></span>
+                <div style="width: 32px;"></div>
                 <span id="formacaoNextMonthName">Fevereiro 2026</span>
-                <button class="nav-arrow" id="formacaoNextMonth">▶</button>
+                <button class="nav-arrow" id="formacaoNextMonth">›</button>
               </div>
-              
-              <div class="calendar-grid days">
-                <p>D</p><p>S</p><p>T</p><p>Q</p><p>Q</p><p>S</p><p>S</p>
-              </div>
-              
+              <div class="calendar-grid days"><p>Dom</p><p>Seg</p><p>Ter</p><p>Qua</p><p>Qui</p><p>Sex</p><p>Sáb</p></div>
               <div class="calendar-grid" id="formacaoNextMonthGrid"></div>
             </div>
           </div>
         </div>
-
-        <!-- Info Panel (Events Only) -->
         <div class="info-panel">
           <div class="events-panel">
             <div class="events-header">
@@ -168,17 +115,13 @@ title: Centro de Formação
                 <h3 class="events-title" id="formacaoEventsTitle">Próximas Formações</h3>
                 <span class="selected-date-info" id="formacaoSelectedDateInfo" style="display: none;"></span>
               </div>
-              <button class="clear-filter-btn" id="formacaoClearFilterBtn" aria-label="Limpar filtro" style="display: none;">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <line x1="18" y1="6" x2="6" y2="18"></line>
-                  <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
+              <button class="clear-filter-btn" id="formacaoClearFilterBtn" style="display: none;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                 Limpar
               </button>
             </div>
-            
             <div class="events-container-scroll" id="formacaoEventsContainer">
-              <!-- Events will be populated by JavaScript -->
+              <div class="no-events">A carregar formações...</div>
             </div>
           </div>
         </div>
@@ -186,76 +129,51 @@ title: Centro de Formação
     </div>
   </section>
 
-  <!-- Course Catalog -->
+  <!-- Catálogo de Formações -->
   <section class="course-catalog" id="courseCatalog">
     <div class="section-header">
       <h2 class="section-title">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <rect x="3" y="3" width="7" height="7"/>
-          <rect x="14" y="3" width="7" height="7"/>
-          <rect x="14" y="14" width="7" height="7"/>
-          <rect x="3" y="14" width="7" height="7"/>
-        </svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
         Catálogo de Formações
       </h2>
+      <button class="btn btn-primary" onclick="openModalProporFormacao()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Propor Formação
+      </button>
     </div>
-
-    <!-- Controls -->
     <div class="catalog-controls">
       <div class="catalog-search">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="11" cy="11" r="8"/>
-          <path d="M21 21l-4.35-4.35"/>
-        </svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         <input type="text" id="searchInput" placeholder="Pesquisar formações..." oninput="filterCourses()">
       </div>
       <div class="catalog-filters">
         <select class="filter-dropdown" id="filterTipo" onchange="filterCourses()">
-          <option value="">Todos os Tipos</option>
+          <option value="">Todos os tipos</option>
           <option value="Interna">Interna</option>
           <option value="Externa">Externa</option>
         </select>
         <select class="filter-dropdown" id="filterModalidade" onchange="filterCourses()">
-          <option value="">Todas as Modalidades</option>
+          <option value="">Todas as modalidades</option>
           <option value="Obrigatória">Obrigatória</option>
           <option value="Opcional">Opcional</option>
         </select>
       </div>
     </div>
-
-    <!-- Course Grid -->
-    <div class="course-grid" id="courseGrid">
-      <!-- Loading state -->
-      <div class="loading-spinner">
-        <div class="spinner"></div>
-        <span class="loading-text">A carregar catálogo...</span>
-      </div>
-    </div>
-
-    <!-- Empty State -->
+    <div class="course-grid" id="courseGrid"></div>
     <div class="empty-state" id="emptyState" style="display: none;">
       <div class="empty-state-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="11" cy="11" r="8"/>
-          <path d="M21 21l-4.35-4.35"/>
-        </svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
       </div>
-      <h3>Nenhuma formação encontrada</h3>
-      <p>Tenta ajustar os filtros de pesquisa</p>
+      <h3>Sem formações disponíveis</h3>
+      <p>Não existem formações que correspondam aos critérios selecionados.</p>
     </div>
   </section>
 
-  <!-- Tabela: Minhas Formações (depois do catálogo) -->
+  <!-- Minhas Formações -->
   <section class="my-courses-section" id="minhasFormacoes">
     <div class="table-wrapper">
       <div class="table-header-section">
-        <h3>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 24px; height: 24px; vertical-align: middle; margin-right: 8px;">
-            <path d="M4 19.5A2.5 2.5 0 016.5 17H20"/>
-            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>
-          </svg>
-          As Minhas Formações
-        </h3>
+        <h3>As Minhas Formações</h3>
         <div class="table-actions">
           <div class="table-tabs">
             <button class="table-tab active" data-filter="all" onclick="filterMyFormacoes('all')">Todas</button>
@@ -263,15 +181,11 @@ title: Centro de Formação
             <button class="table-tab" data-filter="completed" onclick="filterMyFormacoes('completed')">Concluídas</button>
           </div>
           <div class="table-search">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="11" cy="11" r="8"/>
-              <path d="M21 21l-4.35-4.35"/>
-            </svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             <input type="text" id="searchMyFormacoes" placeholder="Pesquisar..." oninput="searchMyFormacoes()">
           </div>
         </div>
       </div>
-
       <div class="table-content">
         <div class="formacoes-table-header">
           <div>Formação</div>
@@ -286,29 +200,18 @@ title: Centro de Formação
         <div class="formacoes-table-body" id="myFormacoesTable">
           <div class="table-loading">
             <div class="spinner"></div>
-            <p>A carregar formações...</p>
+            <span class="loading-text">A carregar...</span>
           </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- ================================================================
-       SECÇÃO: MINHAS PROPOSTAS DE FORMAÇÃO
-       Esta secção só aparece se o utilizador tiver pelo menos 1 pedido
-       ================================================================ -->
+  <!-- Minhas Propostas de Formação -->
   <section class="my-proposals-section" id="minhasPropostas" style="display: none;">
     <div class="table-wrapper">
       <div class="table-header-section">
-        <h3>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 24px; height: 24px; vertical-align: middle; margin-right: 8px;">
-            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-            <polyline points="14 2 14 8 20 8"/>
-            <line x1="12" y1="18" x2="12" y2="12"/>
-            <line x1="9" y1="15" x2="15" y2="15"/>
-          </svg>
-          Minhas Propostas de Formação
-        </h3>
+        <h3>Minhas Propostas de Formação</h3>
         <div class="table-actions">
           <div class="table-tabs">
             <button class="table-tab active" data-filter-propostas="all" onclick="filterMyPropostas('all')">Todas</button>
@@ -316,16 +219,9 @@ title: Centro de Formação
             <button class="table-tab" data-filter-propostas="aprovado" onclick="filterMyPropostas('aprovado')">Aprovadas</button>
             <button class="table-tab" data-filter-propostas="rejeitado" onclick="filterMyPropostas('rejeitado')">Rejeitadas</button>
           </div>
-          <button class="btn btn-primary btn-sm" onclick="openModalProporFormacao()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px; margin-right: 4px;">
-              <line x1="12" y1="5" x2="12" y2="19"/>
-              <line x1="5" y1="12" x2="19" y2="12"/>
-            </svg>
-            Nova Proposta
-          </button>
+          <button class="btn btn-primary btn-sm" onclick="openModalProporFormacao()">Nova Proposta</button>
         </div>
       </div>
-
       <div class="table-content">
         <div class="propostas-table-header">
           <div>Título</div>
@@ -337,173 +233,79 @@ title: Centro de Formação
           <div>Estado</div>
           <div>Ações</div>
         </div>
-        <div class="propostas-table-body" id="myPropostasTable">
-          <div class="table-loading">
-            <div class="spinner"></div>
-            <p>A carregar propostas...</p>
-          </div>
-        </div>
+        <div class="propostas-table-body" id="myPropostasTable"></div>
       </div>
     </div>
   </section>
-
-</div>
-
-<!-- Modal: Detalhes do Curso com Tabs -->
-<div class="modal-overlay" id="modalCourse">
-  <div class="modal-content modal-course-details">
-    <div class="modal-header">
-      <h3 class="modal-title" id="modalCourseTitle">Detalhes da Formação</h3>
-      <button class="modal-close" onclick="closeModal('modalCourse')">&times;</button>
-    </div>
-    
-    <!-- Tabs Navigation -->
-    <div class="modal-tabs">
-      <button class="modal-tab active" data-tab="detalhes" onclick="switchCourseTab('detalhes')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="10"/>
-          <line x1="12" y1="16" x2="12" y2="12"/>
-          <line x1="12" y1="8" x2="12.01" y2="8"/>
-        </svg>
-        Detalhes
-      </button>
-      <button class="modal-tab" data-tab="conteudo" onclick="switchCourseTab('conteudo')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-          <polyline points="14 2 14 8 20 8"/>
-          <line x1="16" y1="13" x2="8" y2="13"/>
-          <line x1="16" y1="17" x2="8" y2="17"/>
-          <polyline points="10 9 9 9 8 9"/>
-        </svg>
-        Conteúdo Programático
-      </button>
-      <button class="modal-tab" data-tab="anexos" onclick="switchCourseTab('anexos')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/>
-        </svg>
-        Anexos
-      </button>
-    </div>
-    
-    <div class="modal-body">
-      <!-- Tab: Detalhes -->
-      <div class="tab-content active" id="tabDetalhes"></div>
-      
-      <!-- Tab: Conteúdo Programático -->
-      <div class="tab-content" id="tabConteudo"></div>
-      
-      <!-- Tab: Anexos -->
-      <div class="tab-content" id="tabAnexos"></div>
-    </div>
-    
-    <div class="modal-footer" id="modalCourseFooter">
-      <button class="btn btn-secondary" onclick="closeModal('modalCourse')">Fechar</button>
-      <button class="btn btn-primary" id="btnInscrever" onclick="inscreverFormacao()">Inscrever-me</button>
-    </div>
-  </div>
 </div>
 
 <!-- Modal: Propor Formação -->
 <div class="modal-overlay" id="modalProporFormacao">
-  <div class="modal-content" style="max-width: 650px;">
+  <div class="modal-content" style="max-width: 600px;">
     <div class="modal-header">
-      <h3 class="modal-title">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 24px; height: 24px; vertical-align: middle; margin-right: 0.5rem;">
-          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-          <polyline points="14 2 14 8 20 8"/>
-          <line x1="12" y1="18" x2="12" y2="12"/>
-          <line x1="9" y1="15" x2="15" y2="15"/>
-        </svg>
-        Propor Nova Formação
-      </h3>
+      <h3 class="modal-title">Propor Nova Formação</h3>
       <button class="modal-close" onclick="closeModal('modalProporFormacao')">&times;</button>
     </div>
     <div class="modal-body">
-      <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem;">
-        <p style="color: #166534; font-size: 0.875rem; margin: 0;">
-          <strong>ℹ️ Circuito de Aprovação:</strong><br>
-          O seu pedido será enviado primeiro ao <strong>Dirigente da sua unidade orgânica</strong> e depois à equipa <strong>AFR - RH</strong> para aprovação final.
-        </p>
-      </div>
-      
       <form id="formProporFormacao">
-        <div style="margin-bottom: 1.25rem;">
-          <label style="display: block; font-size: 0.875rem; font-weight: 600; color: #1e293b; margin-bottom: 0.5rem;">Título da Formação *</label>
-          <input type="text" id="pedidoTitulo" required style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 0.9rem;" placeholder="Ex: Excel Avançado para Análise de Dados">
+        <div class="form-group">
+          <label class="form-label">Título da Formação *</label>
+          <input type="text" class="form-input" id="pedidoTitulo" placeholder="Ex: Excel Avançado" required>
         </div>
-        
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
-          <div>
-            <label style="display: block; font-size: 0.875rem; font-weight: 600; color: #1e293b; margin-bottom: 0.5rem;">Tipo</label>
-            <select id="pedidoTipo" style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 0.9rem;">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Tipo</label>
+            <select class="form-input" id="pedidoTipo">
               <option value="Externa">Externa</option>
               <option value="Interna">Interna</option>
             </select>
           </div>
-          <div>
-            <label style="display: block; font-size: 0.875rem; font-weight: 600; color: #1e293b; margin-bottom: 0.5rem;">Modalidade</label>
-            <select id="pedidoModalidade" style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 0.9rem;">
+          <div class="form-group">
+            <label class="form-label">Modalidade</label>
+            <select class="form-input" id="pedidoModalidade">
               <option value="Opcional">Opcional</option>
               <option value="Obrigatória">Obrigatória</option>
             </select>
           </div>
         </div>
-        
-        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
-          <div>
-            <label style="display: block; font-size: 0.875rem; font-weight: 600; color: #1e293b; margin-bottom: 0.5rem;">Entidade Formadora *</label>
-            <input type="text" id="pedidoEntidade" required style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 0.9rem;" placeholder="Ex: IEFP, Cegoc, Formador interno">
+        <div class="form-group">
+          <label class="form-label">Entidade Formadora *</label>
+          <input type="text" class="form-input" id="pedidoEntidade" placeholder="Nome da entidade" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Duração (horas)</label>
+            <input type="number" class="form-input" id="pedidoDuracao" min="1" placeholder="8">
           </div>
-          <div>
-            <label style="display: block; font-size: 0.875rem; font-weight: 600; color: #1e293b; margin-bottom: 0.5rem;">Duração (horas)</label>
-            <input type="number" id="pedidoDuracao" min="1" style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 0.9rem;" placeholder="8">
+          <div class="form-group">
+            <label class="form-label">Data Prevista Início</label>
+            <input type="date" class="form-input" id="pedidoDataInicio">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Custo Estimado (€)</label>
+            <input type="number" class="form-input" id="pedidoCusto" step="0.01" min="0" placeholder="0.00">
           </div>
         </div>
-        
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
-          <div>
-            <label style="display: block; font-size: 0.875rem; font-weight: 600; color: #1e293b; margin-bottom: 0.5rem;">Data Prevista Início</label>
-            <input type="date" id="pedidoDataInicio" style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 0.9rem;">
-          </div>
-          <div>
-            <label style="display: block; font-size: 0.875rem; font-weight: 600; color: #1e293b; margin-bottom: 0.5rem;">Custo Estimado (€)</label>
-            <input type="number" id="pedidoCusto" min="0" step="0.01" style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 0.9rem;" placeholder="0">
-          </div>
+        <div class="form-group">
+          <label class="form-label">Objetivo</label>
+          <textarea class="form-input" id="pedidoObjetivo" rows="2" placeholder="Descreva o objetivo da formação"></textarea>
         </div>
-        
-        <div style="margin-bottom: 1.25rem;">
-          <label style="display: block; font-size: 0.875rem; font-weight: 600; color: #1e293b; margin-bottom: 0.5rem;">Objetivo / Descrição</label>
-          <textarea id="pedidoObjetivo" rows="2" style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 0.9rem; resize: vertical;" placeholder="Descreva brevemente o objetivo da formação..."></textarea>
+        <div class="form-group">
+          <label class="form-label">Justificação *</label>
+          <textarea class="form-input" id="pedidoJustificacao" rows="3" placeholder="Justifique a necessidade desta formação" required></textarea>
         </div>
-        
-        <div style="margin-bottom: 1.25rem;">
-          <label style="display: block; font-size: 0.875rem; font-weight: 600; color: #1e293b; margin-bottom: 0.5rem;">Justificação do Pedido *</label>
-          <textarea id="pedidoJustificacao" rows="3" required style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 0.9rem; resize: vertical;" placeholder="Explique porque esta formação é importante para si ou para a equipa..."></textarea>
-        </div>
-        
-        <div style="margin-bottom: 0.5rem;">
-          <label style="display: block; font-size: 0.875rem; font-weight: 600; color: #1e293b; margin-bottom: 0.5rem;">Documento de Estrutura (opcional)</label>
-          <div id="fileUploadArea" style="border: 2px dashed #e2e8f0; border-radius: 8px; padding: 1.5rem; text-align: center; cursor: pointer; transition: all 0.2s;" onclick="document.getElementById('pedidoDocumento').click()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" style="width: 32px; height: 32px; margin: 0 auto 0.5rem;">
-              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-              <polyline points="17 8 12 3 7 8"/>
-              <line x1="12" y1="3" x2="12" y2="15"/>
-            </svg>
-            <p id="fileUploadText" style="color: #64748b; font-size: 0.875rem; margin: 0;">Clique para carregar documento (PDF, DOC, DOCX)</p>
+        <div class="form-group">
+          <label class="form-label">Documentação de Suporte</label>
+          <div class="file-upload-area" id="fileUploadArea" onclick="document.getElementById('pedidoFicheiro').click()">
+            <input type="file" id="pedidoFicheiro" style="display: none;" accept=".pdf,.doc,.docx" onchange="handlePedidoFileSelect(this)">
+            <span id="fileUploadText">Clique para carregar documento (PDF, DOC, DOCX)</span>
           </div>
-          <input type="file" id="pedidoDocumento" accept=".pdf,.doc,.docx" style="display: none;" onchange="handlePedidoFileSelect(this)">
         </div>
       </form>
     </div>
     <div class="modal-footer">
       <button class="btn btn-secondary" onclick="closeModal('modalProporFormacao')">Cancelar</button>
-      <button class="btn btn-primary" onclick="submeterPedidoFormacao()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px; margin-right: 0.25rem;">
-          <path d="M22 2L11 13"/>
-          <path d="M22 2l-7 20-4-9-9-4 20-7z"/>
-        </svg>
-        Submeter Pedido
-      </button>
+      <button class="btn btn-primary" onclick="submeterPedidoFormacao()">Submeter Pedido</button>
     </div>
   </div>
 </div>
@@ -512,1593 +314,42 @@ title: Centro de Formação
 <div class="modal-overlay" id="modalDetalhesProposta">
   <div class="modal-content" style="max-width: 650px;">
     <div class="modal-header">
-      <h3 class="modal-title" id="modalPropostaTitulo">Detalhes da Proposta</h3>
+      <h3 class="modal-title" id="modalPropostaTitulo"></h3>
       <button class="modal-close" onclick="closeModal('modalDetalhesProposta')">&times;</button>
     </div>
-    <div class="modal-body" id="modalPropostaContent">
-      <!-- Preenchido por JavaScript -->
-    </div>
+    <div class="modal-body" id="modalPropostaContent"></div>
     <div class="modal-footer">
       <button class="btn btn-secondary" onclick="closeModal('modalDetalhesProposta')">Fechar</button>
     </div>
   </div>
 </div>
 
-<!-- Toast Container -->
-<div class="toast-container"></div>
-
-<script>
-// ==========================================
-// FORMAÇÃO - LEARNING PLATFORM
-// ==========================================
-
-let allFormacoes = [];
-let myFormacoes = [];
-let myPropostas = []; // Propostas do utilizador
-let currentUser = null;
-let selectedFormacao = null;
-let formacaoCalendarDate = new Date();
-let formacaoEvents = {};
-let calendarExpanded = true;
-let canViewInscritos = false;
-
-const MONTH_NAMES_SHORT = ['JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ'];
-
-// Aguardar serviços
-async function waitForServices() {
-  return new Promise((resolve) => {
-    const check = () => {
-      if (typeof DataService !== 'undefined' && typeof AuthService !== 'undefined') {
-        resolve();
-      } else {
-        setTimeout(check, 100);
-      }
-    };
-    check();
-  });
-}
-
-// Verificar se utilizador é formador de uma formação específica
-function isFormadorOf(formacao, userId) {
-  if (!formacao || !userId) return false;
-  if (formacao.formacao_formadores && formacao.formacao_formadores.length > 0) {
-    return formacao.formacao_formadores.some(ff => {
-      if (ff.formadores?.colaborador_id === userId) return true;
-      return false;
-    });
-  }
-  if (formacao.formadores?.colaborador_id === userId) return true;
-  return false;
-}
-
-function canSeeInscritos(formacao) {
-  if (!currentUser) return false;
-  if (canViewInscritos) return true;
-  if (isFormadorOf(formacao, currentUser.id)) return true;
-  return false;
-}
-
-// Inicialização
-document.addEventListener('DOMContentLoaded', async function() {
-  try {
-    await waitForServices();
-    currentUser = await AuthService.getCurrentUser();
-    console.log('[Formação] Utilizador:', currentUser?.nome);
-    
-    if (currentUser && AuthService.canAccessFormacaoManagement(currentUser)) {
-      document.getElementById('btnGestaoFormacoes').style.display = 'inline-flex';
-      canViewInscritos = true;
-    }
-    
-    await loadFormacoes();
-    await loadMyPropostas(); // Carregar propostas do utilizador
-    initFormacaoCalendar();
-    
-  } catch (error) {
-    console.error('[Formação] Erro na inicialização:', error);
-  }
-});
-
-async function loadFormacoes() {
-  try {
-    allFormacoes = await DataService.getFormacoes();
-    console.log('[Formação] Carregadas:', allFormacoes.length, 'formações');
-    
-    if (currentUser) {
-      myFormacoes = allFormacoes.filter(f => 
-        (f.formacao_inscricoes || []).some(i => i.colaborador_id === currentUser.id && i.estado === 'Inscrito')
-      );
-    }
-    
-    buildFormacaoEvents();
-    updateStats();
-    renderCatalog(allFormacoes);
-    renderMyFormacoes(myFormacoes);
-    renderFormacaoCalendar();
-    
-  } catch (error) {
-    console.error('[Formação] Erro ao carregar:', error);
-  }
-}
-
-// ==========================================
-// CARREGAR MINHAS PROPOSTAS DE FORMAÇÃO
-// ==========================================
-
-async function loadMyPropostas() {
-  /*
-  // =====================================================
-  // POWER PAGES - FetchXML Query para obter pedidos do utilizador
-  // =====================================================
-  // 
-  // var fetchXml = '<fetch>' +
-  //   '<entity name="cr_pedidos_formacao">' +
-  //     '<attribute name="cr_pedidos_formacaoid" />' +
-  //     '<attribute name="cr_titulo" />' +
-  //     '<attribute name="cr_tipo" />' +
-  //     '<attribute name="cr_modalidade" />' +
-  //     '<attribute name="cr_entidade_formadora" />' +
-  //     '<attribute name="cr_duracao_horas" />' +
-  //     '<attribute name="cr_data_prevista_inicio" />' +
-  //     '<attribute name="cr_custo_estimado" />' +
-  //     '<attribute name="cr_estado" />' +
-  //     '<attribute name="cr_justificacao" />' +
-  //     '<attribute name="cr_objetivo" />' +
-  //     '<attribute name="cr_dirigente_comentario" />' +
-  //     '<attribute name="cr_rh_comentario" />' +
-  //     '<attribute name="createdon" />' +
-  //     '<filter type="and">' +
-  //       '<condition attribute="cr_solicitante_id" operator="eq" value="{{user.id}}" />' +
-  //     '</filter>' +
-  //     '<order attribute="createdon" descending="true" />' +
-  //   '</entity>' +
-  // '</fetch>';
-  //
-  // webapi.safeAjax({
-  //   type: "GET",
-  //   url: "/_api/cr_pedidos_formacao?fetchXml=" + encodeURIComponent(fetchXml),
-  //   contentType: "application/json",
-  //   success: function(data) {
-  //     myPropostas = data.value || [];
-  //     renderMyPropostas(myPropostas);
-  //     
-  //     // Mostrar secção se tiver propostas
-  //     if (myPropostas.length > 0) {
-  //       document.getElementById('minhasPropostas').style.display = 'block';
-  //     }
-  //   },
-  //   error: function(xhr) {
-  //     console.error("Erro ao carregar propostas:", xhr);
-  //   }
-  // });
-  // =====================================================
-  */
-  
-  if (!currentUser) {
-    console.log('[Propostas] Utilizador não autenticado');
-    return;
-  }
-  
-  try {
-    // Supabase: Obter pedidos do utilizador atual
-    myPropostas = await DataService.getMyPedidosFormacao(currentUser.id);
-    console.log('[Propostas] Carregadas:', myPropostas.length, 'propostas');
-    
-    // Mostrar secção apenas se tiver pelo menos 1 proposta
-    if (myPropostas.length > 0) {
-      document.getElementById('minhasPropostas').style.display = 'block';
-      renderMyPropostas(myPropostas);
-    } else {
-      document.getElementById('minhasPropostas').style.display = 'none';
-    }
-    
-  } catch (error) {
-    console.error('[Propostas] Erro ao carregar:', error);
-  }
-}
-
-// ==========================================
-// RENDER MINHAS PROPOSTAS
-// ==========================================
-
-function renderMyPropostas(propostas) {
-  /*
-  // =====================================================
-  // POWER PAGES - Liquid Template Alternative
-  // =====================================================
-  // Se preferir usar Liquid em vez de JavaScript:
-  //
-  // {% fetchxml pedidos %}
-  // <fetch>
-  //   <entity name="cr_pedidos_formacao">
-  //     <attribute name="cr_titulo" />
-  //     <attribute name="cr_tipo" />
-  //     <attribute name="cr_entidade_formadora" />
-  //     <attribute name="cr_duracao_horas" />
-  //     <attribute name="cr_custo_estimado" />
-  //     <attribute name="cr_estado" />
-  //     <attribute name="createdon" />
-  //     <filter>
-  //       <condition attribute="cr_solicitante_id" operator="eq" value="{{user.id}}" />
-  //     </filter>
-  //     <order attribute="createdon" descending="true" />
-  //   </entity>
-  // </fetch>
-  // {% endfetchxml %}
-  //
-  // {% if pedidos.results.entities.size > 0 %}
-  //   {% for pedido in pedidos.results.entities %}
-  //     <div class="propostas-table-row">
-  //       <div>{{ pedido.cr_titulo }}</div>
-  //       <div>{{ pedido.cr_tipo }}</div>
-  //       <!-- ... outros campos ... -->
-  //     </div>
-  //   {% endfor %}
-  // {% endif %}
-  // =====================================================
-  */
-  
-  const tbody = document.getElementById('myPropostasTable');
-  
-  if (propostas.length === 0) {
-    tbody.innerHTML = `
-      <div class="table-empty">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 48px; height: 48px; color: #94a3b8; margin-bottom: 1rem;">
-          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-          <polyline points="14 2 14 8 20 8"/>
-        </svg>
-        <p>Ainda não submeteu nenhuma proposta de formação.</p>
-        <button class="btn btn-primary" onclick="openModalProporFormacao()">Propor Formação</button>
-      </div>
-    `;
-    return;
-  }
-  
-  tbody.innerHTML = propostas.map(p => {
-    const estadoClass = getEstadoPedidoClass(p.estado);
-    const estadoLabel = getEstadoPedidoLabel(p.estado);
-    const dataPedido = p.created_at ? new Date(p.created_at).toLocaleDateString('pt-PT') : '-';
-    const custo = p.custo_estimado ? `${parseFloat(p.custo_estimado).toFixed(2)}€` : '-';
-    const duracao = p.duracao_horas ? `${p.duracao_horas}h` : '-';
-    
-    return `
-      <div class="propostas-table-row" data-estado="${p.estado}">
-        <div class="proposta-title-cell">
-          <strong>${p.titulo}</strong>
-          ${p.modalidade === 'Obrigatória' ? '<span class="badge-mandatory">Obrigatória</span>' : ''}
-        </div>
-        <div>${p.tipo || '-'}</div>
-        <div>${p.entidade_formadora || '-'}</div>
-        <div>${duracao}</div>
-        <div>${custo}</div>
-        <div>${dataPedido}</div>
-        <div><span class="status-badge ${estadoClass}">${estadoLabel}</span></div>
-        <div>
-          <button class="btn-action" onclick="verDetalhesProposta('${p.id}')" title="Ver detalhes">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-              <circle cx="12" cy="12" r="3"/>
-            </svg>
-          </button>
-        </div>
-      </div>
-    `;
-  }).join('');
-}
-
-// Filtrar propostas por estado
-function filterMyPropostas(filter) {
-  document.querySelectorAll('[data-filter-propostas]').forEach(t => t.classList.remove('active'));
-  document.querySelector(`[data-filter-propostas="${filter}"]`).classList.add('active');
-  
-  let filtered = myPropostas;
-  if (filter === 'pendente') {
-    filtered = myPropostas.filter(p => p.estado === 'pendente_dirigente' || p.estado === 'pendente_rh' || p.estado === 'devolvido');
-  } else if (filter === 'aprovado') {
-    filtered = myPropostas.filter(p => p.estado === 'aprovado');
-  } else if (filter === 'rejeitado') {
-    filtered = myPropostas.filter(p => p.estado === 'rejeitado');
-  }
-  
-  renderMyPropostas(filtered);
-}
-
-// Ver detalhes da proposta
-function verDetalhesProposta(propostaId) {
-  const proposta = myPropostas.find(p => p.id === propostaId);
-  if (!proposta) return;
-  
-  const estadoClass = getEstadoPedidoClass(proposta.estado);
-  const estadoLabel = getEstadoPedidoLabel(proposta.estado);
-  const dataPedido = proposta.created_at ? new Date(proposta.created_at).toLocaleDateString('pt-PT', { day: 'numeric', month: 'long', year: 'numeric' }) : '-';
-  
-  let historicoHtml = '';
-  if (proposta.pedidos_formacao_historico && proposta.pedidos_formacao_historico.length > 0) {
-    const historico = proposta.pedidos_formacao_historico.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-    historicoHtml = `
-      <div style="margin-top: 1.5rem; border-top: 1px solid #e2e8f0; padding-top: 1.5rem;">
-        <h4 style="font-size: 0.875rem; font-weight: 600; color: #1e293b; margin-bottom: 1rem;">Histórico do Pedido</h4>
-        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-          ${historico.map(h => `
-            <div style="display: flex; gap: 1rem; padding: 0.75rem; background: #f8fafc; border-radius: 8px;">
-              <div style="width: 8px; height: 8px; background: #00b276; border-radius: 50%; margin-top: 6px; flex-shrink: 0;"></div>
-              <div style="flex: 1;">
-                <div style="font-weight: 600; color: #1e293b; font-size: 0.875rem;">${h.acao}</div>
-                ${h.comentario ? `<div style="color: #64748b; font-size: 0.8rem; margin-top: 0.25rem;">${h.comentario}</div>` : ''}
-                <div style="color: #94a3b8; font-size: 0.75rem; margin-top: 0.25rem;">
-                  ${h.user_nome || 'Sistema'} • ${new Date(h.created_at).toLocaleDateString('pt-PT', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
-                </div>
-              </div>
-            </div>
-          `).join('')}
-        </div>
-      </div>
-    `;
-  }
-  
-  document.getElementById('modalPropostaTitulo').textContent = proposta.titulo;
-  document.getElementById('modalPropostaContent').innerHTML = `
-    <div style="margin-bottom: 1.5rem;">
-      <span class="status-badge ${estadoClass}" style="font-size: 0.8rem; padding: 0.5rem 1rem;">${estadoLabel}</span>
+<!-- Modal: Detalhes do Curso -->
+<div class="modal-overlay" id="modalCourse">
+  <div class="modal-content" style="max-width: 700px;">
+    <div class="modal-header">
+      <h3 class="modal-title" id="modalCourseTitle"></h3>
+      <button class="modal-close" onclick="closeModal('modalCourse')">&times;</button>
     </div>
-    
-    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.25rem; margin-bottom: 1.5rem;">
-      <div>
-        <div style="font-size: 0.75rem; font-weight: 600; color: #64748b; text-transform: uppercase; margin-bottom: 0.25rem;">Tipo</div>
-        <div style="color: #1e293b;">${proposta.tipo || '-'}</div>
-      </div>
-      <div>
-        <div style="font-size: 0.75rem; font-weight: 600; color: #64748b; text-transform: uppercase; margin-bottom: 0.25rem;">Modalidade</div>
-        <div style="color: #1e293b;">${proposta.modalidade || '-'}</div>
-      </div>
-      <div>
-        <div style="font-size: 0.75rem; font-weight: 600; color: #64748b; text-transform: uppercase; margin-bottom: 0.25rem;">Entidade Formadora</div>
-        <div style="color: #1e293b;">${proposta.entidade_formadora || '-'}</div>
-      </div>
-      <div>
-        <div style="font-size: 0.75rem; font-weight: 600; color: #64748b; text-transform: uppercase; margin-bottom: 0.25rem;">Duração</div>
-        <div style="color: #1e293b;">${proposta.duracao_horas ? proposta.duracao_horas + ' horas' : '-'}</div>
-      </div>
-      <div>
-        <div style="font-size: 0.75rem; font-weight: 600; color: #64748b; text-transform: uppercase; margin-bottom: 0.25rem;">Custo Estimado</div>
-        <div style="color: #1e293b;">${proposta.custo_estimado ? parseFloat(proposta.custo_estimado).toFixed(2) + '€' : '-'}</div>
-      </div>
-      <div>
-        <div style="font-size: 0.75rem; font-weight: 600; color: #64748b; text-transform: uppercase; margin-bottom: 0.25rem;">Data do Pedido</div>
-        <div style="color: #1e293b;">${dataPedido}</div>
-      </div>
+    <div class="modal-tabs">
+      <button class="modal-tab active" data-tab="detalhes" onclick="switchCourseTab('detalhes')">Detalhes</button>
+      <button class="modal-tab" data-tab="conteudo" onclick="switchCourseTab('conteudo')">Conteúdo</button>
+      <button class="modal-tab" data-tab="anexos" onclick="switchCourseTab('anexos')">Anexos</button>
     </div>
-    
-    ${proposta.objetivo ? `
-      <div style="margin-bottom: 1.25rem;">
-        <div style="font-size: 0.75rem; font-weight: 600; color: #64748b; text-transform: uppercase; margin-bottom: 0.5rem;">Objetivo</div>
-        <div style="color: #475569; line-height: 1.6; background: #f8fafc; padding: 1rem; border-radius: 8px;">${proposta.objetivo}</div>
-      </div>
-    ` : ''}
-    
-    <div style="margin-bottom: 1.25rem;">
-      <div style="font-size: 0.75rem; font-weight: 600; color: #64748b; text-transform: uppercase; margin-bottom: 0.5rem;">Justificação</div>
-      <div style="color: #475569; line-height: 1.6; background: #f8fafc; padding: 1rem; border-radius: 8px;">${proposta.justificacao || '-'}</div>
+    <div class="modal-body">
+      <div class="tab-content active" id="tabDetalhes"></div>
+      <div class="tab-content" id="tabConteudo"></div>
+      <div class="tab-content" id="tabAnexos"></div>
     </div>
-    
-    ${proposta.dirigente_comentario ? `
-      <div style="margin-bottom: 1.25rem; padding: 1rem; background: #fef3c7; border-radius: 8px; border-left: 4px solid #f59e0b;">
-        <div style="font-size: 0.75rem; font-weight: 600; color: #92400e; margin-bottom: 0.5rem;">Comentário do Dirigente</div>
-        <div style="color: #78350f;">${proposta.dirigente_comentario}</div>
-      </div>
-    ` : ''}
-    
-    ${proposta.rh_comentario ? `
-      <div style="margin-bottom: 1.25rem; padding: 1rem; background: #dbeafe; border-radius: 8px; border-left: 4px solid #3b82f6;">
-        <div style="font-size: 0.75rem; font-weight: 600; color: #1e40af; margin-bottom: 0.5rem;">Comentário RH</div>
-        <div style="color: #1e3a8a;">${proposta.rh_comentario}</div>
-      </div>
-    ` : ''}
-    
-    ${historicoHtml}
-  `;
-  
-  document.getElementById('modalDetalhesProposta').classList.add('show');
-}
-
-// Helpers para estado do pedido
-function getEstadoPedidoClass(estado) {
-  const classes = {
-    'pendente_dirigente': 'status-pending',
-    'pendente_rh': 'status-pending-rh',
-    'aprovado': 'status-approved',
-    'rejeitado': 'status-rejected',
-    'devolvido': 'status-returned'
-  };
-  return classes[estado] || 'status-pending';
-}
-
-function getEstadoPedidoLabel(estado) {
-  const labels = {
-    'pendente_dirigente': 'Pendente Dirigente',
-    'pendente_rh': 'Pendente RH',
-    'aprovado': 'Aprovado',
-    'rejeitado': 'Rejeitado',
-    'devolvido': 'Devolvido'
-  };
-  return labels[estado] || estado;
-}
-
-// ==========================================
-// PROPOR FORMAÇÃO
-// ==========================================
-
-function openModalProporFormacao() {
-  if (!currentUser) {
-    showToast('É necessário estar autenticado para propor uma formação.', 'error');
-    return;
-  }
-  
-  document.getElementById('formProporFormacao').reset();
-  document.getElementById('fileUploadText').textContent = 'Clique para carregar documento (PDF, DOC, DOCX)';
-  document.getElementById('fileUploadArea').style.borderColor = '#e2e8f0';
-  
-  document.getElementById('modalProporFormacao').classList.add('show');
-}
-
-function handlePedidoFileSelect(input) {
-  const file = input.files[0];
-  if (file) {
-    document.getElementById('fileUploadText').textContent = file.name;
-    document.getElementById('fileUploadArea').style.borderColor = '#00b276';
-  } else {
-    document.getElementById('fileUploadText').textContent = 'Clique para carregar documento (PDF, DOC, DOCX)';
-    document.getElementById('fileUploadArea').style.borderColor = '#e2e8f0';
-  }
-}
-
-async function submeterPedidoFormacao() {
-  /*
-  // =====================================================
-  // POWER PAGES - Create Record
-  // =====================================================
-  // 
-  // var recordData = {
-  //   "cr_titulo": document.getElementById('pedidoTitulo').value,
-  //   "cr_tipo": document.getElementById('pedidoTipo').value,
-  //   "cr_modalidade": document.getElementById('pedidoModalidade').value,
-  //   "cr_entidade_formadora": document.getElementById('pedidoEntidade').value,
-  //   "cr_duracao_horas": parseInt(document.getElementById('pedidoDuracao').value) || null,
-  //   "cr_data_prevista_inicio": document.getElementById('pedidoDataInicio').value || null,
-  //   "cr_custo_estimado": parseFloat(document.getElementById('pedidoCusto').value) || null,
-  //   "cr_objetivo": document.getElementById('pedidoObjetivo').value,
-  //   "cr_justificacao": document.getElementById('pedidoJustificacao').value,
-  //   "cr_solicitante_id@odata.bind": "/contacts({{user.id}})",
-  //   "cr_departamento_id@odata.bind": "/cr_departamentos({{user.departamento_id}})",
-  //   "cr_estado": 100000000  // Valor do OptionSet para "Pendente Dirigente"
-  // };
-  //
-  // webapi.safeAjax({
-  //   type: "POST",
-  //   url: "/_api/cr_pedidos_formacao",
-  //   contentType: "application/json",
-  //   data: JSON.stringify(recordData),
-  //   success: function(data, textStatus, xhr) {
-  //     var newId = xhr.getResponseHeader("entityid");
-  //     closeModal('modalProporFormacao');
-  //     showToast('Pedido submetido com sucesso!', 'success');
-  //     loadMyPropostas(); // Recarregar lista
-  //   },
-  //   error: function(xhr) {
-  //     console.error("Erro ao criar pedido:", xhr);
-  //     showToast('Erro ao submeter pedido.', 'error');
-  //   }
-  // });
-  // =====================================================
-  */
-  
-  if (!currentUser) {
-    showToast('É necessário estar autenticado.', 'error');
-    return;
-  }
-  
-  const titulo = document.getElementById('pedidoTitulo').value.trim();
-  const tipo = document.getElementById('pedidoTipo').value;
-  const modalidade = document.getElementById('pedidoModalidade').value;
-  const entidade = document.getElementById('pedidoEntidade').value.trim();
-  const duracao = document.getElementById('pedidoDuracao').value;
-  const dataInicio = document.getElementById('pedidoDataInicio').value;
-  const custo = document.getElementById('pedidoCusto').value;
-  const objetivo = document.getElementById('pedidoObjetivo').value.trim();
-  const justificacao = document.getElementById('pedidoJustificacao').value.trim();
-  
-  if (!titulo || !entidade || !justificacao) {
-    showToast('Preencha os campos obrigatórios.', 'error');
-    return;
-  }
-  
-  try {
-    const pedido = {
-      titulo,
-      tipo,
-      modalidade,
-      entidade_formadora: entidade,
-      duracao_horas: duracao ? parseInt(duracao) : null,
-      data_prevista_inicio: dataInicio || null,
-      custo_estimado: custo ? parseFloat(custo) : null,
-      objetivo,
-      justificacao,
-      solicitante_id: currentUser.id,
-      departamento_id: currentUser.departamento_id,
-      estado: 'pendente_dirigente'
-    };
-    
-    const result = await DataService.createPedidoFormacao(pedido);
-    
-    await DataService.addHistoricoPedido(
-      result.id,
-      'Pedido submetido',
-      currentUser.id,
-      currentUser.nome,
-      'Pedido criado e submetido para aprovação do dirigente.',
-      null,
-      'pendente_dirigente'
-    );
-    
-    closeModal('modalProporFormacao');
-    showToast('Pedido de formação submetido com sucesso! Aguarde aprovação.', 'success');
-    
-    // Recarregar propostas para mostrar a nova
-    await loadMyPropostas();
-    
-  } catch (error) {
-    console.error('Erro ao submeter pedido:', error);
-    showToast('Erro ao submeter pedido. Tente novamente.', 'error');
-  }
-}
-
-// ==========================================
-// ESTATÍSTICAS
-// ==========================================
-
-function updateStats() {
-  const agendadas = allFormacoes.filter(f => f.estado === 'Agendada' || f.estado === 'Em Curso').length;
-  
-  if (currentUser) {
-    const concluidas = myFormacoes.filter(f => f.estado === 'Concluída').length;
-    const emCurso = myFormacoes.filter(f => f.estado === 'Em Curso' || f.estado === 'Agendada').length;
-    const pendentes = myFormacoes.filter(f => {
-      const jaAvaliou = (f.formacao_avaliacoes || []).some(a => a.colaborador_id === currentUser?.id);
-      return f.estado === 'Concluída' && !jaAvaliou;
-    }).length;
-    
-    document.getElementById('statConcluidas').textContent = concluidas;
-    document.getElementById('statEmCurso').textContent = emCurso;
-    document.getElementById('statPendentes').textContent = pendentes;
-    document.getElementById('statAgendadas').textContent = agendadas;
-  }
-}
-
-// ==========================================
-// CALENDÁRIO
-// ==========================================
-
-function buildFormacaoEvents() {
-  formacaoEvents = {};
-  allFormacoes.forEach(f => {
-    const sessoes = f.formacao_sessoes || [];
-    sessoes.forEach(s => {
-      if (s.data) {
-        const dateKey = s.data.split('T')[0];
-        if (!formacaoEvents[dateKey]) {
-          formacaoEvents[dateKey] = [];
-        }
-        formacaoEvents[dateKey].push({
-          formacaoId: f.id,
-          titulo: f.titulo,
-          hora: s.hora_inicio || '09:00',
-          tipo: f.tipo,
-          estado: f.estado
-        });
-      }
-    });
-  });
-}
-
-function initFormacaoCalendar() {
-  document.getElementById('formacaoPrevMonth').addEventListener('click', () => {
-    formacaoCalendarDate.setMonth(formacaoCalendarDate.getMonth() - 1);
-    renderFormacaoCalendar();
-  });
-  
-  document.getElementById('formacaoNextMonth').addEventListener('click', () => {
-    formacaoCalendarDate.setMonth(formacaoCalendarDate.getMonth() + 1);
-    renderFormacaoCalendar();
-  });
-  
-  document.getElementById('formacaoClearFilterBtn').addEventListener('click', () => {
-    clearFormacaoDateFilter();
-  });
-}
-
-function toggleFormacaoCalendar() {
-  const content = document.getElementById('formacaoCalendarContent');
-  const btn = document.getElementById('calendarToggleBtn');
-  
-  calendarExpanded = !calendarExpanded;
-  
-  if (calendarExpanded) {
-    content.classList.add('expanded');
-    btn.innerHTML = `
-      <span class="toggle-label">Calendário de Formações</span>
-      <span class="toggle-separator">•</span>
-      <svg class="toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <polyline points="18 15 12 9 6 15"/>
-      </svg>
-      <span class="toggle-action">Esconder</span>
-    `;
-  } else {
-    content.classList.remove('expanded');
-    btn.innerHTML = `
-      <span class="toggle-label">Calendário de Formações</span>
-      <span class="toggle-separator">•</span>
-      <svg class="toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <polyline points="6 9 12 15 18 9"/>
-      </svg>
-      <span class="toggle-action">Mostrar</span>
-    `;
-  }
-}
-
-function renderFormacaoCalendar() {
-  const months = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 
-                  'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
-  
-  const currentMonth = formacaoCalendarDate.getMonth();
-  const currentYear = formacaoCalendarDate.getFullYear();
-  
-  document.getElementById('formacaoCurrentMonthName').textContent = `${months[currentMonth]} ${currentYear}`;
-  renderFormacaoMonthDays('formacaoCurrentMonthGrid', currentYear, currentMonth);
-  
-  const nextMonth = currentMonth === 11 ? 0 : currentMonth + 1;
-  const nextYear = currentMonth === 11 ? currentYear + 1 : currentYear;
-  document.getElementById('formacaoNextMonthName').textContent = `${months[nextMonth]} ${nextYear}`;
-  renderFormacaoMonthDays('formacaoNextMonthGrid', nextYear, nextMonth);
-  
-  renderFormacaoUpcomingEvents();
-}
-
-function renderFormacaoMonthDays(containerId, year, month) {
-  const container = document.getElementById(containerId);
-  const firstDay = new Date(year, month, 1).getDay();
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const today = new Date();
-  
-  let html = '';
-  
-  for (let i = 0; i < firstDay; i++) {
-    html += '<p class="day-number other-month"></p>';
-  }
-  
-  for (let day = 1; day <= daysInMonth; day++) {
-    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    const hasEvents = formacaoEvents[dateStr] && formacaoEvents[dateStr].length > 0;
-    const isToday = day === today.getDate() && month === today.getMonth() && year === today.getFullYear();
-    
-    let classes = 'day-number';
-    if (isToday) classes += ' today';
-    if (hasEvents) classes += ' formacao';
-    
-    html += `<p class="${classes}" onclick="selectFormacaoDate('${dateStr}')" data-date="${dateStr}">${day}</p>`;
-  }
-  
-  container.innerHTML = html;
-}
-
-function selectFormacaoDate(dateStr) {
-  document.querySelectorAll('.calendar-grid .day-number.active').forEach(el => el.classList.remove('active'));
-  document.querySelectorAll(`[data-date="${dateStr}"]`).forEach(el => el.classList.add('active'));
-  
-  const events = formacaoEvents[dateStr] || [];
-  const dateParts = dateStr.split('-');
-  const dateObj = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
-  const formattedDate = dateObj.toLocaleDateString('pt-PT', { day: 'numeric', month: 'long', year: 'numeric' });
-  
-  document.getElementById('formacaoEventsTitle').textContent = 'Formações em ' + formattedDate;
-  document.getElementById('formacaoSelectedDateInfo').style.display = 'block';
-  document.getElementById('formacaoSelectedDateInfo').textContent = events.length > 0 ? `${events.length} formação(ões)` : 'Sem formações';
-  document.getElementById('formacaoClearFilterBtn').style.display = 'flex';
-  
-  const container = document.getElementById('formacaoEventsContainer');
-  if (events.length === 0) {
-    container.innerHTML = '<div class="no-events">Sem formações agendadas para este dia.</div>';
-  } else {
-    const day = dateObj.getDate();
-    const month = MONTH_NAMES_SHORT[dateObj.getMonth()];
-    
-    container.innerHTML = events.map(e => `
-      <div class="event-item formacao" onclick="openCourseDetails('${e.formacaoId}')" style="--event-color: #00b276;">
-        <div class="event-date">
-          <div class="event-day">${day}</div>
-          <div class="event-month">${month}</div>
-        </div>
-        <div class="event-details">
-          <div class="event-title">${e.titulo}</div>
-          <div class="event-meta">${e.hora} • ${e.tipo || 'Formação'}</div>
-        </div>
-      </div>
-    `).join('');
-  }
-}
-
-function clearFormacaoDateFilter() {
-  document.querySelectorAll('.calendar-grid .day-number.active').forEach(el => el.classList.remove('active'));
-  document.getElementById('formacaoEventsTitle').textContent = 'Próximas Formações';
-  document.getElementById('formacaoSelectedDateInfo').style.display = 'none';
-  document.getElementById('formacaoClearFilterBtn').style.display = 'none';
-  renderFormacaoUpcomingEvents();
-}
-
-function renderFormacaoUpcomingEvents() {
-  const container = document.getElementById('formacaoEventsContainer');
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  
-  const upcomingEvents = [];
-  Object.keys(formacaoEvents).sort().forEach(dateStr => {
-    const eventDate = new Date(dateStr);
-    if (eventDate >= today) {
-      formacaoEvents[dateStr].forEach(e => {
-        upcomingEvents.push({ ...e, date: dateStr });
-      });
-    }
-  });
-  
-  const eventsToShow = upcomingEvents.slice(0, 5);
-  
-  if (eventsToShow.length === 0) {
-    container.innerHTML = '<div class="no-events">Sem formações agendadas próximas.</div>';
-  } else {
-    container.innerHTML = eventsToShow.map(e => {
-      const dateObj = new Date(e.date);
-      const day = dateObj.getDate();
-      const month = MONTH_NAMES_SHORT[dateObj.getMonth()];
-      
-      return `
-        <div class="event-item formacao" onclick="openCourseDetails('${e.formacaoId}')" style="--event-color: #00b276;">
-          <div class="event-date">
-            <div class="event-day">${day}</div>
-            <div class="event-month">${month}</div>
-          </div>
-          <div class="event-details">
-            <div class="event-title">${e.titulo}</div>
-            <div class="event-meta">${e.hora} • ${e.tipo || 'Formação'}</div>
-          </div>
-        </div>
-      `;
-    }).join('');
-  }
-}
-
-// ==========================================
-// CATÁLOGO
-// ==========================================
-
-function renderCatalog(formacoes) {
-  const grid = document.getElementById('courseGrid');
-  const empty = document.getElementById('emptyState');
-  
-  const disponiveis = formacoes.filter(f => f.estado === 'Agendada' || f.estado === 'Em Curso');
-  
-  if (disponiveis.length === 0) {
-    grid.style.display = 'none';
-    empty.style.display = 'block';
-    return;
-  }
-  
-  grid.style.display = 'grid';
-  empty.style.display = 'none';
-  
-  grid.innerHTML = disponiveis.map(f => {
-    const categoria = getCategoriaClass(f.titulo);
-    
-    let formadorDisplay = 'Formador interno';
-    if (f.formacao_formadores && f.formacao_formadores.length > 0) {
-      const nomes = f.formacao_formadores.map(ff => {
-        if (ff.formadores?.nome) return DataService.cleanFormadorName(ff.formadores.nome);
-        if (ff.entidades_formadoras?.nome) return ff.entidades_formadoras.nome;
-        return null;
-      }).filter(Boolean);
-      if (nomes.length > 0) formadorDisplay = nomes.join(', ');
-    } else if (f.formadores?.nome) {
-      formadorDisplay = DataService.cleanFormadorName(f.formadores.nome);
-    }
-    
-    const inscritos = (f.formacao_inscricoes || []).filter(i => i.estado === 'Inscrito').length;
-    const vagas = f.max_participantes || 20;
-    
-    const jaInscrito = currentUser && (f.formacao_inscricoes || []).some(
-      i => i.colaborador_id === currentUser.id && i.estado === 'Inscrito'
-    );
-    
-    const favorito = currentUser && (f.formacao_favoritos || []).some(
-      fav => fav.colaborador_id === currentUser.id
-    );
-    
-    const primeiraSessao = (f.formacao_sessoes || []).sort((a, b) => new Date(a.data) - new Date(b.data))[0];
-    const dataInicio = primeiraSessao ? formatDate(primeiraSessao.data) : 'A definir';
-    
-    let badges = '';
-    if (f.modalidade === 'Obrigatória') badges += '<span class="course-badge mandatory">Obrigatória</span>';
-    if (isNew(f.created_at)) badges += '<span class="course-badge new">Nova</span>';
-    
-    const showInscritos = canSeeInscritos(f);
-    const inscritosDisplay = showInscritos ? `${inscritos}/${vagas}` : `${vagas} vagas`;
-    
-    return `
-      <div class="course-card" onclick="openCourseDetails('${f.id}')">
-        <div class="course-card-banner ${categoria}">
-          ${getCategoriaIcon(categoria)}
-          <div class="course-card-badges">${badges}</div>
-          <button class="course-card-favorite ${favorito ? 'active' : ''}" onclick="toggleFavorite(event, '${f.id}')">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
-            </svg>
-          </button>
-        </div>
-        <div class="course-card-body">
-          <span class="course-card-category">${f.tipo || 'Formação'}</span>
-          <h3 class="course-card-title">${f.titulo}</h3>
-          <p class="course-card-instructor">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-            ${formadorDisplay}
-          </p>
-          <div class="course-card-meta">
-            <span class="course-meta-item">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-              ${f.duracao_horas || 0}h
-            </span>
-            <span class="course-meta-item">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-              ${inscritosDisplay}
-            </span>
-          </div>
-          <div class="course-card-footer">
-            <span class="course-card-date"><strong>${dataInicio}</strong></span>
-            ${jaInscrito 
-              ? '<button class="course-card-cta enrolled">Inscrito</button>'
-              : inscritos >= vagas
-                ? '<button class="course-card-cta full">Esgotado</button>'
-                : '<button class="course-card-cta enroll">Inscrever</button>'
-            }
-          </div>
-        </div>
-      </div>
-    `;
-  }).join('');
-}
-
-function filterCourses() {
-  const search = document.getElementById('searchInput').value.toLowerCase();
-  const tipo = document.getElementById('filterTipo').value;
-  const modalidade = document.getElementById('filterModalidade').value;
-  
-  let filtered = allFormacoes;
-  
-  if (search) {
-    filtered = filtered.filter(f => f.titulo.toLowerCase().includes(search));
-  }
-  if (tipo) {
-    filtered = filtered.filter(f => f.tipo === tipo);
-  }
-  if (modalidade) {
-    filtered = filtered.filter(f => f.modalidade === modalidade);
-  }
-  
-  renderCatalog(filtered);
-}
-
-// ==========================================
-// TABELA MINHAS FORMAÇÕES
-// ==========================================
-
-function renderMyFormacoes(formacoes) {
-  const tbody = document.getElementById('myFormacoesTable');
-  
-  if (!currentUser) {
-    tbody.innerHTML = '<div class="table-empty"><p>Faça login para ver as suas formações.</p></div>';
-    return;
-  }
-  
-  if (formacoes.length === 0) {
-    tbody.innerHTML = `
-      <div class="table-empty">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 48px; height: 48px; color: #94a3b8; margin-bottom: 1rem;">
-          <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
-          <path d="M6 12v5c3 3 9 3 12 0v-5"/>
-        </svg>
-        <p>Ainda não está inscrito em nenhuma formação.</p>
-        <button class="btn btn-primary" onclick="scrollToCatalog()">Explorar Catálogo</button>
-      </div>
-    `;
-    return;
-  }
-  
-  tbody.innerHTML = formacoes.map(f => {
-    let formadorDisplay = 'Formador interno';
-    if (f.formacao_formadores && f.formacao_formadores.length > 0) {
-      const nomes = f.formacao_formadores.map(ff => {
-        if (ff.formadores?.nome) return DataService.cleanFormadorName(ff.formadores.nome);
-        if (ff.entidades_formadoras?.nome) return ff.entidades_formadoras.nome;
-        return null;
-      }).filter(Boolean);
-      if (nomes.length > 0) formadorDisplay = nomes.join(', ');
-    } else if (f.formadores?.nome) {
-      formadorDisplay = DataService.cleanFormadorName(f.formadores.nome);
-    }
-    
-    const sessoes = (f.formacao_sessoes || []).sort((a, b) => new Date(a.data) - new Date(b.data));
-    const primeiraSessao = sessoes[0];
-    const dataStr = primeiraSessao ? formatDate(primeiraSessao.data) : 'A definir';
-    
-    let progresso = 0;
-    let progressoClass = '';
-    if (f.estado === 'Concluída') {
-      progresso = 100;
-      progressoClass = 'complete';
-    } else if (f.estado === 'Em Curso') {
-      progresso = 50;
-      progressoClass = 'in-progress';
-    }
-    
-    const estadoClass = getEstadoClass(f.estado);
-    
-    return `
-      <div class="formacoes-table-row" onclick="openCourseDetails('${f.id}')">
-        <div class="formacao-title-cell">
-          <strong>${f.titulo}</strong>
-          ${f.modalidade === 'Obrigatória' ? '<span class="badge-mandatory">Obrigatória</span>' : ''}
-        </div>
-        <div>${f.tipo || '-'}</div>
-        <div>${formadorDisplay}</div>
-        <div>${dataStr}</div>
-        <div>${f.duracao_horas || 0}h</div>
-        <div>
-          <div class="progress-mini">
-            <div class="progress-mini-bar ${progressoClass}" style="width: ${progresso}%"></div>
-          </div>
-          <span class="progress-text">${progresso}%</span>
-        </div>
-        <div><span class="status-badge ${estadoClass}">${f.estado}</span></div>
-        <div>
-          <button class="btn-action" onclick="event.stopPropagation(); openCourseDetails('${f.id}')">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-              <circle cx="12" cy="12" r="3"/>
-            </svg>
-          </button>
-        </div>
-      </div>
-    `;
-  }).join('');
-}
-
-function filterMyFormacoes(filter) {
-  document.querySelectorAll('.table-tab').forEach(t => t.classList.remove('active'));
-  document.querySelector(`[data-filter="${filter}"]`).classList.add('active');
-  
-  let filtered = myFormacoes;
-  if (filter === 'enrolled') {
-    filtered = myFormacoes.filter(f => f.estado === 'Agendada' || f.estado === 'Em Curso');
-  } else if (filter === 'completed') {
-    filtered = myFormacoes.filter(f => f.estado === 'Concluída');
-  }
-  
-  renderMyFormacoes(filtered);
-}
-
-function searchMyFormacoes() {
-  const term = document.getElementById('searchMyFormacoes').value.toLowerCase();
-  const filtered = myFormacoes.filter(f => 
-    f.titulo.toLowerCase().includes(term) ||
-    (f.formadores?.nome || '').toLowerCase().includes(term)
-  );
-  renderMyFormacoes(filtered);
-}
-
-function getEstadoClass(estado) {
-  const classes = {
-    'Agendada': 'status-scheduled',
-    'Em Curso': 'status-progress',
-    'Concluída': 'status-complete',
-    'Cancelada': 'status-cancelled'
-  };
-  return classes[estado] || '';
-}
-
-// ==========================================
-// HELPERS
-// ==========================================
-
-function getCategoriaClass(titulo) {
-  titulo = (titulo || '').toLowerCase();
-  if (titulo.includes('excel') || titulo.includes('power') || titulo.includes('python')) return 'tech';
-  if (titulo.includes('liderança') || titulo.includes('gestão')) return 'leadership';
-  if (titulo.includes('comunicação') || titulo.includes('soft')) return 'soft';
-  if (titulo.includes('segurança') || titulo.includes('compliance')) return 'compliance';
-  return 'tech';
-}
-
-function getCategoriaIcon(categoria) {
-  const icons = {
-    tech: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>',
-    leadership: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
-    soft: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>',
-    compliance: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>'
-  };
-  return icons[categoria] || icons.tech;
-}
-
-function formatDate(dateStr) {
-  if (!dateStr) return 'A definir';
-  const date = new Date(dateStr);
-  return date.toLocaleDateString('pt-PT', { day: 'numeric', month: 'short' });
-}
-
-function isNew(createdAt) {
-  if (!createdAt) return false;
-  const created = new Date(createdAt);
-  const diffDays = (new Date() - created) / (1000 * 60 * 60 * 24);
-  return diffDays < 30;
-}
-
-// ==========================================
-// NAVIGATION
-// ==========================================
-
-function scrollToCatalog() {
-  document.getElementById('courseCatalog').scrollIntoView({ behavior: 'smooth' });
-}
-
-function scrollToMinhasFormacoes() {
-  document.getElementById('minhasFormacoes').scrollIntoView({ behavior: 'smooth' });
-}
-
-// ==========================================
-// MODAL TABS - DETALHES DA FORMAÇÃO
-// ==========================================
-
-function switchCourseTab(tabName) {
-  document.querySelectorAll('.modal-tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-  
-  document.querySelector(`.modal-tab[data-tab="${tabName}"]`).classList.add('active');
-  document.getElementById(`tab${tabName.charAt(0).toUpperCase() + tabName.slice(1)}`).classList.add('active');
-}
-
-async function openCourseDetails(formacaoId) {
-  selectedFormacao = allFormacoes.find(f => f.id === formacaoId);
-  if (!selectedFormacao) return;
-  
-  let formadorDisplay = 'Formador interno';
-  if (selectedFormacao.formacao_formadores && selectedFormacao.formacao_formadores.length > 0) {
-    const nomes = selectedFormacao.formacao_formadores.map(ff => {
-      if (ff.formadores?.nome) return DataService.cleanFormadorName(ff.formadores.nome);
-      if (ff.entidades_formadoras?.nome) return ff.entidades_formadoras.nome;
-      return null;
-    }).filter(Boolean);
-    if (nomes.length > 0) formadorDisplay = nomes.join(', ');
-  } else if (selectedFormacao.formadores?.nome) {
-    formadorDisplay = DataService.cleanFormadorName(selectedFormacao.formadores.nome);
-  }
-  
-  const sessoes = (selectedFormacao.formacao_sessoes || []).sort((a, b) => new Date(a.data) - new Date(b.data));
-  const inscritos = (selectedFormacao.formacao_inscricoes || []).filter(i => i.estado === 'Inscrito').length;
-  const vagas = selectedFormacao.max_participantes || 20;
-  
-  const jaInscrito = currentUser && (selectedFormacao.formacao_inscricoes || []).some(
-    i => i.colaborador_id === currentUser.id && i.estado === 'Inscrito'
-  );
-  
-  const showInscritos = canSeeInscritos(selectedFormacao);
-  
-  document.getElementById('modalCourseTitle').textContent = selectedFormacao.titulo;
-  
-  const inscritosHtml = showInscritos ? `
-    <div style="text-align: center;">
-      <div style="font-size: 1.25rem; font-weight: 700; color: #1e293b;">${inscritos}/${vagas}</div>
-      <div style="font-size: 0.75rem; color: #64748b;">Inscritos</div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modalCourse')">Fechar</button>
+      <button class="btn btn-primary" id="btnInscrever" onclick="inscreverFormacao()">Inscrever-me</button>
     </div>
-  ` : `
-    <div style="text-align: center;">
-      <div style="font-size: 1.25rem; font-weight: 700; color: #1e293b;">${vagas}</div>
-      <div style="font-size: 0.75rem; color: #64748b;">Vagas</div>
-    </div>
-  `;
-  
-  document.getElementById('tabDetalhes').innerHTML = `
-    <div style="margin-bottom: 1.5rem;">
-      <span style="display: inline-block; padding: 0.25rem 0.75rem; background: #d1fae5; color: #065f46; border-radius: 20px; font-size: 0.75rem; font-weight: 600; margin-right: 0.5rem;">${selectedFormacao.tipo || 'Formação'}</span>
-      <span style="display: inline-block; padding: 0.25rem 0.75rem; background: #dbeafe; color: #1e40af; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">${selectedFormacao.estado}</span>
-    </div>
-    
-    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem; padding: 1rem; background: #f8fafc; border-radius: 12px;">
-      <div style="text-align: center;">
-        <div style="font-size: 1.25rem; font-weight: 700; color: #1e293b;">${selectedFormacao.duracao_horas || 0}h</div>
-        <div style="font-size: 0.75rem; color: #64748b;">Duração</div>
-      </div>
-      ${inscritosHtml}
-      <div style="text-align: center;">
-        <div style="font-size: 1.25rem; font-weight: 700; color: #1e293b;">${sessoes.length}</div>
-        <div style="font-size: 0.75rem; color: #64748b;">Sessões</div>
-      </div>
-    </div>
-    
-    <div style="margin-bottom: 1.5rem;">
-      <h4 style="font-size: 0.875rem; font-weight: 600; color: #1e293b; margin-bottom: 0.5rem;">Formador</h4>
-      <p style="color: #475569;">${formadorDisplay}</p>
-    </div>
-    
-    <div style="margin-bottom: 1.5rem;">
-      <h4 style="font-size: 0.875rem; font-weight: 600; color: #1e293b; margin-bottom: 0.5rem;">Objetivo</h4>
-      <p style="color: #475569; line-height: 1.6;">${selectedFormacao.objetivo || 'Sem descrição disponível.'}</p>
-    </div>
-    
-    ${sessoes.length > 0 ? `
-      <div>
-        <h4 style="font-size: 0.875rem; font-weight: 600; color: #1e293b; margin-bottom: 0.75rem;">Sessões</h4>
-        ${sessoes.map(s => `
-          <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem; background: #f8fafc; border-radius: 8px; margin-bottom: 0.5rem;">
-            <div style="width: 40px; height: 40px; background: #00b276; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white;">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
-            </div>
-            <div>
-              <div style="font-weight: 600; color: #1e293b;">${new Date(s.data).toLocaleDateString('pt-PT', { weekday: 'long', day: 'numeric', month: 'long' })}</div>
-              <div style="font-size: 0.75rem; color: #64748b;">${s.hora_inicio || '09:00'} - ${s.hora_fim || '18:00'}</div>
-            </div>
-          </div>
-        `).join('')}
-      </div>
-    ` : ''}
-  `;
-  
-  const conteudoProgramatico = selectedFormacao.conteudo_programatico || null;
-  document.getElementById('tabConteudo').innerHTML = conteudoProgramatico ? `
-    <div class="conteudo-programatico">${conteudoProgramatico}</div>
-  ` : `
-    <div class="empty-tab-state">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 48px; height: 48px; color: #94a3b8; margin-bottom: 1rem;">
-        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-        <polyline points="14 2 14 8 20 8"/>
-        <line x1="16" y1="13" x2="8" y2="13"/>
-        <line x1="16" y1="17" x2="8" y2="17"/>
-      </svg>
-      <p style="color: #64748b; font-size: 0.875rem;">Conteúdo programático não disponível.</p>
-    </div>
-  `;
-  
-  const anexos = selectedFormacao.formacao_anexos || [];
-  document.getElementById('tabAnexos').innerHTML = anexos.length > 0 ? `
-    <div class="anexos-list">
-      ${anexos.map(a => `
-        <div class="anexo-item">
-          <div class="anexo-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-              <polyline points="14 2 14 8 20 8"/>
-            </svg>
-          </div>
-          <div class="anexo-info">
-            <span class="anexo-nome">${a.nome || 'Documento'}</span>
-            <span class="anexo-tipo">${a.tipo || 'PDF'}</span>
-          </div>
-          <a href="${a.url}" target="_blank" class="anexo-download" title="Descarregar">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-              <polyline points="7 10 12 15 17 10"/>
-              <line x1="12" y1="15" x2="12" y2="3"/>
-            </svg>
-          </a>
-        </div>
-      `).join('')}
-    </div>
-  ` : `
-    <div class="empty-tab-state">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 48px; height: 48px; color: #94a3b8; margin-bottom: 1rem;">
-        <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/>
-      </svg>
-      <p style="color: #64748b; font-size: 0.875rem;">Sem anexos disponíveis para esta formação.</p>
-    </div>
-  `;
-  
-  switchCourseTab('detalhes');
-  
-  const btnInscrever = document.getElementById('btnInscrever');
-  if (jaInscrito) {
-    btnInscrever.textContent = 'Já Inscrito';
-    btnInscrever.disabled = true;
-    btnInscrever.className = 'btn btn-secondary';
-  } else if (inscritos >= vagas) {
-    btnInscrever.textContent = 'Esgotado';
-    btnInscrever.disabled = true;
-    btnInscrever.className = 'btn btn-secondary';
-  } else {
-    btnInscrever.textContent = 'Inscrever-me';
-    btnInscrever.disabled = false;
-    btnInscrever.className = 'btn btn-primary';
-  }
-  
-  document.getElementById('modalCourse').classList.add('show');
-}
+  </div>
+</div>
 
-async function inscreverFormacao() {
-  if (!selectedFormacao || !currentUser) return;
-  
-  try {
-    await DataService.inscreverFormacao(selectedFormacao.id, currentUser.id);
-    showToast('Inscrição realizada com sucesso!', 'success');
-    closeModal('modalCourse');
-    await loadFormacoes();
-  } catch (error) {
-    console.error('Erro ao inscrever:', error);
-    showToast('Erro ao realizar inscrição', 'danger');
-  }
-}
+<!-- CSS específico da página -->
+<link rel="stylesheet" href="/web-files/css/formacao.css">
 
-async function toggleFavorite(event, formacaoId) {
-  event.stopPropagation();
-  if (!currentUser) return;
-  
-  try {
-    await DataService.toggleFavoritoFormacao(formacaoId, currentUser.id);
-    await loadFormacoes();
-  } catch (error) {
-    console.error('Erro ao alternar favorito:', error);
-  }
-}
-
-function closeModal(modalId) {
-  document.getElementById(modalId).classList.remove('show');
-}
-
-function showToast(message, type = 'success') {
-  let container = document.querySelector('.toast-container');
-  if (!container) {
-    container = document.createElement('div');
-    container.className = 'toast-container';
-    document.body.appendChild(container);
-  }
-  
-  const toast = document.createElement('div');
-  toast.className = `toast ${type}`;
-  toast.innerHTML = `<span class="toast-message">${message}</span>`;
-  container.appendChild(toast);
-  
-  setTimeout(() => toast.classList.add('show'), 10);
-  setTimeout(() => {
-    toast.classList.remove('show');
-    setTimeout(() => toast.remove(), 300);
-  }, 3000);
-}
-
-document.querySelectorAll('.modal-overlay').forEach(modal => {
-  modal.addEventListener('click', function(e) {
-    if (e.target === this) this.classList.remove('show');
-  });
-});
-</script>
-
-<style>
-/* Hero Buttons - No wrap */
-.hero-btn {
-  white-space: nowrap;
-  text-decoration: none;
-}
-.hero-btn span {
-  white-space: nowrap;
-}
-.hero-btn-outline {
-  background: transparent;
-  border: 2px solid rgba(255, 255, 255, 0.5);
-  color: white;
-}
-.hero-btn-outline:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: white;
-}
-.hero-btn-gestao {
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-  color: white;
-  border: none;
-}
-.hero-btn-gestao:hover {
-  background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(245, 158, 11, 0.3);
-}
-
-/* Calendar Toggle Button */
-.calendar-toggle-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-.calendar-toggle-btn .toggle-label {
-  font-weight: 600;
-  color: #1e293b;
-}
-.calendar-toggle-btn .toggle-separator {
-  color: #94a3b8;
-}
-.calendar-toggle-btn .toggle-icon {
-  width: 16px;
-  height: 16px;
-  transition: transform 0.3s;
-}
-.calendar-toggle-btn .toggle-action {
-  color: #64748b;
-}
-
-/* Modal with Tabs */
-.modal-course-details {
-  max-width: 750px;
-}
-.modal-tabs {
-  display: flex;
-  gap: 0.25rem;
-  border-bottom: 1px solid #e2e8f0;
-  background: #f8fafc;
-  margin: 0 -1.5rem;
-  padding: 0.5rem 1.5rem;
-}
-.modal-tab {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1rem;
-  background: transparent;
-  border: none;
-  border-radius: 8px 8px 0 0;
-  font-size: 0.8rem;
-  font-weight: 500;
-  color: #64748b;
-  cursor: pointer;
-  transition: all 0.2s;
-  white-space: nowrap;
-}
-.modal-tab svg {
-  width: 16px;
-  height: 16px;
-}
-.modal-tab:hover {
-  color: #1e293b;
-  background: rgba(0, 178, 118, 0.05);
-}
-.modal-tab.active {
-  color: #00b276;
-  background: white;
-  border-bottom: 2px solid #00b276;
-  margin-bottom: -1px;
-}
-.tab-content {
-  display: none;
-}
-.tab-content.active {
-  display: block;
-}
-.empty-tab-state {
-  text-align: center;
-  padding: 3rem 2rem;
-}
-
-/* Conteúdo Programático */
-.conteudo-programatico {
-  line-height: 1.7;
-  color: #475569;
-}
-.conteudo-programatico h4,
-.conteudo-programatico h5 {
-  color: #1e293b;
-  margin: 1rem 0 0.5rem;
-}
-.conteudo-programatico ul,
-.conteudo-programatico ol {
-  padding-left: 1.5rem;
-  margin: 0.5rem 0;
-}
-.conteudo-programatico li {
-  margin-bottom: 0.25rem;
-}
-
-/* Anexos */
-.anexos-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-.anexo-item {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 1rem;
-  background: #f8fafc;
-  border-radius: 10px;
-  border: 1px solid #e2e8f0;
-  transition: all 0.2s;
-}
-.anexo-item:hover {
-  background: #f1f5f9;
-  border-color: #cbd5e1;
-}
-.anexo-icon {
-  width: 40px;
-  height: 40px;
-  background: #dbeafe;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-.anexo-icon svg {
-  width: 20px;
-  height: 20px;
-  color: #2563eb;
-}
-.anexo-info {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-.anexo-nome {
-  font-weight: 600;
-  color: #1e293b;
-  font-size: 0.875rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.anexo-tipo {
-  font-size: 0.75rem;
-  color: #64748b;
-}
-.anexo-download {
-  width: 36px;
-  height: 36px;
-  background: #00b276;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  text-decoration: none;
-  transition: all 0.2s;
-  flex-shrink: 0;
-}
-.anexo-download:hover {
-  background: #009966;
-  transform: translateY(-2px);
-}
-.anexo-download svg {
-  width: 18px;
-  height: 18px;
-}
-
-/* ==========================================
-   ESTILOS: MINHAS PROPOSTAS DE FORMAÇÃO
-   ========================================== */
-.my-proposals-section {
-  margin-top: 2rem;
-}
-
-.propostas-table-header {
-  display: grid;
-  grid-template-columns: 2fr 0.8fr 1.2fr 0.8fr 0.8fr 1fr 1.2fr 0.8fr;
-  gap: 1rem;
-  padding: 1rem 1.5rem;
-  background: #f8fafc;
-  border-radius: 10px 10px 0 0;
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: #64748b;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.propostas-table-body {
-  background: white;
-  border-radius: 0 0 10px 10px;
-}
-
-.propostas-table-row {
-  display: grid;
-  grid-template-columns: 2fr 0.8fr 1.2fr 0.8fr 0.8fr 1fr 1.2fr 0.8fr;
-  gap: 1rem;
-  padding: 1rem 1.5rem;
-  align-items: center;
-  border-bottom: 1px solid #f1f5f9;
-  font-size: 0.875rem;
-  color: #475569;
-  transition: all 0.15s ease;
-}
-
-.propostas-table-row:hover {
-  background: #f8fafc;
-}
-
-.propostas-table-row:last-child {
-  border-bottom: none;
-}
-
-.proposta-title-cell {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.proposta-title-cell strong {
-  color: #1e293b;
-  font-weight: 600;
-}
-
-/* Status badges para propostas */
-.status-pending {
-  background: #fef3c7;
-  color: #92400e;
-}
-
-.status-pending-rh {
-  background: #dbeafe;
-  color: #1e40af;
-}
-
-.status-approved {
-  background: #d1fae5;
-  color: #065f46;
-}
-
-.status-rejected {
-  background: #fee2e2;
-  color: #991b1b;
-}
-
-.status-returned {
-  background: #fef3c7;
-  color: #b45309;
-}
-
-/* Botão pequeno */
-.btn-sm {
-  padding: 0.5rem 1rem;
-  font-size: 0.8rem;
-}
-
-/* Responsive */
-@media (max-width: 1024px) {
-  .propostas-table-header,
-  .propostas-table-row {
-    grid-template-columns: 1.5fr 0.7fr 1fr 0.7fr 0.7fr 0.9fr 1fr 0.7fr;
-    gap: 0.5rem;
-    padding: 0.75rem 1rem;
-    font-size: 0.8rem;
-  }
-}
-
-@media (max-width: 768px) {
-  .propostas-table-header {
-    display: none;
-  }
-  
-  .propostas-table-row {
-    grid-template-columns: 1fr;
-    gap: 0.5rem;
-    padding: 1rem;
-  }
-  
-  .propostas-table-row > div::before {
-    content: attr(data-label);
-    font-weight: 600;
-    color: #64748b;
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    display: block;
-    margin-bottom: 0.25rem;
-  }
-}
-</style>
+<!-- JavaScript -->
+<script src="/web-files/js/formacao-centro.js"></script>
