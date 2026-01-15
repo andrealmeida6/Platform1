@@ -1,41 +1,26 @@
 // ===================================================================
-// AUTH SERVICE - Gestão de Autenticação e Permissões (v3)
+// AUTH SERVICE - Gestão de Autenticação e Permissões (v4)
 // ===================================================================
-// Power Pages Equivalent:
-// - Web Role: Define permissões baseadas em roles
-// - Contact Entity: Representa os utilizadores/colaboradores
-// - Entity Permissions: Controla acesso a registos
+// Utilizador padrão: André Borges
+// Funcionalidade "Ver como" para administradores
 // ===================================================================
 
 const AuthService = (function() {
   
-  const STORAGE_KEY = 'platform1_current_user';
   const VIEW_AS_KEY = 'platform1_view_as';
   
-  // Nome do utilizador padrão - André Borges
+  // Nome do utilizador padrão - André Borges (SEMPRE o utilizador base)
   const DEFAULT_USER_NAME = 'André Borges';
   
-  let currentUserCache = null;
-  let viewAsUserCache = null;
+  let realUserCache = null;      // Cache do utilizador real (André Borges)
+  let viewAsUserCache = null;    // Cache do utilizador "Ver como"
   let rolesCache = null;
+  let initialized = false;
   
   // ==========================================
   // FUNÇÕES DE ROLES
   // ==========================================
   
-  /**
-   * Buscar todos os roles activos
-   * Power Pages FetchXML:
-   * <fetch>
-   *   <entity name="adx_webrole">
-   *     <attribute name="adx_name"/>
-   *     <filter>
-   *       <condition attribute="statecode" operator="eq" value="0"/>
-   *     </filter>
-   *     <order attribute="adx_name"/>
-   *   </entity>
-   * </fetch>
-   */
   async function getRoles() {
     if (rolesCache) return rolesCache;
     
@@ -51,28 +36,10 @@ const AuthService = (function() {
     }
   }
   
-  /**
-   * Buscar colaboradores com os seus roles
-   * Power Pages FetchXML:
-   * <fetch>
-   *   <entity name="contact">
-   *     <attribute name="fullname"/>
-   *     <attribute name="emailaddress1"/>
-   *     <link-entity name="adx_contactwebrole" from="adx_contactid" to="contactid">
-   *       <link-entity name="adx_webrole" from="adx_webroleid" to="adx_webroleid">
-   *         <attribute name="adx_name" alias="role_name"/>
-   *       </link-entity>
-   *     </link-entity>
-   *     <filter>
-   *       <condition attribute="statecode" operator="eq" value="0"/>
-   *     </filter>
-   *   </entity>
-   * </fetch>
-   */
   async function getColaboradoresComRoles() {
     try {
       // Buscar colaboradores
-      const urlColab = `${DataService.getBaseUrl()}/rest/v1/colaboradores?ativo=eq.true&select=*,departamentos(id,codigo,nome)`;
+      const urlColab = `${DataService.getBaseUrl()}/rest/v1/colaboradores?ativo=eq.true&select=*,departamentos(id,codigo,nome)&order=nome.asc`;
       const respColab = await fetch(urlColab, { headers: DataService.getHeaders() });
       if (!respColab.ok) throw new Error('Erro ao buscar colaboradores');
       const colaboradores = await respColab.json();
@@ -110,19 +77,6 @@ const AuthService = (function() {
     }
   }
   
-  /**
-   * Buscar um colaborador específico com os seus roles
-   * Power Pages FetchXML:
-   * <fetch>
-   *   <entity name="contact">
-   *     <attribute name="fullname"/>
-   *     <attribute name="emailaddress1"/>
-   *     <filter>
-   *       <condition attribute="contactid" operator="eq" value="{colaboradorId}"/>
-   *     </filter>
-   *   </entity>
-   * </fetch>
-   */
   async function getColaboradorComRoles(colaboradorId) {
     try {
       // Buscar colaborador
@@ -159,9 +113,6 @@ const AuthService = (function() {
     }
   }
   
-  /**
-   * Buscar colaborador pelo nome
-   */
   async function getColaboradorByNome(nome) {
     try {
       // Usar ilike para busca case-insensitive
@@ -179,10 +130,6 @@ const AuthService = (function() {
     }
   }
   
-  /**
-   * Atribuir role a um colaborador
-   * Power Pages: Requer gestão via Web Role assignment
-   */
   async function atribuirRole(colaboradorId, roleId) {
     try {
       const url = `${DataService.getBaseUrl()}/rest/v1/colaborador_roles`;
@@ -208,7 +155,6 @@ const AuthService = (function() {
   
   async function removerRole(colaboradorId, roleId) {
     try {
-      // Buscar o registo
       const urlGet = `${DataService.getBaseUrl()}/rest/v1/colaborador_roles?colaborador_id=eq.${colaboradorId}&role_id=eq.${roleId}`;
       const respGet = await fetch(urlGet, { headers: DataService.getHeaders() });
       const registos = await respGet.json();
@@ -229,15 +175,46 @@ const AuthService = (function() {
   }
   
   // ==========================================
-  // GESTÃO DO UTILIZADOR ATUAL
+  // GESTÃO DO UTILIZADOR
   // ==========================================
   
-  async function setCurrentUser(colaboradorId) {
-    localStorage.setItem(STORAGE_KEY, colaboradorId);
-    currentUserCache = await getColaboradorComRoles(colaboradorId);
-    return currentUserCache;
+  /**
+   * Obter o utilizador real (SEMPRE André Borges)
+   */
+  async function getRealUser() {
+    if (realUserCache) return realUserCache;
+    
+    try {
+      console.log('[AuthService] A buscar utilizador real: ' + DEFAULT_USER_NAME);
+      realUserCache = await getColaboradorByNome(DEFAULT_USER_NAME);
+      
+      if (realUserCache) {
+        console.log('[AuthService] Utilizador real definido: ' + realUserCache.nome);
+        return realUserCache;
+      }
+      
+      // Fallback: primeiro utilizador com role Núcleo
+      console.log('[AuthService] ' + DEFAULT_USER_NAME + ' não encontrado, a buscar admin...');
+      const colaboradores = await getColaboradoresComRoles();
+      if (colaboradores.length === 0) return null;
+      
+      const admin = colaboradores.find(c => c.roles && c.roles.some(r => r.codigo === 'nucleo'));
+      realUserCache = admin || colaboradores[0];
+      
+      if (realUserCache) {
+        console.log('[AuthService] Utilizador fallback definido: ' + realUserCache.nome);
+      }
+      
+      return realUserCache;
+    } catch (error) {
+      console.error('[AuthService] Erro ao obter utilizador real:', error);
+      return null;
+    }
   }
   
+  /**
+   * Obter o utilizador atual (pode ser "Ver como" ou o real)
+   */
   async function getCurrentUser() {
     // Se há "Ver como" ativo, retorna esse utilizador
     const viewAsId = localStorage.getItem(VIEW_AS_KEY);
@@ -245,56 +222,23 @@ const AuthService = (function() {
       if (!viewAsUserCache || viewAsUserCache.id !== viewAsId) {
         viewAsUserCache = await getColaboradorComRoles(viewAsId);
       }
-      return viewAsUserCache;
-    }
-    
-    // Retorna o utilizador real
-    if (currentUserCache) return currentUserCache;
-    
-    const userId = localStorage.getItem(STORAGE_KEY);
-    if (userId) {
-      currentUserCache = await getColaboradorComRoles(userId);
-      if (currentUserCache) return currentUserCache;
-    }
-    
-    // Default: André Borges (buscar pelo nome)
-    try {
-      console.log('[AuthService] A buscar utilizador padrão: ' + DEFAULT_USER_NAME);
-      const andreBorges = await getColaboradorByNome(DEFAULT_USER_NAME);
-      if (andreBorges) {
-        await setCurrentUser(andreBorges.id);
-        console.log('[AuthService] Utilizador padrão definido: ' + andreBorges.nome);
-        return currentUserCache;
+      if (viewAsUserCache) {
+        return viewAsUserCache;
       }
-      
-      // Fallback: primeiro utilizador com role Núcleo
-      console.log('[AuthService] André Borges não encontrado, a buscar admin...');
-      const colaboradores = await getColaboradoresComRoles();
-      if (colaboradores.length === 0) return null;
-      
-      const admin = colaboradores.find(c => c.roles && c.roles.some(r => r.codigo === 'nucleo'));
-      const defaultUser = admin || colaboradores[0];
-      
-      if (defaultUser) {
-        await setCurrentUser(defaultUser.id);
-        console.log('[AuthService] Utilizador fallback definido: ' + defaultUser.nome);
-        return currentUserCache;
-      }
-    } catch (error) {
-      console.error('[AuthService] Erro ao obter utilizador default:', error);
+      // Se não encontrou o utilizador do view-as, limpar e usar o real
+      localStorage.removeItem(VIEW_AS_KEY);
     }
     
-    return null;
+    // Retorna o utilizador real (André Borges)
+    return await getRealUser();
   }
   
-  async function getRealUser() {
-    const userId = localStorage.getItem(STORAGE_KEY);
-    if (!userId) return getCurrentUser();
-    
-    if (!currentUserCache || currentUserCache.id !== userId) {
-      currentUserCache = await getColaboradorComRoles(userId);
-    }
-    return currentUserCache;
+  /**
+   * Definir manualmente o utilizador atual (apenas para testes)
+   */
+  async function setCurrentUser(colaboradorId) {
+    realUserCache = await getColaboradorComRoles(colaboradorId);
+    return realUserCache;
   }
   
   // ==========================================
@@ -305,15 +249,9 @@ const AuthService = (function() {
     if (colaboradorId) {
       localStorage.setItem(VIEW_AS_KEY, colaboradorId);
       viewAsUserCache = await getColaboradorComRoles(colaboradorId);
-      
-      // Notificar componentes que devem atualizar
-      notifyUserChange(viewAsUserCache);
+      console.log('[AuthService] Ver como definido: ' + (viewAsUserCache?.nome || 'desconhecido'));
     } else {
-      localStorage.removeItem(VIEW_AS_KEY);
-      viewAsUserCache = null;
-      
-      // Notificar que voltou ao utilizador real
-      notifyUserChange(currentUserCache);
+      clearViewAs();
     }
     return viewAsUserCache;
   }
@@ -329,9 +267,7 @@ const AuthService = (function() {
   function clearViewAs() {
     localStorage.removeItem(VIEW_AS_KEY);
     viewAsUserCache = null;
-    
-    // Notificar que voltou ao utilizador real
-    notifyUserChange(currentUserCache);
+    console.log('[AuthService] Ver como limpo, voltando a: ' + (realUserCache?.nome || DEFAULT_USER_NAME));
   }
   
   // ==========================================
@@ -339,14 +275,14 @@ const AuthService = (function() {
   // ==========================================
   
   function notifyUserChange(user) {
-    // Disparar evento customizado para componentes que precisam atualizar
-    const event = new CustomEvent('userChanged', { detail: { user: user } });
-    document.dispatchEvent(event);
+    console.log('[AuthService] A notificar mudança de utilizador:', user?.nome);
     
-    // Atualizar profile-section se existir
-    if (typeof window.initProfileSection === 'function') {
-      window.initProfileSection();
-    }
+    // Disparar evento customizado para componentes que precisam atualizar
+    const event = new CustomEvent('userChanged', { 
+      detail: { user: user },
+      bubbles: true 
+    });
+    document.dispatchEvent(event);
   }
   
   // ==========================================
@@ -366,37 +302,28 @@ const AuthService = (function() {
     return isAdmin(user);
   }
   
-  // Verificar se é AFR - RH (gestão de formações)
   function isAFRRH(user) {
     return hasRole(user, 'afr_rh');
   }
   
-  // Verificar se pode aceder à gestão de formações
   function canAccessFormacaoManagement(user) {
     return isAdmin(user) || isAFRRH(user);
   }
   
-  // Verificar se é Secretariado
   function isSecretariado(user) {
     return hasRole(user, 'secretariado');
   }
   
-  // Verificar se é Dirigente de unidade orgânica
   function isDirigente(user) {
     return hasRole(user, 'afr_dirigente');
   }
   
-  // Verificar se pode aprovar pedidos de formação (1º nível - dirigente)
   function canApproveFormacaoLevel1(user, pedido) {
-    // O dirigente da unidade orgânica do solicitante pode aprovar
     if (!isDirigente(user)) return false;
     if (!pedido || !pedido.solicitante) return false;
-    
-    // Verificar se é dirigente da mesma unidade orgânica
     return user.departamento_id === pedido.solicitante.departamento_id;
   }
   
-  // Verificar se pode aprovar pedidos de formação (2º nível - AFR-RH)
   function canApproveFormacaoLevel2(user) {
     return canAccessFormacaoManagement(user);
   }
@@ -406,21 +333,47 @@ const AuthService = (function() {
   // ==========================================
   
   async function init() {
+    if (initialized) {
+      console.log('[AuthService] Já inicializado');
+      return true;
+    }
+    
     try {
       console.log('[AuthService] A inicializar...');
-      await getCurrentUser();
       
+      // Carregar o utilizador real (André Borges)
+      await getRealUser();
+      
+      // Carregar o view-as se existir
       const viewAsId = localStorage.getItem(VIEW_AS_KEY);
       if (viewAsId) {
         viewAsUserCache = await getColaboradorComRoles(viewAsId);
+        if (!viewAsUserCache) {
+          // Se não encontrou, limpar
+          localStorage.removeItem(VIEW_AS_KEY);
+        }
       }
       
-      console.log('[AuthService] Inicializado com sucesso');
+      initialized = true;
+      console.log('[AuthService] Inicializado. Utilizador real:', realUserCache?.nome, 
+                  '| Ver como:', viewAsUserCache?.nome || 'não ativo');
       return true;
     } catch (error) {
       console.error('[AuthService] Erro na inicialização:', error);
       return false;
     }
+  }
+  
+  /**
+   * Resetar para o estado inicial (limpa view-as e caches)
+   */
+  function reset() {
+    localStorage.removeItem(VIEW_AS_KEY);
+    realUserCache = null;
+    viewAsUserCache = null;
+    rolesCache = null;
+    initialized = false;
+    console.log('[AuthService] Reset completo');
   }
   
   // ==========================================
@@ -452,6 +405,7 @@ const AuthService = (function() {
     canApproveFormacaoLevel1,
     canApproveFormacaoLevel2,
     init,
+    reset,
     DEFAULT_USER_NAME
   };
   
