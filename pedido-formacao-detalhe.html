@@ -1,0 +1,873 @@
+---
+layout: default
+title: Detalhes do Pedido de Formação
+---
+
+<link rel="stylesheet" href="{{ '/web-files/css/formacao.css' | relative_url }}">
+<link rel="stylesheet" href="{{ '/web-files/css/gestao-formacoes.css' | relative_url }}">
+
+<div class="detail-page">
+  <!-- Access Check -->
+  <div id="accessDenied" class="access-denied" style="display: none;">
+    <div class="access-denied-content">
+      <div class="access-denied-icon">🔒</div>
+      <h2>Acesso Restrito</h2>
+      <p>Não tem permissão para ver este pedido.</p>
+      <a href="{{ '/gestao-formacoes' | relative_url }}" class="btn btn-primary">Voltar à Gestão</a>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div id="loadingState" class="loading-state">
+    <div class="spinner"></div>
+    <p>A carregar pedido...</p>
+  </div>
+
+  <!-- Main Content -->
+  <div id="mainContent" style="display: none;">
+    <!-- Page Header -->
+    <div class="page-header">
+      <div class="page-header-left">
+        <a href="{{ '/gestao-formacoes' | relative_url }}" class="back-button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+        </a>
+        <div>
+          <h1 id="pageTitle">Pedido de Formação</h1>
+          <p id="pageSubtitle">Detalhes e aprovação</p>
+        </div>
+      </div>
+      <div class="page-header-right">
+        <span id="estadoBadge" class="status-badge"></span>
+      </div>
+    </div>
+
+    <!-- Content Grid -->
+    <div class="detail-grid">
+      <!-- Main Column -->
+      <div class="detail-main">
+        <!-- Info Card -->
+        <div class="detail-card">
+          <div class="card-header">
+            <h3>Informação do Pedido</h3>
+          </div>
+          <div class="card-body">
+            <div class="info-grid-4">
+              <div class="info-item">
+                <span class="label">Nº Pedido</span>
+                <span class="value" id="numeroPedido">-</span>
+              </div>
+              <div class="info-item">
+                <span class="label">Tipo</span>
+                <span class="value" id="tipoPedido">-</span>
+              </div>
+              <div class="info-item">
+                <span class="label">Entidade Formadora</span>
+                <span class="value" id="entidadePedido">-</span>
+              </div>
+              <div class="info-item">
+                <span class="label">Duração</span>
+                <span class="value" id="duracaoPedido">-</span>
+              </div>
+              <div class="info-item">
+                <span class="label">Data Prevista Início</span>
+                <span class="value" id="dataInicioPedido">-</span>
+              </div>
+              <div class="info-item">
+                <span class="label">Data Prevista Fim</span>
+                <span class="value" id="dataFimPedido">-</span>
+              </div>
+              <div class="info-item">
+                <span class="label">Custo Estimado</span>
+                <span class="value" id="custoPedido">-</span>
+              </div>
+              <div class="info-item">
+                <span class="label">Data Submissão</span>
+                <span class="value" id="dataSubmissao">-</span>
+              </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <h4>Título</h4>
+            <p id="tituloPedido" class="highlight-text"></p>
+
+            <h4>Objetivo</h4>
+            <p id="objetivoPedido"></p>
+
+            <h4>Justificação</h4>
+            <div class="justificacao-box" id="justificacaoPedido"></div>
+          </div>
+        </div>
+
+        <!-- Solicitante Card -->
+        <div class="detail-card">
+          <div class="card-header">
+            <h3>Solicitante</h3>
+          </div>
+          <div class="card-body">
+            <div class="solicitante-info">
+              <div class="avatar-large" id="solicitanteAvatar">-</div>
+              <div class="solicitante-details">
+                <h4 id="solicitanteNome">-</h4>
+                <p id="solicitanteDept">-</p>
+                <p id="solicitanteEmail" class="email">-</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions Card (if can approve) -->
+        <div class="detail-card" id="actionsCard" style="display: none;">
+          <div class="card-header">
+            <h3>Ações de Aprovação</h3>
+          </div>
+          <div class="card-body">
+            <div class="form-group">
+              <label for="comentarioAcao">Comentário</label>
+              <textarea id="comentarioAcao" rows="3" placeholder="Adicione um comentário (obrigatório para rejeição/devolução)..."></textarea>
+            </div>
+            <div class="action-buttons">
+              <button class="btn btn-danger" onclick="executarAcao('rejeitar')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="15" y1="9" x2="9" y2="15"/>
+                  <line x1="9" y1="9" x2="15" y2="15"/>
+                </svg>
+                Rejeitar
+              </button>
+              <button class="btn btn-secondary" onclick="executarAcao('devolver')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="1 4 1 10 7 10"/>
+                  <path d="M3.51 15a9 9 0 102.13-9.36L1 10"/>
+                </svg>
+                Devolver
+              </button>
+              <button class="btn btn-success" onclick="executarAcao('aprovar')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+                  <polyline points="22 4 12 14.01 9 11.01"/>
+                </svg>
+                Aprovar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <div class="detail-sidebar">
+        <!-- Timeline Card -->
+        <div class="detail-card">
+          <div class="card-header">
+            <h3>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+              </svg>
+              Histórico
+            </h3>
+          </div>
+          <div class="card-body">
+            <div class="timeline" id="timelineContainer">
+              <!-- Preenchido por JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Aprovações Card -->
+        <div class="detail-card">
+          <div class="card-header">
+            <h3>Estado das Aprovações</h3>
+          </div>
+          <div class="card-body">
+            <div class="approval-status">
+              <div class="approval-item" id="aprovacaoDirigente">
+                <div class="approval-icon pending">⏳</div>
+                <div class="approval-info">
+                  <span class="approval-label">Dirigente</span>
+                  <span class="approval-status-text">Pendente</span>
+                </div>
+              </div>
+              <div class="approval-item" id="aprovacaoRH">
+                <div class="approval-icon pending">⏳</div>
+                <div class="approval-info">
+                  <span class="approval-label">AFR-RH</span>
+                  <span class="approval-status-text">Pendente</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Documento Card -->
+        <div class="detail-card" id="documentoCard" style="display: none;">
+          <div class="card-header">
+            <h3>Documento Anexo</h3>
+          </div>
+          <div class="card-body">
+            <a href="#" id="documentoLink" class="documento-link" target="_blank">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+              </svg>
+              <span id="documentoNome">documento.pdf</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container"></div>
+
+<style>
+.detail-page {
+  padding: 0;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+@media (max-width: 1024px) {
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.detail-card {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  margin-bottom: 1.5rem;
+}
+
+.card-header {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.card-header h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+}
+
+.card-header h3 svg {
+  width: 18px;
+  height: 18px;
+  color: #64748b;
+}
+
+.card-body {
+  padding: 1.5rem;
+}
+
+.card-body h4 {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 1.5rem 0 0.5rem 0;
+}
+
+.card-body h4:first-child {
+  margin-top: 0;
+}
+
+.card-body p {
+  color: #475569;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.info-grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+}
+
+@media (max-width: 768px) {
+  .info-grid-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.info-item .label {
+  font-size: 0.75rem;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.info-item .value {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.divider {
+  height: 1px;
+  background: #f1f5f9;
+  margin: 1.5rem 0;
+}
+
+.highlight-text {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1e293b !important;
+}
+
+.justificacao-box {
+  background: #f8fafc;
+  border-left: 3px solid var(--primary-color, #00b276);
+  padding: 1rem;
+  border-radius: 0 8px 8px 0;
+  color: #475569;
+  line-height: 1.6;
+}
+
+.solicitante-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.avatar-large {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary-color, #00b276), var(--secondary-color, #00875a));
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.solicitante-details h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 0.25rem 0;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.solicitante-details p {
+  font-size: 0.875rem;
+  color: #64748b;
+  margin: 0;
+}
+
+.solicitante-details .email {
+  color: var(--primary-color, #00b276);
+  margin-top: 0.25rem;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.action-buttons .btn {
+  flex: 1;
+  min-width: 120px;
+  justify-content: center;
+}
+
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.timeline-item {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem 0;
+  position: relative;
+}
+
+.timeline-item:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  left: 15px;
+  top: 40px;
+  bottom: -8px;
+  width: 2px;
+  background: #e2e8f0;
+}
+
+.timeline-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.timeline-icon.success { background: #d1fae5; color: #065f46; }
+.timeline-icon.danger { background: #fee2e2; color: #991b1b; }
+.timeline-icon.neutral { background: #f1f5f9; color: #64748b; }
+.timeline-icon.pending { background: #fef3c7; color: #92400e; }
+
+.timeline-content {
+  flex: 1;
+}
+
+.timeline-title {
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 0.875rem;
+}
+
+.timeline-user {
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+.timeline-date {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  margin-top: 0.25rem;
+}
+
+.timeline-comment {
+  font-size: 0.8rem;
+  color: #64748b;
+  background: #f8fafc;
+  padding: 0.5rem;
+  border-radius: 6px;
+  margin-top: 0.5rem;
+  font-style: italic;
+}
+
+.approval-status {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.approval-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem;
+  background: #f8fafc;
+  border-radius: 10px;
+}
+
+.approval-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+}
+
+.approval-icon.pending { background: #fef3c7; }
+.approval-icon.approved { background: #d1fae5; }
+.approval-icon.rejected { background: #fee2e2; }
+
+.approval-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.approval-label {
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 0.875rem;
+}
+
+.approval-status-text {
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+.documento-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: #f8fafc;
+  border-radius: 10px;
+  color: var(--primary-color, #00b276);
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.documento-link:hover {
+  background: #f1f5f9;
+}
+
+.documento-link svg {
+  width: 24px;
+  height: 24px;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #1e293b;
+  margin-bottom: 0.5rem;
+}
+
+.form-group textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  resize: vertical;
+  transition: border-color 0.2s;
+}
+
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--primary-color, #00b276);
+}
+</style>
+
+<script>
+let currentUser = null;
+let pedido = null;
+let isGestor = false;
+
+async function waitForServices() {
+  return new Promise((resolve) => {
+    const check = () => {
+      if (typeof DataService !== 'undefined' && typeof AuthService !== 'undefined') {
+        resolve();
+      } else {
+        setTimeout(check, 100);
+      }
+    };
+    check();
+  });
+}
+
+document.addEventListener('DOMContentLoaded', async function() {
+  try {
+    await waitForServices();
+    currentUser = await AuthService.getCurrentUser();
+    
+    // Verificar acesso
+    isGestor = AuthService.canAccessFormacaoManagement(currentUser);
+    
+    // Obter ID do pedido da URL
+    const params = new URLSearchParams(window.location.search);
+    const pedidoId = params.get('id');
+    
+    if (!pedidoId) {
+      document.getElementById('loadingState').style.display = 'none';
+      document.getElementById('accessDenied').style.display = 'flex';
+      return;
+    }
+    
+    // Carregar pedido
+    pedido = await DataService.getPedidoFormacaoById(pedidoId);
+    
+    if (!pedido) {
+      document.getElementById('loadingState').style.display = 'none';
+      document.getElementById('accessDenied').style.display = 'flex';
+      return;
+    }
+    
+    // Verificar se tem acesso (gestor ou solicitante)
+    if (!isGestor && pedido.solicitante_id !== currentUser?.id) {
+      document.getElementById('loadingState').style.display = 'none';
+      document.getElementById('accessDenied').style.display = 'flex';
+      return;
+    }
+    
+    renderPedido();
+    
+    document.getElementById('loadingState').style.display = 'none';
+    document.getElementById('mainContent').style.display = 'block';
+    
+  } catch (error) {
+    console.error('[PedidoDetalhe] Erro:', error);
+    document.getElementById('loadingState').innerHTML = '<p>Erro ao carregar pedido.</p>';
+  }
+});
+
+function renderPedido() {
+  // Título e subtítulo
+  document.getElementById('pageTitle').textContent = `Pedido ${pedido.numero_pedido || pedido.id.substring(0, 8)}`;
+  document.getElementById('pageSubtitle').textContent = pedido.titulo;
+  
+  // Estado
+  const estadoBadge = document.getElementById('estadoBadge');
+  estadoBadge.textContent = getEstadoLabel(pedido.estado);
+  estadoBadge.className = `status-badge ${getEstadoClass(pedido.estado)}`;
+  
+  // Informações principais
+  document.getElementById('numeroPedido').textContent = pedido.numero_pedido || pedido.id.substring(0, 8);
+  document.getElementById('tipoPedido').textContent = pedido.tipo || 'N/D';
+  document.getElementById('entidadePedido').textContent = pedido.entidade_formadora || 'N/D';
+  document.getElementById('duracaoPedido').textContent = pedido.duracao_horas ? `${pedido.duracao_horas} horas` : 'N/D';
+  document.getElementById('dataInicioPedido').textContent = formatDate(pedido.data_prevista_inicio);
+  document.getElementById('dataFimPedido').textContent = formatDate(pedido.data_prevista_fim);
+  document.getElementById('custoPedido').textContent = pedido.custo_estimado ? `${pedido.custo_estimado}€` : 'N/D';
+  document.getElementById('dataSubmissao').textContent = formatDateTime(pedido.created_at);
+  
+  document.getElementById('tituloPedido').textContent = pedido.titulo;
+  document.getElementById('objetivoPedido').textContent = pedido.objetivo || 'Sem descrição.';
+  document.getElementById('justificacaoPedido').textContent = pedido.justificacao || 'Sem justificação.';
+  
+  // Solicitante
+  const solicitante = pedido.solicitante || {};
+  const initials = (solicitante.nome || 'N').split(' ').map(n => n[0]).join('').substring(0, 2);
+  document.getElementById('solicitanteAvatar').textContent = initials;
+  document.getElementById('solicitanteNome').textContent = solicitante.nome || 'Desconhecido';
+  document.getElementById('solicitanteDept').textContent = solicitante.departamentos?.nome || pedido.departamentos?.nome || 'N/D';
+  document.getElementById('solicitanteEmail').textContent = solicitante.email || '';
+  
+  // Documento
+  if (pedido.documento_url) {
+    document.getElementById('documentoCard').style.display = 'block';
+    document.getElementById('documentoLink').href = pedido.documento_url;
+    document.getElementById('documentoNome').textContent = pedido.documento_nome || 'documento.pdf';
+  }
+  
+  // Histórico/Timeline
+  renderTimeline();
+  
+  // Estado das aprovações
+  renderAprovacoes();
+  
+  // Mostrar ações se pode aprovar
+  const canApprove = isGestor && (
+    (pedido.estado === 'pendente_rh') || 
+    (pedido.estado === 'pendente_dirigente' && AuthService.isDirigente(currentUser))
+  );
+  
+  if (canApprove) {
+    document.getElementById('actionsCard').style.display = 'block';
+  }
+}
+
+function renderTimeline() {
+  const container = document.getElementById('timelineContainer');
+  const historico = pedido.pedidos_formacao_historico || [];
+  
+  let html = '';
+  
+  // Histórico existente
+  historico.forEach(h => {
+    const iconClass = h.acao?.includes('Aprovado') ? 'success' : 
+                     h.acao?.includes('Rejeitado') ? 'danger' : 
+                     h.acao?.includes('Devolvido') ? 'neutral' : 'neutral';
+    const icon = h.acao?.includes('Aprovado') ? '✓' : 
+                h.acao?.includes('Rejeitado') ? '✗' : 
+                h.acao?.includes('Devolvido') ? '↩' : '•';
+    
+    html += `
+      <div class="timeline-item">
+        <div class="timeline-icon ${iconClass}">${icon}</div>
+        <div class="timeline-content">
+          <div class="timeline-title">${h.acao}</div>
+          <div class="timeline-user">${h.user_nome || 'Sistema'}</div>
+          <div class="timeline-date">${formatDateTime(h.created_at)}</div>
+          ${h.comentario ? `<div class="timeline-comment">${h.comentario}</div>` : ''}
+        </div>
+      </div>
+    `;
+  });
+  
+  // Estado pendente atual
+  if (pedido.estado.startsWith('pendente')) {
+    html += `
+      <div class="timeline-item">
+        <div class="timeline-icon pending">⏳</div>
+        <div class="timeline-content">
+          <div class="timeline-title">Aguarda ${pedido.estado === 'pendente_dirigente' ? 'Dirigente' : 'AFR-RH'}</div>
+          <div class="timeline-date">Pendente</div>
+        </div>
+      </div>
+    `;
+  }
+  
+  container.innerHTML = html || '<p class="empty-msg">Sem histórico.</p>';
+}
+
+function renderAprovacoes() {
+  // Aprovação Dirigente
+  const divDirigente = document.getElementById('aprovacaoDirigente');
+  const iconDirigente = divDirigente.querySelector('.approval-icon');
+  const statusDirigente = divDirigente.querySelector('.approval-status-text');
+  
+  if (pedido.dirigente_decisao === 'aprovado') {
+    iconDirigente.className = 'approval-icon approved';
+    iconDirigente.textContent = '✓';
+    statusDirigente.textContent = `Aprovado por ${pedido.dirigente?.nome || 'Dirigente'}`;
+  } else if (pedido.dirigente_decisao === 'rejeitado') {
+    iconDirigente.className = 'approval-icon rejected';
+    iconDirigente.textContent = '✗';
+    statusDirigente.textContent = 'Rejeitado';
+  } else if (pedido.estado === 'pendente_dirigente') {
+    iconDirigente.className = 'approval-icon pending';
+    iconDirigente.textContent = '⏳';
+    statusDirigente.textContent = 'Aguarda aprovação';
+  } else {
+    iconDirigente.className = 'approval-icon approved';
+    iconDirigente.textContent = '✓';
+    statusDirigente.textContent = 'Aprovado';
+  }
+  
+  // Aprovação RH
+  const divRH = document.getElementById('aprovacaoRH');
+  const iconRH = divRH.querySelector('.approval-icon');
+  const statusRH = divRH.querySelector('.approval-status-text');
+  
+  if (pedido.rh_decisao === 'aprovado') {
+    iconRH.className = 'approval-icon approved';
+    iconRH.textContent = '✓';
+    statusRH.textContent = `Aprovado por ${pedido.rh_aprovador?.nome || 'AFR-RH'}`;
+  } else if (pedido.rh_decisao === 'rejeitado') {
+    iconRH.className = 'approval-icon rejected';
+    iconRH.textContent = '✗';
+    statusRH.textContent = 'Rejeitado';
+  } else if (pedido.estado === 'pendente_rh') {
+    iconRH.className = 'approval-icon pending';
+    iconRH.textContent = '⏳';
+    statusRH.textContent = 'Aguarda aprovação';
+  } else if (pedido.estado === 'pendente_dirigente') {
+    iconRH.className = 'approval-icon pending';
+    iconRH.textContent = '—';
+    statusRH.textContent = 'Aguarda dirigente';
+  } else {
+    iconRH.className = 'approval-icon pending';
+    iconRH.textContent = '—';
+    statusRH.textContent = '-';
+  }
+}
+
+async function executarAcao(tipo) {
+  const comentario = document.getElementById('comentarioAcao').value.trim();
+  
+  if ((tipo === 'rejeitar' || tipo === 'devolver') && !comentario) {
+    showToast('É obrigatório indicar o motivo.', 'error');
+    return;
+  }
+  
+  try {
+    const isRHLevel = pedido.estado === 'pendente_rh';
+    
+    if (tipo === 'aprovar') {
+      if (isRHLevel) {
+        await DataService.aprovarPedidoRH(pedido.id, currentUser.id, comentario);
+      } else {
+        await DataService.aprovarPedidoDirigente(pedido.id, currentUser.id, comentario);
+      }
+      await DataService.addHistoricoPedido(pedido.id, `Aprovado por ${isRHLevel ? 'AFR-RH' : 'Dirigente'}`, currentUser.id, currentUser.nome, comentario, pedido.estado, isRHLevel ? 'aprovado' : 'pendente_rh');
+      showToast('Pedido aprovado com sucesso!', 'success');
+    } else if (tipo === 'rejeitar') {
+      if (isRHLevel) {
+        await DataService.rejeitarPedidoRH(pedido.id, currentUser.id, comentario);
+      } else {
+        await DataService.rejeitarPedidoDirigente(pedido.id, currentUser.id, comentario);
+      }
+      await DataService.addHistoricoPedido(pedido.id, `Rejeitado por ${isRHLevel ? 'AFR-RH' : 'Dirigente'}`, currentUser.id, currentUser.nome, comentario, pedido.estado, 'rejeitado');
+      showToast('Pedido rejeitado.', 'info');
+    } else if (tipo === 'devolver') {
+      if (isRHLevel) {
+        await DataService.devolverPedidoRH(pedido.id, currentUser.id, comentario);
+      } else {
+        await DataService.devolverPedidoDirigente(pedido.id, currentUser.id, comentario);
+      }
+      await DataService.addHistoricoPedido(pedido.id, `Devolvido por ${isRHLevel ? 'AFR-RH' : 'Dirigente'}`, currentUser.id, currentUser.nome, comentario, pedido.estado, 'devolvido');
+      showToast('Pedido devolvido para ajustes.', 'info');
+    }
+    
+    setTimeout(() => {
+      window.location.href = '{{ "/gestao-formacoes" | relative_url }}';
+    }, 1500);
+    
+  } catch (error) {
+    console.error('Erro na ação:', error);
+    showToast('Erro ao processar ação.', 'error');
+  }
+}
+
+function getEstadoClass(estado) {
+  const classes = {
+    'pendente_dirigente': 'status-pending',
+    'pendente_rh': 'status-pending-rh',
+    'aprovado': 'status-approved',
+    'rejeitado': 'status-rejected',
+    'devolvido': 'status-pending'
+  };
+  return classes[estado] || '';
+}
+
+function getEstadoLabel(estado) {
+  const labels = {
+    'pendente_dirigente': 'Aguarda Dirigente',
+    'pendente_rh': 'Aguarda AFR-RH',
+    'aprovado': 'Aprovado',
+    'rejeitado': 'Rejeitado',
+    'devolvido': 'Devolvido'
+  };
+  return labels[estado] || estado;
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return 'N/D';
+  return new Date(dateStr).toLocaleDateString('pt-PT');
+}
+
+function formatDateTime(dateStr) {
+  if (!dateStr) return 'N/D';
+  const date = new Date(dateStr);
+  return date.toLocaleDateString('pt-PT') + ' às ' + date.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' });
+}
+
+function showToast(message, type = 'success') {
+  let container = document.querySelector('.toast-container');
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.innerHTML = `<span class="toast-message">${message}</span>`;
+  container.appendChild(toast);
+  
+  setTimeout(() => toast.classList.add('show'), 10);
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
+}
+</script>
