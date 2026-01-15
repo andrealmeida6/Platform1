@@ -245,7 +245,10 @@ const DataService = (function() {
   }
   
   async function getFormacaoById(id) {
-    const select = '*,entidades_formadoras(id,codigo,nome),formadores(id,nome,especialidade,tipo,colaborador_id),formacao_sessoes(id,data,hora_inicio,hora_fim,estado,codigo_entrada,codigo_saida,hora_abertura_entrada,hora_abertura_saida,hora_conclusao),formacao_inscricoes(id,colaborador_id,estado,tipo_inscricao,alocado_por,data_alocacao,notificacao_enviada,notificacao_lida,mensagem_alocacao,colaboradores(id,nome,email,departamento_id)),formacao_departamentos(id,departamento_id,departamentos(id,codigo,nome)),formacao_favoritos(id,colaborador_id),formacao_presencas(id,colaborador_id,sessao_id,presente,hora_entrada,hora_saida,validado,colaboradores(id,nome)),formacao_resultados(id,colaborador_id,resultado),formacao_avaliacoes(id,colaborador_id,score_conteudo,score_formador,score_organizacao,comentario,created_at),formacao_formadores(id,formador_id,entidade_id,principal,formadores(id,nome,colaborador_id),entidades_formadoras(id,nome)),formacao_anexos(id,nome,tipo,url,tamanho_bytes)';
+    // CORRIGIDO: Adicionados hints de FK para resolver referências ambíguas
+    // - formacao_inscricoes: colaborador via formacao_inscricoes_colaborador_id_fkey
+    // - formacao_presencas: colaborador via formacao_presencas_colaborador_id_fkey
+    const select = '*,entidades_formadoras(id,codigo,nome),formadores(id,nome,especialidade,tipo,colaborador_id),formacao_sessoes(id,data,hora_inicio,hora_fim,estado,codigo_entrada,codigo_saida,hora_abertura_entrada,hora_abertura_saida,hora_conclusao),formacao_inscricoes(id,colaborador_id,estado,tipo_inscricao,alocado_por,data_alocacao,notificacao_enviada,notificacao_lida,mensagem_alocacao,colaboradores!formacao_inscricoes_colaborador_id_fkey(id,nome,email,departamento_id)),formacao_departamentos(id,departamento_id,departamentos(id,codigo,nome)),formacao_favoritos(id,colaborador_id),formacao_presencas(id,colaborador_id,sessao_id,presente,hora_entrada,hora_saida,validado,colaboradores!formacao_presencas_colaborador_id_fkey(id,nome)),formacao_resultados(id,colaborador_id,resultado),formacao_avaliacoes(id,colaborador_id,score_conteudo,score_formador,score_organizacao,comentario,created_at),formacao_formadores(id,formador_id,entidade_id,principal,formadores!formacao_formadores_formador_id_fkey(id,nome,colaborador_id),entidades_formadoras!formacao_formadores_entidade_id_fkey(id,nome)),formacao_anexos(id,nome,tipo,url,tamanho_bytes)';
     const result = await retrieveWithRelations('formacoes', select, { id });
     return result.length > 0 ? result[0] : null;
   }
@@ -547,14 +550,15 @@ const DataService = (function() {
   
   // Obter sessão por ID com presenças
   async function getSessaoById(sessaoId) {
-    const select = '*,formacoes(id,titulo),formacao_presencas(id,colaborador_id,hora_entrada,hora_saida,validado,colaboradores(id,nome))';
+    // CORRIGIDO: Adicionado hint de FK para colaboradores em formacao_presencas
+    const select = '*,formacoes(id,titulo),formacao_presencas(id,colaborador_id,hora_entrada,hora_saida,validado,colaboradores!formacao_presencas_colaborador_id_fkey(id,nome))';
     const result = await retrieveWithRelations('formacao_sessoes', select, { id: sessaoId });
     return result.length > 0 ? result[0] : null;
   }
   
   // Obter presenças de uma sessão
   async function getPresencasSessao(sessaoId) {
-    const select = '*,colaboradores(id,nome,email,departamentos(id,nome))';
+    const select = '*,colaboradores!formacao_presencas_colaborador_id_fkey(id,nome,email,departamentos(id,nome))';
     return retrieveWithRelations('formacao_presencas', select, { sessao_id: sessaoId });
   }
   
@@ -843,12 +847,12 @@ const DataService = (function() {
   
   // --- DESLOCAÇÕES ---
   async function getDeslocacoes() {
-    const select = '*,criador:colaboradores!deslocacoes_criado_por_fkey(id,nome),deslocacao_colaboradores(id,colaborador_id,ordem,colaboradores(id,nome,departamento_id,departamentos(id,nome))),deslocacao_transportes(id,tipo_transporte_id,viatura_id,tipo_publico_id,motorista_id,ordem,observacoes,tipos_transporte(id,codigo,nome,requer_motorista,requer_viatura),frota(id,matricula,modelo,tipo,lugares),tipos_transporte_publico(id,codigo,nome),motorista:colaboradores(id,nome)),deslocacao_anexos(id,nome_ficheiro,url,tipo_ficheiro)';
+    const select = '*,criador:colaboradores!deslocacoes_criado_por_fkey(id,nome),deslocacao_colaboradores(id,colaborador_id,ordem,colaboradores!deslocacao_colaboradores_colaborador_id_fkey(id,nome,departamento_id,departamentos(id,nome))),deslocacao_transportes(id,tipo_transporte_id,viatura_id,tipo_publico_id,motorista_id,ordem,observacoes,tipos_transporte(id,codigo,nome,requer_motorista,requer_viatura),frota(id,matricula,modelo,tipo,lugares),tipos_transporte_publico(id,codigo,nome),motorista:colaboradores!deslocacao_transportes_motorista_id_fkey(id,nome)),deslocacao_anexos(id,nome_ficheiro,url,tipo_ficheiro)';
     return retrieveWithRelations('deslocacoes', select);
   }
   
   async function getDeslocacaoById(id) {
-    const select = '*,criador:colaboradores!deslocacoes_criado_por_fkey(id,nome),deslocacao_colaboradores(id,colaborador_id,ordem,colaboradores(id,nome,departamento_id,departamentos(id,nome))),deslocacao_transportes(id,tipo_transporte_id,viatura_id,tipo_publico_id,motorista_id,ordem,observacoes,tipos_transporte(id,codigo,nome,requer_motorista,requer_viatura),frota(id,matricula,modelo,tipo,lugares),tipos_transporte_publico(id,codigo,nome),motorista:colaboradores(id,nome)),deslocacao_anexos(id,nome_ficheiro,url,tipo_ficheiro)';
+    const select = '*,criador:colaboradores!deslocacoes_criado_por_fkey(id,nome),deslocacao_colaboradores(id,colaborador_id,ordem,colaboradores!deslocacao_colaboradores_colaborador_id_fkey(id,nome,departamento_id,departamentos(id,nome))),deslocacao_transportes(id,tipo_transporte_id,viatura_id,tipo_publico_id,motorista_id,ordem,observacoes,tipos_transporte(id,codigo,nome,requer_motorista,requer_viatura),frota(id,matricula,modelo,tipo,lugares),tipos_transporte_publico(id,codigo,nome),motorista:colaboradores!deslocacao_transportes_motorista_id_fkey(id,nome)),deslocacao_anexos(id,nome_ficheiro,url,tipo_ficheiro)';
     const result = await retrieveWithRelations('deslocacoes', select, { id });
     return result.length > 0 ? result[0] : null;
   }
