@@ -303,32 +303,6 @@ title: Gestão de Formações
   </div>
 </div>
 
-<!-- Modal: Detalhes do Pedido -->
-<div class="modal-overlay" id="modalDetalhesPedido">
-  <div class="modal-content modal-xlarge">
-    <div class="modal-header">
-      <h3 id="modalPedidoTitle">Detalhes do Pedido</h3>
-      <button class="modal-close" onclick="closeModal('modalDetalhesPedido')">&times;</button>
-    </div>
-    <div class="modal-body" id="modalPedidoBody">
-      <!-- Conteúdo preenchido por JavaScript -->
-    </div>
-  </div>
-</div>
-
-<!-- Modal: Detalhes da Formação com Sessões e Presenças -->
-<div class="modal-overlay" id="modalDetalhesFormacao">
-  <div class="modal-content modal-xlarge">
-    <div class="modal-header">
-      <h3 id="modalFormacaoTitle">Detalhes da Formação</h3>
-      <button class="modal-close" onclick="closeModal('modalDetalhesFormacao')">&times;</button>
-    </div>
-    <div class="modal-body" id="modalFormacaoBody">
-      <!-- Conteúdo preenchido por JavaScript -->
-    </div>
-  </div>
-</div>
-
 <!-- Modal: Ação de Aprovação/Rejeição -->
 <div class="modal-overlay" id="modalAcao">
   <div class="modal-content">
@@ -367,6 +341,14 @@ let currentAcao = null;
 let isGestor = false;
 let isFormador = false;
 let formadorId = null;
+
+function getBaseUrl() {
+  const path = window.location.pathname;
+  if (path.includes('/Platform1')) {
+    return '/Platform1';
+  }
+  return '';
+}
 
 // Aguardar serviços
 async function waitForServices() {
@@ -532,277 +514,10 @@ function filterPedidos() {
   renderPedidos(filtered);
 }
 
-async function abrirDetalhesPedido(pedidoId) {
-  selectedPedido = allPedidos.find(p => p.id === pedidoId);
-  if (!selectedPedido) return;
-  
-  const estadoClass = getEstadoClass(selectedPedido.estado);
-  const estadoLabel = getEstadoLabel(selectedPedido.estado);
-  const solicitanteNome = selectedPedido.solicitante?.nome || 'Desconhecido';
-  const departamento = selectedPedido.solicitante?.departamentos?.nome || selectedPedido.departamentos?.nome || 'N/D';
-  const initials = solicitanteNome.split(' ').map(n => n[0]).join('').substring(0, 2);
-  
-  // Verificar permissões de aprovação
-  const canApprove = (selectedPedido.estado === 'pendente_rh') || 
-                     (selectedPedido.estado === 'pendente_dirigente' && AuthService.isDirigente(currentUser));
-  
-  // Construir histórico
-  const historico = selectedPedido.pedidos_formacao_historico || [];
-  
-  document.getElementById('modalPedidoTitle').textContent = `Pedido ${selectedPedido.numero_pedido || selectedPedido.id.substring(0, 8)}`;
-  
-  document.getElementById('modalPedidoBody').innerHTML = `
-    <div class="pedido-detail-grid">
-      <div class="pedido-detail-main">
-        <!-- Status Badge -->
-        <div class="detail-status">
-          <span class="status-badge ${estadoClass}">${estadoLabel}</span>
-        </div>
-        
-        <!-- Info Principal -->
-        <div class="detail-section">
-          <h4>${selectedPedido.titulo}</h4>
-          <div class="detail-meta-grid">
-            <div class="detail-meta-item">
-              <span class="label">Tipo</span>
-              <span class="value">${selectedPedido.tipo || 'N/D'}</span>
-            </div>
-            <div class="detail-meta-item">
-              <span class="label">Entidade</span>
-              <span class="value">${selectedPedido.entidade_formadora || 'N/D'}</span>
-            </div>
-            <div class="detail-meta-item">
-              <span class="label">Duração</span>
-              <span class="value">${selectedPedido.duracao_horas || 0} horas</span>
-            </div>
-            <div class="detail-meta-item">
-              <span class="label">Data Pedido</span>
-              <span class="value">${formatDate(selectedPedido.created_at)}</span>
-            </div>
-            ${selectedPedido.data_prevista_inicio ? `
-            <div class="detail-meta-item">
-              <span class="label">Data Prevista</span>
-              <span class="value">${formatDate(selectedPedido.data_prevista_inicio)}</span>
-            </div>
-            ` : ''}
-            ${selectedPedido.custo_estimado ? `
-            <div class="detail-meta-item">
-              <span class="label">Custo Estimado</span>
-              <span class="value">${selectedPedido.custo_estimado}€</span>
-            </div>
-            ` : ''}
-          </div>
-        </div>
-        
-        <!-- Solicitante -->
-        <div class="detail-section">
-          <h5>Solicitante</h5>
-          <div class="solicitante-card">
-            <div class="avatar">${initials}</div>
-            <div>
-              <div class="nome">${solicitanteNome}</div>
-              <div class="dept">${departamento}</div>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Objetivo -->
-        <div class="detail-section">
-          <h5>Objetivo</h5>
-          <p>${selectedPedido.objetivo || 'Sem descrição.'}</p>
-        </div>
-        
-        <!-- Justificação -->
-        <div class="detail-section">
-          <h5>Justificação</h5>
-          <div class="justificacao-box">
-            ${selectedPedido.justificacao || 'Sem justificação.'}
-          </div>
-        </div>
-        
-        <!-- Ações -->
-        ${canApprove ? `
-          <div class="detail-actions">
-            <button class="btn btn-danger" onclick="iniciarAcao('rejeitar')">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="10"/>
-                <line x1="15" y1="9" x2="9" y2="15"/>
-                <line x1="9" y1="9" x2="15" y2="15"/>
-              </svg>
-              Rejeitar
-            </button>
-            <button class="btn btn-secondary" onclick="iniciarAcao('devolver')">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="1 4 1 10 7 10"/>
-                <path d="M3.51 15a9 9 0 102.13-9.36L1 10"/>
-              </svg>
-              Devolver
-            </button>
-            <button class="btn btn-success" onclick="iniciarAcao('aprovar')">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
-                <polyline points="22 4 12 14.01 9 11.01"/>
-              </svg>
-              Aprovar
-            </button>
-          </div>
-        ` : ''}
-      </div>
-      
-      <!-- Timeline -->
-      <div class="pedido-detail-sidebar">
-        <div class="timeline-card">
-          <h5>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="10"/>
-              <polyline points="12 6 12 12 16 14"/>
-            </svg>
-            Histórico
-          </h5>
-          <div class="timeline">
-            ${historico.map(h => {
-              const iconClass = h.acao?.includes('Aprovado') ? 'success' : 
-                               h.acao?.includes('Rejeitado') ? 'danger' : 
-                               h.acao?.includes('Devolvido') ? 'neutral' : 'neutral';
-              const icon = h.acao?.includes('Aprovado') ? '✓' : 
-                          h.acao?.includes('Rejeitado') ? '✗' : 
-                          h.acao?.includes('Devolvido') ? '↩' : '•';
-              return `
-                <div class="timeline-item">
-                  <div class="timeline-icon ${iconClass}">${icon}</div>
-                  <div class="timeline-content">
-                    <div class="timeline-title">${h.acao}</div>
-                    <div class="timeline-user">${h.user_nome || 'Sistema'}</div>
-                    <div class="timeline-date">${formatDateTime(h.created_at)}</div>
-                    ${h.comentario ? `<div class="timeline-comment">${h.comentario}</div>` : ''}
-                  </div>
-                </div>
-              `;
-            }).join('')}
-            
-            ${selectedPedido.estado.startsWith('pendente') ? `
-              <div class="timeline-item">
-                <div class="timeline-icon pending">⏳</div>
-                <div class="timeline-content">
-                  <div class="timeline-title">Aguarda ${selectedPedido.estado === 'pendente_dirigente' ? 'Dirigente' : 'AFR-RH'}</div>
-                  <div class="timeline-date">Pendente</div>
-                </div>
-              </div>
-            ` : ''}
-          </div>
-        </div>
-        
-        <!-- Resumo -->
-        <div class="summary-card">
-          <h5>Resumo</h5>
-          <div class="summary-item">
-            <span>Nº Pedido</span>
-            <span>${selectedPedido.numero_pedido || selectedPedido.id.substring(0, 8)}</span>
-          </div>
-          <div class="summary-item">
-            <span>Estado</span>
-            <span class="status-badge ${estadoClass}" style="font-size: 0.65rem; padding: 0.25rem 0.5rem;">${estadoLabel}</span>
-          </div>
-          <div class="summary-item">
-            <span>Submetido</span>
-            <span>${formatDate(selectedPedido.created_at)}</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  `;
-  
-  document.getElementById('modalDetalhesPedido').classList.add('show');
-}
-
-function iniciarAcao(tipo) {
-  currentAcao = tipo;
-  const isAprovar = tipo === 'aprovar';
-  const isDevolver = tipo === 'devolver';
-  
-  let icon, title, desc, labelComentario, btnClass, btnText;
-  
-  if (isAprovar) {
-    icon = '✓';
-    title = 'Aprovar Pedido';
-    desc = 'Tem a certeza que pretende aprovar este pedido de formação?';
-    labelComentario = 'Comentário (opcional)';
-    btnClass = 'btn-success';
-    btnText = 'Confirmar Aprovação';
-  } else if (isDevolver) {
-    icon = '↩';
-    title = 'Devolver Pedido';
-    desc = 'O pedido será devolvido ao solicitante para ajustes. É obrigatório indicar o motivo.';
-    labelComentario = 'Motivo da devolução *';
-    btnClass = 'btn-secondary';
-    btnText = 'Confirmar Devolução';
-  } else {
-    icon = '✗';
-    title = 'Rejeitar Pedido';
-    desc = 'Tem a certeza que pretende rejeitar este pedido? É obrigatório indicar o motivo.';
-    labelComentario = 'Motivo da rejeição *';
-    btnClass = 'btn-danger';
-    btnText = 'Confirmar Rejeição';
-  }
-  
-  document.getElementById('modalAcaoIcon').textContent = icon;
-  document.getElementById('modalAcaoIcon').className = `modal-icon ${isAprovar ? 'success' : isDevolver ? '' : 'danger'}`;
-  document.getElementById('modalAcaoTitle').textContent = title;
-  document.getElementById('modalAcaoDesc').textContent = desc;
-  document.getElementById('modalAcaoComentarioLabel').textContent = labelComentario;
-  document.getElementById('modalAcaoComentario').value = '';
-  document.getElementById('modalAcaoComentario').required = !isAprovar;
-  
-  const btnConfirmar = document.getElementById('btnConfirmarAcao');
-  btnConfirmar.className = `btn ${btnClass}`;
-  btnConfirmar.textContent = btnText;
-  
-  document.getElementById('modalAcao').classList.add('show');
-}
-
-async function confirmarAcao() {
-  const comentario = document.getElementById('modalAcaoComentario').value.trim();
-  
-  if ((currentAcao === 'rejeitar' || currentAcao === 'devolver') && !comentario) {
-    showToast('É obrigatório indicar o motivo.', 'error');
-    return;
-  }
-  
-  try {
-    const isRHLevel = selectedPedido.estado === 'pendente_rh';
-    
-    if (currentAcao === 'aprovar') {
-      if (isRHLevel) {
-        await DataService.aprovarPedidoRH(selectedPedido.id, currentUser.id, comentario);
-      } else {
-        await DataService.aprovarPedidoDirigente(selectedPedido.id, currentUser.id, comentario);
-      }
-      showToast('Pedido aprovado com sucesso!', 'success');
-    } else if (currentAcao === 'rejeitar') {
-      if (isRHLevel) {
-        await DataService.rejeitarPedidoRH(selectedPedido.id, currentUser.id, comentario);
-      } else {
-        await DataService.rejeitarPedidoDirigente(selectedPedido.id, currentUser.id, comentario);
-      }
-      showToast('Pedido rejeitado.', 'info');
-    } else if (currentAcao === 'devolver') {
-      if (isRHLevel) {
-        await DataService.devolverPedidoRH(selectedPedido.id, currentUser.id, comentario);
-      } else {
-        await DataService.devolverPedidoDirigente(selectedPedido.id, currentUser.id, comentario);
-      }
-      showToast('Pedido devolvido para ajustes.', 'info');
-    }
-    
-    closeModal('modalAcao');
-    closeModal('modalDetalhesPedido');
-    await loadPedidos();
-    updateStats();
-    
-  } catch (error) {
-    console.error('Erro na ação:', error);
-    showToast('Erro ao processar ação.', 'error');
-  }
+// Redirecionar para página dedicada de detalhes do pedido
+function abrirDetalhesPedido(pedidoId) {
+  const baseUrl = getBaseUrl();
+  window.location.href = `${baseUrl}/pedido-formacao-detalhe?id=${pedidoId}`;
 }
 
 // ==========================================
@@ -868,6 +583,12 @@ function renderFormacoes(formacoes) {
     // Contar presenças validadas
     const presencasValidadas = (f.formacao_presencas || []).filter(p => p.validado).length;
     
+    // Contar alocados
+    const alocados = (f.formacao_inscricoes || []).filter(i => i.estado === 'Inscrito' && i.tipo_inscricao === 'alocada').length;
+    
+    // Verificar se pode alocar (formação não concluída/cancelada)
+    const podeAlocar = f.estado !== 'Concluída' && f.estado !== 'Cancelada';
+    
     return `
       <div class="formacao-card-admin">
         <div class="formacao-card-header">
@@ -895,10 +616,11 @@ function renderFormacoes(formacoes) {
             ${sessoesConcluidas}/${sessoesTotal} sessões
           </span>
           ${presencasValidadas > 0 ? `<span class="presencas-badge">✓ ${presencasValidadas} presenças</span>` : ''}
+          ${alocados > 0 ? `<span class="alocados-badge">👥 ${alocados} alocados</span>` : ''}
         </div>
         <div class="formacao-card-actions">
           <button class="btn btn-sm btn-secondary" onclick="abrirDetalhesFormacao('${f.id}')">Ver Detalhes</button>
-          <button class="btn btn-sm btn-primary" onclick="verSessoes('${f.id}')">Gerir Sessões</button>
+          ${podeAlocar ? `<button class="btn btn-sm btn-primary" onclick="abrirDetalhesFormacao('${f.id}')">Gerir / Alocar</button>` : ''}
         </div>
       </div>
     `;
@@ -921,156 +643,10 @@ function filterFormacoes() {
   renderFormacoes(filtered);
 }
 
-async function abrirDetalhesFormacao(formacaoId) {
-  selectedFormacao = allFormacoes.find(f => f.id === formacaoId);
-  if (!selectedFormacao) return;
-  
-  const inscritos = (selectedFormacao.formacao_inscricoes || []).filter(i => i.estado === 'Inscrito');
-  const sessoes = selectedFormacao.formacao_sessoes || [];
-  const presencas = selectedFormacao.formacao_presencas || [];
-  
-  // Obter detalhes dos colaboradores inscritos
-  const colaboradores = await DataService.getColaboradores();
-  const colabMap = {};
-  colaboradores.forEach(c => colabMap[c.id] = c);
-  
-  document.getElementById('modalFormacaoTitle').textContent = selectedFormacao.titulo;
-  
-  document.getElementById('modalFormacaoBody').innerHTML = `
-    <div class="formacao-detail-tabs">
-      <button class="detail-tab active" onclick="switchFormacaoTab('info')">Informação</button>
-      <button class="detail-tab" onclick="switchFormacaoTab('inscritos')">Inscritos (${inscritos.length})</button>
-      <button class="detail-tab" onclick="switchFormacaoTab('sessoes')">Sessões (${sessoes.length})</button>
-      <button class="detail-tab" onclick="switchFormacaoTab('presencas')">Presenças</button>
-    </div>
-    
-    <div class="formacao-detail-content">
-      <!-- Tab Info -->
-      <div class="detail-tab-content active" id="tabFormacaoInfo">
-        <div class="info-grid">
-          <div class="info-item">
-            <span class="label">Estado</span>
-            <span class="status-badge ${getFormacaoEstadoClass(selectedFormacao.estado)}">${selectedFormacao.estado}</span>
-          </div>
-          <div class="info-item">
-            <span class="label">Tipo</span>
-            <span class="value">${selectedFormacao.tipo || 'N/D'}</span>
-          </div>
-          <div class="info-item">
-            <span class="label">Modalidade</span>
-            <span class="value">${selectedFormacao.modalidade || 'N/D'}</span>
-          </div>
-          <div class="info-item">
-            <span class="label">Duração</span>
-            <span class="value">${selectedFormacao.duracao_horas || 0} horas</span>
-          </div>
-          <div class="info-item">
-            <span class="label">Vagas</span>
-            <span class="value">${inscritos.length}/${selectedFormacao.max_participantes || 20}</span>
-          </div>
-        </div>
-        ${selectedFormacao.objetivo ? `
-          <div class="info-section">
-            <h5>Objetivo</h5>
-            <p>${selectedFormacao.objetivo}</p>
-          </div>
-        ` : ''}
-      </div>
-      
-      <!-- Tab Inscritos -->
-      <div class="detail-tab-content" id="tabFormacaoInscritos">
-        ${inscritos.length > 0 ? `
-          <table class="simple-table">
-            <thead>
-              <tr>
-                <th>Colaborador</th>
-                <th>Departamento</th>
-                <th>Data Inscrição</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${inscritos.map(i => {
-                const colab = colabMap[i.colaborador_id] || {};
-                return `
-                  <tr>
-                    <td>${colab.nome || 'N/D'}</td>
-                    <td>${colab.departamentos?.nome || 'N/D'}</td>
-                    <td>${formatDate(i.created_at)}</td>
-                  </tr>
-                `;
-              }).join('')}
-            </tbody>
-          </table>
-        ` : '<p class="empty-msg">Sem inscritos.</p>'}
-      </div>
-      
-      <!-- Tab Sessões -->
-      <div class="detail-tab-content" id="tabFormacaoSessoes">
-        ${sessoes.length > 0 ? `
-          <div class="sessoes-list">
-            ${sessoes.sort((a, b) => new Date(a.data) - new Date(b.data)).map(s => {
-              const estadoSessao = s.estado || 'Agendada';
-              const estadoClass = estadoSessao === 'Concluída' ? 'success' : estadoSessao === 'Em Curso' ? 'active' : estadoSessao === 'Cancelada' ? 'cancelled' : 'pending';
-              return `
-                <div class="sessao-item">
-                  <div class="sessao-info">
-                    <span class="sessao-data-display">${formatDateLong(s.data)}</span>
-                    <span class="sessao-hora">${s.hora_inicio || '09:00'} - ${s.hora_fim || '18:00'}</span>
-                  </div>
-                  <span class="sessao-estado-badge ${estadoClass}">${estadoSessao}</span>
-                  <a href="{{ '/gerir-sessao' | relative_url }}?id=${s.id}" class="btn btn-sm btn-primary">Gerir</a>
-                </div>
-              `;
-            }).join('')}
-          </div>
-        ` : '<p class="empty-msg">Sem sessões definidas.</p>'}
-      </div>
-      
-      <!-- Tab Presenças -->
-      <div class="detail-tab-content" id="tabFormacaoPresencas">
-        ${presencas.length > 0 ? `
-          <table class="simple-table">
-            <thead>
-              <tr>
-                <th>Colaborador</th>
-                <th>Entrada</th>
-                <th>Saída</th>
-                <th>Estado</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${presencas.map(p => {
-                const colab = colabMap[p.colaborador_id] || {};
-                const isValidado = p.validado || (p.hora_entrada && p.hora_saida);
-                return `
-                  <tr>
-                    <td>${colab.nome || 'N/D'}</td>
-                    <td>${p.hora_entrada ? formatTime(p.hora_entrada) : '-'}</td>
-                    <td>${p.hora_saida ? formatTime(p.hora_saida) : '-'}</td>
-                    <td>
-                      <span class="presenca-status ${isValidado ? 'validado' : 'parcial'}">
-                        ${isValidado ? '✓ Validada' : 'Parcial'}
-                      </span>
-                    </td>
-                  </tr>
-                `;
-              }).join('')}
-            </tbody>
-          </table>
-        ` : '<p class="empty-msg">Sem presenças registadas.</p>'}
-      </div>
-    </div>
-  `;
-  
-  document.getElementById('modalDetalhesFormacao').classList.add('show');
-}
-
-function switchFormacaoTab(tab) {
-  document.querySelectorAll('.detail-tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.detail-tab-content').forEach(c => c.classList.remove('active'));
-  
-  document.querySelector(`.detail-tab:nth-child(${tab === 'info' ? 1 : tab === 'inscritos' ? 2 : tab === 'sessoes' ? 3 : 4})`).classList.add('active');
-  document.getElementById(`tabFormacao${tab.charAt(0).toUpperCase() + tab.slice(1)}`).classList.add('active');
+// Redirecionar para página dedicada de detalhes da formação
+function abrirDetalhesFormacao(formacaoId) {
+  const baseUrl = getBaseUrl();
+  window.location.href = `${baseUrl}/formacao-gestao-detalhe?id=${formacaoId}`;
 }
 
 function verSessoes(formacaoId) {
@@ -1085,13 +661,13 @@ function verSessoes(formacaoId) {
   
   // Se só tem uma sessão, ir direto
   if (sessoes.length === 1) {
-    window.location.href = `{{ '/gerir-sessao' | relative_url }}?id=${sessoes[0].id}`;
+    const baseUrl = getBaseUrl();
+    window.location.href = `${baseUrl}/gerir-sessao?id=${sessoes[0].id}`;
     return;
   }
   
-  // Múltiplas sessões - abrir modal de detalhes
+  // Múltiplas sessões - ir para página de detalhe
   abrirDetalhesFormacao(formacaoId);
-  setTimeout(() => switchFormacaoTab('sessoes'), 100);
 }
 
 // ==========================================
@@ -1328,10 +904,12 @@ document.querySelectorAll('.modal-overlay').forEach(modal => {
   margin-top: 0.75rem;
   padding-top: 0.75rem;
   border-top: 1px solid #f1f5f9;
+  flex-wrap: wrap;
 }
 
 .sessoes-badge,
-.presencas-badge {
+.presencas-badge,
+.alocados-badge {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
@@ -1349,166 +927,8 @@ document.querySelectorAll('.modal-overlay').forEach(modal => {
   font-weight: 500;
 }
 
-/* Tabs de detalhes */
-.formacao-detail-tabs {
-  display: flex;
-  gap: 0.25rem;
-  border-bottom: 1px solid #e2e8f0;
-  margin-bottom: 1.5rem;
-}
-
-.detail-tab {
-  padding: 0.75rem 1rem;
-  background: transparent;
-  border: none;
-  border-bottom: 2px solid transparent;
-  font-size: 0.875rem;
-  color: #64748b;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.detail-tab:hover {
-  color: #1e293b;
-}
-
-.detail-tab.active {
-  color: #00b276;
-  border-bottom-color: #00b276;
-}
-
-.detail-tab-content {
-  display: none;
-}
-
-.detail-tab-content.active {
-  display: block;
-}
-
-.info-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-}
-
-.info-item {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.info-item .label {
-  font-size: 0.75rem;
-  color: #64748b;
-}
-
-.info-item .value {
-  font-weight: 600;
-  color: #1e293b;
-}
-
-.info-section h5 {
-  font-size: 0.875rem;
-  color: #1e293b;
-  margin-bottom: 0.5rem;
-}
-
-.info-section p {
-  color: #475569;
-  line-height: 1.6;
-}
-
-/* Simple table */
-.simple-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.simple-table th,
-.simple-table td {
-  padding: 0.75rem;
-  text-align: left;
-  border-bottom: 1px solid #f1f5f9;
-}
-
-.simple-table th {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: #64748b;
-  text-transform: uppercase;
-}
-
-.simple-table td {
-  font-size: 0.875rem;
-  color: #1e293b;
-}
-
-.presenca-status {
-  display: inline-block;
-  padding: 0.25rem 0.5rem;
-  border-radius: 12px;
-  font-size: 0.7rem;
+.alocados-badge {
+  color: #7c3aed;
   font-weight: 500;
-}
-
-.presenca-status.validado {
-  background: #d1fae5;
-  color: #065f46;
-}
-
-.presenca-status.parcial {
-  background: #fef3c7;
-  color: #92400e;
-}
-
-/* Sessões list */
-.sessoes-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.sessao-item {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 1rem;
-  background: #f8fafc;
-  border-radius: 10px;
-}
-
-.sessao-info {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.sessao-data-display {
-  font-weight: 600;
-  color: #1e293b;
-}
-
-.sessao-hora {
-  font-size: 0.8rem;
-  color: #64748b;
-}
-
-.sessao-estado-badge {
-  padding: 0.25rem 0.75rem;
-  border-radius: 12px;
-  font-size: 0.7rem;
-  font-weight: 600;
-}
-
-.sessao-estado-badge.pending { background: #fef3c7; color: #92400e; }
-.sessao-estado-badge.active { background: #dbeafe; color: #1e40af; }
-.sessao-estado-badge.success { background: #d1fae5; color: #065f46; }
-.sessao-estado-badge.cancelled { background: #fee2e2; color: #991b1b; }
-
-.empty-msg {
-  text-align: center;
-  padding: 2rem;
-  color: #64748b;
 }
 </style>
