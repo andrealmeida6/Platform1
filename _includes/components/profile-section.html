@@ -1,25 +1,114 @@
-<!-- Profile Section -->
-<div class="profile-section">
-  <div class="profile-avatar">JD</div>
+<!-- Profile Section - Dinâmico -->
+<div class="profile-section" id="profileSection">
+  <div class="profile-avatar" id="profileAvatar">--</div>
   <div class="profile-info">
-    <div class="profile-name">João Demo</div>
+    <div class="profile-name" id="profileName">A carregar...</div>
     <div class="profile-details">
       <div class="profile-detail-item">
         <span class="profile-detail-label">EMAIL</span>
-        <span class="profile-detail-value">colaborador@empresa.pt</span>
+        <span class="profile-detail-value" id="profileEmail">-</span>
       </div>
       <div class="profile-detail-item">
         <span class="profile-detail-label">TELEFONE</span>
-        <span class="profile-detail-value">-</span>
+        <span class="profile-detail-value" id="profileTelefone">-</span>
       </div>
       <div class="profile-detail-item">
         <span class="profile-detail-label">UNIDADE ORGÂNICA</span>
-        <span class="profile-detail-value">Tecnologias de Informação</span>
+        <span class="profile-detail-value" id="profileDepartamento">-</span>
       </div>
     </div>
   </div>
-  <div class="profile-status active">
+  <div class="profile-status active" id="profileStatus">
     <span class="status-dot"></span>
-    Ativo
+    <span id="profileStatusText">Ativo</span>
   </div>
 </div>
+
+<script>
+// Inicializar secção de perfil com dados do utilizador atual
+async function initProfileSection() {
+  // Aguardar que AuthService esteja disponível
+  if (typeof AuthService === 'undefined') {
+    console.log('[ProfileSection] Aguardando AuthService...');
+    setTimeout(initProfileSection, 100);
+    return;
+  }
+  
+  try {
+    console.log('[ProfileSection] A carregar dados do utilizador...');
+    
+    const currentUser = await AuthService.getCurrentUser();
+    
+    if (currentUser) {
+      // Nome
+      const profileName = document.getElementById('profileName');
+      if (profileName) {
+        profileName.textContent = currentUser.nome || 'Utilizador';
+      }
+      
+      // Avatar (iniciais)
+      const profileAvatar = document.getElementById('profileAvatar');
+      if (profileAvatar) {
+        const initials = (currentUser.nome || 'U')
+          .split(' ')
+          .map(n => n[0])
+          .slice(0, 2)
+          .join('')
+          .toUpperCase();
+        profileAvatar.textContent = initials;
+      }
+      
+      // Email
+      const profileEmail = document.getElementById('profileEmail');
+      if (profileEmail) {
+        profileEmail.textContent = currentUser.email || '-';
+      }
+      
+      // Telefone
+      const profileTelefone = document.getElementById('profileTelefone');
+      if (profileTelefone) {
+        profileTelefone.textContent = currentUser.telefone || '-';
+      }
+      
+      // Departamento/Unidade Orgânica
+      const profileDepartamento = document.getElementById('profileDepartamento');
+      if (profileDepartamento) {
+        const deptNome = currentUser.departamentos?.nome || currentUser.departamento_nome || '-';
+        profileDepartamento.textContent = deptNome;
+      }
+      
+      // Status
+      const profileStatus = document.getElementById('profileStatus');
+      const profileStatusText = document.getElementById('profileStatusText');
+      if (profileStatus && profileStatusText) {
+        if (currentUser.ativo) {
+          profileStatus.className = 'profile-status active';
+          profileStatusText.textContent = 'Ativo';
+        } else {
+          profileStatus.className = 'profile-status inactive';
+          profileStatusText.textContent = 'Inativo';
+        }
+      }
+      
+      console.log('[ProfileSection] Perfil carregado:', currentUser.nome);
+    } else {
+      console.warn('[ProfileSection] Utilizador não encontrado');
+    }
+  } catch (error) {
+    console.error('[ProfileSection] Erro ao carregar perfil:', error);
+  }
+}
+
+// Inicializar quando o DOM estiver pronto
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', function() {
+    // Pequeno delay para garantir que AuthService já inicializou
+    setTimeout(initProfileSection, 200);
+  });
+} else {
+  setTimeout(initProfileSection, 200);
+}
+
+// Expor função para atualização manual
+window.initProfileSection = initProfileSection;
+</script>
