@@ -57,19 +57,29 @@ title: Inventário
   gap: 1rem;
   position: relative;
   z-index: 1;
+  background: transparent !important;
+  background-color: transparent !important;
+}
+
+.inv-hero-content {
+  background: transparent !important;
+  background-color: transparent !important;
 }
 
 .inv-hero-content h1 {
   font-size: 2rem;
   font-weight: 700;
   margin: 0 0 0.5rem;
-  color: #000000;
+  color: #000000 !important;
+  background: transparent !important;
+  background-color: transparent !important;
 }
 
 .inv-hero-content p {
   margin: 0;
   color: #64748b;
   font-size: 1rem;
+  background: transparent !important;
 }
 
 .inv-hero-btn {
@@ -77,7 +87,7 @@ title: Inventário
   align-items: center;
   gap: 0.5rem;
   padding: 0.875rem 1.5rem;
-  background: var(--primary-color, #00b276);
+  background: var(--primary-color, #00b276) !important;
   color: white;
   border: none;
   border-radius: 10px;
@@ -88,7 +98,7 @@ title: Inventário
 }
 
 .inv-hero-btn:hover {
-  background: var(--primary-hover, #009661);
+  background: var(--primary-hover, #009661) !important;
   transform: translateY(-2px);
 }
 
@@ -107,10 +117,13 @@ title: Inventário
   padding: 0 2rem;
   position: relative;
   z-index: 2;
+  background: transparent !important;
+  background-color: transparent !important;
 }
 
 .inv-quick-stat-card {
-  background: white;
+  background: white !important;
+  background-color: white !important;
   border-radius: 16px;
   padding: 1.5rem;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
@@ -137,17 +150,17 @@ title: Inventário
 }
 
 .inv-quick-stat-icon.green {
-  background: linear-gradient(135deg, var(--primary-color, #00b276) 0%, var(--primary-hover, #009661) 100%);
+  background: linear-gradient(135deg, var(--primary-color, #00b276) 0%, var(--primary-hover, #009661) 100%) !important;
   color: white;
 }
 
 .inv-quick-stat-icon.blue {
-  background: linear-gradient(135deg, #5b9cf5 0%, #4285f4 100%);
+  background: linear-gradient(135deg, #5b9cf5 0%, #4285f4 100%) !important;
   color: white;
 }
 
 .inv-quick-stat-icon.orange {
-  background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+  background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%) !important;
   color: white;
 }
 
@@ -175,11 +188,14 @@ title: Inventário
   max-width: 1400px;
   margin: 0 auto;
   padding: 0 2rem 2rem;
+  background: transparent !important;
+  background-color: transparent !important;
 }
 
 /* Filters */
 .inv-filters {
-  background: white;
+  background: white !important;
+  background-color: white !important;
   border-radius: 16px;
   padding: 1.25rem;
   margin-bottom: 1.5rem;
@@ -217,6 +233,7 @@ title: Inventário
   font-size: 0.875rem;
   font-family: inherit;
   transition: 0.15s ease;
+  background: white !important;
 }
 
 .inv-filter-group input:focus,
@@ -228,7 +245,8 @@ title: Inventário
 
 /* Tabs Container */
 .inv-tabs-container {
-  background: white;
+  background: white !important;
+  background-color: white !important;
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
@@ -238,7 +256,7 @@ title: Inventário
   display: flex;
   gap: 0.5rem;
   padding: 1rem 1.25rem;
-  background: #f8fafc;
+  background: #f8fafc !important;
   border-bottom: 1px solid #e2e8f0;
   overflow-x: auto;
 }
@@ -246,7 +264,7 @@ title: Inventário
 .inv-tab-btn {
   padding: 0.625rem 1.25rem;
   border: none;
-  background: transparent;
+  background: transparent !important;
   font-size: 0.875rem;
   font-weight: 600;
   color: #64748b;
@@ -262,17 +280,17 @@ title: Inventário
 
 .inv-tab-btn:hover {
   color: var(--primary-color, #00b276);
-  background: rgba(0, 178, 118, 0.08);
+  background: rgba(0, 178, 118, 0.08) !important;
 }
 
 .inv-tab-btn.active {
   color: white;
-  background: linear-gradient(135deg, var(--primary-color, #00b276) 0%, var(--primary-hover, #009661) 100%);
+  background: linear-gradient(135deg, var(--primary-color, #00b276) 0%, var(--primary-hover, #009661) 100%) !important;
 }
 
 .inv-tab-badge {
   padding: 0.125rem 0.5rem;
-  background: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.25) !important;
   border-radius: 10px;
   font-size: 0.7rem;
   font-weight: 700;
@@ -281,13 +299,14 @@ title: Inventário
 }
 
 .inv-tab-btn:not(.active) .inv-tab-badge {
-  background: #e2e8f0;
+  background: #e2e8f0 !important;
   color: #64748b;
 }
 
 .inv-tab-content {
   display: none;
   padding: 1.5rem;
+  background: transparent !important;
 }
 
 .inv-tab-content.active {
@@ -297,16 +316,18 @@ title: Inventário
 /* Table */
 .inv-table-wrapper {
   overflow-x: auto;
+  background: transparent !important;
 }
 
 .inv-table {
   width: 100%;
   border-collapse: collapse;
   min-width: 800px;
+  background: transparent !important;
 }
 
 .inv-table thead {
-  background: #f8fafc;
+  background: #f8fafc !important;
 }
 
 .inv-table th {
@@ -328,7 +349,7 @@ title: Inventário
 }
 
 .inv-table tbody tr:hover {
-  background: #f8fafc;
+  background: #f8fafc !important;
 }
 
 .inv-table td strong {
@@ -337,7 +358,7 @@ title: Inventário
 }
 
 .inv-table code {
-  background: #f1f5f9;
+  background: #f1f5f9 !important;
   padding: 0.25rem 0.5rem;
   border-radius: 4px;
   font-size: 0.75rem;
@@ -355,14 +376,14 @@ title: Inventário
   letter-spacing: 0.3px;
 }
 
-.inv-status-ativo { background: #d1fae5; color: #065f46; }
-.inv-status-rascunho { background: #f1f5f9; color: #64748b; }
-.inv-status-submetido { background: #dbeafe; color: #1e40af; }
-.inv-status-em-preparacao, .inv-status-em-preparação { background: #fef3c7; color: #92400e; }
-.inv-status-pronto-para-levantamento { background: #e0e7ff; color: #3730a3; }
-.inv-status-entregue { background: #d1fae5; color: #065f46; }
-.inv-status-devolvido { background: #f1f5f9; color: #64748b; }
-.inv-status-indeferido, .inv-status-cancelado { background: #fee2e2; color: #991b1b; }
+.inv-status-ativo { background: #d1fae5 !important; color: #065f46; }
+.inv-status-rascunho { background: #f1f5f9 !important; color: #64748b; }
+.inv-status-submetido { background: #dbeafe !important; color: #1e40af; }
+.inv-status-em-preparacao, .inv-status-em-preparação { background: #fef3c7 !important; color: #92400e; }
+.inv-status-pronto-para-levantamento { background: #e0e7ff !important; color: #3730a3; }
+.inv-status-entregue { background: #d1fae5 !important; color: #065f46; }
+.inv-status-devolvido { background: #f1f5f9 !important; color: #64748b; }
+.inv-status-indeferido, .inv-status-cancelado { background: #fee2e2 !important; color: #991b1b; }
 
 /* Action Buttons */
 .inv-action-buttons {
@@ -374,7 +395,7 @@ title: Inventário
 .inv-action-btn {
   padding: 0.4rem 0.875rem;
   border: 1px solid #e2e8f0;
-  background: white;
+  background: white !important;
   color: #64748b;
   border-radius: 6px;
   font-size: 0.75rem;
@@ -385,23 +406,23 @@ title: Inventário
 }
 
 .inv-action-btn:hover {
-  background: #f8fafc;
+  background: #f8fafc !important;
   border-color: var(--primary-color, #00b276);
   color: var(--primary-color, #00b276);
 }
 
 .inv-action-btn.primary {
-  background: var(--primary-color, #00b276);
+  background: var(--primary-color, #00b276) !important;
   color: white;
   border-color: var(--primary-color, #00b276);
 }
 
 .inv-action-btn.primary:hover {
-  background: var(--primary-hover, #009661);
+  background: var(--primary-hover, #009661) !important;
 }
 
 .inv-action-btn.success {
-  background: #059669;
+  background: #059669 !important;
   color: white;
   border-color: #059669;
 }
@@ -410,6 +431,7 @@ title: Inventário
 .inv-empty-state {
   padding: 3rem 1rem;
   text-align: center;
+  background: transparent !important;
 }
 
 .inv-empty-state svg {
@@ -438,7 +460,7 @@ title: Inventário
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.5) !important;
   z-index: 1000;
   align-items: center;
   justify-content: center;
@@ -450,7 +472,8 @@ title: Inventário
 }
 
 .inv-modal {
-  background: white;
+  background: white !important;
+  background-color: white !important;
   border-radius: 16px;
   width: 100%;
   max-width: 550px;
@@ -466,6 +489,7 @@ title: Inventário
   align-items: center;
   padding: 1.25rem 1.5rem;
   border-bottom: 1px solid #f1f5f9;
+  background: transparent !important;
 }
 
 .inv-modal-header h3 {
@@ -479,7 +503,7 @@ title: Inventário
   width: 32px;
   height: 32px;
   border: none;
-  background: #f8fafc;
+  background: #f8fafc !important;
   border-radius: 8px;
   font-size: 1.25rem;
   color: #64748b;
@@ -490,7 +514,7 @@ title: Inventário
 }
 
 .inv-modal-close:hover {
-  background: #f1f5f9;
+  background: #f1f5f9 !important;
   color: #1e293b;
 }
 
@@ -498,6 +522,7 @@ title: Inventário
   padding: 1.5rem;
   overflow-y: auto;
   flex: 1;
+  background: transparent !important;
 }
 
 .inv-modal-footer {
@@ -506,6 +531,7 @@ title: Inventário
   display: flex;
   justify-content: flex-end;
   gap: 0.75rem;
+  background: transparent !important;
 }
 
 /* Detalhe Grid */
