@@ -1,5 +1,5 @@
 // ===================================================================
-// AUTH SERVICE - Gestão de Autenticação e Permissões (v2)
+// AUTH SERVICE - Gestão de Autenticação e Permissões (v3)
 // ===================================================================
 // Power Pages Equivalent:
 // - Web Role: Define permissões baseadas em roles
@@ -12,8 +12,8 @@ const AuthService = (function() {
   const STORAGE_KEY = 'platform1_current_user';
   const VIEW_AS_KEY = 'platform1_view_as';
   
-  // ID do utilizador padrão - André Borges
-  const DEFAULT_USER_ID = 'ab123456-7890-abcd-ef01-234567890abc';
+  // Nome do utilizador padrão - André Borges
+  const DEFAULT_USER_NAME = 'André Borges';
   
   let currentUserCache = null;
   let viewAsUserCache = null;
@@ -160,6 +160,26 @@ const AuthService = (function() {
   }
   
   /**
+   * Buscar colaborador pelo nome
+   */
+  async function getColaboradorByNome(nome) {
+    try {
+      // Usar ilike para busca case-insensitive
+      const urlColab = `${DataService.getBaseUrl()}/rest/v1/colaboradores?nome=ilike.${encodeURIComponent(nome)}&ativo=eq.true&select=*,departamentos(id,codigo,nome)&limit=1`;
+      const respColab = await fetch(urlColab, { headers: DataService.getHeaders() });
+      if (!respColab.ok) throw new Error('Erro ao buscar colaborador por nome');
+      const colaboradores = await respColab.json();
+      if (colaboradores.length === 0) return null;
+      
+      // Buscar roles do colaborador encontrado
+      return await getColaboradorComRoles(colaboradores[0].id);
+    } catch (error) {
+      console.error('[AuthService] Erro ao buscar colaborador por nome:', error);
+      return null;
+    }
+  }
+  
+  /**
    * Atribuir role a um colaborador
    * Power Pages: Requer gestão via Web Role assignment
    */
@@ -237,15 +257,18 @@ const AuthService = (function() {
       if (currentUserCache) return currentUserCache;
     }
     
-    // Default: André Borges
+    // Default: André Borges (buscar pelo nome)
     try {
-      const andreBorges = await getColaboradorComRoles(DEFAULT_USER_ID);
+      console.log('[AuthService] A buscar utilizador padrão: ' + DEFAULT_USER_NAME);
+      const andreBorges = await getColaboradorByNome(DEFAULT_USER_NAME);
       if (andreBorges) {
-        await setCurrentUser(DEFAULT_USER_ID);
+        await setCurrentUser(andreBorges.id);
+        console.log('[AuthService] Utilizador padrão definido: ' + andreBorges.nome);
         return currentUserCache;
       }
       
       // Fallback: primeiro utilizador com role Núcleo
+      console.log('[AuthService] André Borges não encontrado, a buscar admin...');
       const colaboradores = await getColaboradoresComRoles();
       if (colaboradores.length === 0) return null;
       
@@ -254,6 +277,7 @@ const AuthService = (function() {
       
       if (defaultUser) {
         await setCurrentUser(defaultUser.id);
+        console.log('[AuthService] Utilizador fallback definido: ' + defaultUser.nome);
         return currentUserCache;
       }
     } catch (error) {
@@ -281,9 +305,15 @@ const AuthService = (function() {
     if (colaboradorId) {
       localStorage.setItem(VIEW_AS_KEY, colaboradorId);
       viewAsUserCache = await getColaboradorComRoles(colaboradorId);
+      
+      // Notificar componentes que devem atualizar
+      notifyUserChange(viewAsUserCache);
     } else {
       localStorage.removeItem(VIEW_AS_KEY);
       viewAsUserCache = null;
+      
+      // Notificar que voltou ao utilizador real
+      notifyUserChange(currentUserCache);
     }
     return viewAsUserCache;
   }
@@ -299,6 +329,24 @@ const AuthService = (function() {
   function clearViewAs() {
     localStorage.removeItem(VIEW_AS_KEY);
     viewAsUserCache = null;
+    
+    // Notificar que voltou ao utilizador real
+    notifyUserChange(currentUserCache);
+  }
+  
+  // ==========================================
+  // NOTIFICAÇÃO DE MUDANÇA DE UTILIZADOR
+  // ==========================================
+  
+  function notifyUserChange(user) {
+    // Disparar evento customizado para componentes que precisam atualizar
+    const event = new CustomEvent('userChanged', { detail: { user: user } });
+    document.dispatchEvent(event);
+    
+    // Atualizar profile-section se existir
+    if (typeof window.initProfileSection === 'function') {
+      window.initProfileSection();
+    }
   }
   
   // ==========================================
@@ -383,6 +431,7 @@ const AuthService = (function() {
     getRoles,
     getColaboradoresComRoles,
     getColaboradorComRoles,
+    getColaboradorByNome,
     atribuirRole,
     removerRole,
     setCurrentUser,
@@ -392,6 +441,7 @@ const AuthService = (function() {
     getViewAsUser,
     isViewAsActive,
     clearViewAs,
+    notifyUserChange,
     hasRole,
     isAdmin,
     canAccessBackoffice,
@@ -402,7 +452,7 @@ const AuthService = (function() {
     canApproveFormacaoLevel1,
     canApproveFormacaoLevel2,
     init,
-    DEFAULT_USER_ID
+    DEFAULT_USER_NAME
   };
   
 })();
