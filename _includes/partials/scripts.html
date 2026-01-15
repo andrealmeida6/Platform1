@@ -10,13 +10,24 @@
 <!-- Inicialização Global -->
 <script>
 document.addEventListener('DOMContentLoaded', async function() {
+  // Limpar chave antiga do localStorage (migração para v4)
+  if (localStorage.getItem('platform1_current_user')) {
+    console.log('[Init] A limpar chave antiga platform1_current_user...');
+    localStorage.removeItem('platform1_current_user');
+  }
+  
   // Inicializar AuthService
   if (window.AuthService) {
     await AuthService.init();
     
     // Inicializar componente View As se existir
     if (window.initViewAsSelector) {
-      window.initViewAsSelector();
+      await window.initViewAsSelector();
+    }
+    
+    // Inicializar profile section se existir
+    if (window.initProfileSection) {
+      await window.initProfileSection();
     }
   }
   
