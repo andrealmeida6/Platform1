@@ -1,0 +1,737 @@
+---
+layout: default
+title: Novo Pedido de Reembolso
+---
+
+<div class="reembolso-form-page">
+  <!-- Back Link -->
+  <a href="{{ '/reembolsos' | relative_url }}" class="back-link">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <polyline points="15 18 9 12 15 6"></polyline>
+    </svg>
+    Voltar aos Reembolsos
+  </a>
+
+  <!-- Page Header -->
+  <div class="page-header-section">
+    <div class="page-header-left">
+      <h1 class="page-title" id="pageTitle">Novo Pedido de Reembolso</h1>
+      <p class="page-subtitle">Preencha os dados da despesa a reembolsar</p>
+    </div>
+  </div>
+
+  <!-- Alert Container -->
+  <div id="alertContainer" class="alert"></div>
+
+  <!-- Action Bar -->
+  <div class="form-action-bar">
+    <button class="btn-primary" onclick="submeterPedido()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="20 6 9 17 4 12"></polyline>
+      </svg>
+      Submeter Pedido
+    </button>
+    <button class="btn-secondary" onclick="guardarRascunho()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"></path>
+        <polyline points="17 21 17 13 7 13 7 21"></polyline>
+        <polyline points="7 3 7 8 15 8"></polyline>
+      </svg>
+      Guardar Rascunho
+    </button>
+    <button class="btn-outline" onclick="cancelarVoltar()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M6 18L18 6M6 6l12 12"/>
+      </svg>
+      Cancelar
+    </button>
+  </div>
+
+  <!-- Form Container -->
+  <div class="form-container">
+    <!-- Main Form -->
+    <div class="form-main">
+      <form id="reembolsoForm">
+        <!-- Detalhes da Despesa -->
+        <div class="form-section">
+          <h2 class="section-title">Detalhes da Despesa</h2>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label required" for="tipoDespesa">Tipo de Despesa</label>
+              <select class="form-select" id="tipoDespesa" required onchange="onTipoDespesaChange()">
+                <option value="">Selecione...</option>
+                <option value="Alimentação">Alimentação</option>
+                <option value="Alojamento">Alojamento</option>
+                <option value="Viagem">Viagem</option>
+                <option value="Representação">Representação</option>
+                <option value="Material">Material</option>
+                <option value="Portagens/Parques">Portagens/Parques</option>
+                <option value="Outros">Outros</option>
+              </select>
+              <span class="form-error" id="error-tipoDespesa">Este campo é obrigatório</span>
+            </div>
+            <div class="form-group">
+              <label class="form-label required" for="unidadeOrganica">Unidade Orgânica</label>
+              <select class="form-select" id="unidadeOrganica" required>
+                <option value="">Selecione...</option>
+                <!-- Será preenchido via JavaScript com dados do utilizador -->
+              </select>
+              <span class="form-error" id="error-unidadeOrganica">Este campo é obrigatório</span>
+            </div>
+          </div>
+
+          <!-- Campos condicionais para tipos específicos -->
+          <div id="datasContainer" class="conditional-field">
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label required" for="dataDespesa">Data de Início</label>
+                <input type="date" class="form-input" id="dataDespesa">
+                <span class="form-error" id="error-dataDespesa">Data inválida</span>
+              </div>
+              <div class="form-group">
+                <label class="form-label required" for="dataFim">Data de Fim</label>
+                <input type="date" class="form-input" id="dataFim">
+                <span class="form-error" id="error-dataFim">Data inválida</span>
+              </div>
+            </div>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label required" for="pais">País</label>
+                <select class="form-select" id="pais">
+                  <option value="">Selecione...</option>
+                  <option value="Portugal">Portugal</option>
+                  <option value="Espanha">Espanha</option>
+                  <option value="França">França</option>
+                  <option value="Alemanha">Alemanha</option>
+                  <option value="Itália">Itália</option>
+                  <option value="Reino Unido">Reino Unido</option>
+                  <option value="Bélgica">Bélgica</option>
+                  <option value="Países Baixos">Países Baixos</option>
+                  <option value="Outro">Outro</option>
+                </select>
+                <span class="form-error" id="error-pais">Este campo é obrigatório</span>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="localidade">Localidade</label>
+                <input type="text" class="form-input" id="localidade" placeholder="Ex: Lisboa, Porto...">
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row full-width">
+            <div class="form-group">
+              <label class="form-label required" for="descricao">Descrição da Despesa</label>
+              <textarea class="form-textarea" id="descricao" placeholder="Descreva detalhadamente a despesa..." required></textarea>
+              <span class="form-help">Mínimo 10 caracteres</span>
+              <span class="form-error" id="error-descricao">Descrição muito curta (mínimo 10 caracteres)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Valores -->
+        <div class="form-section">
+          <h2 class="section-title">Valores</h2>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label required" for="valorSemIVA">Valor sem IVA</label>
+              <input type="text" class="form-input" id="valorSemIVA" placeholder="0,00 €" required oninput="calcularTotais()">
+              <span class="form-error" id="error-valorSemIVA">Valor inválido</span>
+            </div>
+            <div class="form-group">
+              <label class="form-label required" for="valorComIVA">Valor com IVA</label>
+              <input type="text" class="form-input" id="valorComIVA" placeholder="0,00 €" required oninput="calcularTotais()">
+              <span class="form-error" id="error-valorComIVA">Valor inválido</span>
+            </div>
+          </div>
+
+          <div class="form-row full-width">
+            <div class="form-group">
+              <label class="form-label">Adiantamento Recebido?</label>
+              <div class="toggle-container">
+                <div class="toggle" id="toggleAdiantamento" onclick="toggleAdiantamento()">
+                  <div class="toggle-slider"></div>
+                </div>
+                <span id="toggleLabel">Não</span>
+              </div>
+            </div>
+          </div>
+
+          <div id="adiantamentoContainer" style="display: none;">
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="valorAdiantamento">Valor do Adiantamento</label>
+                <input type="text" class="form-input" id="valorAdiantamento" placeholder="0,00 €" oninput="calcularTotais()">
+                <span class="form-error" id="error-valorAdiantamento">Não pode exceder o total</span>
+              </div>
+              <div class="form-group"></div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Total a Reembolsar</label>
+              <input type="text" class="form-input" id="totalReembolsar" value="0,00 €" readonly style="font-weight: 700; color: var(--primary-color); font-size: 1.1rem;">
+            </div>
+            <div class="form-group"></div>
+          </div>
+        </div>
+
+        <!-- Documentos/Anexos -->
+        <div class="form-section">
+          <h2 class="section-title">Documentos / Anexos</h2>
+          
+          <div class="dropzone" id="dropzone">
+            <div class="dropzone-text">
+              📁 Arraste ficheiros aqui ou clique para selecionar
+            </div>
+            <input type="file" id="fileInput" accept=".pdf,.jpg,.jpeg,.png" multiple style="display: none;">
+            <button type="button" class="btn-outline" onclick="document.getElementById('fileInput').click()">
+              Selecionar Ficheiros
+            </button>
+          </div>
+          <span class="form-help">Formatos aceites: PDF, JPG, PNG (máx. 10MB por ficheiro)</span>
+          <span class="form-error" id="error-anexos">Pelo menos um documento é obrigatório</span>
+
+          <div class="file-list" id="fileList"></div>
+
+          <div class="checkbox-container">
+            <input type="checkbox" id="declaracaoVeracidade" required>
+            <label for="declaracaoVeracidade">
+              <strong>Declaração de Veracidade:</strong> Declaro que as informações e documentos fornecidos são verdadeiros e correspondem a despesas efetivamente realizadas no âmbito das minhas funções.
+            </label>
+          </div>
+          <span class="form-error" id="error-declaracao">Deve aceitar a declaração de veracidade</span>
+        </div>
+      </form>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="form-sidebar">
+      <div class="summary-panel">
+        <h3 class="summary-title">Resumo</h3>
+        <div class="summary-item">
+          <span class="summary-label">Valor sem IVA:</span>
+          <span class="summary-value" id="summaryValorSemIVA">0,00 €</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Valor com IVA:</span>
+          <span class="summary-value" id="summaryValorComIVA">0,00 €</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Adiantamento:</span>
+          <span class="summary-value" id="summaryAdiantamento">0,00 €</span>
+        </div>
+        <div class="summary-item" style="border-top: 2px solid var(--primary-color); padding-top: 1rem; margin-top: 0.5rem;">
+          <span class="summary-label"><strong>A Reembolsar:</strong></span>
+          <span class="summary-value highlight" id="summaryReembolsar">0,00 €</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Anexos:</span>
+          <span class="summary-value" id="summaryAnexos">0</span>
+        </div>
+      </div>
+
+      <div class="validation-panel">
+        <h3 class="validation-title">Validações</h3>
+        <ul class="validation-list" id="validationList">
+          <li class="validation-item warning">⚠️ Preencha o formulário</li>
+        </ul>
+      </div>
+
+      <div class="sidebar-action-bar">
+        <button class="btn-primary" onclick="submeterPedido()">
+          Submeter Pedido
+        </button>
+        <button class="btn-secondary" onclick="guardarRascunho()">
+          Guardar Rascunho
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<link rel="stylesheet" href="{{ '/web-files/css/reembolsos.css' | relative_url }}">
+
+<script>
+// Variables
+let arquivos = [];
+let temAdiantamento = false;
+let formModificado = false;
+let editMode = false;
+let pedidoId = null;
+
+// Unidades Orgânicas (exemplo - será carregado do backend)
+const unidadesOrganicas = [
+  { id: '1', nome: 'AFR - Administrativa, Financeira e Recursos' },
+  { id: '2', nome: 'AJ - Apoio Jurídico' },
+  { id: '3', nome: 'CI - Comunicação e Imagem' },
+  { id: '4', nome: 'IPD - Informática e Processos Digitais' },
+  { id: '5', nome: 'MAE - Monitorização, Avaliação e Estratégia' }
+];
+
+// Tipos que requerem campos extra
+const tiposComCamposExtras = ['Alojamento', 'Viagem', 'Representação'];
+
+// Init
+document.addEventListener('DOMContentLoaded', async function() {
+  // Verificar se é edição
+  const urlParams = new URLSearchParams(window.location.search);
+  pedidoId = urlParams.get('id');
+  
+  if (pedidoId) {
+    editMode = true;
+    document.getElementById('pageTitle').textContent = 'Editar Pedido de Reembolso';
+    await carregarPedido(pedidoId);
+  }
+  
+  // Carregar unidades orgânicas
+  carregarUnidadesOrganicas();
+  
+  // Setup dropzone
+  setupDropzone();
+  
+  // Setup file input
+  document.getElementById('fileInput').addEventListener('change', handleFileSelect);
+  
+  // Track form changes
+  document.querySelectorAll('input, select, textarea').forEach(el => {
+    el.addEventListener('change', () => { formModificado = true; });
+  });
+  
+  // Validar ao perder focus
+  document.querySelectorAll('.form-input, .form-select, .form-textarea').forEach(el => {
+    el.addEventListener('blur', validarFormulario);
+  });
+});
+
+function carregarUnidadesOrganicas() {
+  const select = document.getElementById('unidadeOrganica');
+  unidadesOrganicas.forEach(uo => {
+    const option = document.createElement('option');
+    option.value = uo.id;
+    option.textContent = uo.nome;
+    select.appendChild(option);
+  });
+}
+
+async function carregarPedido(id) {
+  // TODO: Integrar com Supabase
+  console.log('Carregar pedido:', id);
+}
+
+function onTipoDespesaChange() {
+  const tipo = document.getElementById('tipoDespesa').value;
+  const container = document.getElementById('datasContainer');
+  
+  if (tiposComCamposExtras.includes(tipo)) {
+    container.classList.add('show');
+  } else {
+    container.classList.remove('show');
+  }
+  
+  formModificado = true;
+  validarFormulario();
+}
+
+function toggleAdiantamento() {
+  temAdiantamento = !temAdiantamento;
+  const toggle = document.getElementById('toggleAdiantamento');
+  const label = document.getElementById('toggleLabel');
+  const container = document.getElementById('adiantamentoContainer');
+  
+  if (temAdiantamento) {
+    toggle.classList.add('active');
+    label.textContent = 'Sim';
+    container.style.display = 'block';
+  } else {
+    toggle.classList.remove('active');
+    label.textContent = 'Não';
+    container.style.display = 'none';
+    document.getElementById('valorAdiantamento').value = '';
+  }
+  
+  calcularTotais();
+  formModificado = true;
+}
+
+function parsearMoeda(valor) {
+  if (!valor) return 0;
+  return parseFloat(valor.replace(/[€\s]/g, '').replace(',', '.')) || 0;
+}
+
+function formatarMoeda(valor) {
+  return valor.toFixed(2).replace('.', ',') + ' €';
+}
+
+function calcularTotais() {
+  const valorSemIVA = parsearMoeda(document.getElementById('valorSemIVA').value);
+  const valorComIVA = parsearMoeda(document.getElementById('valorComIVA').value);
+  const adiantamento = temAdiantamento ? parsearMoeda(document.getElementById('valorAdiantamento').value) : 0;
+  
+  const totalReembolsar = Math.max(0, valorComIVA - adiantamento);
+  
+  // Atualizar campo total
+  document.getElementById('totalReembolsar').value = formatarMoeda(totalReembolsar);
+  
+  // Atualizar sidebar
+  document.getElementById('summaryValorSemIVA').textContent = formatarMoeda(valorSemIVA);
+  document.getElementById('summaryValorComIVA').textContent = formatarMoeda(valorComIVA);
+  document.getElementById('summaryAdiantamento').textContent = formatarMoeda(adiantamento);
+  document.getElementById('summaryReembolsar').textContent = formatarMoeda(totalReembolsar);
+  
+  validarFormulario();
+}
+
+// Dropzone
+function setupDropzone() {
+  const dropzone = document.getElementById('dropzone');
+  
+  dropzone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropzone.classList.add('dragover');
+  });
+  
+  dropzone.addEventListener('dragleave', () => {
+    dropzone.classList.remove('dragover');
+  });
+  
+  dropzone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropzone.classList.remove('dragover');
+    handleFiles(e.dataTransfer.files);
+  });
+  
+  dropzone.addEventListener('click', (e) => {
+    if (e.target === dropzone || e.target.classList.contains('dropzone-text')) {
+      document.getElementById('fileInput').click();
+    }
+  });
+}
+
+function handleFileSelect(e) {
+  handleFiles(e.target.files);
+}
+
+function handleFiles(files) {
+  const maxSize = 10 * 1024 * 1024; // 10MB
+  const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png'];
+  
+  Array.from(files).forEach(file => {
+    if (!allowedTypes.includes(file.type)) {
+      mostrarAlerta('error', `Ficheiro "${file.name}" não é um formato válido`);
+      return;
+    }
+    
+    if (file.size > maxSize) {
+      mostrarAlerta('error', `Ficheiro "${file.name}" excede o tamanho máximo de 10MB`);
+      return;
+    }
+    
+    arquivos.push({
+      file: file,
+      name: file.name,
+      type: file.type,
+      size: file.size,
+      tag: 'Fatura'
+    });
+  });
+  
+  renderizarArquivos();
+  atualizarResumoAnexos();
+  formModificado = true;
+  validarFormulario();
+}
+
+function renderizarArquivos() {
+  const fileList = document.getElementById('fileList');
+  
+  if (arquivos.length === 0) {
+    fileList.innerHTML = '';
+    return;
+  }
+  
+  let html = '';
+  arquivos.forEach((arquivo, index) => {
+    const sizeKB = (arquivo.size / 1024).toFixed(1);
+    const icon = arquivo.type === 'application/pdf' ? 
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>' :
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>';
+    
+    html += `
+      <div class="file-item">
+        <div class="file-info">
+          <div class="file-icon">${icon}</div>
+          <div class="file-details">
+            <div class="file-name">${arquivo.name}</div>
+            <div class="file-meta">
+              <span class="file-size">${sizeKB} KB</span>
+            </div>
+          </div>
+          <select class="file-tag-select" onchange="alterarTagArquivo(${index}, this.value)">
+            <option value="Fatura" ${arquivo.tag === 'Fatura' ? 'selected' : ''}>Fatura</option>
+            <option value="Recibo" ${arquivo.tag === 'Recibo' ? 'selected' : ''}>Recibo</option>
+            <option value="Bilhete" ${arquivo.tag === 'Bilhete' ? 'selected' : ''}>Bilhete</option>
+            <option value="Reserva" ${arquivo.tag === 'Reserva' ? 'selected' : ''}>Reserva</option>
+            <option value="Outro" ${arquivo.tag === 'Outro' ? 'selected' : ''}>Outro</option>
+          </select>
+        </div>
+        <button type="button" class="file-remove" onclick="removerArquivo(${index})">Remover</button>
+      </div>
+    `;
+  });
+  
+  fileList.innerHTML = html;
+}
+
+function alterarTagArquivo(index, tag) {
+  arquivos[index].tag = tag;
+  formModificado = true;
+}
+
+function removerArquivo(index) {
+  arquivos.splice(index, 1);
+  renderizarArquivos();
+  atualizarResumoAnexos();
+  validarFormulario();
+  formModificado = true;
+}
+
+function atualizarResumoAnexos() {
+  document.getElementById('summaryAnexos').textContent = arquivos.length;
+}
+
+// Validação
+function validarFormulario() {
+  const erros = [];
+  let valido = true;
+  
+  // Limpar erros anteriores
+  document.querySelectorAll('.form-error').forEach(el => el.classList.remove('show'));
+  document.querySelectorAll('.form-input, .form-select, .form-textarea').forEach(el => el.classList.remove('error'));
+  
+  // Tipo de despesa
+  const tipoDespesa = document.getElementById('tipoDespesa').value;
+  if (!tipoDespesa) {
+    erros.push('Tipo de Despesa não selecionado');
+    mostrarErro('tipoDespesa');
+    valido = false;
+  }
+  
+  // Unidade orgânica
+  if (!document.getElementById('unidadeOrganica').value) {
+    erros.push('Unidade Orgânica não selecionada');
+    mostrarErro('unidadeOrganica');
+    valido = false;
+  }
+  
+  // Campos condicionais
+  if (tiposComCamposExtras.includes(tipoDespesa)) {
+    const dataDespesa = document.getElementById('dataDespesa').value;
+    const dataFim = document.getElementById('dataFim').value;
+    const pais = document.getElementById('pais').value;
+    
+    if (!dataDespesa) {
+      erros.push('Data de Início não preenchida');
+      mostrarErro('dataDespesa');
+      valido = false;
+    }
+    
+    if (!dataFim) {
+      erros.push('Data de Fim não preenchida');
+      mostrarErro('dataFim');
+      valido = false;
+    }
+    
+    if (dataDespesa && dataFim) {
+      const inicio = new Date(dataDespesa);
+      const fim = new Date(dataFim);
+      if (fim < inicio) {
+        erros.push('Data de fim anterior à data de início');
+        mostrarErro('dataFim');
+        valido = false;
+      }
+    }
+    
+    if (!pais) {
+      erros.push('País não selecionado');
+      mostrarErro('pais');
+      valido = false;
+    }
+  }
+  
+  // Descrição
+  const descricao = document.getElementById('descricao').value;
+  if (!descricao || descricao.length < 10) {
+    erros.push('Descrição deve ter no mínimo 10 caracteres');
+    mostrarErro('descricao');
+    valido = false;
+  }
+  
+  // Valores
+  const valorSemIVA = parsearMoeda(document.getElementById('valorSemIVA').value);
+  if (valorSemIVA <= 0) {
+    erros.push('Valor sem IVA inválido');
+    mostrarErro('valorSemIVA');
+    valido = false;
+  }
+  
+  const valorComIVA = parsearMoeda(document.getElementById('valorComIVA').value);
+  if (valorComIVA <= 0) {
+    erros.push('Valor com IVA inválido');
+    mostrarErro('valorComIVA');
+    valido = false;
+  }
+  
+  if (valorComIVA < valorSemIVA) {
+    erros.push('Valor com IVA não pode ser inferior ao valor sem IVA');
+    mostrarErro('valorComIVA');
+    valido = false;
+  }
+  
+  // Adiantamento
+  if (temAdiantamento) {
+    const adiantamento = parsearMoeda(document.getElementById('valorAdiantamento').value);
+    if (adiantamento > valorComIVA) {
+      erros.push('Adiantamento não pode exceder o total');
+      mostrarErro('valorAdiantamento');
+      valido = false;
+    }
+  }
+  
+  // Anexos
+  if (arquivos.length === 0) {
+    erros.push('Pelo menos um documento é obrigatório');
+    mostrarErro('anexos');
+    valido = false;
+  }
+  
+  // Declaração
+  if (!document.getElementById('declaracaoVeracidade').checked) {
+    erros.push('Declaração de veracidade não aceite');
+    mostrarErro('declaracao');
+    valido = false;
+  }
+  
+  atualizarPainelValidacao(erros, valido);
+  
+  return valido;
+}
+
+function mostrarErro(campo) {
+  const errorEl = document.getElementById(`error-${campo}`);
+  const inputEl = document.getElementById(campo);
+  
+  if (errorEl) errorEl.classList.add('show');
+  if (inputEl) inputEl.classList.add('error');
+}
+
+function atualizarPainelValidacao(erros, valido) {
+  const validationList = document.getElementById('validationList');
+  let html = '';
+  
+  if (valido && erros.length === 0) {
+    html = '<li class="validation-item success">✓ Formulário válido - pronto para submeter</li>';
+  } else {
+    erros.forEach(erro => {
+      html += `<li class="validation-item error">✗ ${erro}</li>`;
+    });
+  }
+  
+  validationList.innerHTML = html;
+}
+
+// Ações
+function guardarRascunho() {
+  const dados = recolherDados();
+  
+  // TODO: Guardar no Supabase como rascunho
+  console.log('Guardar rascunho:', dados);
+  
+  mostrarAlerta('success', 'Rascunho guardado com sucesso');
+  formModificado = false;
+}
+
+function submeterPedido() {
+  if (!validarFormulario()) {
+    mostrarAlerta('error', 'Corrija os campos assinalados antes de submeter');
+    return;
+  }
+  
+  if (!document.getElementById('declaracaoVeracidade').checked) {
+    mostrarAlerta('error', 'Deve aceitar a declaração de veracidade');
+    return;
+  }
+  
+  if (confirm('Tem a certeza que deseja submeter este pedido de reembolso?')) {
+    const dados = recolherDados();
+    dados.estado = 'submetido';
+    
+    // TODO: Submeter ao Supabase
+    console.log('Submeter pedido:', dados);
+    
+    mostrarAlerta('success', 'Pedido submetido com sucesso!');
+    formModificado = false;
+    
+    setTimeout(() => {
+      window.location.href = '{{ "/reembolsos" | relative_url }}';
+    }, 1500);
+  }
+}
+
+function cancelarVoltar() {
+  if (formModificado) {
+    if (confirm('Tem alterações não guardadas. Deseja realmente sair?')) {
+      window.location.href = '{{ "/reembolsos" | relative_url }}';
+    }
+  } else {
+    window.location.href = '{{ "/reembolsos" | relative_url }}';
+  }
+}
+
+function recolherDados() {
+  return {
+    tipoDespesa: document.getElementById('tipoDespesa').value,
+    unidadeOrganica: document.getElementById('unidadeOrganica').value,
+    dataDespesa: document.getElementById('dataDespesa').value,
+    dataFim: document.getElementById('dataFim').value,
+    pais: document.getElementById('pais').value,
+    localidade: document.getElementById('localidade').value,
+    descricao: document.getElementById('descricao').value,
+    valorSemIVA: parsearMoeda(document.getElementById('valorSemIVA').value),
+    valorComIVA: parsearMoeda(document.getElementById('valorComIVA').value),
+    temAdiantamento: temAdiantamento,
+    valorAdiantamento: parsearMoeda(document.getElementById('valorAdiantamento').value),
+    arquivos: arquivos.map(a => ({
+      name: a.name,
+      type: a.type,
+      size: a.size,
+      tag: a.tag
+    }))
+  };
+}
+
+function mostrarAlerta(tipo, mensagem) {
+  const alert = document.getElementById('alertContainer');
+  alert.className = `alert alert-${tipo} show`;
+  alert.textContent = mensagem;
+  
+  setTimeout(() => {
+    alert.classList.remove('show');
+  }, 5000);
+}
+
+// CSS adicional para campos condicionais
+document.head.insertAdjacentHTML('beforeend', `
+  <style>
+    .conditional-field {
+      display: none;
+    }
+    .conditional-field.show {
+      display: block;
+    }
+  </style>
+`);
+</script>
