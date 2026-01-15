@@ -1,0 +1,469 @@
+---
+layout: default
+title: Reembolsos
+---
+
+<div class="reembolsos-page">
+  <!-- Header da Página -->
+  <div class="page-header-section">
+    <div class="page-header-left">
+      <h1 class="page-title">Pedidos de Reembolso</h1>
+      <p class="page-subtitle">Gerir e acompanhar pedidos de reembolso de despesas</p>
+    </div>
+    <div class="page-header-actions">
+      <a href="{{ '/novo-pedido-reembolso' | relative_url }}" class="btn-primary">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        Novo Pedido
+      </a>
+    </div>
+  </div>
+
+  <!-- Estatísticas Rápidas -->
+  <div class="stats-grid" id="statsGrid">
+    <div class="stat-card">
+      <div class="stat-icon rascunho">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"></path>
+          <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+        </svg>
+      </div>
+      <div class="stat-info">
+        <span class="stat-value" id="statRascunho">0</span>
+        <span class="stat-label">Rascunhos</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon submetido">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M22 2L11 13"></path>
+          <path d="M22 2L15 22l-4-9-9-4 20-7z"></path>
+        </svg>
+      </div>
+      <div class="stat-info">
+        <span class="stat-value" id="statSubmetido">0</span>
+        <span class="stat-label">Submetidos</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon analise">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+      </div>
+      <div class="stat-info">
+        <span class="stat-value" id="statAnalise">0</span>
+        <span class="stat-label">Em Análise</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon aprovado">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+      </div>
+      <div class="stat-info">
+        <span class="stat-value" id="statAprovado">0</span>
+        <span class="stat-label">Aprovados</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon pago">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+          <line x1="1" y1="10" x2="23" y2="10"></line>
+        </svg>
+      </div>
+      <div class="stat-info">
+        <span class="stat-value" id="statPago">0</span>
+        <span class="stat-label">Pagos</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filtros e Pesquisa -->
+  <div class="filters-section">
+    <div class="search-box">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <input type="text" id="searchInput" placeholder="Pesquisar por referência, tipo, valor..." onkeyup="filtrarPedidos()">
+    </div>
+    <div class="filter-group">
+      <select id="filterEstado" onchange="filtrarPedidos()">
+        <option value="">Todos os Estados</option>
+        <option value="rascunho">Rascunho</option>
+        <option value="submetido">Submetido</option>
+        <option value="analise">Em Análise</option>
+        <option value="aprovado">Aprovado</option>
+        <option value="pago">Pago</option>
+        <option value="rejeitado">Rejeitado</option>
+        <option value="cancelado">Cancelado</option>
+      </select>
+      <select id="filterTipo" onchange="filtrarPedidos()">
+        <option value="">Todos os Tipos</option>
+        <option value="Alimentação">Alimentação</option>
+        <option value="Alojamento">Alojamento</option>
+        <option value="Viagem">Viagem</option>
+        <option value="Representação">Representação</option>
+        <option value="Material">Material</option>
+        <option value="Portagens/Parques">Portagens/Parques</option>
+        <option value="Outros">Outros</option>
+      </select>
+      <button class="btn-outline" onclick="limparFiltros()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+        Limpar
+      </button>
+    </div>
+  </div>
+
+  <!-- Tabela de Pedidos -->
+  <div class="table-container">
+    <div class="table-header">
+      <div class="th" onclick="ordenarTabela('id')">
+        <span>Referência</span>
+        <span class="sort-icon" id="sort-id">↕</span>
+      </div>
+      <div class="th" onclick="ordenarTabela('data')">
+        <span>Data</span>
+        <span class="sort-icon" id="sort-data">↕</span>
+      </div>
+      <div class="th" onclick="ordenarTabela('tipo')">
+        <span>Tipo</span>
+        <span class="sort-icon" id="sort-tipo">↕</span>
+      </div>
+      <div class="th" onclick="ordenarTabela('descricao')">
+        <span>Descrição</span>
+        <span class="sort-icon" id="sort-descricao">↕</span>
+      </div>
+      <div class="th" onclick="ordenarTabela('valor')">
+        <span>Valor</span>
+        <span class="sort-icon" id="sort-valor">↕</span>
+      </div>
+      <div class="th" onclick="ordenarTabela('estado')">
+        <span>Estado</span>
+        <span class="sort-icon" id="sort-estado">↕</span>
+      </div>
+      <div class="th">Ações</div>
+    </div>
+    <div class="table-body" id="pedidosTableBody">
+      <!-- Preenchido via JavaScript -->
+    </div>
+  </div>
+
+  <!-- Estado Vazio -->
+  <div class="empty-state" id="emptyState" style="display: none;">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+      <line x1="1" y1="10" x2="23" y2="10"></line>
+    </svg>
+    <h3>Sem pedidos de reembolso</h3>
+    <p>Não existem pedidos de reembolso para mostrar.</p>
+    <a href="{{ '/novo-pedido-reembolso' | relative_url }}" class="btn-primary">Criar Novo Pedido</a>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-state" id="loadingState">
+    <div class="spinner"></div>
+    <p>A carregar pedidos...</p>
+  </div>
+</div>
+
+<link rel="stylesheet" href="{{ '/web-files/css/reembolsos.css' | relative_url }}">
+
+<script>
+// Dados de exemplo (será substituído por dados do Supabase)
+let pedidosReembolso = [];
+let pedidosFiltrados = [];
+let sortConfig = { coluna: null, direcao: 'asc' };
+let currentUserId = null;
+
+// Estados e suas labels
+const estadoLabels = {
+  'rascunho': 'Rascunho',
+  'submetido': 'Submetido',
+  'analise': 'Em Análise',
+  'aprovado': 'Aprovado',
+  'pago': 'Pago',
+  'rejeitado': 'Rejeitado',
+  'cancelado': 'Cancelado'
+};
+
+// Ações disponíveis por estado
+const acoesPorEstado = {
+  'rascunho': ['ver', 'editar', 'cancelar'],
+  'submetido': ['ver', 'cancelar'],
+  'analise': ['ver'],
+  'aprovado': ['ver'],
+  'pago': ['ver'],
+  'rejeitado': ['ver', 'editar'],
+  'cancelado': ['ver']
+};
+
+// Inicialização
+document.addEventListener('DOMContentLoaded', async function() {
+  await carregarPedidos();
+});
+
+async function carregarPedidos() {
+  const loadingState = document.getElementById('loadingState');
+  const emptyState = document.getElementById('emptyState');
+  const tableBody = document.getElementById('pedidosTableBody');
+  
+  loadingState.style.display = 'flex';
+  
+  try {
+    // Aguardar serviços
+    while (typeof AuthService === 'undefined' || typeof DataService === 'undefined') {
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    
+    const user = await AuthService.getCurrentUser();
+    currentUserId = user?.id;
+    
+    // Por agora, usar dados de exemplo
+    // TODO: Integrar com Supabase quando tabela estiver criada
+    pedidosReembolso = [
+      { id: 'RMB-2025-001', data: '15/01/2025', tipo: 'Alimentação', descricao: 'Almoço reunião cliente', valor: 45.50, estado: 'pago' },
+      { id: 'RMB-2025-002', data: '18/01/2025', tipo: 'Viagem', descricao: 'Deslocação Porto - formação', valor: 120.00, estado: 'aprovado' },
+      { id: 'RMB-2025-003', data: '22/01/2025', tipo: 'Alojamento', descricao: 'Hotel conferência Lisboa', valor: 189.75, estado: 'analise' },
+      { id: 'RMB-2025-004', data: '25/01/2025', tipo: 'Representação', descricao: 'Jantar com parceiros', valor: 167.30, estado: 'submetido' },
+      { id: 'RMB-2025-005', data: '28/01/2025', tipo: 'Alimentação', descricao: 'Pequeno-almoço workshop', valor: 23.80, estado: 'rascunho' },
+      { id: 'RMB-2025-006', data: '10/01/2025', tipo: 'Portagens/Parques', descricao: 'Portagens A1 - reunião Coimbra', valor: 56.20, estado: 'pago' },
+      { id: 'RMB-2025-007', data: '12/01/2025', tipo: 'Material', descricao: 'Material escritório', valor: 32.50, estado: 'aprovado' }
+    ];
+    
+    pedidosFiltrados = [...pedidosReembolso];
+    
+    atualizarEstatisticas();
+    renderizarTabela();
+    
+  } catch (error) {
+    console.error('Erro ao carregar pedidos:', error);
+    showToast('Erro ao carregar pedidos de reembolso', 'error');
+  } finally {
+    loadingState.style.display = 'none';
+    
+    if (pedidosFiltrados.length === 0) {
+      emptyState.style.display = 'flex';
+    }
+  }
+}
+
+function atualizarEstatisticas() {
+  const stats = {
+    rascunho: 0,
+    submetido: 0,
+    analise: 0,
+    aprovado: 0,
+    pago: 0
+  };
+  
+  pedidosReembolso.forEach(p => {
+    if (stats.hasOwnProperty(p.estado)) {
+      stats[p.estado]++;
+    }
+  });
+  
+  document.getElementById('statRascunho').textContent = stats.rascunho;
+  document.getElementById('statSubmetido').textContent = stats.submetido;
+  document.getElementById('statAnalise').textContent = stats.analise;
+  document.getElementById('statAprovado').textContent = stats.aprovado;
+  document.getElementById('statPago').textContent = stats.pago;
+}
+
+function renderizarTabela() {
+  const tbody = document.getElementById('pedidosTableBody');
+  const emptyState = document.getElementById('emptyState');
+  
+  if (pedidosFiltrados.length === 0) {
+    tbody.innerHTML = '';
+    emptyState.style.display = 'flex';
+    return;
+  }
+  
+  emptyState.style.display = 'none';
+  
+  let html = '';
+  pedidosFiltrados.forEach(pedido => {
+    html += `
+      <div class="table-row">
+        <div class="td">
+          <span class="referencia-badge">${pedido.id}</span>
+        </div>
+        <div class="td">${pedido.data}</div>
+        <div class="td">
+          <span class="tipo-badge tipo-${pedido.tipo.toLowerCase().replace(/[\/\s]/g, '-')}">${pedido.tipo}</span>
+        </div>
+        <div class="td td-descricao">${pedido.descricao}</div>
+        <div class="td td-valor">€${pedido.valor.toFixed(2)}</div>
+        <div class="td">
+          <span class="status-badge status-${pedido.estado}">${estadoLabels[pedido.estado]}</span>
+        </div>
+        <div class="td td-acoes">
+          ${criarBotoesAcao(pedido)}
+        </div>
+      </div>
+    `;
+  });
+  
+  tbody.innerHTML = html;
+}
+
+function criarBotoesAcao(pedido) {
+  const acoes = acoesPorEstado[pedido.estado] || ['ver'];
+  let html = '<div class="action-buttons">';
+  
+  acoes.forEach(acao => {
+    switch(acao) {
+      case 'ver':
+        html += `<button class="action-btn primary" onclick="verPedido('${pedido.id}')" title="Ver detalhes">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+        </button>`;
+        break;
+      case 'editar':
+        html += `<button class="action-btn" onclick="editarPedido('${pedido.id}')" title="Editar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+            <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+          </svg>
+        </button>`;
+        break;
+      case 'cancelar':
+        html += `<button class="action-btn danger" onclick="cancelarPedido('${pedido.id}')" title="Cancelar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>`;
+        break;
+    }
+  });
+  
+  html += '</div>';
+  return html;
+}
+
+function filtrarPedidos() {
+  const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+  const estadoFilter = document.getElementById('filterEstado').value;
+  const tipoFilter = document.getElementById('filterTipo').value;
+  
+  pedidosFiltrados = pedidosReembolso.filter(pedido => {
+    const matchSearch = !searchTerm || 
+      pedido.id.toLowerCase().includes(searchTerm) ||
+      pedido.tipo.toLowerCase().includes(searchTerm) ||
+      pedido.descricao.toLowerCase().includes(searchTerm) ||
+      pedido.valor.toString().includes(searchTerm);
+    
+    const matchEstado = !estadoFilter || pedido.estado === estadoFilter;
+    const matchTipo = !tipoFilter || pedido.tipo === tipoFilter;
+    
+    return matchSearch && matchEstado && matchTipo;
+  });
+  
+  renderizarTabela();
+}
+
+function limparFiltros() {
+  document.getElementById('searchInput').value = '';
+  document.getElementById('filterEstado').value = '';
+  document.getElementById('filterTipo').value = '';
+  
+  pedidosFiltrados = [...pedidosReembolso];
+  sortConfig = { coluna: null, direcao: 'asc' };
+  
+  document.querySelectorAll('.sort-icon').forEach(el => {
+    el.textContent = '↕';
+    el.classList.remove('active');
+  });
+  
+  renderizarTabela();
+}
+
+function ordenarTabela(coluna) {
+  if (sortConfig.coluna === coluna) {
+    sortConfig.direcao = sortConfig.direcao === 'asc' ? 'desc' : 'asc';
+  } else {
+    sortConfig.coluna = coluna;
+    sortConfig.direcao = 'asc';
+  }
+  
+  // Atualizar indicadores
+  document.querySelectorAll('.sort-icon').forEach(el => {
+    el.textContent = '↕';
+    el.classList.remove('active');
+  });
+  const sortIcon = document.getElementById(`sort-${coluna}`);
+  if (sortIcon) {
+    sortIcon.textContent = sortConfig.direcao === 'asc' ? '↑' : '↓';
+    sortIcon.classList.add('active');
+  }
+  
+  // Ordenar
+  pedidosFiltrados.sort((a, b) => {
+    let valorA = a[coluna];
+    let valorB = b[coluna];
+    
+    if (coluna === 'data') {
+      valorA = parseDate(valorA);
+      valorB = parseDate(valorB);
+    } else if (coluna === 'valor') {
+      valorA = parseFloat(valorA);
+      valorB = parseFloat(valorB);
+    } else if (typeof valorA === 'string') {
+      valorA = valorA.toLowerCase();
+      valorB = valorB.toLowerCase();
+    }
+    
+    if (valorA < valorB) return sortConfig.direcao === 'asc' ? -1 : 1;
+    if (valorA > valorB) return sortConfig.direcao === 'asc' ? 1 : -1;
+    return 0;
+  });
+  
+  renderizarTabela();
+}
+
+function parseDate(dateStr) {
+  const parts = dateStr.split('/');
+  return new Date(parts[2], parts[1] - 1, parts[0]);
+}
+
+// Ações
+function verPedido(id) {
+  window.location.href = '{{ "/reembolso-detalhe" | relative_url }}?id=' + id;
+}
+
+function editarPedido(id) {
+  window.location.href = '{{ "/novo-pedido-reembolso" | relative_url }}?id=' + id;
+}
+
+function cancelarPedido(id) {
+  if (confirm(`Tem a certeza que deseja cancelar o pedido ${id}?`)) {
+    // TODO: Integrar com Supabase
+    const pedido = pedidosReembolso.find(p => p.id === id);
+    if (pedido) {
+      pedido.estado = 'cancelado';
+      atualizarEstatisticas();
+      renderizarTabela();
+      showToast(`Pedido ${id} cancelado com sucesso`, 'success');
+    }
+  }
+}
+
+function showToast(message, type) {
+  if (typeof window.showToast === 'function') {
+    window.showToast(message, type);
+  } else {
+    alert(message);
+  }
+}
+</script>
