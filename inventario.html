@@ -2,6 +2,7 @@
 layout: default
 title: Inventário
 ---
+{% raw %}
 <!-- 
   Power Pages: Esta página equivale a uma Entity List com Entity Form
   FetchXML para listar inventário atribuído:
@@ -25,6 +26,7 @@ title: Inventário
     </entity>
   </fetch>
 -->
+{% endraw %}
 
 <link rel="stylesheet" href="{{ '/web-files/css/formacao.css' | relative_url }}">
 
@@ -787,6 +789,7 @@ title: Inventário
 </div>
 
 <script>
+{% raw %}
 /**
  * Power Pages: Dados seriam carregados via Liquid/FetchXML
  * {% fetchxml atribuicoes_query %}
@@ -800,6 +803,7 @@ title: Inventário
  *   </fetch>
  * {% endfetchxml %}
  */
+{% endraw %}
 
 // Dados de exemplo
 var dadosAtribuidos = [
