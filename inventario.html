@@ -33,28 +33,16 @@ title: Inventário
 <style>
 /* === INVENTÁRIO PAGE - Estrutura igual a formacao.html === */
 .inventario-platform {
-  background-color: var(--bg-color, #f4f6fc);
+  background: transparent;
   min-height: calc(100vh - 70px);
 }
 
 /* Hero Section */
 .inv-hero {
-  background: linear-gradient(135deg, var(--primary-color, #00b276) 0%, var(--primary-hover, #009661) 100%);
+  background: transparent;
   padding: 2.5rem 2rem;
-  color: white;
   position: relative;
   overflow: hidden;
-}
-
-.inv-hero::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  right: -10%;
-  width: 400px;
-  height: 400px;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 50%;
 }
 
 .inv-hero-inner {
@@ -73,11 +61,12 @@ title: Inventário
   font-size: 2rem;
   font-weight: 700;
   margin: 0 0 0.5rem;
+  color: #1e293b;
 }
 
 .inv-hero-content p {
   margin: 0;
-  opacity: 0.9;
+  color: #64748b;
   font-size: 1rem;
 }
 
@@ -86,9 +75,9 @@ title: Inventário
   align-items: center;
   gap: 0.5rem;
   padding: 0.875rem 1.5rem;
-  background: rgba(255, 255, 255, 0.15);
+  background: var(--primary-color, #00b276);
   color: white;
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  border: none;
   border-radius: 10px;
   font-size: 0.9rem;
   font-weight: 600;
@@ -97,8 +86,7 @@ title: Inventário
 }
 
 .inv-hero-btn:hover {
-  background: rgba(255, 255, 255, 0.25);
-  border-color: rgba(255, 255, 255, 0.5);
+  background: var(--primary-hover, #009661);
   transform: translateY(-2px);
 }
 
@@ -113,7 +101,7 @@ title: Inventário
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 1.25rem;
   max-width: 1400px;
-  margin: -2rem auto 2rem;
+  margin: 0 auto 2rem;
   padding: 0 2rem;
   position: relative;
   z-index: 2;
@@ -573,7 +561,6 @@ title: Inventário
   
   .inv-quick-stats {
     grid-template-columns: 1fr;
-    margin-top: -1.5rem;
   }
   
   .inv-filters {

@@ -11,6 +11,7 @@
 let allFormacoes = [];
 let myFormacoes = [];
 let myPropostas = [];
+let allocationNotifications = [];
 let currentUser = null;
 let selectedFormacao = null;
 let formacaoCalendarDate = new Date();
@@ -59,6 +60,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     
     await loadFormacoes();
     await loadMyPropostas();
+    await loadAllocationNotifications();
     initFormacaoCalendar();
     
   } catch (error) {
@@ -111,6 +113,173 @@ async function loadMyPropostas() {
   } catch (error) {
     console.error('[Propostas] Erro ao carregar:', error);
   }
+}
+
+// ==========================================
+// ALLOCATION NOTIFICATIONS
+// ==========================================
+
+async function loadAllocationNotifications() {
+  if (!currentUser) return;
+  
+  try {
+    // Buscar inscrições alocadas que ainda não foram confirmadas pelo utilizador
+    const inscricoes = await DataService.getMyAllocatedFormacoes(currentUser.id);
+    
+    // Filtrar apenas as que estão pendentes de confirmação (alocadas mas não confirmadas)
+    allocationNotifications = inscricoes.filter(i => 
+      i.tipo_inscricao === 'alocada' && 
+      !i.confirmado_pelo_colaborador &&
+      i.estado === 'Inscrito'
+    );
+    
+    console.log('[Notificações] Alocações pendentes:', allocationNotifications.length);
+    
+    renderAllocationNotifications();
+    
+  } catch (error) {
+    console.error('[Notificações] Erro ao carregar:', error);
+    // Se não houver método específico, tentar extrair das formações já carregadas
+    extractAllocationNotificationsFromFormacoes();
+  }
+}
+
+function extractAllocationNotificationsFromFormacoes() {
+  if (!currentUser || !allFormacoes) return;
+  
+  allocationNotifications = [];
+  
+  allFormacoes.forEach(f => {
+    const inscricoes = f.formacao_inscricoes || [];
+    const myInscricao = inscricoes.find(i => 
+      i.colaborador_id === currentUser.id && 
+      i.estado === 'Inscrito' &&
+      i.tipo_inscricao === 'alocada' &&
+      !i.confirmado_pelo_colaborador
+    );
+    
+    if (myInscricao) {
+      allocationNotifications.push({
+        ...myInscricao,
+        formacao: f
+      });
+    }
+  });
+  
+  console.log('[Notificações] Extraídas das formações:', allocationNotifications.length);
+  renderAllocationNotifications();
+}
+
+function renderAllocationNotifications() {
+  const section = document.getElementById('allocationNotifications');
+  const list = document.getElementById('notificationsList');
+  const badge = document.getElementById('notificationCount');
+  
+  if (!section || !list) return;
+  
+  if (allocationNotifications.length === 0) {
+    section.style.display = 'none';
+    return;
+  }
+  
+  section.style.display = 'block';
+  if (badge) badge.textContent = allocationNotifications.length;
+  
+  list.innerHTML = allocationNotifications.map(n => {
+    const formacao = n.formacao || allFormacoes.find(f => f.id === n.formacao_id);
+    if (!formacao) return '';
+    
+    const sessoes = (formacao.formacao_sessoes || []).sort((a, b) => new Date(a.data) - new Date(b.data));
+    const primeiraSessao = sessoes[0];
+    const dataInicio = primeiraSessao ? formatDateLong(primeiraSessao.data) : 'A definir';
+    const formadorDisplay = getFormadorDisplay(formacao);
+    
+    return `
+      <div class="notification-item" data-inscricao-id="${n.id}">
+        <div class="notification-info">
+          <div class="notification-title">${formacao.titulo}</div>
+          <div class="notification-meta">
+            <span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
+              ${dataInicio}
+            </span>
+            <span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              ${formacao.duracao_horas || 0}h
+            </span>
+            <span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              ${formadorDisplay}
+            </span>
+          </div>
+        </div>
+        <div class="notification-actions">
+          <button class="notification-btn view" onclick="goToFormacaoDetalhe('${formacao.id}')">
+            Ver Detalhes
+          </button>
+          <button class="notification-btn accept" onclick="confirmAllocation('${n.id}', '${formacao.id}')">
+            Confirmar Presença
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+async function confirmAllocation(inscricaoId, formacaoId) {
+  if (!currentUser) return;
+  
+  try {
+    // Atualizar a inscrição para marcar como confirmada
+    await DataService.confirmAllocation(inscricaoId, currentUser.id);
+    
+    showToast('Presença confirmada com sucesso!', 'success');
+    
+    // Remover da lista de notificações
+    allocationNotifications = allocationNotifications.filter(n => n.id !== inscricaoId);
+    renderAllocationNotifications();
+    
+    // Recarregar formações
+    await loadFormacoes();
+    
+  } catch (error) {
+    console.error('Erro ao confirmar alocação:', error);
+    showToast('Erro ao confirmar presença. Tente novamente.', 'error');
+  }
+}
+
+async function declineAllocation(inscricaoId, formacaoId) {
+  if (!currentUser) return;
+  
+  if (!confirm('Tem a certeza que pretende recusar esta alocação? O gestor de formação será notificado.')) {
+    return;
+  }
+  
+  try {
+    await DataService.declineAllocation(inscricaoId, currentUser.id);
+    
+    showToast('Alocação recusada. O gestor será notificado.', 'info');
+    
+    // Remover da lista de notificações
+    allocationNotifications = allocationNotifications.filter(n => n.id !== inscricaoId);
+    renderAllocationNotifications();
+    
+    // Recarregar formações
+    await loadFormacoes();
+    
+  } catch (error) {
+    console.error('Erro ao recusar alocação:', error);
+    showToast('Erro ao recusar alocação. Tente novamente.', 'error');
+  }
+}
+
+function formatDateLong(dateStr) {
+  if (!dateStr) return 'A definir';
+  return new Date(dateStr).toLocaleDateString('pt-PT', { 
+    day: 'numeric', 
+    month: 'long',
+    year: 'numeric'
+  });
 }
 
 // ==========================================
