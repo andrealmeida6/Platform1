@@ -2,6 +2,7 @@
 layout: default
 title: Novo Pedido de Inventário
 ---
+{% raw %}
 <!--
   Power Pages: Esta página equivale a um Entity Form para criar novo pedido
   FetchXML para carregar categorias:
@@ -34,6 +35,7 @@ title: Novo Pedido de Inventário
     </entity>
   </fetch>
 -->
+{% endraw %}
 
 <link rel="stylesheet" href="{{ '/web-files/css/formacao.css' | relative_url }}">
 
@@ -1180,6 +1182,7 @@ title: Novo Pedido de Inventário
 </div>
 
 <script>
+{% raw %}
 /**
  * Power Pages: Catálogo seria carregado via FetchXML
  * {% fetchxml categorias_query %}
@@ -1219,6 +1222,7 @@ title: Novo Pedido de Inventário
  *   </fetch>
  * {% endfetchxml %}
  */
+{% endraw %}
 
 // Estrutura de categorias com subcategorias
 // Em Power Pages: seriam carregadas do FetchXML acima
