@@ -1,5 +1,5 @@
 // ===================================================================
-// DATA SERVICE - Camada de Abstração para Supabase/Power Pages
+// DATA SERVICE - Camada de Abstração para Supabase
 // ===================================================================
 
 const DataService = (function() {
@@ -585,47 +585,6 @@ const DataService = (function() {
   
   // Obter pedidos de formação do utilizador atual
   async function getMyPedidosFormacao(colaboradorId) {
-    /*
-    // =====================================================
-    // POWER PAGES - FetchXML Query
-    // =====================================================
-    // Use este código para Power Pages com FetchXML:
-    //
-    // var fetchXml = '<fetch>' +
-    //   '<entity name="cr_pedidos_formacao">' +
-    //     '<attribute name="cr_id" />' +
-    //     '<attribute name="cr_titulo" />' +
-    //     '<attribute name="cr_tipo" />' +
-    //     '<attribute name="cr_modalidade" />' +
-    //     '<attribute name="cr_entidade_formadora" />' +
-    //     '<attribute name="cr_duracao_horas" />' +
-    //     '<attribute name="cr_data_prevista_inicio" />' +
-    //     '<attribute name="cr_custo_estimado" />' +
-    //     '<attribute name="cr_estado" />' +
-    //     '<attribute name="cr_justificacao" />' +
-    //     '<attribute name="createdon" />' +
-    //     '<filter type="and">' +
-    //       '<condition attribute="cr_solicitante_id" operator="eq" value="' + colaboradorId + '" />' +
-    //     '</filter>' +
-    //     '<order attribute="createdon" descending="true" />' +
-    //   '</entity>' +
-    // '</fetch>';
-    //
-    // webapi.safeAjax({
-    //   type: "GET",
-    //   url: "/_api/cr_pedidos_formacao?fetchXml=" + encodeURIComponent(fetchXml),
-    //   contentType: "application/json",
-    //   success: function(data) {
-    //     // Processar dados retornados
-    //     console.log(data.value);
-    //   },
-    //   error: function(xhr) {
-    //     console.error("Erro ao carregar pedidos:", xhr);
-    //   }
-    // });
-    // =====================================================
-    */
-    
     const select = '*,solicitante:colaboradores!pedidos_formacao_solicitante_id_fkey(id,nome,email,departamento_id,departamentos(id,codigo,nome)),departamentos(id,codigo,nome),dirigente:colaboradores!pedidos_formacao_dirigente_id_fkey(id,nome),rh_aprovador:colaboradores!pedidos_formacao_rh_aprovador_id_fkey(id,nome),pedidos_formacao_historico(id,acao,estado_anterior,estado_novo,comentario,user_id,user_nome,created_at)';
     return retrieveWithRelations('pedidos_formacao', select, { solicitante_id: colaboradorId });
   }
@@ -637,43 +596,6 @@ const DataService = (function() {
   }
   
   async function createPedidoFormacao(data) {
-    /*
-    // =====================================================
-    // POWER PAGES - Create Record
-    // =====================================================
-    // Use este código para Power Pages:
-    //
-    // var recordData = {
-    //   "cr_titulo": data.titulo,
-    //   "cr_tipo": data.tipo,
-    //   "cr_modalidade": data.modalidade,
-    //   "cr_entidade_formadora": data.entidade_formadora,
-    //   "cr_duracao_horas": data.duracao_horas,
-    //   "cr_data_prevista_inicio": data.data_prevista_inicio,
-    //   "cr_custo_estimado": data.custo_estimado,
-    //   "cr_objetivo": data.objetivo,
-    //   "cr_justificacao": data.justificacao,
-    //   "cr_solicitante_id@odata.bind": "/contacts(" + data.solicitante_id + ")",
-    //   "cr_departamento_id@odata.bind": "/cr_departamentos(" + data.departamento_id + ")",
-    //   "cr_estado": data.estado
-    // };
-    //
-    // webapi.safeAjax({
-    //   type: "POST",
-    //   url: "/_api/cr_pedidos_formacao",
-    //   contentType: "application/json",
-    //   data: JSON.stringify(recordData),
-    //   success: function(data, textStatus, xhr) {
-    //     var newId = xhr.getResponseHeader("entityid");
-    //     console.log("Pedido criado com ID:", newId);
-    //   },
-    //   error: function(xhr) {
-    //     console.error("Erro ao criar pedido:", xhr);
-    //   }
-    // });
-    // =====================================================
-    */
-    
     return createRecord('pedidos_formacao', data);
   }
   
