@@ -82,45 +82,172 @@
     </div>
     
     <!-- Current User -->
-    <div class="header-user" id="headerUser">
-      <div class="user-avatar" id="userAvatar">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
-          <circle cx="12" cy="7" r="4"/>
+    <div class="header-user-wrapper">
+      <div class="header-user" id="headerUser" onclick="toggleUserPanel(event)">
+        <div class="user-avatar" id="userAvatar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+        </div>
+        <div class="user-info">
+          <span class="user-name" id="userName">A carregar...</span>
+          <span class="user-role" id="userRole"></span>
+        </div>
+        <svg class="user-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="6 9 12 15 18 9"/>
         </svg>
       </div>
-      <div class="user-info">
-        <span class="user-name" id="userName">A carregar...</span>
-        <span class="user-role" id="userRole"></span>
+      
+      <!-- User Panel Dropdown -->
+      <div class="user-panel" id="userPanel">
+        <div class="user-panel-header">
+          <div class="user-panel-name" id="panelUserName">Utilizador</div>
+          <div class="user-panel-role" id="panelUserRole">-</div>
+        </div>
+        <div class="user-panel-section-title">Menu Rápido</div>
+        <div class="user-actions">
+          <button class="user-action-btn" onclick="openProfile()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+            O Meu Perfil
+          </button>
+          <button class="user-action-btn" onclick="openInventory()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+              <path d="M3.3 7L12 12l8.7-5"></path>
+              <path d="M12 22V12"></path>
+            </svg>
+            Items Atribuídos
+          </button>
+          <button class="user-action-btn" onclick="openItineraries()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            Pedidos de Deslocação
+          </button>
+          <button class="user-action-btn" onclick="openItineraryApprovals()" id="btnAprovacoes" style="display: none;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            Aprovação de Deslocações
+          </button>
+        </div>
       </div>
     </div>
   </div>
 </header>
 
 <script>
+// Variável para armazenar o ID do utilizador atual
+var loggedUserCurrentId = null;
+
+// Toggle do painel do utilizador
+function toggleUserPanel(event) {
+  event.stopPropagation();
+  var panel = document.getElementById('userPanel');
+  if (panel) {
+    panel.classList.toggle('show');
+  }
+}
+
+// Fechar painel quando clicar fora
+document.addEventListener('click', function(event) {
+  var panel = document.getElementById('userPanel');
+  var wrapper = document.querySelector('.header-user-wrapper');
+  if (panel && wrapper && !wrapper.contains(event.target)) {
+    panel.classList.remove('show');
+  }
+});
+
+// Funções de navegação do User Panel
+function openProfile() {
+  if (loggedUserCurrentId) {
+    window.location.href = '{{ "/perfil" | relative_url }}?id=' + loggedUserCurrentId;
+  }
+  closeUserPanel();
+}
+
+function openInventory() {
+  window.location.href = '{{ "/inventario" | relative_url }}?tab=meus-items';
+  closeUserPanel();
+}
+
+function openItineraries() {
+  if (loggedUserCurrentId) {
+    window.location.href = '{{ "/deslocacoes" | relative_url }}?colaborador=' + loggedUserCurrentId;
+  } else {
+    window.location.href = '{{ "/deslocacoes" | relative_url }}';
+  }
+  closeUserPanel();
+}
+
+function openItineraryApprovals() {
+  window.location.href = '{{ "/deslocacoes" | relative_url }}?tab=aprovar';
+  closeUserPanel();
+}
+
+function closeUserPanel() {
+  var panel = document.getElementById('userPanel');
+  if (panel) {
+    panel.classList.remove('show');
+  }
+}
+
 // Atualizar UI do header com dados do utilizador
 function updateHeaderUserUI(user) {
   if (!user) return;
   
   console.log('[Header] A atualizar UI com:', user.nome);
   
+  // Guardar ID do utilizador
+  loggedUserCurrentId = user.id;
+  
   const userName = document.getElementById('userName');
   const userRole = document.getElementById('userRole');
   const userAvatar = document.getElementById('userAvatar');
+  const panelUserName = document.getElementById('panelUserName');
+  const panelUserRole = document.getElementById('panelUserRole');
+  
+  const nome = user.nome || 'Utilizador';
+  const roles = user.roles || [];
+  const roleNames = roles.map(r => r.codigo || r.nome).join(', ');
+  const rolePrimario = roles.length > 0 ? (roles[0].codigo || roles[0].nome) : 'Sem role';
   
   if (userName) {
-    userName.textContent = user.nome || 'Utilizador';
+    userName.textContent = nome;
   }
   
   if (userRole) {
-    const roles = user.roles || [];
-    const roleNames = roles.map(r => r.nome).join(', ');
     userRole.textContent = roleNames || 'Sem role';
   }
   
   if (userAvatar) {
-    const initials = (user.nome || 'U').split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
+    const initials = nome.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
     userAvatar.innerHTML = '<span>' + initials + '</span>';
+  }
+  
+  // Atualizar painel
+  if (panelUserName) {
+    panelUserName.textContent = nome;
+  }
+  
+  if (panelUserRole) {
+    panelUserRole.textContent = rolePrimario;
+  }
+  
+  // Mostrar botão de aprovações se tiver permissão
+  var btnAprovacoes = document.getElementById('btnAprovacoes');
+  if (btnAprovacoes) {
+    // Verificar se pode aprovar (dirigente, núcleo, admin)
+    var canApprove = roles.some(function(r) {
+      var codigo = (r.codigo || '').toLowerCase();
+      return codigo === 'nucleo' || codigo === 'afr_dirigente' || codigo === 'admin';
+    });
+    btnAprovacoes.style.display = canApprove ? 'flex' : 'none';
   }
 }
 
@@ -271,4 +398,5 @@ document.addEventListener('userChanged', function(event) {
 // Expor para uso global
 window.initViewAsSelector = initViewAsSelector;
 window.updateHeaderUserUI = updateHeaderUserUI;
+window.loggedUserCurrentId = loggedUserCurrentId;
 </script>
