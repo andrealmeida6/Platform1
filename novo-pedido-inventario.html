@@ -42,16 +42,17 @@ title: Novo Pedido de Inventário
 <style>
 /* === NOVO PEDIDO INVENTÁRIO - Estrutura consistente === */
 .novo-pedido-platform {
-  background-color: var(--bg-color, #f4f6fc);
+  background: transparent !important;
+  background-color: transparent !important;
   min-height: calc(100vh - 70px);
   padding-bottom: 3rem;
 }
 
 /* Page Header */
 .np-header {
-  background: linear-gradient(135deg, var(--primary-color, #00b276) 0%, var(--primary-hover, #009661) 100%);
+  background: transparent !important;
+  background-color: transparent !important;
   padding: 1.75rem 2rem;
-  color: white;
 }
 
 .np-header-inner {
@@ -60,23 +61,25 @@ title: Novo Pedido de Inventário
   display: flex;
   align-items: center;
   gap: 1.5rem;
+  background: transparent !important;
 }
 
 .np-back-link {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: rgba(255,255,255,0.9);
+  color: #64748b;
   text-decoration: none;
   font-size: 0.875rem;
   padding: 0.5rem 1rem;
-  background: rgba(255,255,255,0.1);
+  background: #f1f5f9;
   border-radius: 8px;
   transition: all 0.2s;
 }
 
 .np-back-link:hover {
-  background: rgba(255,255,255,0.2);
+  background: #e2e8f0;
+  color: #1e293b;
 }
 
 .np-back-link svg {
@@ -88,12 +91,17 @@ title: Novo Pedido de Inventário
   font-size: 1.5rem;
   font-weight: 700;
   margin: 0;
+  color: #000000 !important;
 }
 
 .np-header p {
   margin: 0.25rem 0 0;
-  opacity: 0.9;
+  color: #64748b;
   font-size: 0.875rem;
+}
+
+.np-header-inner > div {
+  color: #000000;
 }
 
 /* Timeline */
