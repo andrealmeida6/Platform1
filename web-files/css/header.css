@@ -206,6 +206,10 @@
 }
 
 /* === USER INFO === */
+.header-user-wrapper {
+  position: relative;
+}
+
 .header-user {
   display: flex;
   align-items: center;
@@ -255,6 +259,125 @@
   font-size: 0.65rem;
   color: var(--text-secondary);
   line-height: 1.2;
+}
+
+.user-chevron {
+  width: 16px;
+  height: 16px;
+  color: var(--text-secondary);
+  transition: transform 0.2s ease;
+}
+
+.header-user:hover .user-chevron {
+  color: var(--text-primary);
+}
+
+/* === USER PANEL DROPDOWN === */
+.user-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 280px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.2s ease;
+  z-index: 200;
+  overflow: hidden;
+}
+
+.user-panel.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.user-panel-header {
+  background: linear-gradient(135deg, var(--primary-color, #00b276) 0%, var(--primary-hover, #009661) 100%);
+  padding: 1.25rem 1.25rem 1rem;
+  color: white;
+  position: relative;
+  overflow: hidden;
+}
+
+.user-panel-header::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -20%;
+  width: 150px;
+  height: 150px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+}
+
+.user-panel-name {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+  position: relative;
+  z-index: 1;
+}
+
+.user-panel-role {
+  font-size: 0.8rem;
+  opacity: 0.9;
+  position: relative;
+  z-index: 1;
+}
+
+.user-panel-section-title {
+  padding: 0.875rem 1.25rem 0.5rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--primary-color, #00b276);
+}
+
+.user-actions {
+  padding: 0 0.75rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.user-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.875rem 1rem;
+  background: white;
+  border: 1px solid #f1f5f9;
+  border-radius: 10px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-primary, #1e293b);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: left;
+  font-family: inherit;
+}
+
+.user-action-btn:hover {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+  transform: translateX(4px);
+}
+
+.user-action-btn svg {
+  width: 20px;
+  height: 20px;
+  color: var(--text-secondary, #64748b);
+  flex-shrink: 0;
+}
+
+.user-action-btn:hover svg {
+  color: var(--primary-color, #00b276);
 }
 
 /* ===================================================================
@@ -635,6 +758,15 @@
   
   .user-info {
     display: none;
+  }
+  
+  .user-chevron {
+    display: none;
+  }
+  
+  .user-panel {
+    right: -0.5rem;
+    width: 260px;
   }
   
   .users-grid {
