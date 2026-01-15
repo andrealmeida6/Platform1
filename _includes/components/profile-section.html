@@ -25,6 +25,66 @@
 </div>
 
 <script>
+// Atualizar interface do perfil com dados do utilizador
+function updateProfileUI(user) {
+  if (!user) {
+    console.warn('[ProfileSection] Utilizador não fornecido');
+    return;
+  }
+  
+  console.log('[ProfileSection] A atualizar UI com:', user.nome);
+  
+  // Nome
+  const profileName = document.getElementById('profileName');
+  if (profileName) {
+    profileName.textContent = user.nome || 'Utilizador';
+  }
+  
+  // Avatar (iniciais)
+  const profileAvatar = document.getElementById('profileAvatar');
+  if (profileAvatar) {
+    const initials = (user.nome || 'U')
+      .split(' ')
+      .map(n => n[0])
+      .slice(0, 2)
+      .join('')
+      .toUpperCase();
+    profileAvatar.textContent = initials;
+  }
+  
+  // Email
+  const profileEmail = document.getElementById('profileEmail');
+  if (profileEmail) {
+    profileEmail.textContent = user.email || '-';
+  }
+  
+  // Telefone
+  const profileTelefone = document.getElementById('profileTelefone');
+  if (profileTelefone) {
+    profileTelefone.textContent = user.telefone || '-';
+  }
+  
+  // Departamento/Unidade Orgânica
+  const profileDepartamento = document.getElementById('profileDepartamento');
+  if (profileDepartamento) {
+    const deptNome = user.departamentos?.nome || user.departamento_nome || '-';
+    profileDepartamento.textContent = deptNome;
+  }
+  
+  // Status
+  const profileStatus = document.getElementById('profileStatus');
+  const profileStatusText = document.getElementById('profileStatusText');
+  if (profileStatus && profileStatusText) {
+    if (user.ativo) {
+      profileStatus.className = 'profile-status active';
+      profileStatusText.textContent = 'Ativo';
+    } else {
+      profileStatus.className = 'profile-status inactive';
+      profileStatusText.textContent = 'Inativo';
+    }
+  }
+}
+
 // Inicializar secção de perfil com dados do utilizador atual
 async function initProfileSection() {
   // Aguardar que AuthService esteja disponível
@@ -40,56 +100,7 @@ async function initProfileSection() {
     const currentUser = await AuthService.getCurrentUser();
     
     if (currentUser) {
-      // Nome
-      const profileName = document.getElementById('profileName');
-      if (profileName) {
-        profileName.textContent = currentUser.nome || 'Utilizador';
-      }
-      
-      // Avatar (iniciais)
-      const profileAvatar = document.getElementById('profileAvatar');
-      if (profileAvatar) {
-        const initials = (currentUser.nome || 'U')
-          .split(' ')
-          .map(n => n[0])
-          .slice(0, 2)
-          .join('')
-          .toUpperCase();
-        profileAvatar.textContent = initials;
-      }
-      
-      // Email
-      const profileEmail = document.getElementById('profileEmail');
-      if (profileEmail) {
-        profileEmail.textContent = currentUser.email || '-';
-      }
-      
-      // Telefone
-      const profileTelefone = document.getElementById('profileTelefone');
-      if (profileTelefone) {
-        profileTelefone.textContent = currentUser.telefone || '-';
-      }
-      
-      // Departamento/Unidade Orgânica
-      const profileDepartamento = document.getElementById('profileDepartamento');
-      if (profileDepartamento) {
-        const deptNome = currentUser.departamentos?.nome || currentUser.departamento_nome || '-';
-        profileDepartamento.textContent = deptNome;
-      }
-      
-      // Status
-      const profileStatus = document.getElementById('profileStatus');
-      const profileStatusText = document.getElementById('profileStatusText');
-      if (profileStatus && profileStatusText) {
-        if (currentUser.ativo) {
-          profileStatus.className = 'profile-status active';
-          profileStatusText.textContent = 'Ativo';
-        } else {
-          profileStatus.className = 'profile-status inactive';
-          profileStatusText.textContent = 'Inativo';
-        }
-      }
-      
+      updateProfileUI(currentUser);
       console.log('[ProfileSection] Perfil carregado:', currentUser.nome);
     } else {
       console.warn('[ProfileSection] Utilizador não encontrado');
@@ -98,6 +109,14 @@ async function initProfileSection() {
     console.error('[ProfileSection] Erro ao carregar perfil:', error);
   }
 }
+
+// Escutar evento de mudança de utilizador (quando "Ver como" muda)
+document.addEventListener('userChanged', function(event) {
+  console.log('[ProfileSection] Evento userChanged recebido');
+  if (event.detail && event.detail.user) {
+    updateProfileUI(event.detail.user);
+  }
+});
 
 // Inicializar quando o DOM estiver pronto
 if (document.readyState === 'loading') {
@@ -109,6 +128,7 @@ if (document.readyState === 'loading') {
   setTimeout(initProfileSection, 200);
 }
 
-// Expor função para atualização manual
+// Expor funções para uso global
 window.initProfileSection = initProfileSection;
+window.updateProfileUI = updateProfileUI;
 </script>
