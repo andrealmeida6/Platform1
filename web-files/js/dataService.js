@@ -240,12 +240,12 @@ const DataService = (function() {
   
   // --- FORMAÇÕES ---
   async function getFormacoes() {
-    const select = '*,entidades_formadoras(id,codigo,nome),formadores(id,nome,especialidade,tipo,colaborador_id),formacao_sessoes(id,data,hora_inicio,hora_fim,estado,codigo_entrada,codigo_saida,hora_abertura_entrada,hora_abertura_saida,hora_conclusao),formacao_inscricoes(id,colaborador_id,estado),formacao_departamentos(id,departamento_id,departamentos(id,codigo,nome)),formacao_favoritos(id,colaborador_id),formacao_presencas(id,colaborador_id,sessao_id,presente,hora_entrada,hora_saida,validado),formacao_resultados(id,colaborador_id,resultado),formacao_avaliacoes(id,colaborador_id,score_conteudo,score_formador,score_organizacao,comentario,created_at),formacao_formadores(id,formador_id,entidade_id,principal,formadores(id,nome,colaborador_id),entidades_formadoras(id,nome)),formacao_anexos(id,nome,tipo,url,tamanho_bytes)';
+    const select = '*,entidades_formadoras(id,codigo,nome),formadores(id,nome,especialidade,tipo,colaborador_id),formacao_sessoes(id,data,hora_inicio,hora_fim,estado,codigo_entrada,codigo_saida,hora_abertura_entrada,hora_abertura_saida,hora_conclusao),formacao_inscricoes(id,colaborador_id,estado,tipo_inscricao,alocado_por,data_alocacao,notificacao_enviada,notificacao_lida),formacao_departamentos(id,departamento_id,departamentos(id,codigo,nome)),formacao_favoritos(id,colaborador_id),formacao_presencas(id,colaborador_id,sessao_id,presente,hora_entrada,hora_saida,validado),formacao_resultados(id,colaborador_id,resultado),formacao_avaliacoes(id,colaborador_id,score_conteudo,score_formador,score_organizacao,comentario,created_at),formacao_formadores(id,formador_id,entidade_id,principal,formadores(id,nome,colaborador_id),entidades_formadoras(id,nome)),formacao_anexos(id,nome,tipo,url,tamanho_bytes)';
     return retrieveWithRelations('formacoes', select);
   }
   
   async function getFormacaoById(id) {
-    const select = '*,entidades_formadoras(id,codigo,nome),formadores(id,nome,especialidade,tipo,colaborador_id),formacao_sessoes(id,data,hora_inicio,hora_fim,estado,codigo_entrada,codigo_saida,hora_abertura_entrada,hora_abertura_saida,hora_conclusao),formacao_inscricoes(id,colaborador_id,estado,colaboradores(id,nome,email,departamento_id)),formacao_departamentos(id,departamento_id,departamentos(id,codigo,nome)),formacao_favoritos(id,colaborador_id),formacao_presencas(id,colaborador_id,sessao_id,presente,hora_entrada,hora_saida,validado,colaboradores(id,nome)),formacao_resultados(id,colaborador_id,resultado),formacao_avaliacoes(id,colaborador_id,score_conteudo,score_formador,score_organizacao,comentario,created_at),formacao_formadores(id,formador_id,entidade_id,principal,formadores(id,nome,colaborador_id),entidades_formadoras(id,nome)),formacao_anexos(id,nome,tipo,url,tamanho_bytes)';
+    const select = '*,entidades_formadoras(id,codigo,nome),formadores(id,nome,especialidade,tipo,colaborador_id),formacao_sessoes(id,data,hora_inicio,hora_fim,estado,codigo_entrada,codigo_saida,hora_abertura_entrada,hora_abertura_saida,hora_conclusao),formacao_inscricoes(id,colaborador_id,estado,tipo_inscricao,alocado_por,data_alocacao,notificacao_enviada,notificacao_lida,mensagem_alocacao,colaboradores(id,nome,email,departamento_id)),formacao_departamentos(id,departamento_id,departamentos(id,codigo,nome)),formacao_favoritos(id,colaborador_id),formacao_presencas(id,colaborador_id,sessao_id,presente,hora_entrada,hora_saida,validado,colaboradores(id,nome)),formacao_resultados(id,colaborador_id,resultado),formacao_avaliacoes(id,colaborador_id,score_conteudo,score_formador,score_organizacao,comentario,created_at),formacao_formadores(id,formador_id,entidade_id,principal,formadores(id,nome,colaborador_id),entidades_formadoras(id,nome)),formacao_anexos(id,nome,tipo,url,tamanho_bytes)';
     const result = await retrieveWithRelations('formacoes', select, { id });
     return result.length > 0 ? result[0] : null;
   }
@@ -309,7 +309,8 @@ const DataService = (function() {
       formacao_id: formacaoId,
       colaborador_id: colaboradorId,
       observacoes,
-      estado: 'Inscrito'
+      estado: 'Inscrito',
+      tipo_inscricao: 'voluntaria'
     });
   }
   
@@ -325,6 +326,171 @@ const DataService = (function() {
       });
     }
     return null;
+  }
+  
+  // --- ALOCAÇÃO DE COLABORADORES ---
+  
+  // Alocar colaborador a uma formação (pelo gestor/RH)
+  async function alocarColaboradorFormacao(formacaoId, colaboradorId, alocadoPorId, mensagem = null) {
+    // Verificar se já está inscrito
+    const inscricoesExistentes = await retrieveMultipleRecords('formacao_inscricoes', {
+      filter: { formacao_id: formacaoId, colaborador_id: colaboradorId }
+    });
+    
+    if (inscricoesExistentes.length > 0) {
+      // Se já existe mas foi cancelada, reativar
+      if (inscricoesExistentes[0].estado === 'Cancelada') {
+        return updateRecord('formacao_inscricoes', inscricoesExistentes[0].id, {
+          estado: 'Inscrito',
+          tipo_inscricao: 'alocada',
+          alocado_por: alocadoPorId,
+          data_alocacao: new Date().toISOString(),
+          mensagem_alocacao: mensagem,
+          notificacao_enviada: true,
+          notificacao_lida: false,
+          cancelada_em: null
+        });
+      }
+      // Se já está inscrito, não fazer nada
+      return inscricoesExistentes[0];
+    }
+    
+    // Criar nova inscrição do tipo 'alocada'
+    return createRecord('formacao_inscricoes', {
+      formacao_id: formacaoId,
+      colaborador_id: colaboradorId,
+      estado: 'Inscrito',
+      tipo_inscricao: 'alocada',
+      alocado_por: alocadoPorId,
+      data_alocacao: new Date().toISOString(),
+      mensagem_alocacao: mensagem,
+      notificacao_enviada: true,
+      notificacao_lida: false
+    });
+  }
+  
+  // Remover alocação de colaborador
+  async function removerAlocacaoFormacao(formacaoId, colaboradorId) {
+    const inscricoes = await retrieveMultipleRecords('formacao_inscricoes', {
+      filter: { formacao_id: formacaoId, colaborador_id: colaboradorId }
+    });
+    
+    if (inscricoes.length > 0) {
+      return updateRecord('formacao_inscricoes', inscricoes[0].id, {
+        estado: 'Cancelada',
+        cancelada_em: new Date().toISOString()
+      });
+    }
+    return null;
+  }
+  
+  // --- NOTIFICAÇÕES DE FORMAÇÃO ---
+  
+  // Criar notificação de alocação
+  async function criarNotificacaoAlocacao(formacaoId, colaboradorId, tituloFormacao, mensagem = null) {
+    return createRecord('formacao_notificacoes', {
+      formacao_id: formacaoId,
+      colaborador_id: colaboradorId,
+      tipo: 'alocacao',
+      titulo: `Alocação à formação: ${tituloFormacao}`,
+      mensagem: mensagem || `Foi alocado/a à formação "${tituloFormacao}". Consulte os detalhes na sua área de formações.`,
+      lida: false
+    });
+  }
+  
+  // Criar notificação de lembrete de sessão
+  async function criarNotificacaoLembreteSessao(formacaoId, colaboradorId, tituloFormacao, dataSessao) {
+    return createRecord('formacao_notificacoes', {
+      formacao_id: formacaoId,
+      colaborador_id: colaboradorId,
+      tipo: 'lembrete_sessao',
+      titulo: `Lembrete: Sessão de formação`,
+      mensagem: `A sessão da formação "${tituloFormacao}" está agendada para ${dataSessao}.`,
+      lida: false
+    });
+  }
+  
+  // Criar notificação de sessão iniciada
+  async function criarNotificacaoSessaoIniciada(formacaoId, colaboradorId, tituloFormacao) {
+    return createRecord('formacao_notificacoes', {
+      formacao_id: formacaoId,
+      colaborador_id: colaboradorId,
+      tipo: 'sessao_iniciada',
+      titulo: `Sessão iniciada: ${tituloFormacao}`,
+      mensagem: `A sessão da formação "${tituloFormacao}" já iniciou. Registe a sua presença.`,
+      lida: false
+    });
+  }
+  
+  // Obter notificações de um colaborador
+  async function getNotificacoesColaborador(colaboradorId, apenasNaoLidas = false) {
+    const select = '*,formacoes(id,titulo,estado)';
+    let url = `${SUPABASE_URL}/rest/v1/formacao_notificacoes?select=${encodeURIComponent(select)}&colaborador_id=eq.${colaboradorId}&order=created_at.desc`;
+    
+    if (apenasNaoLidas) {
+      url += '&lida=eq.false';
+    }
+    
+    const response = await fetch(url, { headers });
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    return await response.json();
+  }
+  
+  // Marcar notificação como lida
+  async function marcarNotificacaoLida(notificacaoId) {
+    return updateRecord('formacao_notificacoes', notificacaoId, {
+      lida: true,
+      data_lida: new Date().toISOString()
+    });
+  }
+  
+  // Marcar todas notificações como lidas
+  async function marcarTodasNotificacoesLidas(colaboradorId) {
+    const notificacoes = await retrieveMultipleRecords('formacao_notificacoes', {
+      filter: { colaborador_id: colaboradorId, lida: false }
+    });
+    
+    for (const notif of notificacoes) {
+      await updateRecord('formacao_notificacoes', notif.id, {
+        lida: true,
+        data_lida: new Date().toISOString()
+      });
+    }
+    
+    return notificacoes.length;
+  }
+  
+  // Contar notificações não lidas
+  async function contarNotificacoesNaoLidas(colaboradorId) {
+    const notificacoes = await retrieveMultipleRecords('formacao_notificacoes', {
+      filter: { colaborador_id: colaboradorId, lida: false }
+    });
+    return notificacoes.length;
+  }
+  
+  // Marcar notificação de alocação como lida na inscrição
+  async function marcarAlocacaoLida(formacaoId, colaboradorId) {
+    const inscricoes = await retrieveMultipleRecords('formacao_inscricoes', {
+      filter: { formacao_id: formacaoId, colaborador_id: colaboradorId }
+    });
+    
+    if (inscricoes.length > 0 && !inscricoes[0].notificacao_lida) {
+      return updateRecord('formacao_inscricoes', inscricoes[0].id, {
+        notificacao_lida: true,
+        data_notificacao_lida: new Date().toISOString()
+      });
+    }
+    return null;
+  }
+  
+  // Obter formações onde o colaborador foi alocado (não lidas)
+  async function getAlocacoesNaoLidas(colaboradorId) {
+    const select = '*,formacoes(id,titulo,estado,duracao_horas,formacao_sessoes(id,data,hora_inicio))';
+    let url = `${SUPABASE_URL}/rest/v1/formacao_inscricoes?select=${encodeURIComponent(select)}&colaborador_id=eq.${colaboradorId}&tipo_inscricao=eq.alocada&notificacao_lida=eq.false&estado=eq.Inscrito`;
+    
+    const response = await fetch(url, { headers });
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    return await response.json();
   }
   
   async function toggleFavoritoFormacao(formacaoId, colaboradorId) {
@@ -840,6 +1006,21 @@ const DataService = (function() {
     submeterAvaliacao,
     getFormacaoStats,
     getFormacoesDoFormador,
+    
+    // Alocação de Colaboradores
+    alocarColaboradorFormacao,
+    removerAlocacaoFormacao,
+    
+    // Notificações de Formação
+    criarNotificacaoAlocacao,
+    criarNotificacaoLembreteSessao,
+    criarNotificacaoSessaoIniciada,
+    getNotificacoesColaborador,
+    marcarNotificacaoLida,
+    marcarTodasNotificacoesLidas,
+    contarNotificacoesNaoLidas,
+    marcarAlocacaoLida,
+    getAlocacoesNaoLidas,
     
     // Sessões de Formação
     getSessaoById,
