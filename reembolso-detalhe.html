@@ -1,0 +1,674 @@
+---
+layout: default
+title: Detalhe do Pedido de Reembolso
+---
+
+<div class="reembolso-detail-page">
+  <!-- Back Link -->
+  <a href="{{ '/reembolsos' | relative_url }}" class="back-link">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <polyline points="15 18 9 12 15 6"></polyline>
+    </svg>
+    Voltar aos Reembolsos
+  </a>
+
+  <!-- Page Header -->
+  <div class="detail-header">
+    <div class="detail-title-section">
+      <h1 id="pedidoTitulo">Pedido de Reembolso #<span id="pedidoId">---</span></h1>
+      <div class="detail-meta">
+        <span class="detail-meta-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+          Submetido em: <span id="dataSubmissao">--/--/----</span>
+        </span>
+        <span class="detail-meta-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+          Solicitante: <span id="solicitante">---</span>
+        </span>
+      </div>
+    </div>
+    <div class="page-header-actions">
+      <span class="status-badge" id="statusBadge">---</span>
+    </div>
+  </div>
+
+  <!-- Timeline Breadcrumb -->
+  <div class="timeline-breadcrumb" id="timelineBreadcrumb">
+    <!-- Preenchido via JavaScript -->
+  </div>
+
+  <!-- Action Bar (para aprovadores) -->
+  <div class="form-action-bar" id="actionBar" style="display: none;">
+    <button class="btn-success" onclick="aprovar()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="20 6 9 17 4 12"></polyline>
+      </svg>
+      Aprovar
+    </button>
+    <button class="btn-danger" onclick="rejeitar()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M6 18L18 6M6 6l12 12"/>
+      </svg>
+      Rejeitar
+    </button>
+    <button class="btn-warning" onclick="devolverCorrecao()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="1 4 1 10 7 10"></polyline>
+        <path d="M3.51 15a9 9 0 102.13-9.36L1 10"></path>
+      </svg>
+      Devolver para Correção
+    </button>
+  </div>
+
+  <!-- Content Grid -->
+  <div class="detail-content-grid">
+    <!-- Main Content -->
+    <div class="detail-main">
+      <!-- Informações da Despesa -->
+      <div class="detail-card">
+        <h3 class="detail-card-title">Informações da Despesa</h3>
+        
+        <div class="detail-row">
+          <div class="detail-field">
+            <span class="detail-field-label">Tipo de Despesa</span>
+            <span class="detail-field-value" id="tipoDespesa">---</span>
+          </div>
+          <div class="detail-field">
+            <span class="detail-field-label">Unidade Orgânica</span>
+            <span class="detail-field-value" id="unidadeOrganica">---</span>
+          </div>
+        </div>
+        
+        <div class="detail-row" id="datasRow" style="display: none;">
+          <div class="detail-field">
+            <span class="detail-field-label">Data de Início</span>
+            <span class="detail-field-value" id="dataInicio">---</span>
+          </div>
+          <div class="detail-field">
+            <span class="detail-field-label">Data de Fim</span>
+            <span class="detail-field-value" id="dataFim">---</span>
+          </div>
+        </div>
+        
+        <div class="detail-row" id="localRow" style="display: none;">
+          <div class="detail-field">
+            <span class="detail-field-label">País</span>
+            <span class="detail-field-value" id="pais">---</span>
+          </div>
+          <div class="detail-field">
+            <span class="detail-field-label">Localidade</span>
+            <span class="detail-field-value" id="localidade">---</span>
+          </div>
+        </div>
+        
+        <div class="detail-row">
+          <div class="detail-field" style="grid-column: 1 / -1;">
+            <span class="detail-field-label">Descrição</span>
+            <span class="detail-field-value" id="descricao">---</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Valores -->
+      <div class="detail-card">
+        <h3 class="detail-card-title">Valores</h3>
+        
+        <div class="detail-row">
+          <div class="detail-field">
+            <span class="detail-field-label">Valor sem IVA</span>
+            <span class="detail-field-value" id="valorSemIVA">0,00 €</span>
+          </div>
+          <div class="detail-field">
+            <span class="detail-field-label">Valor com IVA</span>
+            <span class="detail-field-value" id="valorComIVA">0,00 €</span>
+          </div>
+        </div>
+        
+        <div class="detail-row">
+          <div class="detail-field">
+            <span class="detail-field-label">Adiantamento</span>
+            <span class="detail-field-value" id="valorAdiantamento">0,00 €</span>
+          </div>
+          <div class="detail-field">
+            <span class="detail-field-label">Total a Reembolsar</span>
+            <span class="detail-field-value" id="totalReembolsar" style="font-size: 1.25rem; color: var(--primary-color); font-weight: 700;">0,00 €</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Documentos -->
+      <div class="detail-card">
+        <h3 class="detail-card-title">Documentos Anexados</h3>
+        
+        <div class="documents-list" id="documentsList">
+          <!-- Preenchido via JavaScript -->
+        </div>
+      </div>
+
+      <!-- Comentários -->
+      <div class="detail-card">
+        <h3 class="detail-card-title">Comentários</h3>
+        
+        <div class="comments-section">
+          <div class="comment-form">
+            <textarea class="comment-textarea" id="novoComentario" placeholder="Escreva um comentário..."></textarea>
+            <button class="btn-primary" onclick="publicarComentario()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"></path>
+              </svg>
+              Adicionar Comentário
+            </button>
+          </div>
+          
+          <div class="comment-list" id="comentariosList">
+            <div class="empty-state" style="padding: 2rem; text-align: center; color: var(--text-secondary);">
+              Ainda não existem comentários.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="detail-sidebar">
+      <!-- Resumo -->
+      <div class="summary-panel">
+        <h3 class="summary-title">Resumo</h3>
+        <div class="summary-item">
+          <span class="summary-label">Referência:</span>
+          <span class="summary-value" id="sidebarRef">---</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Estado:</span>
+          <span class="summary-value" id="sidebarEstado">---</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Tipo:</span>
+          <span class="summary-value" id="sidebarTipo">---</span>
+        </div>
+        <div class="summary-item" style="border-top: 2px solid var(--primary-color); padding-top: 1rem; margin-top: 0.5rem;">
+          <span class="summary-label"><strong>Total:</strong></span>
+          <span class="summary-value highlight" id="sidebarTotal">0,00 €</span>
+        </div>
+      </div>
+
+      <!-- Fluxo de Aprovação -->
+      <div class="detail-card">
+        <h3 class="detail-card-title">Fluxo de Aprovação</h3>
+        <div class="flow-timeline" id="flowTimeline">
+          <!-- Preenchido via JavaScript -->
+        </div>
+      </div>
+
+      <!-- Ações Rápidas -->
+      <div class="sidebar-action-bar" id="sidebarActions">
+        <button class="btn-outline" onclick="imprimirPedido()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6 9 6 2 18 2 18 9"></polyline>
+            <path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"></path>
+            <rect x="6" y="14" width="12" height="8"></rect>
+          </svg>
+          Imprimir
+        </button>
+        <button class="btn-outline" onclick="exportarPDF()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          Exportar PDF
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modais -->
+<div class="modal-overlay" id="modalAprovar">
+  <div class="modal-content">
+    <div class="modal-header">Confirmar Aprovação</div>
+    <div class="modal-body">
+      <p style="margin-bottom: 1rem;">Tem a certeza que deseja aprovar este pedido de reembolso?</p>
+      <label class="modal-label">Nota de Aprovação (opcional):</label>
+      <textarea class="modal-textarea" id="notaAprovacao" placeholder="Adicione uma nota..."></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-outline" onclick="fecharModal('modalAprovar')">Cancelar</button>
+      <button class="btn-success" onclick="confirmarAprovacao()">Confirmar Aprovação</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modalRejeitar">
+  <div class="modal-content">
+    <div class="modal-header">Rejeitar Pedido</div>
+    <div class="modal-body">
+      <label class="modal-label">Motivo da Rejeição (obrigatório):</label>
+      <textarea class="modal-textarea" id="motivoRejeicao" placeholder="Mínimo 10 caracteres..." required></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-outline" onclick="fecharModal('modalRejeitar')">Cancelar</button>
+      <button class="btn-danger" onclick="confirmarRejeicao()">Confirmar Rejeição</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modalDevolver">
+  <div class="modal-content">
+    <div class="modal-header">Devolver para Correção</div>
+    <div class="modal-body">
+      <label class="modal-label">Instruções ao Solicitante (obrigatório):</label>
+      <textarea class="modal-textarea" id="instrucoesCorrecao" placeholder="Descreva o que precisa ser corrigido..." required></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-outline" onclick="fecharModal('modalDevolver')">Cancelar</button>
+      <button class="btn-warning" onclick="confirmarDevolucao()">Enviar para Correção</button>
+    </div>
+  </div>
+</div>
+
+<link rel="stylesheet" href="{{ '/web-files/css/reembolsos.css' | relative_url }}">
+
+<script>
+// Variables
+let pedidoId = null;
+let pedido = null;
+let comentarios = [];
+let currentUser = null;
+let canApprove = false;
+
+// Estados e labels
+const estadoLabels = {
+  'rascunho': 'Rascunho',
+  'submetido': 'Submetido',
+  'analise': 'Em Análise',
+  'aprovado': 'Aprovado',
+  'pago': 'Pago',
+  'rejeitado': 'Rejeitado',
+  'cancelado': 'Cancelado'
+};
+
+// Fluxo de aprovação
+const fluxoAprovacao = [
+  { etapa: 'submissao', nome: '1. Submissão', descricao: 'Pedido submetido pelo colaborador' },
+  { etapa: 'uo', nome: '2. Análise UO', descricao: 'Aprovação pela Unidade Orgânica' },
+  { etapa: 'financeiro', nome: '3. Análise Financeira', descricao: 'Validação pela área Financeira' },
+  { etapa: 'pagamento', nome: '4. Pagamento', descricao: 'Processamento do pagamento' }
+];
+
+// Init
+document.addEventListener('DOMContentLoaded', async function() {
+  const urlParams = new URLSearchParams(window.location.search);
+  pedidoId = urlParams.get('id');
+  
+  if (!pedidoId) {
+    window.location.href = '{{ "/reembolsos" | relative_url }}';
+    return;
+  }
+  
+  await carregarPedido();
+  carregarComentarios();
+});
+
+async function carregarPedido() {
+  try {
+    // Aguardar serviços
+    while (typeof AuthService === 'undefined') {
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    
+    currentUser = await AuthService.getCurrentUser();
+    
+    // Verificar se pode aprovar
+    const roles = currentUser?.roles || [];
+    canApprove = roles.some(r => {
+      const codigo = (r.codigo || '').toLowerCase();
+      return codigo === 'nucleo' || codigo === 'afr_dirigente' || codigo === 'admin';
+    });
+    
+    // Dados de exemplo (TODO: integrar com Supabase)
+    pedido = {
+      id: pedidoId,
+      dataSubmissao: '22/01/2025',
+      solicitante: 'André Borges',
+      tipoDespesa: 'Alojamento',
+      unidadeOrganica: 'AFR - Administrativa, Financeira e Recursos',
+      dataInicio: '20/01/2025',
+      dataFim: '21/01/2025',
+      pais: 'Portugal',
+      localidade: 'Lisboa',
+      descricao: 'Hotel para participação na conferência anual de inovação digital.',
+      valorSemIVA: 154.47,
+      valorComIVA: 189.75,
+      valorAdiantamento: 0,
+      estado: 'analise',
+      etapaAtual: 'uo',
+      documentos: [
+        { nome: 'Fatura_Hotel.pdf', tipo: 'Fatura', tamanho: '245 KB' },
+        { nome: 'Comprovativo_Reserva.pdf', tipo: 'Reserva', tamanho: '128 KB' }
+      ]
+    };
+    
+    renderizarPedido();
+    renderizarTimeline();
+    renderizarFluxo();
+    renderizarDocumentos();
+    
+    // Mostrar botões de ação se pode aprovar e pedido está em análise
+    if (canApprove && (pedido.estado === 'submetido' || pedido.estado === 'analise')) {
+      document.getElementById('actionBar').style.display = 'flex';
+    }
+    
+  } catch (error) {
+    console.error('Erro ao carregar pedido:', error);
+  }
+}
+
+function renderizarPedido() {
+  // Header
+  document.getElementById('pedidoId').textContent = pedido.id;
+  document.getElementById('dataSubmissao').textContent = pedido.dataSubmissao;
+  document.getElementById('solicitante').textContent = pedido.solicitante;
+  
+  // Status badge
+  const statusBadge = document.getElementById('statusBadge');
+  statusBadge.textContent = estadoLabels[pedido.estado];
+  statusBadge.className = `status-badge status-${pedido.estado}`;
+  
+  // Detalhes
+  document.getElementById('tipoDespesa').textContent = pedido.tipoDespesa;
+  document.getElementById('unidadeOrganica').textContent = pedido.unidadeOrganica;
+  document.getElementById('descricao').textContent = pedido.descricao;
+  
+  // Campos condicionais
+  const tiposComDatas = ['Alojamento', 'Viagem', 'Representação'];
+  if (tiposComDatas.includes(pedido.tipoDespesa)) {
+    document.getElementById('datasRow').style.display = 'grid';
+    document.getElementById('localRow').style.display = 'grid';
+    document.getElementById('dataInicio').textContent = pedido.dataInicio;
+    document.getElementById('dataFim').textContent = pedido.dataFim;
+    document.getElementById('pais').textContent = pedido.pais;
+    document.getElementById('localidade').textContent = pedido.localidade || '-';
+  }
+  
+  // Valores
+  document.getElementById('valorSemIVA').textContent = formatarMoeda(pedido.valorSemIVA);
+  document.getElementById('valorComIVA').textContent = formatarMoeda(pedido.valorComIVA);
+  document.getElementById('valorAdiantamento').textContent = formatarMoeda(pedido.valorAdiantamento);
+  
+  const totalReembolsar = pedido.valorComIVA - pedido.valorAdiantamento;
+  document.getElementById('totalReembolsar').textContent = formatarMoeda(totalReembolsar);
+  
+  // Sidebar
+  document.getElementById('sidebarRef').textContent = pedido.id;
+  document.getElementById('sidebarEstado').textContent = estadoLabels[pedido.estado];
+  document.getElementById('sidebarTipo').textContent = pedido.tipoDespesa;
+  document.getElementById('sidebarTotal').textContent = formatarMoeda(totalReembolsar);
+}
+
+function renderizarTimeline() {
+  const container = document.getElementById('timelineBreadcrumb');
+  let html = '';
+  
+  const etapaIndex = fluxoAprovacao.findIndex(f => f.etapa === pedido.etapaAtual);
+  
+  fluxoAprovacao.forEach((etapa, index) => {
+    const isCompleted = index < etapaIndex;
+    const isActive = index === etapaIndex;
+    const isPending = index > etapaIndex;
+    
+    let circleClass = 'pending';
+    if (isCompleted) circleClass = 'completed';
+    if (isActive) circleClass = 'active';
+    
+    html += `
+      <div class="timeline-step">
+        <div class="step-circle ${circleClass}">${isCompleted ? '✓' : index + 1}</div>
+        <div class="step-info">
+          <span class="step-name">${etapa.nome}</span>
+          <span class="step-user">${isCompleted ? 'Concluído' : isActive ? 'Em processamento' : 'Pendente'}</span>
+        </div>
+      </div>
+    `;
+    
+    if (index < fluxoAprovacao.length - 1) {
+      html += `<div class="step-line ${isCompleted ? 'completed' : ''}"></div>`;
+    }
+  });
+  
+  container.innerHTML = html;
+}
+
+function renderizarFluxo() {
+  const container = document.getElementById('flowTimeline');
+  let html = '';
+  
+  const etapaIndex = fluxoAprovacao.findIndex(f => f.etapa === pedido.etapaAtual);
+  
+  fluxoAprovacao.forEach((etapa, index) => {
+    const isCompleted = index < etapaIndex;
+    const isActive = index === etapaIndex;
+    const isLast = index === fluxoAprovacao.length - 1;
+    
+    let dotClass = '';
+    if (isCompleted) dotClass = 'completed';
+    if (isActive) dotClass = 'active';
+    
+    html += `
+      <div class="flow-item">
+        <div class="flow-indicator">
+          <div class="flow-dot ${dotClass}"></div>
+          ${!isLast ? `<div class="flow-line ${isCompleted ? 'completed' : ''}"></div>` : ''}
+        </div>
+        <div class="flow-content">
+          <div class="flow-title">${etapa.nome}</div>
+          <div class="flow-status">${isCompleted ? '✓ Concluído' : isActive ? '⏳ Em processamento' : '⏸ Aguarda'}</div>
+        </div>
+      </div>
+    `;
+  });
+  
+  container.innerHTML = html;
+}
+
+function renderizarDocumentos() {
+  const container = document.getElementById('documentsList');
+  
+  if (!pedido.documentos || pedido.documentos.length === 0) {
+    container.innerHTML = '<p style="color: var(--text-secondary);">Nenhum documento anexado.</p>';
+    return;
+  }
+  
+  let html = '';
+  pedido.documentos.forEach(doc => {
+    html += `
+      <div class="document-item">
+        <div class="document-info">
+          <div class="document-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+            </svg>
+          </div>
+          <div>
+            <div class="document-name">${doc.nome}</div>
+            <div class="document-meta">${doc.tipo} • ${doc.tamanho}</div>
+          </div>
+        </div>
+        <div class="document-actions">
+          <button class="action-btn" onclick="visualizarDocumento('${doc.nome}')" title="Visualizar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          </button>
+          <button class="action-btn" onclick="downloadDocumento('${doc.nome}')" title="Download">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    `;
+  });
+  
+  container.innerHTML = html;
+}
+
+// Comentários
+function carregarComentarios() {
+  // TODO: Carregar do Supabase
+  comentarios = [];
+  renderizarComentarios();
+}
+
+function publicarComentario() {
+  const texto = document.getElementById('novoComentario').value.trim();
+  
+  if (!texto) {
+    alert('Por favor, escreva um comentário antes de publicar.');
+    return;
+  }
+  
+  const novoComentario = {
+    autor: currentUser?.nome || 'Utilizador',
+    data: new Date().toLocaleString('pt-PT'),
+    texto: texto
+  };
+  
+  comentarios.unshift(novoComentario);
+  renderizarComentarios();
+  document.getElementById('novoComentario').value = '';
+  
+  // TODO: Guardar no Supabase
+}
+
+function renderizarComentarios() {
+  const lista = document.getElementById('comentariosList');
+  
+  if (comentarios.length === 0) {
+    lista.innerHTML = '<div style="padding: 2rem; text-align: center; color: var(--text-secondary);">Ainda não existem comentários.</div>';
+    return;
+  }
+  
+  let html = '';
+  comentarios.forEach(comentario => {
+    html += `
+      <div class="comment-item">
+        <div class="comment-header">
+          <span class="comment-author">${comentario.autor}</span>
+          <span class="comment-date">${comentario.data}</span>
+        </div>
+        <div class="comment-text">${comentario.texto}</div>
+      </div>
+    `;
+  });
+  
+  lista.innerHTML = html;
+}
+
+// Ações de aprovação
+function aprovar() {
+  document.getElementById('modalAprovar').classList.add('show');
+}
+
+function rejeitar() {
+  document.getElementById('modalRejeitar').classList.add('show');
+}
+
+function devolverCorrecao() {
+  document.getElementById('modalDevolver').classList.add('show');
+}
+
+function fecharModal(modalId) {
+  document.getElementById(modalId).classList.remove('show');
+}
+
+function confirmarAprovacao() {
+  const nota = document.getElementById('notaAprovacao').value;
+  
+  // TODO: Atualizar no Supabase
+  alert('✓ Pedido aprovado com sucesso!\n\nO pedido seguirá para a próxima etapa.');
+  
+  fecharModal('modalAprovar');
+  document.getElementById('notaAprovacao').value = '';
+  
+  // Atualizar UI
+  pedido.estado = 'aprovado';
+  renderizarPedido();
+  renderizarTimeline();
+  renderizarFluxo();
+}
+
+function confirmarRejeicao() {
+  const motivo = document.getElementById('motivoRejeicao').value;
+  
+  if (!motivo || motivo.length < 10) {
+    alert('Por favor, indique o motivo da rejeição (mínimo 10 caracteres).');
+    return;
+  }
+  
+  // TODO: Atualizar no Supabase
+  alert('✗ Pedido rejeitado.\n\nO solicitante será notificado.');
+  
+  fecharModal('modalRejeitar');
+  document.getElementById('motivoRejeicao').value = '';
+  
+  // Atualizar UI
+  pedido.estado = 'rejeitado';
+  renderizarPedido();
+}
+
+function confirmarDevolucao() {
+  const instrucoes = document.getElementById('instrucoesCorrecao').value;
+  
+  if (!instrucoes || instrucoes.length < 10) {
+    alert('Por favor, forneça instruções para correção (mínimo 10 caracteres).');
+    return;
+  }
+  
+  // TODO: Atualizar no Supabase
+  alert('↩ Pedido devolvido para correção.\n\nO solicitante receberá as suas instruções.');
+  
+  fecharModal('modalDevolver');
+  document.getElementById('instrucoesCorrecao').value = '';
+}
+
+// Outras ações
+function visualizarDocumento(nome) {
+  alert(`Visualizar documento: ${nome}\n\n(Em produção, abriria o documento numa janela de pré-visualização)`);
+}
+
+function downloadDocumento(nome) {
+  alert(`Download iniciado: ${nome}`);
+}
+
+function imprimirPedido() {
+  window.print();
+}
+
+function exportarPDF() {
+  alert('Exportar para PDF...\n\n(Funcionalidade a implementar)');
+}
+
+function formatarMoeda(valor) {
+  return valor.toFixed(2).replace('.', ',') + ' €';
+}
+
+// Fechar modais ao clicar fora
+window.onclick = function(event) {
+  if (event.target.classList.contains('modal-overlay')) {
+    event.target.classList.remove('show');
+  }
+}
+</script>
