@@ -98,6 +98,32 @@
 </header>
 
 <script>
+// Atualizar UI do header com dados do utilizador
+function updateHeaderUserUI(user) {
+  if (!user) return;
+  
+  console.log('[Header] A atualizar UI com:', user.nome);
+  
+  const userName = document.getElementById('userName');
+  const userRole = document.getElementById('userRole');
+  const userAvatar = document.getElementById('userAvatar');
+  
+  if (userName) {
+    userName.textContent = user.nome || 'Utilizador';
+  }
+  
+  if (userRole) {
+    const roles = user.roles || [];
+    const roleNames = roles.map(r => r.nome).join(', ');
+    userRole.textContent = roleNames || 'Sem role';
+  }
+  
+  if (userAvatar) {
+    const initials = (user.nome || 'U').split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
+    userAvatar.innerHTML = '<span>' + initials + '</span>';
+  }
+}
+
 // Popula o seletor "Ver como"
 async function initViewAsSelector() {
   // Aguardar que DataService esteja disponível
@@ -117,14 +143,7 @@ async function initViewAsSelector() {
     
     // Atualizar info do utilizador no header
     if (currentUser) {
-      document.getElementById('userName').textContent = currentUser.nome || 'Utilizador';
-      const roles = currentUser.roles || [];
-      const roleNames = roles.map(r => r.nome).join(', ');
-      document.getElementById('userRole').textContent = roleNames || 'Sem role';
-      
-      // Iniciais no avatar
-      const initials = (currentUser.nome || 'U').split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
-      document.getElementById('userAvatar').innerHTML = '<span>' + initials + '</span>';
+      updateHeaderUserUI(currentUser);
     }
     
     // Verificar se utilizador real pode usar "Ver como" (apenas admin)
@@ -240,6 +259,16 @@ function handleClearViewAs() {
   window.location.reload();
 }
 
+// Escutar evento de mudança de utilizador
+document.addEventListener('userChanged', function(event) {
+  console.log('[Header] Evento userChanged recebido');
+  if (event.detail && event.detail.user) {
+    updateHeaderUserUI(event.detail.user);
+    updateViewAsIndicator();
+  }
+});
+
 // Expor para uso global
 window.initViewAsSelector = initViewAsSelector;
+window.updateHeaderUserUI = updateHeaderUserUI;
 </script>
