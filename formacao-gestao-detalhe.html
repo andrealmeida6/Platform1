@@ -307,8 +307,15 @@ title: Gestão de Formação
     <!-- Tab Content: Sessões -->
     <div class="tab-content" id="tabSessoes">
       <div class="detail-card">
-        <div class="card-header">
+        <div class="card-header card-header-with-action">
           <h3>Sessões da Formação</h3>
+          <button class="btn btn-sm btn-primary" id="btnAddSessao" onclick="openModalSessao()" style="display: none;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+              <line x1="12" y1="5" x2="12" y2="19"/>
+              <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Adicionar Sessão
+          </button>
         </div>
         <div class="card-body">
           <div id="listaSessoes" class="sessoes-list-detail">
@@ -330,6 +337,88 @@ title: Gestão de Formação
           </div>
         </div>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Adicionar/Editar Sessão -->
+<div class="modal-overlay" id="modalSessao">
+  <div class="modal-content" style="max-width: 500px;">
+    <div class="modal-header">
+      <h3 class="modal-title" id="modalSessaoTitle">Adicionar Sessão</h3>
+      <button class="modal-close" onclick="closeModal('modalSessao')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <form id="formSessao">
+        <input type="hidden" id="sessaoId">
+        <div class="form-group">
+          <label for="sessaoData">Data *</label>
+          <input type="date" class="form-control" id="sessaoData" required>
+        </div>
+        <div class="form-row-2">
+          <div class="form-group">
+            <label for="sessaoHoraInicio">Hora Início *</label>
+            <input type="time" class="form-control" id="sessaoHoraInicio" value="09:00" required>
+          </div>
+          <div class="form-group">
+            <label for="sessaoHoraFim">Hora Fim *</label>
+            <input type="time" class="form-control" id="sessaoHoraFim" value="18:00" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="sessaoLocal">Local</label>
+          <input type="text" class="form-control" id="sessaoLocal" placeholder="Ex: Sala de Formação A">
+        </div>
+        <div class="form-group">
+          <label for="sessaoEstado">Estado</label>
+          <select class="form-control" id="sessaoEstado">
+            <option value="Agendada">Agendada</option>
+            <option value="Em Curso">Em Curso</option>
+            <option value="Concluída">Concluída</option>
+            <option value="Cancelada">Cancelada</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="sessaoObservacoes">Observações</label>
+          <textarea class="form-control" id="sessaoObservacoes" rows="2" placeholder="Notas adicionais sobre a sessão..."></textarea>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modalSessao')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveSessao()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+          <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
+          <polyline points="17 21 17 13 7 13 7 21"/>
+          <polyline points="7 3 7 8 15 8"/>
+        </svg>
+        Guardar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Confirmar Eliminação -->
+<div class="modal-overlay" id="modalConfirmDelete">
+  <div class="modal-content" style="max-width: 400px;">
+    <div class="modal-header">
+      <h3 class="modal-title">Confirmar Eliminação</h3>
+      <button class="modal-close" onclick="closeModal('modalConfirmDelete')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p>Tem a certeza que pretende eliminar esta sessão?</p>
+      <p class="text-muted" style="font-size: 0.875rem; color: #64748b;">Esta ação não pode ser desfeita. Todas as presenças associadas também serão eliminadas.</p>
+      <input type="hidden" id="deleteSessionId">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modalConfirmDelete')">Cancelar</button>
+      <button class="btn btn-danger" onclick="confirmDeleteSessao()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+          <polyline points="3 6 5 6 21 6"/>
+          <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+        </svg>
+        Eliminar
+      </button>
     </div>
   </div>
 </div>
@@ -706,6 +795,7 @@ title: Gestão de Formação
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .sessao-card .data-box .dia {
@@ -727,6 +817,11 @@ title: Gestão de Formação
   color: #1e293b;
 }
 
+.sessao-card .local {
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
 .sessao-card .estado-badge {
   font-size: 0.75rem;
   padding: 0.25rem 0.75rem;
@@ -735,11 +830,50 @@ title: Gestão de Formação
 
 .sessao-card .estado-badge.agendada { background: #fef3c7; color: #92400e; }
 .sessao-card .estado-badge.em-curso { background: #dbeafe; color: #1e40af; }
-.sessao-card .estado-badge.concluida { background: #d1fae5; color: #065f46; }
+.sessao-card .estado-badge.concluida, .sessao-card .estado-badge.concluída { background: #d1fae5; color: #065f46; }
 .sessao-card .estado-badge.cancelada { background: #fee2e2; color: #991b1b; }
 
-.sessao-card .btn {
-  margin-left: auto;
+.sessao-card .sessao-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.btn-icon {
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-icon.btn-edit {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.btn-icon.btn-edit:hover {
+  background: #e2e8f0;
+  color: #1e293b;
+}
+
+.btn-icon.btn-delete {
+  background: #fef2f2;
+  color: #ef4444;
+}
+
+.btn-icon.btn-delete:hover {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.btn-icon svg {
+  width: 18px;
+  height: 18px;
 }
 
 .empty-msg {
@@ -855,6 +989,98 @@ title: Gestão de Formação
 .btn-secondary:hover {
   background: #e2e8f0;
 }
+
+.btn-danger {
+  padding: 0.75rem 1.5rem;
+  background: #ef4444;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-danger:hover {
+  background: #dc2626;
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.modal-overlay.show {
+  display: flex;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 16px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.modal-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+}
+
+.modal-close {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: #f1f5f9;
+  border-radius: 8px;
+  font-size: 1.25rem;
+  color: #64748b;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-close:hover {
+  background: #e2e8f0;
+}
+
+.modal-body {
+  padding: 1.5rem;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1.25rem 1.5rem;
+  border-top: 1px solid #f1f5f9;
+}
 </style>
 
 <script>
@@ -865,6 +1091,7 @@ let inscritosIds = [];
 let selecionados = new Set();
 let isGestor = false;
 let isEditMode = false;
+let editingSessaoId = null;
 
 async function waitForServices() {
   return new Promise((resolve) => {
@@ -924,6 +1151,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Mostrar botão de edição se for gestor e formação não estiver concluída/cancelada
     if (isGestor && formacao.estado !== 'Concluída' && formacao.estado !== 'Cancelada') {
       document.getElementById('btnEditInfo').style.display = 'inline-flex';
+      document.getElementById('btnAddSessao').style.display = 'inline-flex';
     }
     
     // Esconder tab de alocação se formação concluída/cancelada
@@ -1039,6 +1267,7 @@ function renderParticipantes(inscritos) {
 
 function renderSessoes(sessoes) {
   const container = document.getElementById('listaSessoes');
+  const canEdit = isGestor && formacao.estado !== 'Concluída' && formacao.estado !== 'Cancelada';
   
   if (sessoes.length === 0) {
     container.innerHTML = '<p class="empty-msg">Sem sessões definidas.</p>';
@@ -1053,6 +1282,23 @@ function renderSessoes(sessoes) {
     const mes = date.toLocaleDateString('pt-PT', { month: 'short' });
     const estadoClass = s.estado?.toLowerCase().replace(' ', '-') || 'agendada';
     
+    const actionsHtml = canEdit ? `
+      <div class="sessao-actions">
+        <button class="btn-icon btn-edit" onclick="event.stopPropagation(); openModalSessao('${s.id}')" title="Editar sessão">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+            <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+          </svg>
+        </button>
+        <button class="btn-icon btn-delete" onclick="event.stopPropagation(); openDeleteModal('${s.id}')" title="Eliminar sessão">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+          </svg>
+        </button>
+      </div>
+    ` : '';
+    
     return `
       <div class="sessao-card">
         <div class="data-box">
@@ -1064,6 +1310,7 @@ function renderSessoes(sessoes) {
           <div class="local">${s.local_override || 'Local a definir'}</div>
         </div>
         <span class="estado-badge ${estadoClass}">${s.estado || 'Agendada'}</span>
+        ${actionsHtml}
         <a href="{{ '/gerir-sessao' | relative_url }}?id=${s.id}" class="btn btn-sm btn-primary">Gerir</a>
       </div>
     `;
@@ -1267,6 +1514,136 @@ async function alocarSelecionados() {
   }
 }
 
+// ==========================================
+// SESSÕES - CRUD
+// ==========================================
+
+function openModalSessao(sessaoId = null) {
+  editingSessaoId = sessaoId;
+  
+  // Reset form
+  document.getElementById('formSessao').reset();
+  document.getElementById('sessaoId').value = '';
+  document.getElementById('sessaoHoraInicio').value = '09:00';
+  document.getElementById('sessaoHoraFim').value = '18:00';
+  document.getElementById('sessaoEstado').value = 'Agendada';
+  
+  if (sessaoId) {
+    // Modo edição
+    document.getElementById('modalSessaoTitle').textContent = 'Editar Sessão';
+    
+    const sessao = (formacao.formacao_sessoes || []).find(s => s.id === sessaoId);
+    if (sessao) {
+      document.getElementById('sessaoId').value = sessao.id;
+      document.getElementById('sessaoData').value = sessao.data ? sessao.data.split('T')[0] : '';
+      document.getElementById('sessaoHoraInicio').value = sessao.hora_inicio || '09:00';
+      document.getElementById('sessaoHoraFim').value = sessao.hora_fim || '18:00';
+      document.getElementById('sessaoLocal').value = sessao.local_override || '';
+      document.getElementById('sessaoEstado').value = sessao.estado || 'Agendada';
+      document.getElementById('sessaoObservacoes').value = sessao.observacoes || '';
+    }
+  } else {
+    // Modo adicionar
+    document.getElementById('modalSessaoTitle').textContent = 'Adicionar Sessão';
+    
+    // Pré-preencher com o local da formação se existir
+    if (formacao.local_detalhe) {
+      document.getElementById('sessaoLocal').value = formacao.local_detalhe;
+    }
+  }
+  
+  document.getElementById('modalSessao').classList.add('show');
+}
+
+async function saveSessao() {
+  const sessaoId = document.getElementById('sessaoId').value;
+  const data = document.getElementById('sessaoData').value;
+  const horaInicio = document.getElementById('sessaoHoraInicio').value;
+  const horaFim = document.getElementById('sessaoHoraFim').value;
+  const local = document.getElementById('sessaoLocal').value.trim();
+  const estado = document.getElementById('sessaoEstado').value;
+  const observacoes = document.getElementById('sessaoObservacoes').value.trim();
+  
+  // Validação
+  if (!data) {
+    showToast('A data é obrigatória.', 'error');
+    return;
+  }
+  
+  if (!horaInicio || !horaFim) {
+    showToast('As horas de início e fim são obrigatórias.', 'error');
+    return;
+  }
+  
+  const sessaoData = {
+    formacao_id: formacao.id,
+    data: data,
+    hora_inicio: horaInicio,
+    hora_fim: horaFim,
+    local_override: local || null,
+    estado: estado,
+    observacoes: observacoes || null
+  };
+  
+  try {
+    if (sessaoId) {
+      // Atualizar sessão existente
+      await DataService.updateRecord('formacao_sessoes', sessaoId, sessaoData);
+      showToast('Sessão atualizada com sucesso!', 'success');
+    } else {
+      // Criar nova sessão
+      await DataService.createRecord('formacao_sessoes', sessaoData);
+      showToast('Sessão adicionada com sucesso!', 'success');
+    }
+    
+    closeModal('modalSessao');
+    
+    // Recarregar dados
+    formacao = await DataService.getFormacaoById(formacao.id);
+    renderFormacao();
+    
+  } catch (error) {
+    console.error('Erro ao guardar sessão:', error);
+    showToast('Erro ao guardar sessão. Tente novamente.', 'error');
+  }
+}
+
+function openDeleteModal(sessaoId) {
+  document.getElementById('deleteSessionId').value = sessaoId;
+  document.getElementById('modalConfirmDelete').classList.add('show');
+}
+
+async function confirmDeleteSessao() {
+  const sessaoId = document.getElementById('deleteSessionId').value;
+  
+  if (!sessaoId) {
+    closeModal('modalConfirmDelete');
+    return;
+  }
+  
+  try {
+    // Primeiro, eliminar presenças associadas
+    const presencas = (formacao.formacao_presencas || []).filter(p => p.sessao_id === sessaoId);
+    for (const presenca of presencas) {
+      await DataService.deleteRecord('formacao_presencas', presenca.id);
+    }
+    
+    // Depois, eliminar a sessão
+    await DataService.deleteRecord('formacao_sessoes', sessaoId);
+    
+    showToast('Sessão eliminada com sucesso!', 'success');
+    closeModal('modalConfirmDelete');
+    
+    // Recarregar dados
+    formacao = await DataService.getFormacaoById(formacao.id);
+    renderFormacao();
+    
+  } catch (error) {
+    console.error('Erro ao eliminar sessão:', error);
+    showToast('Erro ao eliminar sessão. Tente novamente.', 'error');
+  }
+}
+
 // Edit Mode Functions
 function toggleEditMode() {
   isEditMode = !isEditMode;
@@ -1377,6 +1754,10 @@ function formatTime(dateStr) {
   return new Date(dateStr).toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' });
 }
 
+function closeModal(modalId) {
+  document.getElementById(modalId)?.classList.remove('show');
+}
+
 function showToast(message, type = 'success') {
   let container = document.querySelector('.toast-container');
   const toast = document.createElement('div');
@@ -1390,4 +1771,17 @@ function showToast(message, type = 'success') {
     setTimeout(() => toast.remove(), 300);
   }, 3000);
 }
+
+// Event listeners para fechar modais ao clicar fora
+document.addEventListener('click', function(e) {
+  if (e.target.classList.contains('modal-overlay')) {
+    e.target.classList.remove('show');
+  }
+});
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.modal-overlay.show').forEach(m => m.classList.remove('show'));
+  }
+});
 </script>
