@@ -31,26 +31,6 @@ title: Centro de Formação
     </div>
   </section>
 
-  <!-- Allocation Notifications Section -->
-  <section class="allocation-notifications-section" id="allocationNotifications" style="display: none;">
-    <div class="notifications-container">
-      <div class="notifications-header">
-        <div class="notifications-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-          </svg>
-          <span class="notification-badge" id="notificationCount">0</span>
-        </div>
-        <h3>Alocações Pendentes</h3>
-        <p class="notifications-subtitle">Foi alocado às seguintes formações</p>
-      </div>
-      <div class="notifications-list" id="notificationsList">
-        <!-- Notificações são inseridas aqui dinamicamente -->
-      </div>
-    </div>
-  </section>
-
   <!-- Quick Stats -->
   <section class="quick-stats">
     <div class="quick-stat-card">
@@ -144,6 +124,28 @@ title: Centro de Formação
             </div>
           </div>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Formações Esta Semana Section -->
+  <section class="week-formations-section" id="weekFormationsSection" style="display: none;">
+    <div class="week-formations-container">
+      <div class="week-formations-header">
+        <div class="week-formations-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+            <line x1="16" y1="2" x2="16" y2="6"/>
+            <line x1="8" y1="2" x2="8" y2="6"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+          <span class="week-formations-badge" id="weekFormationsCount">0</span>
+        </div>
+        <h3>Formações Esta Semana</h3>
+        <p class="week-formations-subtitle">Formações em que está inscrito com sessões esta semana</p>
+      </div>
+      <div class="week-formations-list" id="weekFormationsList">
+        <!-- Formações são inseridas aqui dinamicamente -->
       </div>
     </div>
   </section>
@@ -343,23 +345,23 @@ title: Centro de Formação
   </div>
 </div>
 
-<!-- Estilos para notificações de alocação -->
+<!-- Estilos para Formações Esta Semana -->
 <style>
-.allocation-notifications-section {
+.week-formations-section {
   max-width: 1400px;
   margin: 0 auto 1.5rem;
   padding: 0 2rem;
 }
 
-.notifications-container {
-  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-  border: 2px solid #f59e0b;
+.week-formations-container {
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  border: 2px solid #3b82f6;
   border-radius: 16px;
   padding: 1.5rem;
-  box-shadow: 0 4px 20px rgba(245, 158, 11, 0.15);
+  box-shadow: 0 4px 20px rgba(59, 130, 246, 0.15);
 }
 
-.notifications-header {
+.week-formations-header {
   display: flex;
   align-items: center;
   gap: 1rem;
@@ -367,11 +369,11 @@ title: Centro de Formação
   flex-wrap: wrap;
 }
 
-.notifications-icon {
+.week-formations-icon {
   position: relative;
   width: 48px;
   height: 48px;
-  background: #f59e0b;
+  background: #3b82f6;
   border-radius: 12px;
   display: flex;
   align-items: center;
@@ -379,13 +381,13 @@ title: Centro de Formação
   flex-shrink: 0;
 }
 
-.notifications-icon svg {
+.week-formations-icon svg {
   width: 24px;
   height: 24px;
   color: white;
 }
 
-.notification-badge {
+.week-formations-badge {
   position: absolute;
   top: -6px;
   right: -6px;
@@ -399,30 +401,30 @@ title: Centro de Formação
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2px solid #fef3c7;
+  border: 2px solid #dbeafe;
 }
 
-.notifications-header h3 {
+.week-formations-header h3 {
   font-size: 1.125rem;
   font-weight: 700;
-  color: #92400e;
+  color: #1e40af;
   margin: 0;
 }
 
-.notifications-subtitle {
+.week-formations-subtitle {
   font-size: 0.875rem;
-  color: #a16207;
+  color: #3b82f6;
   margin: 0;
   margin-left: auto;
 }
 
-.notifications-list {
+.week-formations-list {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
 }
 
-.notification-item {
+.week-formation-item {
   background: white;
   border-radius: 12px;
   padding: 1rem 1.25rem;
@@ -432,26 +434,27 @@ title: Centro de Formação
   gap: 1rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   transition: all 0.2s;
+  cursor: pointer;
 }
 
-.notification-item:hover {
+.week-formation-item:hover {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   transform: translateY(-1px);
 }
 
-.notification-info {
+.week-formation-info {
   flex: 1;
   min-width: 0;
 }
 
-.notification-title {
+.week-formation-title {
   font-size: 0.95rem;
   font-weight: 600;
   color: #1e293b;
   margin-bottom: 0.25rem;
 }
 
-.notification-meta {
+.week-formation-meta {
   display: flex;
   gap: 1rem;
   font-size: 0.8rem;
@@ -459,24 +462,49 @@ title: Centro de Formação
   flex-wrap: wrap;
 }
 
-.notification-meta span {
+.week-formation-meta span {
   display: flex;
   align-items: center;
   gap: 0.25rem;
 }
 
-.notification-meta svg {
+.week-formation-meta svg {
   width: 14px;
   height: 14px;
 }
 
-.notification-actions {
+.week-formation-sessions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-top: 0.5rem;
+}
+
+.week-formation-session {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.75rem;
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  color: #0369a1;
+  font-weight: 500;
+}
+
+.week-formation-session svg {
+  width: 12px;
+  height: 12px;
+}
+
+.week-formation-actions {
   display: flex;
   gap: 0.5rem;
   flex-shrink: 0;
 }
 
-.notification-btn {
+.week-formation-btn {
   padding: 0.5rem 1rem;
   border-radius: 8px;
   font-size: 0.8rem;
@@ -485,59 +513,38 @@ title: Centro de Formação
   transition: all 0.2s;
   border: none;
   font-family: inherit;
-}
-
-.notification-btn.accept {
   background: var(--primary-color, #00b276);
   color: white;
 }
 
-.notification-btn.accept:hover {
+.week-formation-btn:hover {
   background: var(--primary-hover, #009661);
 }
 
-.notification-btn.view {
-  background: #f1f5f9;
-  color: #475569;
-}
-
-.notification-btn.view:hover {
-  background: #e2e8f0;
-}
-
-.notification-btn.decline {
-  background: #fee2e2;
-  color: #991b1b;
-}
-
-.notification-btn.decline:hover {
-  background: #fecaca;
-}
-
 @media (max-width: 768px) {
-  .allocation-notifications-section {
+  .week-formations-section {
     padding: 0 1rem;
   }
   
-  .notifications-container {
+  .week-formations-container {
     padding: 1rem;
   }
   
-  .notifications-header {
+  .week-formations-header {
     flex-direction: column;
     align-items: flex-start;
   }
   
-  .notifications-subtitle {
+  .week-formations-subtitle {
     margin-left: 0;
   }
   
-  .notification-item {
+  .week-formation-item {
     flex-direction: column;
     align-items: flex-start;
   }
   
-  .notification-actions {
+  .week-formation-actions {
     width: 100%;
     justify-content: flex-end;
   }
