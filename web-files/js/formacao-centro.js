@@ -11,7 +11,7 @@
 let allFormacoes = [];
 let myFormacoes = [];
 let myPropostas = [];
-let allocationNotifications = [];
+let weekFormations = [];
 let currentUser = null;
 let selectedFormacao = null;
 let formacaoCalendarDate = new Date();
@@ -20,6 +20,7 @@ let calendarExpanded = true;
 let canViewInscritos = false;
 
 const MONTH_NAMES_SHORT = ['JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ'];
+const WEEKDAY_NAMES = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
 
 // ==========================================
 // INITIALIZATION
@@ -60,7 +61,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     
     await loadFormacoes();
     await loadMyPropostas();
-    await loadAllocationNotifications();
+    loadWeekFormations();
     initFormacaoCalendar();
     
   } catch (error) {
@@ -116,161 +117,128 @@ async function loadMyPropostas() {
 }
 
 // ==========================================
-// ALLOCATION NOTIFICATIONS
+// FORMAÇÕES ESTA SEMANA
 // ==========================================
 
-async function loadAllocationNotifications() {
-  if (!currentUser) return;
+function getWeekBoundaries() {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
   
-  try {
-    // Buscar inscrições alocadas que ainda não foram confirmadas pelo utilizador
-    const inscricoes = await DataService.getMyAllocatedFormacoes(currentUser.id);
-    
-    // Filtrar apenas as que estão pendentes de confirmação (alocadas mas não confirmadas)
-    allocationNotifications = inscricoes.filter(i => 
-      i.tipo_inscricao === 'alocada' && 
-      !i.confirmado_pelo_colaborador &&
-      i.estado === 'Inscrito'
-    );
-    
-    console.log('[Notificações] Alocações pendentes:', allocationNotifications.length);
-    
-    renderAllocationNotifications();
-    
-  } catch (error) {
-    console.error('[Notificações] Erro ao carregar:', error);
-    // Se não houver método específico, tentar extrair das formações já carregadas
-    extractAllocationNotificationsFromFormacoes();
-  }
+  // Início da semana (Segunda-feira)
+  const dayOfWeek = today.getDay();
+  const diffToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+  const weekStart = new Date(today);
+  weekStart.setDate(today.getDate() + diffToMonday);
+  
+  // Fim da semana (Domingo)
+  const weekEnd = new Date(weekStart);
+  weekEnd.setDate(weekStart.getDate() + 6);
+  weekEnd.setHours(23, 59, 59, 999);
+  
+  return { weekStart, weekEnd };
 }
 
-function extractAllocationNotificationsFromFormacoes() {
-  if (!currentUser || !allFormacoes) return;
+function loadWeekFormations() {
+  if (!currentUser || !myFormacoes) {
+    weekFormations = [];
+    renderWeekFormations();
+    return;
+  }
   
-  allocationNotifications = [];
+  const { weekStart, weekEnd } = getWeekBoundaries();
   
-  allFormacoes.forEach(f => {
-    const inscricoes = f.formacao_inscricoes || [];
-    const myInscricao = inscricoes.find(i => 
-      i.colaborador_id === currentUser.id && 
-      i.estado === 'Inscrito' &&
-      i.tipo_inscricao === 'alocada' &&
-      !i.confirmado_pelo_colaborador
-    );
+  console.log('[Formações Semana] Período:', weekStart.toLocaleDateString('pt-PT'), '-', weekEnd.toLocaleDateString('pt-PT'));
+  
+  weekFormations = [];
+  
+  myFormacoes.forEach(formacao => {
+    const sessoes = formacao.formacao_sessoes || [];
+    const sessoesEstaSemana = sessoes.filter(s => {
+      if (!s.data) return false;
+      const sessaoDate = new Date(s.data);
+      sessaoDate.setHours(0, 0, 0, 0);
+      return sessaoDate >= weekStart && sessaoDate <= weekEnd;
+    }).sort((a, b) => new Date(a.data) - new Date(b.data));
     
-    if (myInscricao) {
-      allocationNotifications.push({
-        ...myInscricao,
-        formacao: f
+    if (sessoesEstaSemana.length > 0) {
+      weekFormations.push({
+        ...formacao,
+        sessoesEstaSemana
       });
     }
   });
   
-  console.log('[Notificações] Extraídas das formações:', allocationNotifications.length);
-  renderAllocationNotifications();
+  console.log('[Formações Semana] Encontradas:', weekFormations.length, 'formações com sessões esta semana');
+  
+  renderWeekFormations();
 }
 
-function renderAllocationNotifications() {
-  const section = document.getElementById('allocationNotifications');
-  const list = document.getElementById('notificationsList');
-  const badge = document.getElementById('notificationCount');
+function renderWeekFormations() {
+  const section = document.getElementById('weekFormationsSection');
+  const list = document.getElementById('weekFormationsList');
+  const badge = document.getElementById('weekFormationsCount');
   
   if (!section || !list) return;
   
-  if (allocationNotifications.length === 0) {
+  if (weekFormations.length === 0) {
     section.style.display = 'none';
     return;
   }
   
   section.style.display = 'block';
-  if (badge) badge.textContent = allocationNotifications.length;
+  if (badge) badge.textContent = weekFormations.length;
   
-  list.innerHTML = allocationNotifications.map(n => {
-    const formacao = n.formacao || allFormacoes.find(f => f.id === n.formacao_id);
-    if (!formacao) return '';
+  list.innerHTML = weekFormations.map(f => {
+    const formadorDisplay = getFormadorDisplay(f);
     
-    const sessoes = (formacao.formacao_sessoes || []).sort((a, b) => new Date(a.data) - new Date(b.data));
-    const primeiraSessao = sessoes[0];
-    const dataInicio = primeiraSessao ? formatDateLong(primeiraSessao.data) : 'A definir';
-    const formadorDisplay = getFormadorDisplay(formacao);
+    const sessoesHtml = f.sessoesEstaSemana.map(s => {
+      const sessaoDate = new Date(s.data);
+      const diaSemana = WEEKDAY_NAMES[sessaoDate.getDay()];
+      const dataFormatada = sessaoDate.toLocaleDateString('pt-PT', { day: 'numeric', month: 'short' });
+      const horaInicio = s.hora_inicio || '09:00';
+      const horaFim = s.hora_fim || '18:00';
+      
+      return `
+        <div class="week-formation-session">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+          ${diaSemana}, ${dataFormatada} • ${horaInicio} - ${horaFim}
+        </div>
+      `;
+    }).join('');
     
     return `
-      <div class="notification-item" data-inscricao-id="${n.id}">
-        <div class="notification-info">
-          <div class="notification-title">${formacao.titulo}</div>
-          <div class="notification-meta">
-            <span>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
-              ${dataInicio}
-            </span>
+      <div class="week-formation-item" onclick="goToFormacaoDetalhe('${f.id}')">
+        <div class="week-formation-info">
+          <div class="week-formation-title">${f.titulo}</div>
+          <div class="week-formation-meta">
             <span>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-              ${formacao.duracao_horas || 0}h
+              ${f.duracao_horas || 0}h total
             </span>
             <span>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
               ${formadorDisplay}
             </span>
+            <span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              ${f.local_tipo || 'Presencial'}
+            </span>
+          </div>
+          <div class="week-formation-sessions">
+            ${sessoesHtml}
           </div>
         </div>
-        <div class="notification-actions">
-          <button class="notification-btn view" onclick="goToFormacaoDetalhe('${formacao.id}')">
+        <div class="week-formation-actions">
+          <button class="week-formation-btn" onclick="event.stopPropagation(); goToFormacaoDetalhe('${f.id}')">
             Ver Detalhes
-          </button>
-          <button class="notification-btn accept" onclick="confirmAllocation('${n.id}', '${formacao.id}')">
-            Confirmar Presença
           </button>
         </div>
       </div>
     `;
   }).join('');
-}
-
-async function confirmAllocation(inscricaoId, formacaoId) {
-  if (!currentUser) return;
-  
-  try {
-    // Atualizar a inscrição para marcar como confirmada
-    await DataService.confirmAllocation(inscricaoId, currentUser.id);
-    
-    showToast('Presença confirmada com sucesso!', 'success');
-    
-    // Remover da lista de notificações
-    allocationNotifications = allocationNotifications.filter(n => n.id !== inscricaoId);
-    renderAllocationNotifications();
-    
-    // Recarregar formações
-    await loadFormacoes();
-    
-  } catch (error) {
-    console.error('Erro ao confirmar alocação:', error);
-    showToast('Erro ao confirmar presença. Tente novamente.', 'error');
-  }
-}
-
-async function declineAllocation(inscricaoId, formacaoId) {
-  if (!currentUser) return;
-  
-  if (!confirm('Tem a certeza que pretende recusar esta alocação? O gestor de formação será notificado.')) {
-    return;
-  }
-  
-  try {
-    await DataService.declineAllocation(inscricaoId, currentUser.id);
-    
-    showToast('Alocação recusada. O gestor será notificado.', 'info');
-    
-    // Remover da lista de notificações
-    allocationNotifications = allocationNotifications.filter(n => n.id !== inscricaoId);
-    renderAllocationNotifications();
-    
-    // Recarregar formações
-    await loadFormacoes();
-    
-  } catch (error) {
-    console.error('Erro ao recusar alocação:', error);
-    showToast('Erro ao recusar alocação. Tente novamente.', 'error');
-  }
 }
 
 function formatDateLong(dateStr) {
