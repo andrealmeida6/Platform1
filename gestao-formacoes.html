@@ -273,9 +273,9 @@ title: Gestão de Formações
 
         <div class="form-row two-cols">
           <div class="form-group">
-            <label>Formador(es) / Entidade *</label>
-            <input type="text" id="formacaoFormador" required placeholder="Ex: João Silva, Maria Costa">
-            <small style="color: #64748b; font-size: 0.75rem;">Separe múltiplos nomes por vírgula</small>
+            <label>Formador(es) / Entidade</label>
+            <input type="text" id="formacaoFormador" placeholder="Ex: João Silva, Maria Costa">
+            <small style="color: #64748b; font-size: 0.75rem;">Informação de referência (será incluída na descrição)</small>
           </div>
           <div class="form-group">
             <label>Duração (horas) *</label>
@@ -950,7 +950,7 @@ async function criarFormacao() {
   const estado = document.getElementById('formacaoEstado').value;
   const objetivo = document.getElementById('formacaoObjetivo').value.trim();
   
-  if (!titulo || !formador || !duracao) {
+  if (!titulo || !duracao) {
     showToast('Preencha os campos obrigatórios.', 'error');
     return;
   }
@@ -967,15 +967,21 @@ async function criarFormacao() {
   });
   
   try {
+    // Construir descrição/objetivo incluindo o formador se especificado
+    let objetivoFinal = objetivo;
+    if (formador) {
+      objetivoFinal = formador ? `Formador(es)/Entidade: ${formador}\n\n${objetivo}`.trim() : objetivo;
+    }
+    
+    // CORRIGIDO: Não enviar entidade_formadora pois esse campo não existe na tabela formacoes
     const novaFormacao = {
       titulo,
       tipo,
       modalidade,
-      entidade_formadora: formador,
       duracao_horas: parseInt(duracao),
       max_participantes: parseInt(maxParticipantes) || 20,
       estado,
-      objetivo,
+      objetivo: objetivoFinal,
       sessoes,
       criado_por: currentUser.id
     };
@@ -989,7 +995,7 @@ async function criarFormacao() {
     
   } catch (error) {
     console.error('Erro ao criar formação:', error);
-    showToast('Erro ao criar formação.', 'error');
+    showToast('Erro ao criar formação: ' + (error.message || 'Erro desconhecido'), 'error');
   }
 }
 
