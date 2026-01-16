@@ -99,22 +99,22 @@ title: Gestão de Formações
       </div>
     </div>
 
-    <!-- Tabs -->
+    <!-- Tabs - Formações Ativas primeiro, depois Formações em Aprovação -->
     <div class="content-tabs">
-      <button class="tab-btn active" data-tab="aprovacao" onclick="switchTab('aprovacao')" id="tabBtnAprovacao">
+      <button class="tab-btn active" data-tab="formacoes" onclick="switchTab('formacoes')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+          <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+        </svg>
+        Formações Ativas
+      </button>
+      <button class="tab-btn" data-tab="aprovacao" onclick="switchTab('aprovacao')" id="tabBtnAprovacao">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="12" cy="12" r="10"/>
           <polyline points="12 6 12 12 16 14"/>
         </svg>
         Formações em Aprovação
         <span class="tab-badge" id="badgeAprovacao">0</span>
-      </button>
-      <button class="tab-btn" data-tab="formacoes" onclick="switchTab('formacoes')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
-          <path d="M6 12v5c3 3 9 3 12 0v-5"/>
-        </svg>
-        Formações Ativas
       </button>
       <button class="tab-btn" data-tab="historico" onclick="switchTab('historico')" id="tabBtnHistorico">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -125,8 +125,36 @@ title: Gestão de Formações
       </button>
     </div>
 
-    <!-- Tab Content: Formações em Aprovação -->
-    <div class="tab-content active" id="tabAprovacao">
+    <!-- Tab Content: Formações Ativas (agora é a primeira) -->
+    <div class="tab-content active" id="tabFormacoes">
+      <div class="content-header">
+        <h2>Formações Ativas</h2>
+        <div class="content-filters">
+          <select id="filterEstadoFormacao" onchange="filterFormacoes()">
+            <option value="">Todos os estados</option>
+            <option value="Agendada">Agendada</option>
+            <option value="Em Curso">Em Curso</option>
+          </select>
+          <div class="search-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"/>
+              <path d="M21 21l-4.35-4.35"/>
+            </svg>
+            <input type="text" id="searchFormacoes" placeholder="Pesquisar..." oninput="filterFormacoes()">
+          </div>
+        </div>
+      </div>
+
+      <div class="formacoes-grid" id="formacoesGrid">
+        <div class="loading-state">
+          <div class="spinner"></div>
+          <p>A carregar formações...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab Content: Formações em Aprovação (agora é a segunda) -->
+    <div class="tab-content" id="tabAprovacao">
       <!-- Secção: Pedidos de Formação -->
       <div class="section-card">
         <div class="section-header">
@@ -181,34 +209,6 @@ title: Gestão de Formações
             <div class="spinner"></div>
             <p>A carregar formações...</p>
           </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Tab Content: Formações Ativas -->
-    <div class="tab-content" id="tabFormacoes">
-      <div class="content-header">
-        <h2>Formações Ativas</h2>
-        <div class="content-filters">
-          <select id="filterEstadoFormacao" onchange="filterFormacoes()">
-            <option value="">Todos os estados</option>
-            <option value="Agendada">Agendada</option>
-            <option value="Em Curso">Em Curso</option>
-          </select>
-          <div class="search-box">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="11" cy="11" r="8"/>
-              <path d="M21 21l-4.35-4.35"/>
-            </svg>
-            <input type="text" id="searchFormacoes" placeholder="Pesquisar..." oninput="filterFormacoes()">
-          </div>
-        </div>
-      </div>
-
-      <div class="formacoes-grid" id="formacoesGrid">
-        <div class="loading-state">
-          <div class="spinner"></div>
-          <p>A carregar formações...</p>
         </div>
       </div>
     </div>
@@ -432,8 +432,7 @@ document.addEventListener('DOMContentLoaded', async function() {
       document.getElementById('btnNovaFormacao').style.display = 'none';
       document.getElementById('tabBtnAprovacao').style.display = 'none';
       document.getElementById('tabBtnHistorico').style.display = 'none';
-      // Começar na tab formações
-      switchTab('formacoes');
+      // Já começa na tab formações (que agora é a primeira)
     }
     
     await loadData();
@@ -616,7 +615,6 @@ function renderFormacoesAprovacao(formacoes) {
         </div>
         <div class="formacao-aprovacao-actions">
           <span class="status-badge status-pending">Em Aprovação</span>
-          <button class="btn btn-sm btn-primary">Ver Detalhes</button>
         </div>
       </div>
     `;
@@ -717,7 +715,7 @@ function renderFormacaoCard(f) {
   const podeAlocar = f.estado !== 'Concluída' && f.estado !== 'Cancelada';
   
   return `
-    <div class="formacao-card-admin">
+    <div class="formacao-card-admin formacao-card-clickable" onclick="abrirDetalhesFormacao('${f.id}')">
       <div class="formacao-card-header">
         <span class="formacao-tipo">${f.tipo || 'Formação'}</span>
         <span class="status-badge ${getFormacaoEstadoClass(f.estado)}">${f.estado}</span>
@@ -745,7 +743,7 @@ function renderFormacaoCard(f) {
         ${presencasValidadas > 0 ? `<span class="presencas-badge">✓ ${presencasValidadas} presenças</span>` : ''}
         ${alocados > 0 ? `<span class="alocados-badge">👥 ${alocados} alocados</span>` : ''}
       </div>
-      <div class="formacao-card-actions">
+      <div class="formacao-card-actions" onclick="event.stopPropagation()">
         <button class="btn btn-sm btn-secondary" onclick="abrirDetalhesFormacao('${f.id}')">Ver Detalhes</button>
         ${podeAlocar ? `<button class="btn btn-sm btn-primary" onclick="abrirDetalhesFormacao('${f.id}')">Gerir / Alocar</button>` : ''}
       </div>
@@ -807,7 +805,7 @@ function renderHistorico(formacoes) {
     const formadorDisplay = formadorNomes.length > 0 ? formadorNomes.join(', ') : 'N/D';
     
     return `
-      <div class="formacao-card-admin formacao-concluida">
+      <div class="formacao-card-admin formacao-concluida formacao-card-clickable" onclick="abrirDetalhesFormacao('${f.id}')">
         <div class="formacao-card-header">
           <span class="formacao-tipo">${f.tipo || 'Formação'}</span>
           <span class="status-badge status-complete">Concluída</span>
@@ -834,7 +832,7 @@ function renderHistorico(formacoes) {
           </span>
           <span class="presencas-badge">✓ ${presencasValidadas} presenças validadas</span>
         </div>
-        <div class="formacao-card-actions">
+        <div class="formacao-card-actions" onclick="event.stopPropagation()">
           <button class="btn btn-sm btn-secondary" onclick="abrirDetalhesFormacao('${f.id}')">Ver Detalhes</button>
         </div>
       </div>
@@ -1009,7 +1007,7 @@ function switchTab(tab) {
   });
   
   document.querySelectorAll('.tab-content').forEach(content => {
-    content.classList.toggle('active', content.id === `tab${tab.charAt(0).toUpperCase() + tab.slice(1)}`)
+    content.classList.toggle('active', content.id === `tab${tab.charAt(0).toUpperCase() + tab.slice(1)}`);
   });
 }
 
@@ -1287,5 +1285,16 @@ document.querySelectorAll('.modal-overlay').forEach(modal => {
 
 .formacao-concluida:hover {
   opacity: 1;
+}
+
+/* Card clicável */
+.formacao-card-clickable {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.formacao-card-clickable:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 </style>
