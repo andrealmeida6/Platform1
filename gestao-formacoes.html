@@ -55,7 +55,7 @@ title: Gestão de Formações
         </div>
         <div class="stat-info">
           <span class="stat-number" id="statPendentes">0</span>
-          <span class="stat-label">Pedidos Pendentes</span>
+          <span class="stat-label">Em Aprovação</span>
         </div>
       </div>
       <div class="stat-card blue">
@@ -101,74 +101,99 @@ title: Gestão de Formações
 
     <!-- Tabs -->
     <div class="content-tabs">
-      <button class="tab-btn active" data-tab="pedidos" onclick="switchTab('pedidos')" id="tabBtnPedidos">
+      <button class="tab-btn active" data-tab="aprovacao" onclick="switchTab('aprovacao')" id="tabBtnAprovacao">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-          <polyline points="14 2 14 8 20 8"/>
-          <line x1="16" y1="13" x2="8" y2="13"/>
-          <line x1="16" y1="17" x2="8" y2="17"/>
+          <circle cx="12" cy="12" r="10"/>
+          <polyline points="12 6 12 12 16 14"/>
         </svg>
-        Pedidos de Formação
-        <span class="tab-badge" id="badgePedidos">0</span>
+        Formações em Aprovação
+        <span class="tab-badge" id="badgeAprovacao">0</span>
       </button>
       <button class="tab-btn" data-tab="formacoes" onclick="switchTab('formacoes')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
           <path d="M6 12v5c3 3 9 3 12 0v-5"/>
         </svg>
-        Formações
+        Formações Ativas
       </button>
       <button class="tab-btn" data-tab="historico" onclick="switchTab('historico')" id="tabBtnHistorico">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="10"/>
-          <polyline points="12 6 12 12 16 14"/>
+          <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+          <polyline points="22 4 12 14.01 9 11.01"/>
         </svg>
         Histórico
       </button>
     </div>
 
-    <!-- Tab Content: Pedidos -->
-    <div class="tab-content active" id="tabPedidos">
-      <div class="content-header">
-        <h2>Pedidos de Formação</h2>
-        <div class="content-filters">
-          <select id="filterEstadoPedido" onchange="filterPedidos()">
-            <option value="">Todos os estados</option>
-            <option value="pendente_dirigente">Aguarda Dirigente</option>
-            <option value="pendente_rh">Aguarda AFR-RH</option>
-            <option value="aprovado">Aprovado</option>
-            <option value="rejeitado">Rejeitado</option>
-            <option value="devolvido">Devolvido</option>
-          </select>
-          <div class="search-box">
+    <!-- Tab Content: Formações em Aprovação -->
+    <div class="tab-content active" id="tabAprovacao">
+      <!-- Secção: Pedidos de Formação -->
+      <div class="section-card">
+        <div class="section-header">
+          <h3>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="11" cy="11" r="8"/>
-              <path d="M21 21l-4.35-4.35"/>
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="16" y1="13" x2="8" y2="13"/>
+              <line x1="16" y1="17" x2="8" y2="17"/>
             </svg>
-            <input type="text" id="searchPedidos" placeholder="Pesquisar..." oninput="filterPedidos()">
+            Pedidos de Formação
+          </h3>
+          <div class="section-filters">
+            <select id="filterEstadoPedido" onchange="filterPedidos()">
+              <option value="">Todos os estados</option>
+              <option value="pendente_dirigente">Aguarda Dirigente</option>
+              <option value="pendente_rh">Aguarda AFR-RH</option>
+              <option value="aprovado">Aprovado</option>
+              <option value="rejeitado">Rejeitado</option>
+              <option value="devolvido">Devolvido</option>
+            </select>
+            <div class="search-box">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"/>
+                <path d="M21 21l-4.35-4.35"/>
+              </svg>
+              <input type="text" id="searchPedidos" placeholder="Pesquisar..." oninput="filterPedidos()">
+            </div>
+          </div>
+        </div>
+        <div class="pedidos-list" id="pedidosList">
+          <div class="loading-state">
+            <div class="spinner"></div>
+            <p>A carregar pedidos...</p>
           </div>
         </div>
       </div>
 
-      <div class="pedidos-list" id="pedidosList">
-        <div class="loading-state">
-          <div class="spinner"></div>
-          <p>A carregar pedidos...</p>
+      <!-- Secção: Formações em Aprovação -->
+      <div class="section-card" style="margin-top: 1.5rem;">
+        <div class="section-header">
+          <h3>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+              <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+            </svg>
+            Formações Pendentes de Aprovação
+          </h3>
+        </div>
+        <div class="formacoes-aprovacao-list" id="formacoesAprovacaoList">
+          <div class="loading-state">
+            <div class="spinner"></div>
+            <p>A carregar formações...</p>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- Tab Content: Formações -->
+    <!-- Tab Content: Formações Ativas -->
     <div class="tab-content" id="tabFormacoes">
       <div class="content-header">
-        <h2>Formações Registadas</h2>
+        <h2>Formações Ativas</h2>
         <div class="content-filters">
           <select id="filterEstadoFormacao" onchange="filterFormacoes()">
             <option value="">Todos os estados</option>
             <option value="Agendada">Agendada</option>
             <option value="Em Curso">Em Curso</option>
-            <option value="Concluída">Concluída</option>
-            <option value="Cancelada">Cancelada</option>
           </select>
           <div class="search-box">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -188,12 +213,21 @@ title: Gestão de Formações
       </div>
     </div>
 
-    <!-- Tab Content: Histórico -->
+    <!-- Tab Content: Histórico (Formações Concluídas) -->
     <div class="tab-content" id="tabHistorico">
       <div class="content-header">
-        <h2>Histórico de Aprovações</h2>
+        <h2>Formações Concluídas</h2>
+        <div class="content-filters">
+          <div class="search-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"/>
+              <path d="M21 21l-4.35-4.35"/>
+            </svg>
+            <input type="text" id="searchHistorico" placeholder="Pesquisar..." oninput="filterHistorico()">
+          </div>
+        </div>
       </div>
-      <div class="historico-list" id="historicoList">
+      <div class="formacoes-grid" id="historicoGrid">
         <div class="loading-state">
           <div class="spinner"></div>
           <p>A carregar histórico...</p>
@@ -335,6 +369,8 @@ title: Gestão de Formações
 let currentUser = null;
 let allPedidos = [];
 let allFormacoes = [];
+let formacoesAprovacao = [];
+let formacoesConcluidas = [];
 let selectedPedido = null;
 let selectedFormacao = null;
 let currentAcao = null;
@@ -394,7 +430,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Ajustar UI para formadores (não gestores)
     if (!isGestor) {
       document.getElementById('btnNovaFormacao').style.display = 'none';
-      document.getElementById('tabBtnPedidos').style.display = 'none';
+      document.getElementById('tabBtnAprovacao').style.display = 'none';
       document.getElementById('tabBtnHistorico').style.display = 'none';
       // Começar na tab formações
       switchTab('formacoes');
@@ -425,11 +461,6 @@ async function loadPedidos() {
     console.log('[GestaoFormacoes] Pedidos carregados:', allPedidos.length);
     renderPedidos(allPedidos);
     
-    const pendentes = allPedidos.filter(p => 
-      p.estado === 'pendente_dirigente' || p.estado === 'pendente_rh'
-    ).length;
-    document.getElementById('badgePedidos').textContent = pendentes;
-    
   } catch (error) {
     console.error('Erro ao carregar pedidos:', error);
     renderPedidos([]);
@@ -439,21 +470,27 @@ async function loadPedidos() {
 function renderPedidos(pedidos) {
   const container = document.getElementById('pedidosList');
   
-  if (!pedidos || pedidos.length === 0) {
+  // Filtrar apenas pedidos pendentes ou em análise
+  const pedidosPendentes = pedidos.filter(p => 
+    p.estado === 'pendente_dirigente' || 
+    p.estado === 'pendente_rh' || 
+    p.estado === 'devolvido'
+  );
+  
+  if (!pedidosPendentes || pedidosPendentes.length === 0) {
     container.innerHTML = `
-      <div class="empty-state">
+      <div class="empty-state-inline">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-          <polyline points="14 2 14 8 20 8"/>
+          <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+          <polyline points="22 4 12 14.01 9 11.01"/>
         </svg>
-        <h3>Sem pedidos</h3>
-        <p>Não existem pedidos de formação.</p>
+        <span>Sem pedidos pendentes de aprovação.</span>
       </div>
     `;
     return;
   }
   
-  container.innerHTML = pedidos.map(p => {
+  container.innerHTML = pedidosPendentes.map(p => {
     const estadoClass = getEstadoClass(p.estado);
     const estadoLabel = getEstadoLabel(p.estado);
     const solicitanteNome = p.solicitante?.nome || 'Desconhecido';
@@ -521,7 +558,73 @@ function abrirDetalhesPedido(pedidoId) {
 }
 
 // ==========================================
-// FORMAÇÕES
+// FORMAÇÕES EM APROVAÇÃO
+// ==========================================
+
+function renderFormacoesAprovacao(formacoes) {
+  const container = document.getElementById('formacoesAprovacaoList');
+  
+  // Filtrar formações que estão em estado de aprovação/pendente
+  // Por exemplo: formações recém criadas a partir de pedidos que ainda não foram aprovadas
+  const formacoesEmAprovacao = formacoes.filter(f => 
+    f.estado === 'Pendente' || 
+    f.estado === 'Em Aprovação' ||
+    f.estado === 'Aguarda Aprovação'
+  );
+  
+  if (!formacoesEmAprovacao || formacoesEmAprovacao.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state-inline">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+          <polyline points="22 4 12 14.01 9 11.01"/>
+        </svg>
+        <span>Sem formações pendentes de aprovação.</span>
+      </div>
+    `;
+    return;
+  }
+  
+  container.innerHTML = formacoesEmAprovacao.map(f => {
+    const inscritos = (f.formacao_inscricoes || []).filter(i => i.estado === 'Inscrito').length;
+    
+    let formadorNomes = [];
+    if (f.formacao_formadores && f.formacao_formadores.length > 0) {
+      formadorNomes = f.formacao_formadores.map(ff => {
+        if (ff.formadores?.nome) return DataService.cleanFormadorName(ff.formadores.nome);
+        if (ff.entidades_formadoras?.nome) return ff.entidades_formadoras.nome;
+        return null;
+      }).filter(Boolean);
+    }
+    const formadorDisplay = formadorNomes.length > 0 ? formadorNomes.join(', ') : 'N/D';
+    
+    return `
+      <div class="formacao-aprovacao-card" onclick="abrirDetalhesFormacao('${f.id}')">
+        <div class="formacao-aprovacao-info">
+          <span class="formacao-tipo-badge">${f.tipo || 'Formação'}</span>
+          <h4>${f.titulo}</h4>
+          <div class="formacao-meta-inline">
+            <span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              ${formadorDisplay}
+            </span>
+            <span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              ${f.duracao_horas || 0}h
+            </span>
+          </div>
+        </div>
+        <div class="formacao-aprovacao-actions">
+          <span class="status-badge status-pending">Em Aprovação</span>
+          <button class="btn btn-sm btn-primary">Ver Detalhes</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ==========================================
+// FORMAÇÕES ATIVAS
 // ==========================================
 
 async function loadFormacoes() {
@@ -533,7 +636,28 @@ async function loadFormacoes() {
       allFormacoes = await DataService.getFormacoesDoFormador(currentUser.id);
     }
     console.log('[GestaoFormacoes] Formações carregadas:', allFormacoes.length);
-    renderFormacoes(allFormacoes);
+    
+    // Separar formações por estado
+    const formacoesAtivas = allFormacoes.filter(f => f.estado === 'Agendada' || f.estado === 'Em Curso');
+    formacoesConcluidas = allFormacoes.filter(f => f.estado === 'Concluída');
+    formacoesAprovacao = allFormacoes.filter(f => 
+      f.estado === 'Pendente' || 
+      f.estado === 'Em Aprovação' ||
+      f.estado === 'Aguarda Aprovação'
+    );
+    
+    renderFormacoes(formacoesAtivas);
+    renderFormacoesAprovacao(allFormacoes);
+    renderHistorico(formacoesConcluidas);
+    
+    // Atualizar badge de aprovação
+    const totalAprovacao = allPedidos.filter(p => 
+      p.estado === 'pendente_dirigente' || 
+      p.estado === 'pendente_rh' || 
+      p.estado === 'devolvido'
+    ).length + formacoesAprovacao.length;
+    document.getElementById('badgeAprovacao').textContent = totalAprovacao;
+    
   } catch (error) {
     console.error('Erro ao carregar formações:', error);
     renderFormacoes([]);
@@ -550,8 +674,117 @@ function renderFormacoes(formacoes) {
           <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
           <path d="M6 12v5c3 3 9 3 12 0v-5"/>
         </svg>
-        <h3>Sem formações</h3>
-        <p>${isFormador && !isGestor ? 'Não está associado a nenhuma formação como formador.' : 'Não existem formações registadas.'}</p>
+        <h3>Sem formações ativas</h3>
+        <p>${isFormador && !isGestor ? 'Não está associado a nenhuma formação como formador.' : 'Não existem formações agendadas ou em curso.'}</p>
+      </div>
+    `;
+    return;
+  }
+  
+  container.innerHTML = formacoes.map(f => renderFormacaoCard(f)).join('');
+}
+
+function renderFormacaoCard(f) {
+  const inscritos = (f.formacao_inscricoes || []).filter(i => i.estado === 'Inscrito').length;
+  const sessoes = f.formacao_sessoes || [];
+  const sessoesTotal = sessoes.length;
+  const sessoesConcluidas = sessoes.filter(s => s.estado === 'Concluída').length;
+  
+  // Obter formadores (múltiplos possíveis)
+  let formadorNomes = [];
+  if (f.formacao_formadores && f.formacao_formadores.length > 0) {
+    formadorNomes = f.formacao_formadores.map(ff => {
+      if (ff.formadores?.nome) return DataService.cleanFormadorName(ff.formadores.nome);
+      if (ff.entidades_formadoras?.nome) return ff.entidades_formadoras.nome;
+      return null;
+    }).filter(Boolean);
+  }
+  if (formadorNomes.length === 0 && f.formadores?.nome) {
+    formadorNomes.push(DataService.cleanFormadorName(f.formadores.nome));
+  }
+  if (formadorNomes.length === 0 && f.entidades_formadoras?.nome) {
+    formadorNomes.push(f.entidades_formadoras.nome);
+  }
+  const formadorDisplay = formadorNomes.length > 0 ? formadorNomes.join(', ') : 'N/D';
+  
+  // Contar presenças validadas
+  const presencasValidadas = (f.formacao_presencas || []).filter(p => p.validado).length;
+  
+  // Contar alocados
+  const alocados = (f.formacao_inscricoes || []).filter(i => i.estado === 'Inscrito' && i.tipo_inscricao === 'alocada').length;
+  
+  // Verificar se pode alocar (formação não concluída/cancelada)
+  const podeAlocar = f.estado !== 'Concluída' && f.estado !== 'Cancelada';
+  
+  return `
+    <div class="formacao-card-admin">
+      <div class="formacao-card-header">
+        <span class="formacao-tipo">${f.tipo || 'Formação'}</span>
+        <span class="status-badge ${getFormacaoEstadoClass(f.estado)}">${f.estado}</span>
+      </div>
+      <h4>${f.titulo}</h4>
+      <div class="formacao-meta">
+        <span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          ${formadorDisplay}
+        </span>
+        <span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          ${f.duracao_horas || 0}h
+        </span>
+        <span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+          ${inscritos}/${f.max_participantes || 20}
+        </span>
+      </div>
+      <div class="formacao-sessoes-info">
+        <span class="sessoes-badge">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          ${sessoesConcluidas}/${sessoesTotal} sessões
+        </span>
+        ${presencasValidadas > 0 ? `<span class="presencas-badge">✓ ${presencasValidadas} presenças</span>` : ''}
+        ${alocados > 0 ? `<span class="alocados-badge">👥 ${alocados} alocados</span>` : ''}
+      </div>
+      <div class="formacao-card-actions">
+        <button class="btn btn-sm btn-secondary" onclick="abrirDetalhesFormacao('${f.id}')">Ver Detalhes</button>
+        ${podeAlocar ? `<button class="btn btn-sm btn-primary" onclick="abrirDetalhesFormacao('${f.id}')">Gerir / Alocar</button>` : ''}
+      </div>
+    </div>
+  `;
+}
+
+function filterFormacoes() {
+  const estado = document.getElementById('filterEstadoFormacao').value;
+  const search = document.getElementById('searchFormacoes').value.toLowerCase();
+  
+  let filtered = allFormacoes.filter(f => f.estado === 'Agendada' || f.estado === 'Em Curso');
+  
+  if (estado) {
+    filtered = filtered.filter(f => f.estado === estado);
+  }
+  if (search) {
+    filtered = filtered.filter(f => f.titulo.toLowerCase().includes(search));
+  }
+  
+  renderFormacoes(filtered);
+}
+
+// ==========================================
+// HISTÓRICO (FORMAÇÕES CONCLUÍDAS)
+// ==========================================
+
+function renderHistorico(formacoes) {
+  const container = document.getElementById('historicoGrid');
+  
+  if (!formacoes || formacoes.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+          <polyline points="22 4 12 14.01 9 11.01"/>
+        </svg>
+        <h3>Sem formações concluídas</h3>
+        <p>As formações concluídas aparecerão aqui.</p>
       </div>
     `;
     return;
@@ -561,9 +794,8 @@ function renderFormacoes(formacoes) {
     const inscritos = (f.formacao_inscricoes || []).filter(i => i.estado === 'Inscrito').length;
     const sessoes = f.formacao_sessoes || [];
     const sessoesTotal = sessoes.length;
-    const sessoesConcluidas = sessoes.filter(s => s.estado === 'Concluída').length;
+    const presencasValidadas = (f.formacao_presencas || []).filter(p => p.validado).length;
     
-    // Obter formadores (múltiplos possíveis)
     let formadorNomes = [];
     if (f.formacao_formadores && f.formacao_formadores.length > 0) {
       formadorNomes = f.formacao_formadores.map(ff => {
@@ -572,28 +804,13 @@ function renderFormacoes(formacoes) {
         return null;
       }).filter(Boolean);
     }
-    if (formadorNomes.length === 0 && f.formadores?.nome) {
-      formadorNomes.push(DataService.cleanFormadorName(f.formadores.nome));
-    }
-    if (formadorNomes.length === 0 && f.entidades_formadoras?.nome) {
-      formadorNomes.push(f.entidades_formadoras.nome);
-    }
     const formadorDisplay = formadorNomes.length > 0 ? formadorNomes.join(', ') : 'N/D';
     
-    // Contar presenças validadas
-    const presencasValidadas = (f.formacao_presencas || []).filter(p => p.validado).length;
-    
-    // Contar alocados
-    const alocados = (f.formacao_inscricoes || []).filter(i => i.estado === 'Inscrito' && i.tipo_inscricao === 'alocada').length;
-    
-    // Verificar se pode alocar (formação não concluída/cancelada)
-    const podeAlocar = f.estado !== 'Concluída' && f.estado !== 'Cancelada';
-    
     return `
-      <div class="formacao-card-admin">
+      <div class="formacao-card-admin formacao-concluida">
         <div class="formacao-card-header">
           <span class="formacao-tipo">${f.tipo || 'Formação'}</span>
-          <span class="status-badge ${getFormacaoEstadoClass(f.estado)}">${f.estado}</span>
+          <span class="status-badge status-complete">Concluída</span>
         </div>
         <h4>${f.titulo}</h4>
         <div class="formacao-meta">
@@ -607,40 +824,34 @@ function renderFormacoes(formacoes) {
           </span>
           <span>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-            ${inscritos}/${f.max_participantes || 20}
+            ${inscritos} participantes
           </span>
         </div>
         <div class="formacao-sessoes-info">
           <span class="sessoes-badge">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-            ${sessoesConcluidas}/${sessoesTotal} sessões
+            ${sessoesTotal} sessões
           </span>
-          ${presencasValidadas > 0 ? `<span class="presencas-badge">✓ ${presencasValidadas} presenças</span>` : ''}
-          ${alocados > 0 ? `<span class="alocados-badge">👥 ${alocados} alocados</span>` : ''}
+          <span class="presencas-badge">✓ ${presencasValidadas} presenças validadas</span>
         </div>
         <div class="formacao-card-actions">
           <button class="btn btn-sm btn-secondary" onclick="abrirDetalhesFormacao('${f.id}')">Ver Detalhes</button>
-          ${podeAlocar ? `<button class="btn btn-sm btn-primary" onclick="abrirDetalhesFormacao('${f.id}')">Gerir / Alocar</button>` : ''}
         </div>
       </div>
     `;
   }).join('');
 }
 
-function filterFormacoes() {
-  const estado = document.getElementById('filterEstadoFormacao').value;
-  const search = document.getElementById('searchFormacoes').value.toLowerCase();
+function filterHistorico() {
+  const search = document.getElementById('searchHistorico').value.toLowerCase();
   
-  let filtered = allFormacoes;
+  let filtered = formacoesConcluidas;
   
-  if (estado) {
-    filtered = filtered.filter(f => f.estado === estado);
-  }
   if (search) {
     filtered = filtered.filter(f => f.titulo.toLowerCase().includes(search));
   }
   
-  renderFormacoes(filtered);
+  renderHistorico(filtered);
 }
 
 // Redirecionar para página dedicada de detalhes da formação
@@ -792,12 +1003,16 @@ function switchTab(tab) {
   });
   
   document.querySelectorAll('.tab-content').forEach(content => {
-    content.classList.toggle('active', content.id === `tab${tab.charAt(0).toUpperCase() + tab.slice(1)}`);
+    content.classList.toggle('active', content.id === `tab${tab.charAt(0).toUpperCase() + tab.slice(1)}`)
   });
 }
 
 function updateStats() {
-  const pendentes = allPedidos.filter(p => p.estado === 'pendente_dirigente' || p.estado === 'pendente_rh').length;
+  const pendentes = allPedidos.filter(p => 
+    p.estado === 'pendente_dirigente' || 
+    p.estado === 'pendente_rh' ||
+    p.estado === 'devolvido'
+  ).length + formacoesAprovacao.length;
   const aprovados = allPedidos.filter(p => p.estado === 'aprovado').length;
   const formacoes = allFormacoes.filter(f => f.estado === 'Agendada' || f.estado === 'Em Curso').length;
   const inscritos = allFormacoes.reduce((sum, f) => 
@@ -840,7 +1055,10 @@ function getFormacaoEstadoClass(estado) {
     'Agendada': 'status-scheduled',
     'Em Curso': 'status-progress',
     'Concluída': 'status-complete',
-    'Cancelada': 'status-cancelled'
+    'Cancelada': 'status-cancelled',
+    'Pendente': 'status-pending',
+    'Em Aprovação': 'status-pending',
+    'Aguarda Aprovação': 'status-pending'
   };
   return classes[estado] || '';
 }
@@ -930,5 +1148,138 @@ document.querySelectorAll('.modal-overlay').forEach(modal => {
 .alocados-badge {
   color: #7c3aed;
   font-weight: 500;
+}
+
+/* Section Card Styles */
+.section-card {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  overflow: hidden;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid #f1f5f9;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.section-header h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+}
+
+.section-header h3 svg {
+  width: 20px;
+  height: 20px;
+  color: #64748b;
+}
+
+.section-filters {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.section-card .pedidos-list,
+.section-card .formacoes-aprovacao-list {
+  padding: 1rem 1.5rem;
+}
+
+/* Empty state inline */
+.empty-state-inline {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 2rem;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.empty-state-inline svg {
+  width: 24px;
+  height: 24px;
+  color: #10b981;
+}
+
+/* Formação aprovação card */
+.formacao-aprovacao-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: #fef3c7;
+  border-radius: 10px;
+  margin-bottom: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.formacao-aprovacao-card:last-child {
+  margin-bottom: 0;
+}
+
+.formacao-aprovacao-card:hover {
+  background: #fde68a;
+}
+
+.formacao-aprovacao-info h4 {
+  margin: 0.5rem 0;
+  font-size: 1rem;
+  color: #1e293b;
+}
+
+.formacao-tipo-badge {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  background: white;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #92400e;
+}
+
+.formacao-meta-inline {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+.formacao-meta-inline span {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.formacao-meta-inline svg {
+  width: 14px;
+  height: 14px;
+}
+
+.formacao-aprovacao-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* Formação concluída card */
+.formacao-concluida {
+  opacity: 0.85;
+  background: #f8fafc;
+}
+
+.formacao-concluida:hover {
+  opacity: 1;
 }
 </style>
