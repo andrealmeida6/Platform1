@@ -9,8 +9,21 @@ title: Portal do Colaborador
 {% include components/quick-actions.html %}
 {% include components/calendar-section.html %}
 
-<!-- Notifications -->
-<div class="notifications-section">
+<!-- Notifications Section - Dinâmica -->
+<!-- 
+  NOTA POWER PAGES: Em Power Pages, esta secção seria implementada usando:
+  - Entity List para listar notificações do colaborador actual
+  - Liquid template para filtrar por colaborador: {% assign notificacoes = entities.formacao_notificacoes | where: "colaborador_id", user.id %}
+  - Web API para marcar como lida via JavaScript
+  
+  Exemplo Power Pages:
+  {% entitylist id:"notificacoes-list" %}
+    {% for item in entitylist.records %}
+      <div class="notification-item">{{ item.titulo }}</div>
+    {% endfor %}
+  {% endentitylist %}
+-->
+<div class="notifications-section" id="notificationsSection">
   <div class="card-header">
     <div class="card-title">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -18,49 +31,15 @@ title: Portal do Colaborador
         <path d="M13.73 21a2 2 0 01-3.46 0"/>
       </svg>
       Notificações
+      <span class="notification-badge" id="notificationBadge" style="display: none;">0</span>
     </div>
-    <a href="#" class="card-action">Ver todas</a>
+    <button class="card-action" onclick="marcarTodasLidas()" id="btnMarcarTodasLidas" style="display: none;">Marcar todas como lidas</button>
   </div>
-  <div class="notification-item">
-    <div class="notification-icon info">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <circle cx="12" cy="12" r="10"/>
-        <line x1="12" y1="16" x2="12" y2="12"/>
-        <line x1="12" y1="8" x2="12.01" y2="8"/>
-      </svg>
+  <div id="notificationsList">
+    <div class="notification-loading">
+      <div class="spinner"></div>
+      <span>A carregar notificações...</span>
     </div>
-    <div class="notification-content">
-      <div class="notification-title">Formação Agendada</div>
-      <div class="notification-desc">A formação "Gestão de Projetos" está agendada para 15-17 Janeiro 2026.</div>
-    </div>
-    <div class="notification-time">Há 2h</div>
-  </div>
-  <div class="notification-item">
-    <div class="notification-icon warning">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
-        <line x1="12" y1="9" x2="12" y2="13"/>
-        <line x1="12" y1="17" x2="12.01" y2="17"/>
-      </svg>
-    </div>
-    <div class="notification-content">
-      <div class="notification-title">Exame de Medicina no Trabalho</div>
-      <div class="notification-desc">O seu exame periódico está marcado para 10/12/2025.</div>
-    </div>
-    <div class="notification-time">Há 1d</div>
-  </div>
-  <div class="notification-item">
-    <div class="notification-icon success">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
-        <polyline points="22 4 12 14.01 9 11.01"/>
-      </svg>
-    </div>
-    <div class="notification-content">
-      <div class="notification-title">Reembolso Aprovado</div>
-      <div class="notification-desc">O seu pedido de reembolso no valor de €75,00 foi aprovado.</div>
-    </div>
-    <div class="notification-time">Há 3d</div>
   </div>
 </div>
 
@@ -177,3 +156,594 @@ title: Portal do Colaborador
     </tbody>
   </table>
 </div>
+
+<style>
+/* ============================================ */
+/* ESTILOS PARA NOTIFICAÇÕES DINÂMICAS */
+/* ============================================ */
+
+.notification-badge {
+  background: #ef4444;
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.2rem 0.5rem;
+  border-radius: 10px;
+  margin-left: 0.5rem;
+}
+
+.notification-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 2rem;
+  color: #64748b;
+  font-size: 0.875rem;
+}
+
+.notification-loading .spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #e2e8f0;
+  border-top-color: #00b276;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.notification-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem;
+  border-bottom: 1px solid #f1f5f9;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.notification-item:last-child {
+  border-bottom: none;
+}
+
+.notification-item:hover {
+  background: #f8fafc;
+}
+
+.notification-item.unread {
+  background: #f0fdf4;
+  border-left: 3px solid #00b276;
+}
+
+.notification-item.unread:hover {
+  background: #ecfdf5;
+}
+
+.notification-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.notification-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Cores por tipo de notificação */
+.notification-icon.info {
+  background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+  color: #2563eb;
+}
+
+.notification-icon.warning {
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  color: #d97706;
+}
+
+.notification-icon.success {
+  background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+  color: #059669;
+}
+
+.notification-icon.purple {
+  background: linear-gradient(135deg, #ede9fe, #ddd6fe);
+  color: #7c3aed;
+}
+
+.notification-icon.red {
+  background: linear-gradient(135deg, #fee2e2, #fecaca);
+  color: #dc2626;
+}
+
+.notification-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.notification-title {
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 0.9rem;
+  margin-bottom: 0.25rem;
+}
+
+.notification-desc {
+  color: #64748b;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  margin-bottom: 0.5rem;
+}
+
+.notification-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.notification-btn {
+  padding: 0.4rem 0.75rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.notification-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+.notification-btn.primary {
+  background: linear-gradient(135deg, #00b276, #009661);
+  color: white;
+}
+
+.notification-btn.primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0,178,118,0.3);
+}
+
+.notification-btn.secondary {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.notification-btn.secondary:hover {
+  background: #e2e8f0;
+}
+
+.notification-time {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.notification-empty {
+  text-align: center;
+  padding: 2rem;
+  color: #94a3b8;
+}
+
+.notification-empty svg {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 0.75rem;
+  opacity: 0.5;
+}
+
+.notification-empty p {
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+/* Toast */
+.toast-container {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 9999;
+}
+
+.toast {
+  padding: 1rem 1.25rem;
+  border-radius: 10px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  transform: translateX(100%);
+  opacity: 0;
+  transition: all 0.3s ease;
+  margin-bottom: 0.5rem;
+}
+
+.toast.show {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.toast.success {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.toast.error {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.toast.info {
+  background: #dbeafe;
+  color: #1e40af;
+}
+</style>
+
+<script>
+// ============================================
+// NOTIFICAÇÕES DINÂMICAS - PORTAL DO COLABORADOR
+// ============================================
+// 
+// NOTA POWER PAGES: Em Power Pages, este código seria adaptado para:
+// - Usar webapi.safeAjax() em vez de fetch direto
+// - Obter o utilizador atual via liquid: {{ user.id }}
+// - Usar entity logical names do Dataverse
+//
+// Exemplo Power Pages:
+// webapi.safeAjax({
+//   type: "GET",
+//   url: "/_api/cr_formacao_notificacoes?$filter=cr_colaborador_id eq " + userId,
+//   success: function(data) { renderNotificacoes(data.value); }
+// });
+
+let currentUser = null;
+let notificacoes = [];
+
+// Aguardar que os serviços estejam disponíveis
+async function waitForServices() {
+  return new Promise((resolve) => {
+    const check = () => {
+      if (typeof DataService !== 'undefined' && typeof AuthService !== 'undefined') {
+        resolve();
+      } else {
+        setTimeout(check, 100);
+      }
+    };
+    check();
+  });
+}
+
+function getBaseUrl() {
+  const path = window.location.pathname;
+  if (path.includes('/Platform1')) return '/Platform1';
+  return '';
+}
+
+// Inicialização
+document.addEventListener('DOMContentLoaded', async function() {
+  try {
+    await waitForServices();
+    currentUser = await AuthService.getCurrentUser();
+    
+    if (currentUser) {
+      await carregarNotificacoes();
+    } else {
+      renderNotificacoesVazias('Faça login para ver as suas notificações.');
+    }
+  } catch (error) {
+    console.error('[Home] Erro ao inicializar:', error);
+    renderNotificacoesVazias('Erro ao carregar notificações.');
+  }
+});
+
+// Carregar notificações do colaborador
+async function carregarNotificacoes() {
+  try {
+    notificacoes = await DataService.getNotificacoesColaborador(currentUser.id);
+    console.log('[Notificações] Carregadas:', notificacoes.length);
+    
+    renderNotificacoes();
+    atualizarBadge();
+    
+  } catch (error) {
+    console.error('[Notificações] Erro ao carregar:', error);
+    renderNotificacoesVazias('Erro ao carregar notificações.');
+  }
+}
+
+// Renderizar notificações
+function renderNotificacoes() {
+  const container = document.getElementById('notificationsList');
+  
+  if (!notificacoes || notificacoes.length === 0) {
+    renderNotificacoesVazias('Não tem notificações de momento.');
+    return;
+  }
+  
+  // Ordenar: não lidas primeiro, depois por data
+  const sorted = [...notificacoes].sort((a, b) => {
+    if (a.lida !== b.lida) return a.lida ? 1 : -1;
+    return new Date(b.created_at) - new Date(a.created_at);
+  });
+  
+  // Mostrar apenas as 10 mais recentes
+  const toShow = sorted.slice(0, 10);
+  
+  container.innerHTML = toShow.map(n => renderNotificacaoItem(n)).join('');
+}
+
+// Renderizar um item de notificação
+function renderNotificacaoItem(notif) {
+  const tipoConfig = getNotificacaoConfig(notif.tipo);
+  const tempoRelativo = getTempoRelativo(notif.created_at);
+  const unreadClass = notif.lida ? '' : 'unread';
+  
+  // Botões de ação específicos por tipo
+  let actionsHtml = '';
+  
+  if (notif.tipo === 'questionario_formacao' && !notif.lida) {
+    // Notificação de questionário de avaliação
+    actionsHtml = `
+      <div class="notification-actions">
+        <button class="notification-btn primary" onclick="irParaAvaliacao('${notif.formacao_id}', '${notif.id}')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+          </svg>
+          Avaliar Formação
+        </button>
+      </div>
+    `;
+  } else if (notif.tipo === 'alocacao' && !notif.lida) {
+    // Notificação de alocação a formação
+    actionsHtml = `
+      <div class="notification-actions">
+        <button class="notification-btn primary" onclick="irParaFormacao('${notif.formacao_id}', '${notif.id}')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+          </svg>
+          Ver Formação
+        </button>
+      </div>
+    `;
+  } else if ((notif.tipo === 'sessao_iniciada' || notif.tipo === 'lembrete_sessao') && !notif.lida) {
+    // Notificação de sessão
+    actionsHtml = `
+      <div class="notification-actions">
+        <button class="notification-btn primary" onclick="irParaFormacao('${notif.formacao_id}', '${notif.id}')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+            <line x1="16" y1="2" x2="16" y2="6"/>
+            <line x1="8" y1="2" x2="8" y2="6"/>
+          </svg>
+          Ver Detalhes
+        </button>
+      </div>
+    `;
+  }
+  
+  return `
+    <div class="notification-item ${unreadClass}" onclick="marcarNotificacaoLida('${notif.id}')" data-id="${notif.id}">
+      <div class="notification-icon ${tipoConfig.iconClass}">
+        ${tipoConfig.icon}
+      </div>
+      <div class="notification-content">
+        <div class="notification-title">${notif.titulo || tipoConfig.titulo}</div>
+        <div class="notification-desc">${notif.mensagem || ''}</div>
+        ${actionsHtml}
+      </div>
+      <div class="notification-time">${tempoRelativo}</div>
+    </div>
+  `;
+}
+
+// Configuração por tipo de notificação
+function getNotificacaoConfig(tipo) {
+  const configs = {
+    'alocacao': {
+      iconClass: 'info',
+      icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>',
+      titulo: 'Alocação à Formação'
+    },
+    'lembrete_sessao': {
+      iconClass: 'warning',
+      icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+      titulo: 'Lembrete de Sessão'
+    },
+    'sessao_iniciada': {
+      iconClass: 'success',
+      icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
+      titulo: 'Sessão Iniciada'
+    },
+    'questionario_formacao': {
+      iconClass: 'purple',
+      icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
+      titulo: 'Avaliação de Formação'
+    },
+    'avaliacao_pendente': {
+      iconClass: 'purple',
+      icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
+      titulo: 'Avaliação Pendente'
+    },
+    'resultado_disponivel': {
+      iconClass: 'success',
+      icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>',
+      titulo: 'Resultado Disponível'
+    },
+    'formacao_cancelada': {
+      iconClass: 'red',
+      icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',
+      titulo: 'Formação Cancelada'
+    },
+    'formacao_concluida': {
+      iconClass: 'success',
+      icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
+      titulo: 'Formação Concluída'
+    },
+    'default': {
+      iconClass: 'info',
+      icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>',
+      titulo: 'Notificação'
+    }
+  };
+  
+  return configs[tipo] || configs['default'];
+}
+
+// Renderizar estado vazio
+function renderNotificacoesVazias(mensagem) {
+  const container = document.getElementById('notificationsList');
+  container.innerHTML = `
+    <div class="notification-empty">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+        <path d="M13.73 21a2 2 0 01-3.46 0"/>
+      </svg>
+      <p>${mensagem}</p>
+    </div>
+  `;
+  
+  document.getElementById('btnMarcarTodasLidas').style.display = 'none';
+}
+
+// Atualizar badge de contagem
+function atualizarBadge() {
+  const naoLidas = notificacoes.filter(n => !n.lida).length;
+  const badge = document.getElementById('notificationBadge');
+  const btnMarcar = document.getElementById('btnMarcarTodasLidas');
+  
+  if (naoLidas > 0) {
+    badge.textContent = naoLidas;
+    badge.style.display = 'inline';
+    btnMarcar.style.display = 'inline';
+  } else {
+    badge.style.display = 'none';
+    btnMarcar.style.display = 'none';
+  }
+}
+
+// Calcular tempo relativo
+function getTempoRelativo(dataStr) {
+  if (!dataStr) return '';
+  
+  const data = new Date(dataStr);
+  const agora = new Date();
+  const diffMs = agora - data;
+  const diffMin = Math.floor(diffMs / 60000);
+  const diffHoras = Math.floor(diffMs / 3600000);
+  const diffDias = Math.floor(diffMs / 86400000);
+  
+  if (diffMin < 1) return 'Agora';
+  if (diffMin < 60) return `Há ${diffMin}min`;
+  if (diffHoras < 24) return `Há ${diffHoras}h`;
+  if (diffDias < 7) return `Há ${diffDias}d`;
+  
+  return data.toLocaleDateString('pt-PT', { day: 'numeric', month: 'short' });
+}
+
+// Marcar notificação como lida
+async function marcarNotificacaoLida(notificacaoId) {
+  const notif = notificacoes.find(n => n.id === notificacaoId);
+  if (!notif || notif.lida) return;
+  
+  try {
+    await DataService.marcarNotificacaoLida(notificacaoId);
+    
+    // Atualizar localmente
+    notif.lida = true;
+    
+    // Atualizar UI
+    const item = document.querySelector(`.notification-item[data-id="${notificacaoId}"]`);
+    if (item) {
+      item.classList.remove('unread');
+    }
+    
+    atualizarBadge();
+    
+  } catch (error) {
+    console.error('[Notificações] Erro ao marcar como lida:', error);
+  }
+}
+
+// Marcar todas como lidas
+async function marcarTodasLidas() {
+  if (!currentUser) return;
+  
+  try {
+    await DataService.marcarTodasNotificacoesLidas(currentUser.id);
+    
+    // Atualizar localmente
+    notificacoes.forEach(n => n.lida = true);
+    
+    // Atualizar UI
+    document.querySelectorAll('.notification-item.unread').forEach(item => {
+      item.classList.remove('unread');
+    });
+    
+    atualizarBadge();
+    showToast('Todas as notificações foram marcadas como lidas.', 'success');
+    
+  } catch (error) {
+    console.error('[Notificações] Erro ao marcar todas como lidas:', error);
+    showToast('Erro ao marcar notificações como lidas.', 'error');
+  }
+}
+
+// Ir para avaliação de formação
+function irParaAvaliacao(formacaoId, notificacaoId) {
+  event.stopPropagation();
+  
+  // Marcar notificação como lida antes de navegar
+  if (notificacaoId) {
+    DataService.marcarNotificacaoLida(notificacaoId).catch(console.error);
+  }
+  
+  const baseUrl = getBaseUrl();
+  window.location.href = `${baseUrl}/formacao-detalhe?id=${formacaoId}&tab=avaliar`;
+}
+
+// Ir para formação
+function irParaFormacao(formacaoId, notificacaoId) {
+  event.stopPropagation();
+  
+  // Marcar notificação como lida antes de navegar
+  if (notificacaoId) {
+    DataService.marcarNotificacaoLida(notificacaoId).catch(console.error);
+  }
+  
+  const baseUrl = getBaseUrl();
+  window.location.href = `${baseUrl}/formacao-detalhe?id=${formacaoId}`;
+}
+
+// Toast notifications
+function showToast(message, type = 'success') {
+  let container = document.querySelector('.toast-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.className = 'toast-container';
+    document.body.appendChild(container);
+  }
+  
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.innerHTML = `<span>${message}</span>`;
+  container.appendChild(toast);
+  
+  setTimeout(() => toast.classList.add('show'), 10);
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
+}
+</script>
