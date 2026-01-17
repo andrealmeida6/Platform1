@@ -65,6 +65,13 @@ title: Detalhes da Formação
         <button class="formacao-tab" data-tab="conteudo" onclick="switchTab('conteudo')">Conteúdo Programático</button>
         <button class="formacao-tab" data-tab="sessoes" onclick="switchTab('sessoes')">Sessões</button>
         <button class="formacao-tab" data-tab="anexos" onclick="switchTab('anexos')">Anexos</button>
+        <!-- Tab Avaliação - Só aparece se formação concluída e utilizador inscrito -->
+        <button class="formacao-tab" data-tab="avaliar" id="tabAvaliarBtn" onclick="switchTab('avaliar')" style="display: none;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px; margin-right: 4px; vertical-align: middle;">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+          </svg>
+          Avaliar
+        </button>
       </div>
 
       <!-- Tab Contents -->
@@ -106,6 +113,13 @@ title: Detalhes da Formação
         <div class="content-section">
           <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg> Documentos e Materiais</h3>
           <div id="anexosLista" class="anexos-lista">A carregar anexos...</div>
+        </div>
+      </div>
+
+      <!-- Tab Avaliação/Feedback -->
+      <div class="formacao-tab-content" id="tabAvaliar">
+        <div id="avaliacaoContent">
+          <!-- Conteúdo carregado dinamicamente -->
         </div>
       </div>
     </div>
@@ -209,6 +223,27 @@ title: Detalhes da Formação
   </div>
 </div>
 
+<!-- Modal: Confirmação Avaliação Submetida -->
+<div class="modal-overlay" id="modalAvaliacaoSubmetida">
+  <div class="modal-content" style="max-width: 450px; text-align: center;">
+    <div class="modal-body" style="padding: 2.5rem;">
+      <div class="success-icon-large">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+          <polyline points="22 4 12 14.01 9 11.01"/>
+        </svg>
+      </div>
+      <h3 style="margin: 1.5rem 0 0.5rem; color: #1e293b;">Obrigado pela sua avaliação!</h3>
+      <p style="color: #64748b; font-size: 0.9rem; margin-bottom: 1.5rem;">
+        A sua opinião é muito importante para melhorarmos continuamente as nossas formações.
+      </p>
+      <button class="btn btn-primary" onclick="voltarAoCentroFormacao()">
+        Voltar ao Centro de Formação
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- Toast Container -->
 <div class="toast-container"></div>
 
@@ -240,9 +275,11 @@ title: Detalhes da Formação
 .stat-value { font-size: 1.5rem; font-weight: 700; color: #1e293b; }
 .stat-label { font-size: 0.8rem; color: #64748b; }
 .formacao-tabs { display: flex; gap: 0.5rem; background: white; padding: 0.5rem; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); border: 1px solid #f1f5f9; overflow-x: auto; }
-.formacao-tab { padding: 0.75rem 1.25rem; border: none; background: transparent; border-radius: 8px; font-size: 0.875rem; font-weight: 600; color: #64748b; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+.formacao-tab { padding: 0.75rem 1.25rem; border: none; background: transparent; border-radius: 8px; font-size: 0.875rem; font-weight: 600; color: #64748b; cursor: pointer; transition: all 0.2s; white-space: nowrap; display: inline-flex; align-items: center; }
 .formacao-tab:hover { color: #1e293b; background: #f8fafc; }
 .formacao-tab.active { background: #00b276; color: white; }
+.formacao-tab.highlight { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; animation: pulseTab 2s ease-in-out infinite; }
+@keyframes pulseTab { 0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); } 50% { box-shadow: 0 0 0 8px rgba(245, 158, 11, 0); } }
 .formacao-tab-content { display: none; background: white; border-radius: 16px; padding: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.04); border: 1px solid #f1f5f9; }
 .formacao-tab-content.active { display: block; }
 .content-section { margin-bottom: 2rem; }
@@ -298,6 +335,67 @@ title: Detalhes da Formação
 .info-value { font-size: 0.85rem; font-weight: 600; color: #1e293b; }
 .empty-tab { text-align: center; padding: 3rem; color: #94a3b8; }
 .empty-tab svg { width: 48px; height: 48px; margin-bottom: 1rem; opacity: 0.5; }
+
+/* ============================================ */
+/* ESTILOS DA TAB AVALIAÇÃO/FEEDBACK */
+/* ============================================ */
+.avaliacao-container { max-width: 700px; margin: 0 auto; }
+.avaliacao-header { text-align: center; margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 1px solid #f1f5f9; }
+.avaliacao-header-icon { width: 64px; height: 64px; background: linear-gradient(135deg, #fef3c7, #fde68a); border-radius: 16px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; }
+.avaliacao-header-icon svg { width: 32px; height: 32px; color: #f59e0b; }
+.avaliacao-header h3 { font-size: 1.25rem; color: #1e293b; margin: 0 0 0.5rem; }
+.avaliacao-header p { color: #64748b; font-size: 0.9rem; margin: 0; }
+.avaliacao-form { display: flex; flex-direction: column; gap: 1.5rem; }
+.avaliacao-section { background: #f8fafc; border-radius: 12px; padding: 1.25rem; }
+.avaliacao-section-title { font-size: 0.9rem; font-weight: 600; color: #1e293b; margin: 0 0 1rem; display: flex; align-items: center; gap: 0.5rem; }
+.avaliacao-section-title svg { width: 18px; height: 18px; color: #00b276; }
+.rating-question { margin-bottom: 1.25rem; }
+.rating-question:last-child { margin-bottom: 0; }
+.rating-label { font-size: 0.875rem; color: #475569; margin-bottom: 0.5rem; display: block; }
+.star-rating { display: flex; gap: 0.25rem; }
+.star-rating input { display: none; }
+.star-rating label { cursor: pointer; font-size: 1.75rem; color: #d1d5db; transition: all 0.15s; }
+.star-rating label:hover, .star-rating label:hover ~ label, .star-rating input:checked ~ label { color: #fbbf24; }
+.star-rating:hover label { color: #d1d5db; }
+.star-rating label:hover, .star-rating label:hover ~ label { color: #fbbf24; }
+.star-rating { flex-direction: row-reverse; justify-content: flex-end; }
+.star-rating input:checked + label, .star-rating input:checked + label ~ label { color: #fbbf24; }
+.rating-text { font-size: 0.75rem; color: #94a3b8; margin-top: 0.25rem; }
+.textarea-question { margin-bottom: 1rem; }
+.textarea-question:last-child { margin-bottom: 0; }
+.textarea-question label { font-size: 0.875rem; color: #475569; margin-bottom: 0.5rem; display: block; }
+.textarea-question textarea { width: 100%; padding: 0.875rem; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 0.875rem; font-family: inherit; resize: vertical; min-height: 80px; transition: all 0.2s; }
+.textarea-question textarea:focus { outline: none; border-color: #00b276; background: white; }
+.textarea-question textarea::placeholder { color: #94a3b8; }
+.radio-question { margin-bottom: 1rem; }
+.radio-question:last-child { margin-bottom: 0; }
+.radio-question-label { font-size: 0.875rem; color: #475569; margin-bottom: 0.75rem; display: block; }
+.radio-options { display: flex; gap: 1rem; flex-wrap: wrap; }
+.radio-option { display: flex; align-items: center; gap: 0.5rem; cursor: pointer; }
+.radio-option input { display: none; }
+.radio-option span { padding: 0.5rem 1rem; background: white; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 0.85rem; color: #64748b; transition: all 0.2s; }
+.radio-option input:checked + span { background: #00b276; border-color: #00b276; color: white; }
+.radio-option:hover span { border-color: #00b276; }
+.avaliacao-submit { display: flex; justify-content: center; margin-top: 1rem; }
+.btn-submit-avaliacao { padding: 1rem 2.5rem; background: linear-gradient(135deg, #00b276, #009661); color: white; border: none; border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 0.75rem; transition: all 0.2s; box-shadow: 0 4px 15px rgba(0,178,118,0.3); }
+.btn-submit-avaliacao:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,178,118,0.4); }
+.btn-submit-avaliacao:disabled { background: #e2e8f0; color: #94a3b8; cursor: not-allowed; transform: none; box-shadow: none; }
+.btn-submit-avaliacao svg { width: 20px; height: 20px; }
+.avaliacao-ja-submetida { text-align: center; padding: 3rem 1.5rem; }
+.avaliacao-ja-submetida-icon { width: 72px; height: 72px; background: linear-gradient(135deg, #d1fae5, #a7f3d0); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.25rem; }
+.avaliacao-ja-submetida-icon svg { width: 36px; height: 36px; color: #059669; }
+.avaliacao-ja-submetida h4 { font-size: 1.125rem; color: #1e293b; margin: 0 0 0.5rem; }
+.avaliacao-ja-submetida p { color: #64748b; font-size: 0.9rem; margin: 0 0 1.5rem; }
+.avaliacao-resumo { background: #f8fafc; border-radius: 12px; padding: 1.25rem; max-width: 400px; margin: 0 auto; }
+.avaliacao-resumo-item { display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid #e2e8f0; }
+.avaliacao-resumo-item:last-child { border-bottom: none; }
+.avaliacao-resumo-label { color: #64748b; font-size: 0.85rem; }
+.avaliacao-resumo-value { font-weight: 600; color: #1e293b; font-size: 0.85rem; }
+.avaliacao-resumo-stars { color: #fbbf24; }
+
+/* Success Icon Large */
+.success-icon-large { width: 80px; height: 80px; background: linear-gradient(135deg, #d1fae5, #a7f3d0); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto; }
+.success-icon-large svg { width: 40px; height: 40px; color: #059669; }
 
 /* Modal Styles */
 .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; padding: 1rem; }
@@ -366,14 +464,28 @@ title: Detalhes da Formação
 .toast.info { background: #dbeafe; color: #1e40af; }
 
 @media (max-width: 1024px) { .formacao-layout { grid-template-columns: 1fr; } .formacao-sidebar { position: static; display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; } .action-card { grid-column: span 2; } }
-@media (max-width: 768px) { .formacao-stats { grid-template-columns: 1fr; } .formacao-sidebar { grid-template-columns: 1fr; } .action-card { grid-column: span 1; } .info-grid { grid-template-columns: 1fr; } .page-header-formacao { padding: 1.5rem; } .page-header-info h1 { font-size: 1.375rem; } }
+@media (max-width: 768px) { .formacao-stats { grid-template-columns: 1fr; } .formacao-sidebar { grid-template-columns: 1fr; } .action-card { grid-column: span 1; } .info-grid { grid-template-columns: 1fr; } .page-header-formacao { padding: 1.5rem; } .page-header-info h1 { font-size: 1.375rem; } .radio-options { flex-direction: column; } }
 </style>
 
 <script>
+// ============================================
+// VARIÁVEIS GLOBAIS
+// ============================================
 let formacaoData = null;
 let currentUser = null;
 let pedidoPendente = null;
+let avaliacaoExistente = null;
 const MONTH_NAMES_SHORT = ['JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ'];
+
+// ============================================
+// FUNÇÕES AUXILIARES
+// ============================================
+
+function getBaseUrl() {
+  const path = window.location.pathname;
+  if (path.includes('/Platform1')) return '/Platform1';
+  return '';
+}
 
 async function waitForServices() {
   return new Promise((resolve) => {
@@ -385,30 +497,64 @@ async function waitForServices() {
   });
 }
 
+// ============================================
+// INICIALIZAÇÃO
+// ============================================
+
 document.addEventListener('DOMContentLoaded', async function() {
   try {
     await waitForServices();
     currentUser = await AuthService.getCurrentUser();
+    
     const params = new URLSearchParams(window.location.search);
     const formacaoId = params.get('id');
-    if (!formacaoId) { window.location.href = '{{ "/formacao" | relative_url }}'; return; }
+    const tabParam = params.get('tab');
+    
+    if (!formacaoId) {
+      window.location.href = getBaseUrl() + '/formacao';
+      return;
+    }
+    
     await loadFormacao(formacaoId);
-  } catch (error) { console.error('[Formação Detalhe] Erro:', error); }
+    
+    // Se há parâmetro tab=avaliar, mudar para essa tab
+    if (tabParam === 'avaliar') {
+      setTimeout(function() {
+        switchTab('avaliar');
+      }, 100);
+    }
+    
+  } catch (error) {
+    console.error('[Formação Detalhe] Erro:', error);
+  }
 });
+
+// ============================================
+// CARREGAMENTO DE DADOS
+// ============================================
 
 async function loadFormacao(formacaoId) {
   try {
-    const formacoes = await DataService.getFormacoes();
-    formacaoData = formacoes.find(f => f.id === formacaoId);
-    if (!formacaoData) { window.location.href = '{{ "/formacao" | relative_url }}'; return; }
+    // Usar getFormacaoById para obter dados completos
+    formacaoData = await DataService.getFormacaoById(formacaoId);
     
-    // Verificar se o utilizador tem pedido pendente
+    if (!formacaoData) {
+      window.location.href = getBaseUrl() + '/formacao';
+      return;
+    }
+    
+    // Verificar pedido pendente e avaliação existente
     if (currentUser) {
       pedidoPendente = await verificarPedidoPendente(formacaoId, currentUser.id);
+      avaliacaoExistente = verificarAvaliacaoExistente();
     }
     
     renderFormacao();
-  } catch (error) { console.error('Erro ao carregar formação:', error); }
+    renderAvaliacaoTab();
+    
+  } catch (error) {
+    console.error('Erro ao carregar formação:', error);
+  }
 }
 
 async function verificarPedidoPendente(formacaoId, colaboradorId) {
@@ -416,7 +562,6 @@ async function verificarPedidoPendente(formacaoId, colaboradorId) {
     const pedidos = await DataService.retrieveMultipleRecords('pedidos_inscricao_formacao', {
       filter: { formacao_id: formacaoId, solicitante_id: colaboradorId }
     });
-    // Retornar pedido que não esteja cancelado ou rejeitado
     return pedidos.find(p => p.estado !== 'cancelado' && p.estado !== 'rejeitado') || null;
   } catch (error) {
     console.error('Erro ao verificar pedido pendente:', error);
@@ -424,9 +569,20 @@ async function verificarPedidoPendente(formacaoId, colaboradorId) {
   }
 }
 
+function verificarAvaliacaoExistente() {
+  if (!formacaoData || !currentUser) return null;
+  const avaliacoes = formacaoData.formacao_avaliacoes || [];
+  return avaliacoes.find(a => a.colaborador_id === currentUser.id) || null;
+}
+
+// ============================================
+// RENDERIZAÇÃO PRINCIPAL
+// ============================================
+
 function renderFormacao() {
   const f = formacaoData;
   document.getElementById('formacaoTitulo').textContent = f.titulo;
+  
   let badgesHtml = '<span class="header-badge tipo">' + (f.tipo || 'Formação') + '</span>';
   badgesHtml += '<span class="header-badge estado">' + f.estado + '</span>';
   if (f.modalidade === 'Obrigatória') badgesHtml += '<span class="header-badge obrigatoria">Obrigatória</span>';
@@ -462,6 +618,9 @@ function renderFormacao() {
   renderSessoes();
   renderAnexos();
   renderActionCard();
+  
+  // Mostrar/ocultar tab de avaliação
+  configurarTabAvaliacao();
 }
 
 function getFormadorDisplay(f) {
@@ -480,7 +639,12 @@ function getFormadorDisplay(f) {
 function renderSessoes() {
   const sessoes = (formacaoData.formacao_sessoes || []).sort((a, b) => new Date(a.data) - new Date(b.data));
   const container = document.getElementById('sessoesLista');
-  if (sessoes.length === 0) { container.innerHTML = '<div class="empty-tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg><p>Sem sessões agendadas.</p></div>'; return; }
+  
+  if (sessoes.length === 0) {
+    container.innerHTML = '<div class="empty-tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg><p>Sem sessões agendadas.</p></div>';
+    return;
+  }
+  
   container.innerHTML = sessoes.map(function(s, i) {
     const date = new Date(s.data);
     return '<div class="sessao-item"><div class="sessao-data"><span class="sessao-dia">' + date.getDate() + '</span><span class="sessao-mes">' + MONTH_NAMES_SHORT[date.getMonth()] + '</span></div><div class="sessao-info"><div class="sessao-titulo">Sessão ' + (i + 1) + '</div><div class="sessao-horario">' + (s.hora_inicio || '09:00') + ' - ' + (s.hora_fim || '18:00') + '</div></div></div>';
@@ -490,7 +654,12 @@ function renderSessoes() {
 function renderAnexos() {
   const anexos = formacaoData.formacao_anexos || [];
   const container = document.getElementById('anexosLista');
-  if (anexos.length === 0) { container.innerHTML = '<div class="empty-tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg><p>Sem anexos disponíveis.</p></div>'; return; }
+  
+  if (anexos.length === 0) {
+    container.innerHTML = '<div class="empty-tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg><p>Sem anexos disponíveis.</p></div>';
+    return;
+  }
+  
   container.innerHTML = anexos.map(function(a) {
     return '<div class="anexo-item"><div class="anexo-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div class="anexo-info"><span class="anexo-nome">' + (a.nome || 'Documento') + '</span><span class="anexo-tipo">' + (a.tipo || 'PDF') + '</span></div><a href="' + a.url + '" target="_blank" class="anexo-download">Descarregar</a></div>';
   }).join('');
@@ -506,24 +675,11 @@ function renderActionCard() {
   var statusHtml = '';
   var buttonsHtml = '';
   
-  // Verificar se tem pedido pendente
   if (pedidoPendente) {
     const estadoLabel = getEstadoPedidoLabel(pedidoPendente.estado);
     const stepAtual = getStepAtualPedido(pedidoPendente.estado);
-    
     statusHtml = '<div class="action-status-label">Estado do Pedido</div><div class="action-status-value" style="color: #f59e0b;">⏳ ' + estadoLabel + '</div>';
-    
-    buttonsHtml = '<div class="pedido-pendente-card">' +
-      '<div class="pedido-pendente-header">' +
-        '<span class="pedido-pendente-icon">📋</span>' +
-        '<span class="pedido-pendente-title">Pedido em Análise</span>' +
-      '</div>' +
-      '<div class="pedido-pendente-status">O seu pedido está a aguardar aprovação</div>' +
-      '<div class="pedido-pendente-step">' +
-        '<span class="pedido-pendente-step-dot"></span>' +
-        '<span class="pedido-pendente-step-text">' + stepAtual + '</span>' +
-      '</div>' +
-    '</div>';
+    buttonsHtml = '<div class="pedido-pendente-card"><div class="pedido-pendente-header"><span class="pedido-pendente-icon">📋</span><span class="pedido-pendente-title">Pedido em Análise</span></div><div class="pedido-pendente-status">O seu pedido está a aguardar aprovação</div><div class="pedido-pendente-step"><span class="pedido-pendente-step-dot"></span><span class="pedido-pendente-step-text">' + stepAtual + '</span></div></div>';
   } else if (jaInscrito) {
     statusHtml = '<div class="action-status-label">Estado</div><div class="action-status-value" style="color: #00b276;">✓ Inscrito</div>';
     buttonsHtml = '<button class="btn-inscrever" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>Já Inscrito</button>';
@@ -558,14 +714,435 @@ function getStepAtualPedido(estado) {
   return steps[estado] || 'Em processamento';
 }
 
+// ============================================
+// TAB AVALIAÇÃO/FEEDBACK
+// ============================================
+
+function configurarTabAvaliacao() {
+  const tabBtn = document.getElementById('tabAvaliarBtn');
+  if (!tabBtn) return;
+  
+  // Verificar se o utilizador pode avaliar:
+  // 1. Deve estar inscrito
+  // 2. A formação deve estar concluída
+  const jaInscrito = currentUser && (formacaoData.formacao_inscricoes || []).some(
+    i => i.colaborador_id === currentUser.id && i.estado === 'Inscrito'
+  );
+  const formacaoConcluida = formacaoData.estado === 'Concluída';
+  
+  if (jaInscrito && formacaoConcluida) {
+    tabBtn.style.display = 'inline-flex';
+    
+    // Se ainda não avaliou, destacar a tab
+    if (!avaliacaoExistente) {
+      tabBtn.classList.add('highlight');
+    }
+  } else {
+    tabBtn.style.display = 'none';
+  }
+}
+
+function renderAvaliacaoTab() {
+  const container = document.getElementById('avaliacaoContent');
+  if (!container) return;
+  
+  // Verificar se pode avaliar
+  const jaInscrito = currentUser && (formacaoData.formacao_inscricoes || []).some(
+    i => i.colaborador_id === currentUser.id && i.estado === 'Inscrito'
+  );
+  const formacaoConcluida = formacaoData.estado === 'Concluída';
+  
+  if (!currentUser) {
+    container.innerHTML = '<div class="empty-tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><p>Faça login para avaliar esta formação.</p></div>';
+    return;
+  }
+  
+  if (!jaInscrito) {
+    container.innerHTML = '<div class="empty-tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg><p>Apenas participantes inscritos podem avaliar esta formação.</p></div>';
+    return;
+  }
+  
+  if (!formacaoConcluida) {
+    container.innerHTML = '<div class="empty-tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><p>A avaliação estará disponível após a conclusão da formação.</p></div>';
+    return;
+  }
+  
+  // Se já avaliou, mostrar resumo
+  if (avaliacaoExistente) {
+    renderAvaliacaoJaSubmetida();
+    return;
+  }
+  
+  // Renderizar formulário de avaliação
+  renderFormularioAvaliacao();
+}
+
+function renderAvaliacaoJaSubmetida() {
+  const container = document.getElementById('avaliacaoContent');
+  const a = avaliacaoExistente;
+  
+  const dataAvaliacao = a.created_at 
+    ? new Date(a.created_at).toLocaleDateString('pt-PT', { day: 'numeric', month: 'long', year: 'numeric' })
+    : 'Recentemente';
+  
+  container.innerHTML = `
+    <div class="avaliacao-ja-submetida">
+      <div class="avaliacao-ja-submetida-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+          <polyline points="22 4 12 14.01 9 11.01"/>
+        </svg>
+      </div>
+      <h4>Já avaliou esta formação</h4>
+      <p>Obrigado pelo seu feedback! A sua avaliação foi registada em ${dataAvaliacao}.</p>
+      <div class="avaliacao-resumo">
+        <div class="avaliacao-resumo-item">
+          <span class="avaliacao-resumo-label">Avaliação Geral</span>
+          <span class="avaliacao-resumo-value avaliacao-resumo-stars">${renderStars(a.classificacao_geral || 0)}</span>
+        </div>
+        <div class="avaliacao-resumo-item">
+          <span class="avaliacao-resumo-label">Conteúdo</span>
+          <span class="avaliacao-resumo-value avaliacao-resumo-stars">${renderStars(a.classificacao_conteudo || a.score_conteudo || 0)}</span>
+        </div>
+        <div class="avaliacao-resumo-item">
+          <span class="avaliacao-resumo-label">Formador</span>
+          <span class="avaliacao-resumo-value avaliacao-resumo-stars">${renderStars(a.classificacao_formador || a.score_formador || 0)}</span>
+        </div>
+        <div class="avaliacao-resumo-item">
+          <span class="avaliacao-resumo-label">Organização</span>
+          <span class="avaliacao-resumo-value avaliacao-resumo-stars">${renderStars(a.classificacao_organizacao || a.score_organizacao || 0)}</span>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderStars(rating) {
+  let stars = '';
+  for (let i = 1; i <= 5; i++) {
+    stars += i <= rating ? '★' : '☆';
+  }
+  return stars;
+}
+
+function renderFormularioAvaliacao() {
+  const container = document.getElementById('avaliacaoContent');
+  
+  /* 
+   * NOTA POWER PAGES: Em Power Pages, este formulário seria substituído por um 
+   * Entity Form ou Web Form conectado à entidade "formacao_avaliacoes".
+   * Os campos de rating teriam de ser implementados com JavaScript custom
+   * ou usando campos de tipo "Option Set" com valores de 1 a 5.
+   * 
+   * Exemplo Power Pages:
+   * {% entityform name: "Avaliação de Formação" %}
+   */
+  
+  container.innerHTML = `
+    <div class="avaliacao-container">
+      <div class="avaliacao-header">
+        <div class="avaliacao-header-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+          </svg>
+        </div>
+        <h3>Avalie esta formação</h3>
+        <p>A sua opinião é muito importante para continuarmos a melhorar as nossas formações.</p>
+      </div>
+      
+      <form id="formAvaliacao" class="avaliacao-form" onsubmit="return false;">
+        <!-- Secção: Avaliação Geral -->
+        <div class="avaliacao-section">
+          <div class="avaliacao-section-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+            </svg>
+            Avaliação Geral
+          </div>
+          <div class="rating-question">
+            <label class="rating-label">De um modo geral, como avalia esta formação?</label>
+            <div class="star-rating" id="ratingGeral">
+              <input type="radio" name="geral" value="5" id="geral5"><label for="geral5" title="Excelente">★</label>
+              <input type="radio" name="geral" value="4" id="geral4"><label for="geral4" title="Muito Bom">★</label>
+              <input type="radio" name="geral" value="3" id="geral3"><label for="geral3" title="Bom">★</label>
+              <input type="radio" name="geral" value="2" id="geral2"><label for="geral2" title="Satisfatório">★</label>
+              <input type="radio" name="geral" value="1" id="geral1"><label for="geral1" title="Insuficiente">★</label>
+            </div>
+            <div class="rating-text">1 = Insuficiente, 5 = Excelente</div>
+          </div>
+        </div>
+        
+        <!-- Secção: Conteúdo -->
+        <div class="avaliacao-section">
+          <div class="avaliacao-section-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+            </svg>
+            Conteúdo da Formação
+          </div>
+          <div class="rating-question">
+            <label class="rating-label">Os conteúdos abordados foram relevantes e úteis para o seu trabalho?</label>
+            <div class="star-rating" id="ratingConteudo">
+              <input type="radio" name="conteudo" value="5" id="conteudo5"><label for="conteudo5">★</label>
+              <input type="radio" name="conteudo" value="4" id="conteudo4"><label for="conteudo4">★</label>
+              <input type="radio" name="conteudo" value="3" id="conteudo3"><label for="conteudo3">★</label>
+              <input type="radio" name="conteudo" value="2" id="conteudo2"><label for="conteudo2">★</label>
+              <input type="radio" name="conteudo" value="1" id="conteudo1"><label for="conteudo1">★</label>
+            </div>
+          </div>
+          <div class="rating-question">
+            <label class="rating-label">A carga horária foi adequada aos conteúdos apresentados?</label>
+            <div class="star-rating" id="ratingCargaHoraria">
+              <input type="radio" name="carga" value="5" id="carga5"><label for="carga5">★</label>
+              <input type="radio" name="carga" value="4" id="carga4"><label for="carga4">★</label>
+              <input type="radio" name="carga" value="3" id="carga3"><label for="carga3">★</label>
+              <input type="radio" name="carga" value="2" id="carga2"><label for="carga2">★</label>
+              <input type="radio" name="carga" value="1" id="carga1"><label for="carga1">★</label>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Secção: Formador -->
+        <div class="avaliacao-section">
+          <div class="avaliacao-section-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+            Desempenho do Formador
+          </div>
+          <div class="rating-question">
+            <label class="rating-label">O formador demonstrou domínio do tema e clareza na exposição?</label>
+            <div class="star-rating" id="ratingFormador">
+              <input type="radio" name="formador" value="5" id="formador5"><label for="formador5">★</label>
+              <input type="radio" name="formador" value="4" id="formador4"><label for="formador4">★</label>
+              <input type="radio" name="formador" value="3" id="formador3"><label for="formador3">★</label>
+              <input type="radio" name="formador" value="2" id="formador2"><label for="formador2">★</label>
+              <input type="radio" name="formador" value="1" id="formador1"><label for="formador1">★</label>
+            </div>
+          </div>
+          <div class="rating-question">
+            <label class="rating-label">O formador incentivou a participação e esclareceu dúvidas?</label>
+            <div class="star-rating" id="ratingInteracao">
+              <input type="radio" name="interacao" value="5" id="interacao5"><label for="interacao5">★</label>
+              <input type="radio" name="interacao" value="4" id="interacao4"><label for="interacao4">★</label>
+              <input type="radio" name="interacao" value="3" id="interacao3"><label for="interacao3">★</label>
+              <input type="radio" name="interacao" value="2" id="interacao2"><label for="interacao2">★</label>
+              <input type="radio" name="interacao" value="1" id="interacao1"><label for="interacao1">★</label>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Secção: Organização e Logística -->
+        <div class="avaliacao-section">
+          <div class="avaliacao-section-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+              <line x1="3" y1="9" x2="21" y2="9"/>
+              <line x1="9" y1="21" x2="9" y2="9"/>
+            </svg>
+            Organização e Logística
+          </div>
+          <div class="rating-question">
+            <label class="rating-label">A organização geral da formação foi adequada (horários, materiais, local)?</label>
+            <div class="star-rating" id="ratingOrganizacao">
+              <input type="radio" name="organizacao" value="5" id="organizacao5"><label for="organizacao5">★</label>
+              <input type="radio" name="organizacao" value="4" id="organizacao4"><label for="organizacao4">★</label>
+              <input type="radio" name="organizacao" value="3" id="organizacao3"><label for="organizacao3">★</label>
+              <input type="radio" name="organizacao" value="2" id="organizacao2"><label for="organizacao2">★</label>
+              <input type="radio" name="organizacao" value="1" id="organizacao1"><label for="organizacao1">★</label>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Secção: Recomendação -->
+        <div class="avaliacao-section">
+          <div class="avaliacao-section-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3zM7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3"/>
+            </svg>
+            Recomendação
+          </div>
+          <div class="radio-question">
+            <label class="radio-question-label">Recomendaria esta formação a um colega?</label>
+            <div class="radio-options">
+              <label class="radio-option">
+                <input type="radio" name="recomendaria" value="sim">
+                <span>Sim, sem dúvida</span>
+              </label>
+              <label class="radio-option">
+                <input type="radio" name="recomendaria" value="talvez">
+                <span>Talvez</span>
+              </label>
+              <label class="radio-option">
+                <input type="radio" name="recomendaria" value="nao">
+                <span>Não</span>
+              </label>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Secção: Comentários -->
+        <div class="avaliacao-section">
+          <div class="avaliacao-section-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+            </svg>
+            Comentários e Sugestões
+          </div>
+          <div class="textarea-question">
+            <label>O que mais gostou nesta formação?</label>
+            <textarea id="comentarioPositivo" placeholder="Partilhe os aspetos positivos da formação..." rows="3"></textarea>
+          </div>
+          <div class="textarea-question">
+            <label>O que poderia ser melhorado?</label>
+            <textarea id="comentarioMelhoria" placeholder="Partilhe sugestões de melhoria para futuras edições..." rows="3"></textarea>
+          </div>
+          <div class="textarea-question">
+            <label>Comentários adicionais (opcional)</label>
+            <textarea id="comentarioAdicional" placeholder="Outros comentários que considere relevantes..." rows="3"></textarea>
+          </div>
+        </div>
+        
+        <!-- Botão Submeter -->
+        <div class="avaliacao-submit">
+          <button type="button" class="btn-submit-avaliacao" onclick="submeterAvaliacao()" id="btnSubmeterAvaliacao">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+            </svg>
+            Submeter Avaliação
+          </button>
+        </div>
+      </form>
+    </div>
+  `;
+}
+
+// ============================================
+// SUBMISSÃO DA AVALIAÇÃO
+// ============================================
+
+async function submeterAvaliacao() {
+  // Recolher valores dos ratings
+  const geral = document.querySelector('input[name="geral"]:checked')?.value;
+  const conteudo = document.querySelector('input[name="conteudo"]:checked')?.value;
+  const carga = document.querySelector('input[name="carga"]:checked')?.value;
+  const formador = document.querySelector('input[name="formador"]:checked')?.value;
+  const interacao = document.querySelector('input[name="interacao"]:checked')?.value;
+  const organizacao = document.querySelector('input[name="organizacao"]:checked')?.value;
+  const recomendaria = document.querySelector('input[name="recomendaria"]:checked')?.value;
+  
+  // Validar campos obrigatórios
+  if (!geral || !conteudo || !formador || !organizacao) {
+    showToast('Por favor, preencha todas as avaliações obrigatórias (estrelas).', 'error');
+    return;
+  }
+  
+  // Recolher comentários
+  const comentarioPositivo = document.getElementById('comentarioPositivo')?.value?.trim() || '';
+  const comentarioMelhoria = document.getElementById('comentarioMelhoria')?.value?.trim() || '';
+  const comentarioAdicional = document.getElementById('comentarioAdicional')?.value?.trim() || '';
+  
+  // Combinar comentários
+  let comentarioCompleto = '';
+  if (comentarioPositivo) comentarioCompleto += 'Aspetos positivos: ' + comentarioPositivo + '\n\n';
+  if (comentarioMelhoria) comentarioCompleto += 'Sugestões de melhoria: ' + comentarioMelhoria + '\n\n';
+  if (comentarioAdicional) comentarioCompleto += 'Comentários adicionais: ' + comentarioAdicional;
+  comentarioCompleto = comentarioCompleto.trim();
+  
+  // Calcular médias
+  const scoreConteudo = Math.round((parseInt(conteudo) + (carga ? parseInt(carga) : parseInt(conteudo))) / 2);
+  const scoreFormador = Math.round((parseInt(formador) + (interacao ? parseInt(interacao) : parseInt(formador))) / 2);
+  
+  const btn = document.getElementById('btnSubmeterAvaliacao');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner" style="width:18px;height:18px;border-width:2px;"></div> A submeter...';
+  
+  try {
+    // Submeter avaliação via DataService
+    await DataService.submeterAvaliacao(formacaoData.id, currentUser.id, {
+      geral: parseInt(geral),
+      classificacao_geral: parseInt(geral),
+      conteudo: scoreConteudo,
+      classificacao_conteudo: scoreConteudo,
+      formador: scoreFormador,
+      classificacao_formador: scoreFormador,
+      organizacao: parseInt(organizacao),
+      classificacao_organizacao: parseInt(organizacao),
+      comentario: comentarioCompleto,
+      recomendaria: recomendaria === 'sim'
+    });
+    
+    // Marcar notificação de questionário como lida (se existir)
+    await marcarNotificacaoQuestionarioLida();
+    
+    // Mostrar modal de sucesso
+    document.getElementById('modalAvaliacaoSubmetida').classList.add('show');
+    
+  } catch (error) {
+    console.error('Erro ao submeter avaliação:', error);
+    showToast('Erro ao submeter avaliação. Por favor, tente novamente.', 'error');
+    btn.disabled = false;
+    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg> Submeter Avaliação';
+  }
+}
+
+async function marcarNotificacaoQuestionarioLida() {
+  if (!currentUser || !formacaoData) return;
+  
+  try {
+    // Buscar notificações de questionário para esta formação
+    const notificacoes = await DataService.getNotificacoesColaborador(currentUser.id);
+    const notifQuestionario = notificacoes.find(n => 
+      n.formacao_id === formacaoData.id && 
+      n.tipo === 'questionario_formacao' && 
+      !n.lida
+    );
+    
+    if (notifQuestionario) {
+      await DataService.marcarNotificacaoLida(notifQuestionario.id);
+      console.log('[Avaliação] Notificação de questionário marcada como lida');
+    }
+  } catch (error) {
+    console.error('Erro ao marcar notificação:', error);
+  }
+}
+
+function voltarAoCentroFormacao() {
+  window.location.href = getBaseUrl() + '/formacao';
+}
+
+// ============================================
+// TABS
+// ============================================
+
 function switchTab(tabName) {
   document.querySelectorAll('.formacao-tab').forEach(function(t) { t.classList.remove('active'); });
   document.querySelectorAll('.formacao-tab-content').forEach(function(c) { c.classList.remove('active'); });
+  
   var tabBtn = document.querySelector('.formacao-tab[data-tab="' + tabName + '"]');
-  if (tabBtn) tabBtn.classList.add('active');
-  var tabContent = document.getElementById('tab' + tabName.charAt(0).toUpperCase() + tabName.slice(1));
+  if (tabBtn) {
+    tabBtn.classList.add('active');
+    tabBtn.classList.remove('highlight'); // Remover destaque ao clicar
+  }
+  
+  // Mapear nome da tab para ID do conteúdo
+  const tabContentMap = {
+    'detalhes': 'tabDetalhes',
+    'conteudo': 'tabConteudo',
+    'sessoes': 'tabSessoes',
+    'anexos': 'tabAnexos',
+    'avaliar': 'tabAvaliar'
+  };
+  
+  var tabContent = document.getElementById(tabContentMap[tabName]);
   if (tabContent) tabContent.classList.add('active');
 }
+
+// ============================================
+// MODAL INSCRIÇÃO
+// ============================================
 
 function abrirModalSolicitarInscricao() {
   if (!formacaoData || !currentUser) { 
@@ -573,14 +1150,9 @@ function abrirModalSolicitarInscricao() {
     return; 
   }
   
-  // Preencher info da formação no modal
   document.getElementById('modalFormacaoTitulo').textContent = formacaoData.titulo;
   document.getElementById('modalFormacaoMeta').textContent = (formacaoData.tipo || 'Formação') + ' • ' + (formacaoData.duracao_horas || 0) + ' horas';
-  
-  // Limpar campo de motivação
   document.getElementById('motivacaoInscricao').value = '';
-  
-  // Mostrar modal
   document.getElementById('modalSolicitarInscricao').classList.add('show');
 }
 
@@ -601,10 +1173,8 @@ async function submeterPedidoInscricao() {
   btn.innerHTML = '<div class="spinner" style="width:16px;height:16px;border-width:2px;"></div> A submeter...';
   
   try {
-    // Obter departamento do colaborador
     const colaborador = await DataService.getColaboradorById(currentUser.id);
     
-    // Criar pedido de inscrição
     const pedido = await DataService.createRecord('pedidos_inscricao_formacao', {
       formacao_id: formacaoData.id,
       solicitante_id: currentUser.id,
@@ -613,7 +1183,6 @@ async function submeterPedidoInscricao() {
       estado: 'pendente_dirigente'
     });
     
-    // Adicionar ao histórico
     await DataService.createRecord('pedidos_inscricao_formacao_historico', {
       pedido_id: pedido.id,
       acao: 'Pedido criado',
@@ -625,7 +1194,6 @@ async function submeterPedidoInscricao() {
     closeModal('modalSolicitarInscricao');
     showToast('Pedido de inscrição submetido com sucesso!', 'success');
     
-    // Atualizar pedido pendente e recarregar
     pedidoPendente = pedido;
     renderActionCard();
     
@@ -638,22 +1206,45 @@ async function submeterPedidoInscricao() {
   }
 }
 
+// ============================================
+// UTILITÁRIOS
+// ============================================
+
 function showToast(message, type) {
   type = type || 'success';
   var container = document.querySelector('.toast-container');
-  if (!container) { container = document.createElement('div'); container.className = 'toast-container'; document.body.appendChild(container); }
+  if (!container) {
+    container = document.createElement('div');
+    container.className = 'toast-container';
+    document.body.appendChild(container);
+  }
   var toast = document.createElement('div');
   toast.className = 'toast ' + type;
   toast.innerHTML = '<span>' + message + '</span>';
   container.appendChild(toast);
   setTimeout(function() { toast.classList.add('show'); }, 10);
-  setTimeout(function() { toast.classList.remove('show'); setTimeout(function() { toast.remove(); }, 300); }, 3000);
+  setTimeout(function() { 
+    toast.classList.remove('show'); 
+    setTimeout(function() { toast.remove(); }, 300); 
+  }, 3000);
 }
 
 // Fechar modal ao clicar fora
-document.querySelectorAll('.modal-overlay').forEach(function(modal) {
-  modal.addEventListener('click', function(e) {
-    if (e.target === this) closeModal(this.id);
-  });
+document.addEventListener('click', function(e) {
+  if (e.target.classList.contains('modal-overlay')) {
+    e.target.classList.remove('show');
+  }
+});
+
+// Fechar com ESC
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.modal-overlay.show').forEach(function(m) {
+      // Não fechar o modal de sucesso com ESC
+      if (m.id !== 'modalAvaliacaoSubmetida') {
+        m.classList.remove('show');
+      }
+    });
+  }
 });
 </script>
