@@ -1353,10 +1353,14 @@ body {
   border-radius: 16px 16px 0 0;
 }
 
-.modal-title {
+/* TÍTULOS DOS MODAIS - SEMPRE BRANCOS */
+.modal-title,
+.modal-header h3,
+.modal-header .modal-title {
   font-size: 1.25rem;
   font-weight: 700;
-  color: white;
+  color: white !important;
+  margin: 0;
 }
 
 .modal-close {
