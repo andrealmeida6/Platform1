@@ -23,49 +23,15 @@ permalink: /home/
         <path d="M13.73 21a2 2 0 01-3.46 0"/>
       </svg>
       Notificações
+      <span class="notification-badge" id="notificationBadge" style="display: none;">0</span>
     </div>
-    <a href="#" class="card-action">Ver todas</a>
+    <a href="#" class="card-action" onclick="marcarTodasLidas()">Marcar todas como lidas</a>
   </div>
-  <div class="notification-item">
-    <div class="notification-icon info">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <circle cx="12" cy="12" r="10"/>
-        <line x1="12" y1="16" x2="12" y2="12"/>
-        <line x1="12" y1="8" x2="12.01" y2="8"/>
-      </svg>
+  <div id="notificationsContainer">
+    <div class="notification-loading">
+      <div class="spinner-small"></div>
+      <span>A carregar notificações...</span>
     </div>
-    <div class="notification-content">
-      <div class="notification-title">Formação Agendada</div>
-      <div class="notification-desc">A formação "Gestão de Projetos" está agendada para 15-17 Janeiro 2026.</div>
-    </div>
-    <div class="notification-time">Há 2h</div>
-  </div>
-  <div class="notification-item">
-    <div class="notification-icon warning">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
-        <line x1="12" y1="9" x2="12" y2="13"/>
-        <line x1="12" y1="17" x2="12.01" y2="17"/>
-      </svg>
-    </div>
-    <div class="notification-content">
-      <div class="notification-title">Exame de Medicina no Trabalho</div>
-      <div class="notification-desc">O seu exame periódico está marcado para 10/12/2025.</div>
-    </div>
-    <div class="notification-time">Há 1d</div>
-  </div>
-  <div class="notification-item">
-    <div class="notification-icon success">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
-        <polyline points="22 4 12 14.01 9 11.01"/>
-      </svg>
-    </div>
-    <div class="notification-content">
-      <div class="notification-title">Reembolso Aprovado</div>
-      <div class="notification-desc">O seu pedido de reembolso no valor de €75,00 foi aprovado.</div>
-    </div>
-    <div class="notification-time">Há 3d</div>
   </div>
 </div>
 
@@ -182,3 +148,461 @@ permalink: /home/
     </tbody>
   </table>
 </div>
+
+<!-- Estilos para Notificações Dinâmicas -->
+<style>
+.notification-badge {
+  background: #ef4444;
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 700;
+  min-width: 20px;
+  height: 20px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 0.5rem;
+  padding: 0 6px;
+}
+
+.notification-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 2rem;
+  color: #64748b;
+}
+
+.spinner-small {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #e2e8f0;
+  border-top-color: var(--primary-color, #00b276);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.notification-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem;
+  border-bottom: 1px solid #f1f5f9;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.notification-item:hover {
+  background-color: #f8fafc;
+}
+
+.notification-item:last-child {
+  border-bottom: none;
+}
+
+.notification-item.unread {
+  background-color: #f0fdf4;
+}
+
+.notification-item.unread:hover {
+  background-color: #dcfce7;
+}
+
+.notification-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.notification-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.notification-icon.info {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+.notification-icon.warning {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.notification-icon.success {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.notification-icon.questionario {
+  background: #fae8ff;
+  color: #a855f7;
+}
+
+.notification-icon.alocacao {
+  background: #dbeafe;
+  color: #3b82f6;
+}
+
+.notification-icon.cancelamento {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.notification-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.notification-title {
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 0.25rem;
+  font-size: 0.9rem;
+}
+
+.notification-desc {
+  color: #64748b;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.notification-time {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.notification-action-btn {
+  margin-top: 0.5rem;
+  padding: 0.4rem 0.75rem;
+  background: var(--primary-color, #00b276);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.notification-action-btn:hover {
+  background: var(--primary-hover, #009661);
+}
+
+.notifications-empty {
+  text-align: center;
+  padding: 2rem;
+  color: #94a3b8;
+}
+
+.notifications-empty svg {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 0.75rem;
+  opacity: 0.5;
+}
+
+.notifications-empty p {
+  margin: 0;
+  font-size: 0.9rem;
+}
+</style>
+
+<!-- JavaScript para Notificações -->
+<script>
+let homeNotifications = [];
+let homeCurrentUser = null;
+
+function getBaseUrl() {
+  const path = window.location.pathname;
+  if (path.includes('/Platform1')) {
+    return '/Platform1';
+  }
+  return '';
+}
+
+async function waitForHomeServices() {
+  return new Promise((resolve) => {
+    const check = () => {
+      if (typeof DataService !== 'undefined' && typeof AuthService !== 'undefined') {
+        resolve();
+      } else {
+        setTimeout(check, 100);
+      }
+    };
+    check();
+  });
+}
+
+document.addEventListener('DOMContentLoaded', async function() {
+  try {
+    await waitForHomeServices();
+    homeCurrentUser = await AuthService.getCurrentUser();
+    
+    if (homeCurrentUser) {
+      await loadHomeNotifications();
+    } else {
+      renderNoUserNotifications();
+    }
+  } catch (error) {
+    console.error('[Home] Erro ao carregar notificações:', error);
+    renderNotificationsError();
+  }
+});
+
+async function loadHomeNotifications() {
+  try {
+    // Carregar notificações de formação
+    homeNotifications = await DataService.getNotificacoesColaborador(homeCurrentUser.id);
+    console.log('[Home] Notificações carregadas:', homeNotifications.length);
+    
+    renderHomeNotifications();
+    updateNotificationBadge();
+  } catch (error) {
+    console.error('[Home] Erro ao carregar notificações:', error);
+    renderNotificationsError();
+  }
+}
+
+function renderHomeNotifications() {
+  const container = document.getElementById('notificationsContainer');
+  if (!container) return;
+  
+  if (homeNotifications.length === 0) {
+    container.innerHTML = `
+      <div class="notifications-empty">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+          <path d="M13.73 21a2 2 0 01-3.46 0"/>
+        </svg>
+        <p>Não tem notificações de momento.</p>
+      </div>
+    `;
+    return;
+  }
+  
+  // Mostrar até 5 notificações, ordenadas por data (mais recentes primeiro)
+  const notificacoesOrdenadas = homeNotifications
+    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+    .slice(0, 5);
+  
+  container.innerHTML = notificacoesOrdenadas.map(n => {
+    const iconConfig = getNotificationIconConfig(n.tipo);
+    const timeAgo = formatTimeAgo(n.created_at);
+    const unreadClass = n.lida ? '' : 'unread';
+    const actionButton = getNotificationActionButton(n);
+    
+    return `
+      <div class="notification-item ${unreadClass}" onclick="handleNotificationClick('${n.id}', '${n.tipo}', '${n.formacao_id || ''}')">
+        <div class="notification-icon ${iconConfig.class}">
+          ${iconConfig.icon}
+        </div>
+        <div class="notification-content">
+          <div class="notification-title">${n.titulo}</div>
+          <div class="notification-desc">${n.mensagem || ''}</div>
+          ${actionButton}
+        </div>
+        <div class="notification-time">${timeAgo}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function getNotificationIconConfig(tipo) {
+  const configs = {
+    'questionario_formacao': {
+      class: 'questionario',
+      icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg>'
+    },
+    'alocacao': {
+      class: 'alocacao',
+      icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>'
+    },
+    'lembrete_sessao': {
+      class: 'warning',
+      icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>'
+    },
+    'sessao_iniciada': {
+      class: 'info',
+      icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>'
+    },
+    'avaliacao_pendente': {
+      class: 'questionario',
+      icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>'
+    },
+    'resultado_disponivel': {
+      class: 'success',
+      icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>'
+    },
+    'formacao_cancelada': {
+      class: 'cancelamento',
+      icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>'
+    },
+    'formacao_concluida': {
+      class: 'success',
+      icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>'
+    }
+  };
+  
+  return configs[tipo] || {
+    class: 'info',
+    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>'
+  };
+}
+
+function getNotificationActionButton(notif) {
+  if (notif.tipo === 'questionario_formacao' && !notif.lida) {
+    return `<button class="notification-action-btn" onclick="event.stopPropagation(); irParaAvaliacao('${notif.formacao_id}')">Avaliar Formação</button>`;
+  }
+  if (notif.tipo === 'alocacao' && !notif.lida) {
+    return `<button class="notification-action-btn" onclick="event.stopPropagation(); irParaFormacao('${notif.formacao_id}')">Ver Formação</button>`;
+  }
+  return '';
+}
+
+function formatTimeAgo(dateStr) {
+  if (!dateStr) return '';
+  
+  const date = new Date(dateStr);
+  const now = new Date();
+  const diffMs = now - date;
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+  
+  if (diffMins < 1) return 'Agora';
+  if (diffMins < 60) return `Há ${diffMins}min`;
+  if (diffHours < 24) return `Há ${diffHours}h`;
+  if (diffDays === 1) return 'Ontem';
+  if (diffDays < 7) return `Há ${diffDays}d`;
+  return date.toLocaleDateString('pt-PT', { day: 'numeric', month: 'short' });
+}
+
+function updateNotificationBadge() {
+  const badge = document.getElementById('notificationBadge');
+  if (!badge) return;
+  
+  const naoLidas = homeNotifications.filter(n => !n.lida).length;
+  
+  if (naoLidas > 0) {
+    badge.textContent = naoLidas > 9 ? '9+' : naoLidas;
+    badge.style.display = 'inline-flex';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+async function handleNotificationClick(notifId, tipo, formacaoId) {
+  // Marcar como lida
+  try {
+    await DataService.marcarNotificacaoLida(notifId);
+    
+    // Atualizar localmente
+    const notif = homeNotifications.find(n => n.id === notifId);
+    if (notif) notif.lida = true;
+    
+    renderHomeNotifications();
+    updateNotificationBadge();
+  } catch (error) {
+    console.error('Erro ao marcar notificação como lida:', error);
+  }
+  
+  // Navegar para a formação se aplicável
+  if (formacaoId) {
+    const baseUrl = getBaseUrl();
+    window.location.href = `${baseUrl}/formacao-detalhe?id=${formacaoId}`;
+  }
+}
+
+function irParaAvaliacao(formacaoId) {
+  const baseUrl = getBaseUrl();
+  window.location.href = `${baseUrl}/formacao-detalhe?id=${formacaoId}&tab=avaliar`;
+}
+
+function irParaFormacao(formacaoId) {
+  const baseUrl = getBaseUrl();
+  window.location.href = `${baseUrl}/formacao-detalhe?id=${formacaoId}`;
+}
+
+async function marcarTodasLidas() {
+  if (!homeCurrentUser || homeNotifications.length === 0) return;
+  
+  try {
+    await DataService.marcarTodasNotificacoesLidas(homeCurrentUser.id);
+    
+    // Atualizar localmente
+    homeNotifications.forEach(n => n.lida = true);
+    
+    renderHomeNotifications();
+    updateNotificationBadge();
+    
+    showHomeToast('Todas as notificações foram marcadas como lidas.', 'success');
+  } catch (error) {
+    console.error('Erro ao marcar todas como lidas:', error);
+    showHomeToast('Erro ao marcar notificações.', 'error');
+  }
+}
+
+function renderNoUserNotifications() {
+  const container = document.getElementById('notificationsContainer');
+  if (!container) return;
+  
+  container.innerHTML = `
+    <div class="notifications-empty">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+        <circle cx="12" cy="7" r="4"/>
+      </svg>
+      <p>Faça login para ver as suas notificações.</p>
+    </div>
+  `;
+}
+
+function renderNotificationsError() {
+  const container = document.getElementById('notificationsContainer');
+  if (!container) return;
+  
+  container.innerHTML = `
+    <div class="notifications-empty">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      <p>Erro ao carregar notificações. <a href="#" onclick="loadHomeNotifications()">Tentar novamente</a></p>
+    </div>
+  `;
+}
+
+function showHomeToast(message, type = 'success') {
+  let container = document.querySelector('.toast-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.className = 'toast-container';
+    document.body.appendChild(container);
+  }
+  
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.innerHTML = `<span class="toast-message">${message}</span>`;
+  container.appendChild(toast);
+  
+  setTimeout(() => toast.classList.add('show'), 10);
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
+}
+</script>
