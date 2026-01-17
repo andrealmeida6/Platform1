@@ -33,13 +33,15 @@ title: Gestão de Formação
             <path d="M19 12H5M12 19l-7-7 7-7"/>
           </svg>
         </a>
-        <div>
-          <h1 id="pageTitle">Formação</h1>
+        <div class="page-title-wrapper">
+          <div class="page-title-row">
+            <h1 id="pageTitle">Formação</h1>
+            <span id="estadoBadge" class="status-badge"></span>
+          </div>
           <p id="pageSubtitle">Gestão e alocação de colaboradores</p>
         </div>
       </div>
       <div class="page-header-right">
-        <span id="estadoBadge" class="status-badge"></span>
         <!-- Botões de ação para AFR-RH -->
         <div id="formacaoActions" class="formacao-action-buttons" style="display: none;">
           <button class="btn btn-success" id="btnConcluirFormacao" onclick="confirmarConcluirFormacao()">
@@ -106,6 +108,13 @@ title: Gestão de Formação
           <polyline points="22 4 12 14.01 9 11.01"/>
         </svg>
         Presenças
+      </button>
+      <button class="tab-btn" data-tab="avaliacao" onclick="switchTab('avaliacao')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+        </svg>
+        Avaliação/Feedback
+        <span class="tab-badge" id="badgeAvaliacoes">0</span>
       </button>
     </div>
 
@@ -238,6 +247,10 @@ title: Gestão de Formação
                   <span>Presenças Validadas</span>
                   <span id="resumoPresencas">0</span>
                 </div>
+                <div class="summary-item">
+                  <span>Avaliações Recebidas</span>
+                  <span id="resumoAvaliacoes">0</span>
+                </div>
               </div>
             </div>
           </div>
@@ -352,6 +365,71 @@ title: Gestão de Formação
         <div class="card-body">
           <div id="listaPresencas">
             <p class="empty-msg">Sem presenças registadas.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab Content: Avaliação/Feedback -->
+    <div class="tab-content" id="tabAvaliacao">
+      <div class="detail-grid">
+        <div class="detail-main">
+          <div class="detail-card">
+            <div class="card-header card-header-with-action">
+              <h3>Avaliações e Feedback dos Participantes</h3>
+              <button class="btn btn-sm btn-primary" id="btnLancarQuestionario" onclick="confirmarLancarQuestionario()" style="display: none;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                  <path d="M22 2L11 13"/>
+                  <path d="M22 2L15 22 11 13 2 9l20-7z"/>
+                </svg>
+                Lançar Questionário
+              </button>
+            </div>
+            <div class="card-body">
+              <!-- Estado do questionário -->
+              <div id="questionarioStatus" class="questionario-status">
+                <div class="loading-state"><div class="spinner"></div></div>
+              </div>
+              
+              <!-- Lista de avaliações -->
+              <div id="listaAvaliacoes" class="avaliacoes-list" style="display: none;">
+                <p class="empty-msg">Sem avaliações recebidas.</p>
+              </div>
+              
+              <!-- Resumo das avaliações -->
+              <div id="resumoAvaliacoesSection" style="display: none;">
+                <h4>Resumo das Avaliações</h4>
+                <div class="avaliacoes-resumo-grid" id="avaliacoesResumoGrid">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="detail-sidebar">
+          <div class="detail-card">
+            <div class="card-header">
+              <h3>Estatísticas</h3>
+            </div>
+            <div class="card-body">
+              <div class="summary-list">
+                <div class="summary-item">
+                  <span>Questionários Enviados</span>
+                  <span id="statQuestionariosEnviados">0</span>
+                </div>
+                <div class="summary-item">
+                  <span>Respostas Recebidas</span>
+                  <span id="statRespostasRecebidas">0</span>
+                </div>
+                <div class="summary-item">
+                  <span>Taxa de Resposta</span>
+                  <span id="statTaxaResposta">0%</span>
+                </div>
+                <div class="summary-item highlight">
+                  <span>Avaliação Média</span>
+                  <span id="statAvaliacaoMedia">-</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -511,12 +589,109 @@ title: Gestão de Formação
   </div>
 </div>
 
+<!-- Modal: Lançar Questionário de Avaliação -->
+<div class="modal-overlay" id="modalLancarQuestionario">
+  <div class="modal-content" style="max-width: 500px;">
+    <div class="modal-header">
+      <div class="modal-icon-info">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+        </svg>
+      </div>
+      <h3 class="modal-title">Lançar Questionário de Avaliação</h3>
+      <button class="modal-close" onclick="closeModal('modalLancarQuestionario')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p>Pretende lançar o questionário de avaliação e feedback para os participantes desta formação?</p>
+      <div class="questionario-info-box">
+        <div class="info-row">
+          <span class="info-label">Participantes a notificar:</span>
+          <span class="info-value" id="numParticipantesQuestionario">0</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Formação:</span>
+          <span class="info-value" id="nomeFormacaoQuestionario">-</span>
+        </div>
+      </div>
+      <p class="text-muted" style="font-size: 0.875rem; color: #64748b; margin-top: 1rem;">
+        Os participantes receberão uma notificação com um link para preencher o questionário de avaliação da formação.
+      </p>
+      <div class="form-group" style="margin-top: 1rem;">
+        <label for="mensagemQuestionario">Mensagem personalizada (opcional)</label>
+        <textarea class="form-control" id="mensagemQuestionario" rows="2" placeholder="Adicione uma mensagem para os participantes..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modalLancarQuestionario')">Agora Não</button>
+      <button class="btn btn-primary" onclick="executarLancarQuestionario()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+          <path d="M22 2L11 13"/>
+          <path d="M22 2L15 22 11 13 2 9l20-7z"/>
+        </svg>
+        Enviar Questionário
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Perguntar se quer lançar questionário após conclusão -->
+<div class="modal-overlay" id="modalPerguntarQuestionario">
+  <div class="modal-content" style="max-width: 450px;">
+    <div class="modal-header">
+      <div class="modal-icon-info">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+        </svg>
+      </div>
+      <h3 class="modal-title">Avaliação da Formação</h3>
+      <button class="modal-close" onclick="closeModal('modalPerguntarQuestionario')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p>A formação foi concluída com sucesso!</p>
+      <p style="margin-top: 1rem;"><strong>Pretende lançar o questionário de avaliação e feedback para os participantes?</strong></p>
+      <p class="text-muted" style="font-size: 0.875rem; color: #64748b; margin-top: 0.5rem;">
+        Os participantes receberão uma notificação para avaliar a formação. Pode também lançar o questionário mais tarde através da tab "Avaliação/Feedback".
+      </p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modalPerguntarQuestionario')">Mais Tarde</button>
+      <button class="btn btn-primary" onclick="lancarQuestionarioAposConclusao()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+          <path d="M22 2L11 13"/>
+          <path d="M22 2L15 22 11 13 2 9l20-7z"/>
+        </svg>
+        Sim, Lançar Agora
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- Toast Container -->
 <div class="toast-container"></div>
 
 <style>
 .detail-page {
   padding: 0;
+}
+
+/* Page title com badge ao lado */
+.page-title-wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+.page-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.page-title-row h1 {
+  margin: 0;
+}
+
+.page-title-row .status-badge {
+  flex-shrink: 0;
 }
 
 .detail-grid {
@@ -618,6 +793,10 @@ title: Gestão de Formação
   padding: 0.75rem;
   background: #f8fafc;
   border-radius: 8px;
+}
+
+.summary-item.highlight {
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
 }
 
 .summary-item span:first-child {
@@ -1120,14 +1299,11 @@ title: Gestão de Formação
 .formacao-action-buttons {
   display: flex;
   gap: 0.75rem;
-  margin-left: 1rem;
 }
 
 @media (max-width: 768px) {
   .formacao-action-buttons {
     flex-direction: column;
-    margin-left: 0;
-    margin-top: 1rem;
   }
   
   .page-header-right {
@@ -1138,7 +1314,8 @@ title: Gestão de Formação
 
 /* Modal icon styles */
 .modal-icon-success,
-.modal-icon-danger {
+.modal-icon-danger,
+.modal-icon-info {
   width: 48px;
   height: 48px;
   border-radius: 50%;
@@ -1146,6 +1323,7 @@ title: Gestão de Formação
   align-items: center;
   justify-content: center;
   margin-right: 1rem;
+  flex-shrink: 0;
 }
 
 .modal-icon-success {
@@ -1158,10 +1336,180 @@ title: Gestão de Formação
   color: #dc2626;
 }
 
+.modal-icon-info {
+  background: #fef3c7;
+  color: #d97706;
+}
+
 .modal-icon-success svg,
-.modal-icon-danger svg {
+.modal-icon-danger svg,
+.modal-icon-info svg {
   width: 24px;
   height: 24px;
+}
+
+/* Questionário info box */
+.questionario-info-box {
+  background: #f8fafc;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 1rem;
+}
+
+.questionario-info-box .info-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+}
+
+.questionario-info-box .info-row:not(:last-child) {
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.questionario-info-box .info-label {
+  color: #64748b;
+  font-size: 0.875rem;
+}
+
+.questionario-info-box .info-value {
+  font-weight: 600;
+  color: #1e293b;
+}
+
+/* Avaliação styles */
+.questionario-status {
+  padding: 1rem;
+}
+
+.questionario-status-box {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  border-radius: 10px;
+  margin-bottom: 1.5rem;
+}
+
+.questionario-status-box.pending {
+  background: #fef3c7;
+  border: 1px solid #fde68a;
+}
+
+.questionario-status-box.sent {
+  background: #d1fae5;
+  border: 1px solid #a7f3d0;
+}
+
+.questionario-status-box.not-sent {
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+}
+
+.questionario-status-box .status-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.questionario-status-box.pending .status-icon {
+  background: #fde68a;
+  color: #92400e;
+}
+
+.questionario-status-box.sent .status-icon {
+  background: #a7f3d0;
+  color: #065f46;
+}
+
+.questionario-status-box.not-sent .status-icon {
+  background: #e2e8f0;
+  color: #64748b;
+}
+
+.questionario-status-box .status-text {
+  flex: 1;
+}
+
+.questionario-status-box .status-title {
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.questionario-status-box .status-desc {
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.avaliacoes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.avaliacao-card {
+  padding: 1rem;
+  background: #f8fafc;
+  border-radius: 10px;
+}
+
+.avaliacao-card .avaliacao-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.avaliacao-card .avaliador-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.avaliacao-card .rating {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: #f59e0b;
+}
+
+.avaliacao-card .comentario {
+  font-size: 0.9rem;
+  color: #64748b;
+  font-style: italic;
+}
+
+.avaliacoes-resumo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.resumo-item {
+  padding: 1rem;
+  background: #f8fafc;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.resumo-item .resumo-label {
+  font-size: 0.75rem;
+  color: #64748b;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+}
+
+.resumo-item .resumo-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.resumo-item .resumo-value.stars {
+  color: #f59e0b;
 }
 
 /* Modal Styles */
@@ -1194,7 +1542,6 @@ title: Gestão de Formação
 
 .modal-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
   padding: 1.25rem 1.5rem;
   border-bottom: 1px solid #f1f5f9;
@@ -1205,6 +1552,7 @@ title: Gestão de Formação
   font-weight: 600;
   color: #1e293b;
   margin: 0;
+  flex: 1;
 }
 
 .modal-close {
@@ -1219,6 +1567,7 @@ title: Gestão de Formação
   display: flex;
   align-items: center;
   justify-content: center;
+  margin-left: auto;
 }
 
 .modal-close:hover {
@@ -1247,6 +1596,7 @@ let selecionados = new Set();
 let isGestor = false;
 let isEditMode = false;
 let editingSessaoId = null;
+let avaliacoes = [];
 
 async function waitForServices() {
   return new Promise((resolve) => {
@@ -1307,7 +1657,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     if (isGestor && formacao.estado !== 'Concluída' && formacao.estado !== 'Cancelada') {
       document.getElementById('btnEditInfo').style.display = 'inline-flex';
       document.getElementById('btnAddSessao').style.display = 'inline-flex';
-      // Mostrar botões de Concluir e Cancelar Formação
       document.getElementById('formacaoActions').style.display = 'flex';
     }
     
@@ -1316,11 +1665,17 @@ document.addEventListener('DOMContentLoaded', async function() {
       document.getElementById('tabAlocar').style.display = 'none';
     }
     
+    // Mostrar botão de lançar questionário se formação concluída e gestor
+    if (isGestor && formacao.estado === 'Concluída') {
+      document.getElementById('btnLancarQuestionario').style.display = 'inline-flex';
+    }
+    
     colaboradores = await DataService.getColaboradores();
     
     renderFormacao();
     await loadDepartamentos();
     renderColaboradoresAlocar();
+    await loadAvaliacoes();
     
     document.getElementById('loadingState').style.display = 'none';
     document.getElementById('mainContent').style.display = 'block';
@@ -1557,6 +1912,237 @@ async function loadDepartamentos() {
   });
 }
 
+// ==========================================
+// AVALIAÇÕES / FEEDBACK
+// ==========================================
+
+async function loadAvaliacoes() {
+  const statusContainer = document.getElementById('questionarioStatus');
+  const listContainer = document.getElementById('listaAvaliacoes');
+  const resumoSection = document.getElementById('resumoAvaliacoesSection');
+  
+  try {
+    // Verificar se já foram enviados questionários
+    const questionariosEnviados = formacao.questionario_enviado || false;
+    const dataEnvio = formacao.data_envio_questionario;
+    
+    // Carregar avaliações existentes
+    avaliacoes = await DataService.retrieveMultipleRecords('formacao_avaliacoes', {
+      filter: { formacao_id: formacao.id }
+    }) || [];
+    
+    const inscritos = (formacao.formacao_inscricoes || []).filter(i => i.estado === 'Inscrito');
+    const numRespostas = avaliacoes.length;
+    const taxaResposta = inscritos.length > 0 ? Math.round((numRespostas / inscritos.length) * 100) : 0;
+    
+    // Atualizar estatísticas
+    document.getElementById('statQuestionariosEnviados').textContent = questionariosEnviados ? inscritos.length : 0;
+    document.getElementById('statRespostasRecebidas').textContent = numRespostas;
+    document.getElementById('statTaxaResposta').textContent = `${taxaResposta}%`;
+    document.getElementById('resumoAvaliacoes').textContent = numRespostas;
+    document.getElementById('badgeAvaliacoes').textContent = numRespostas;
+    
+    // Calcular média
+    if (numRespostas > 0) {
+      const soma = avaliacoes.reduce((acc, a) => acc + (a.classificacao_geral || 0), 0);
+      const media = (soma / numRespostas).toFixed(1);
+      document.getElementById('statAvaliacaoMedia').textContent = `${media} ★`;
+    } else {
+      document.getElementById('statAvaliacaoMedia').textContent = '-';
+    }
+    
+    // Renderizar status do questionário
+    if (formacao.estado !== 'Concluída') {
+      statusContainer.innerHTML = `
+        <div class="questionario-status-box not-sent">
+          <div class="status-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+          </div>
+          <div class="status-text">
+            <div class="status-title">Formação ainda não concluída</div>
+            <div class="status-desc">O questionário de avaliação só pode ser lançado após a conclusão da formação.</div>
+          </div>
+        </div>
+      `;
+    } else if (!questionariosEnviados) {
+      statusContainer.innerHTML = `
+        <div class="questionario-status-box pending">
+          <div class="status-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+          </div>
+          <div class="status-text">
+            <div class="status-title">Questionário não enviado</div>
+            <div class="status-desc">O questionário de avaliação ainda não foi enviado aos participantes.</div>
+          </div>
+        </div>
+      `;
+      
+      if (isGestor) {
+        document.getElementById('btnLancarQuestionario').style.display = 'inline-flex';
+      }
+    } else {
+      const dataEnvioFormatada = dataEnvio ? new Date(dataEnvio).toLocaleDateString('pt-PT') : 'N/D';
+      statusContainer.innerHTML = `
+        <div class="questionario-status-box sent">
+          <div class="status-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+              <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+              <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+          </div>
+          <div class="status-text">
+            <div class="status-title">Questionário enviado</div>
+            <div class="status-desc">Enviado em ${dataEnvioFormatada} para ${inscritos.length} participantes.</div>
+          </div>
+        </div>
+      `;
+      
+      document.getElementById('btnLancarQuestionario').style.display = 'none';
+    }
+    
+    // Renderizar avaliações
+    if (numRespostas > 0) {
+      listContainer.style.display = 'block';
+      resumoSection.style.display = 'block';
+      
+      const colabMap = {};
+      colaboradores.forEach(c => colabMap[c.id] = c);
+      
+      listContainer.innerHTML = avaliacoes.map(a => {
+        const colab = colabMap[a.colaborador_id] || {};
+        const initials = (colab.nome || 'A').split(' ').map(n => n[0]).join('').substring(0, 2);
+        const stars = '★'.repeat(a.classificacao_geral || 0) + '☆'.repeat(5 - (a.classificacao_geral || 0));
+        
+        return `
+          <div class="avaliacao-card">
+            <div class="avaliacao-header">
+              <div class="avaliador-info">
+                <div class="avatar-mini">${initials}</div>
+                <span>${colab.nome || 'Anónimo'}</span>
+              </div>
+              <div class="rating">${stars}</div>
+            </div>
+            ${a.comentario ? `<div class="comentario">"${a.comentario}"</div>` : ''}
+          </div>
+        `;
+      }).join('');
+      
+      // Calcular resumo por categoria (se existir)
+      renderResumoAvaliacoes();
+    } else {
+      listContainer.style.display = 'block';
+      listContainer.innerHTML = '<p class="empty-msg">Sem avaliações recebidas.</p>';
+      resumoSection.style.display = 'none';
+    }
+    
+  } catch (error) {
+    console.error('Erro ao carregar avaliações:', error);
+    statusContainer.innerHTML = '<p class="empty-msg">Erro ao carregar informações de avaliação.</p>';
+  }
+}
+
+function renderResumoAvaliacoes() {
+  const container = document.getElementById('avaliacoesResumoGrid');
+  
+  if (avaliacoes.length === 0) {
+    container.innerHTML = '';
+    return;
+  }
+  
+  // Calcular médias
+  const mediaGeral = (avaliacoes.reduce((acc, a) => acc + (a.classificacao_geral || 0), 0) / avaliacoes.length).toFixed(1);
+  const mediaConteudo = avaliacoes.filter(a => a.classificacao_conteudo).length > 0 
+    ? (avaliacoes.reduce((acc, a) => acc + (a.classificacao_conteudo || 0), 0) / avaliacoes.filter(a => a.classificacao_conteudo).length).toFixed(1) 
+    : '-';
+  const mediaFormador = avaliacoes.filter(a => a.classificacao_formador).length > 0 
+    ? (avaliacoes.reduce((acc, a) => acc + (a.classificacao_formador || 0), 0) / avaliacoes.filter(a => a.classificacao_formador).length).toFixed(1) 
+    : '-';
+  const mediaOrganizacao = avaliacoes.filter(a => a.classificacao_organizacao).length > 0 
+    ? (avaliacoes.reduce((acc, a) => acc + (a.classificacao_organizacao || 0), 0) / avaliacoes.filter(a => a.classificacao_organizacao).length).toFixed(1) 
+    : '-';
+  
+  container.innerHTML = `
+    <div class="resumo-item">
+      <div class="resumo-label">Avaliação Geral</div>
+      <div class="resumo-value stars">${mediaGeral} ★</div>
+    </div>
+    <div class="resumo-item">
+      <div class="resumo-label">Conteúdo</div>
+      <div class="resumo-value">${mediaConteudo !== '-' ? mediaConteudo + ' ★' : '-'}</div>
+    </div>
+    <div class="resumo-item">
+      <div class="resumo-label">Formador</div>
+      <div class="resumo-value">${mediaFormador !== '-' ? mediaFormador + ' ★' : '-'}</div>
+    </div>
+    <div class="resumo-item">
+      <div class="resumo-label">Organização</div>
+      <div class="resumo-value">${mediaOrganizacao !== '-' ? mediaOrganizacao + ' ★' : '-'}</div>
+    </div>
+  `;
+}
+
+function confirmarLancarQuestionario() {
+  const inscritos = (formacao.formacao_inscricoes || []).filter(i => i.estado === 'Inscrito');
+  document.getElementById('numParticipantesQuestionario').textContent = inscritos.length;
+  document.getElementById('nomeFormacaoQuestionario').textContent = formacao.titulo;
+  document.getElementById('mensagemQuestionario').value = '';
+  document.getElementById('modalLancarQuestionario').classList.add('show');
+}
+
+async function executarLancarQuestionario() {
+  const mensagem = document.getElementById('mensagemQuestionario').value.trim();
+  
+  try {
+    const inscritos = (formacao.formacao_inscricoes || []).filter(i => i.estado === 'Inscrito');
+    
+    // Enviar notificação para cada participante
+    for (const inscricao of inscritos) {
+      try {
+        await DataService.criarNotificacao({
+          colaborador_id: inscricao.colaborador_id,
+          tipo: 'questionario_formacao',
+          titulo: 'Avaliação de Formação',
+          mensagem: mensagem || `Por favor, avalie a formação "${formacao.titulo}" que frequentou recentemente.`,
+          referencia_id: formacao.id,
+          referencia_tipo: 'formacao',
+          link: `/avaliar-formacao?id=${formacao.id}`
+        });
+      } catch (e) {
+        console.error('Erro ao notificar participante:', e);
+      }
+    }
+    
+    // Atualizar formação para marcar que questionário foi enviado
+    await DataService.updateFormacao(formacao.id, {
+      questionario_enviado: true,
+      data_envio_questionario: new Date().toISOString()
+    });
+    
+    showToast(`Questionário enviado para ${inscritos.length} participantes!`, 'success');
+    closeModal('modalLancarQuestionario');
+    
+    // Recarregar dados
+    formacao = await DataService.getFormacaoById(formacao.id);
+    await loadAvaliacoes();
+    
+  } catch (error) {
+    console.error('Erro ao lançar questionário:', error);
+    showToast('Erro ao lançar questionário. Tente novamente.', 'error');
+  }
+}
+
+function lancarQuestionarioAposConclusao() {
+  closeModal('modalPerguntarQuestionario');
+  confirmarLancarQuestionario();
+}
+
 function renderColaboradoresAlocar() {
   const container = document.getElementById('listaColaboradoresAlocar');
   const search = document.getElementById('searchColaboradores').value.toLowerCase();
@@ -1610,7 +2196,6 @@ function toggleColaborador(id) {
     selecionados.add(id);
   }
   
-  // Update UI
   const card = document.querySelector(`.colaborador-card[data-id="${id}"]`);
   if (card) {
     card.classList.toggle('selected');
@@ -1635,16 +2220,12 @@ async function alocarSelecionados() {
     const idsArray = Array.from(selecionados);
     
     for (const colabId of idsArray) {
-      // Criar inscrição
       await DataService.alocarColaboradorFormacao(formacao.id, colabId, currentUser.id, mensagem);
-      
-      // Criar notificação
       await DataService.criarNotificacaoAlocacao(formacao.id, colabId, formacao.titulo, mensagem);
     }
     
     showToast(`${idsArray.length} colaborador(es) alocados com sucesso!`, 'success');
     
-    // Reload data
     formacao = await DataService.getFormacaoById(formacao.id);
     inscritosIds = (formacao.formacao_inscricoes || []).filter(i => i.estado === 'Inscrito').map(i => i.colaborador_id);
     selecionados.clear();
@@ -1689,7 +2270,6 @@ async function executarConcluirFormacao() {
   const observacoes = document.getElementById('conclusaoObservacoes').value.trim();
   
   try {
-    // Atualizar estado da formação para Concluída
     await DataService.updateFormacao(formacao.id, { 
       estado: 'Concluída',
       observacoes_conclusao: observacoes || null,
@@ -1699,15 +2279,23 @@ async function executarConcluirFormacao() {
     showToast('Formação concluída com sucesso!', 'success');
     closeModal('modalConcluirFormacao');
     
-    // Recarregar dados
     formacao = await DataService.getFormacaoById(formacao.id);
     renderFormacao();
     
-    // Esconder botões de ação e tab de alocação
     document.getElementById('formacaoActions').style.display = 'none';
     document.getElementById('tabAlocar').style.display = 'none';
     document.getElementById('btnEditInfo').style.display = 'none';
     document.getElementById('btnAddSessao').style.display = 'none';
+    
+    // Mostrar popup a perguntar se quer lançar questionário
+    const inscritos = (formacao.formacao_inscricoes || []).filter(i => i.estado === 'Inscrito');
+    if (inscritos.length > 0) {
+      setTimeout(() => {
+        document.getElementById('modalPerguntarQuestionario').classList.add('show');
+      }, 500);
+    }
+    
+    await loadAvaliacoes();
     
   } catch (error) {
     console.error('Erro ao concluir formação:', error);
@@ -1724,14 +2312,12 @@ async function executarCancelarFormacao() {
   }
   
   try {
-    // Atualizar estado da formação para Cancelada
     await DataService.updateFormacao(formacao.id, { 
       estado: 'Cancelada',
       motivo_cancelamento: motivo,
       data_cancelamento: new Date().toISOString()
     });
     
-    // Notificar participantes inscritos sobre o cancelamento
     const inscritos = (formacao.formacao_inscricoes || []).filter(i => i.estado === 'Inscrito');
     for (const inscricao of inscritos) {
       try {
@@ -1751,11 +2337,9 @@ async function executarCancelarFormacao() {
     showToast('Formação cancelada com sucesso!', 'success');
     closeModal('modalCancelarFormacao');
     
-    // Recarregar dados
     formacao = await DataService.getFormacaoById(formacao.id);
     renderFormacao();
     
-    // Esconder botões de ação e tab de alocação
     document.getElementById('formacaoActions').style.display = 'none';
     document.getElementById('tabAlocar').style.display = 'none';
     document.getElementById('btnEditInfo').style.display = 'none';
@@ -1774,7 +2358,6 @@ async function executarCancelarFormacao() {
 function openModalSessao(sessaoId = null) {
   editingSessaoId = sessaoId;
   
-  // Reset form
   document.getElementById('formSessao').reset();
   document.getElementById('sessaoId').value = '';
   document.getElementById('sessaoHoraInicio').value = '09:00';
@@ -1782,7 +2365,6 @@ function openModalSessao(sessaoId = null) {
   document.getElementById('sessaoEstado').value = 'Agendada';
   
   if (sessaoId) {
-    // Modo edição
     document.getElementById('modalSessaoTitle').textContent = 'Editar Sessão';
     
     const sessao = (formacao.formacao_sessoes || []).find(s => s.id === sessaoId);
@@ -1796,10 +2378,7 @@ function openModalSessao(sessaoId = null) {
       document.getElementById('sessaoObservacoes').value = sessao.observacoes || '';
     }
   } else {
-    // Modo adicionar
     document.getElementById('modalSessaoTitle').textContent = 'Adicionar Sessão';
-    
-    // Pré-preencher com o local da formação se existir
     if (formacao.local_detalhe) {
       document.getElementById('sessaoLocal').value = formacao.local_detalhe;
     }
@@ -1817,7 +2396,6 @@ async function saveSessao() {
   const estado = document.getElementById('sessaoEstado').value;
   const observacoes = document.getElementById('sessaoObservacoes').value.trim();
   
-  // Validação
   if (!data) {
     showToast('A data é obrigatória.', 'error');
     return;
@@ -1840,18 +2418,15 @@ async function saveSessao() {
   
   try {
     if (sessaoId) {
-      // Atualizar sessão existente
       await DataService.updateRecord('formacao_sessoes', sessaoId, sessaoData);
       showToast('Sessão atualizada com sucesso!', 'success');
     } else {
-      // Criar nova sessão
       await DataService.createRecord('formacao_sessoes', sessaoData);
       showToast('Sessão adicionada com sucesso!', 'success');
     }
     
     closeModal('modalSessao');
     
-    // Recarregar dados
     formacao = await DataService.getFormacaoById(formacao.id);
     renderFormacao();
     
@@ -1875,19 +2450,16 @@ async function confirmDeleteSessao() {
   }
   
   try {
-    // Primeiro, eliminar presenças associadas
     const presencas = (formacao.formacao_presencas || []).filter(p => p.sessao_id === sessaoId);
     for (const presenca of presencas) {
       await DataService.deleteRecord('formacao_presencas', presenca.id);
     }
     
-    // Depois, eliminar a sessão
     await DataService.deleteRecord('formacao_sessoes', sessaoId);
     
     showToast('Sessão eliminada com sucesso!', 'success');
     closeModal('modalConfirmDelete');
     
-    // Recarregar dados
     formacao = await DataService.getFormacaoById(formacao.id);
     renderFormacao();
     
@@ -1897,12 +2469,10 @@ async function confirmDeleteSessao() {
   }
 }
 
-// Edit Mode Functions
 function toggleEditMode() {
   isEditMode = !isEditMode;
   
   if (isEditMode) {
-    // Preencher campos de edição
     document.getElementById('editTitulo').value = formacao.titulo || '';
     document.getElementById('editTipo').value = formacao.tipo || '';
     document.getElementById('editModalidade').value = formacao.modalidade || '';
@@ -1911,7 +2481,6 @@ function toggleEditMode() {
     document.getElementById('editObjetivo').value = formacao.objetivo || '';
     document.getElementById('editLocal').value = formacao.local || '';
     
-    // Alternar visibilidade
     document.getElementById('infoViewMode').style.display = 'none';
     document.getElementById('infoEditMode').style.display = 'block';
     document.getElementById('btnEditInfo').innerHTML = `
@@ -1950,7 +2519,6 @@ async function saveFormacaoEdit() {
     local: document.getElementById('editLocal').value.trim()
   };
   
-  // Validação básica
   if (!updateData.titulo) {
     showToast('O título é obrigatório.', 'error');
     return;
@@ -1959,10 +2527,8 @@ async function saveFormacaoEdit() {
   try {
     await DataService.updateFormacao(formacao.id, updateData);
     
-    // Atualizar dados locais
     formacao = { ...formacao, ...updateData };
     
-    // Atualizar UI
     document.getElementById('pageTitle').textContent = formacao.titulo;
     document.getElementById('pageSubtitle').textContent = `${formacao.tipo || 'Formação'} • ${formacao.duracao_horas || 0}h`;
     document.getElementById('infoTipo').textContent = formacao.tipo || 'N/D';
@@ -2025,7 +2591,6 @@ function showToast(message, type = 'success') {
   }, 3000);
 }
 
-// Event listeners para fechar modais ao clicar fora
 document.addEventListener('click', function(e) {
   if (e.target.classList.contains('modal-overlay')) {
     e.target.classList.remove('show');
