@@ -828,16 +828,7 @@ function renderStars(rating) {
 function renderFormularioAvaliacao() {
   const container = document.getElementById('avaliacaoContent');
   
-  /* 
-   * NOTA POWER PAGES: Em Power Pages, este formulário seria substituído por um 
-   * Entity Form ou Web Form conectado à entidade "formacao_avaliacoes".
-   * Os campos de rating teriam de ser implementados com JavaScript custom
-   * ou usando campos de tipo "Option Set" com valores de 1 a 5.
-   * 
-   * Exemplo Power Pages:
-   * {% entityform name: "Avaliação de Formação" %}
-   */
-  
+  // Formulário de avaliação dinâmico
   container.innerHTML = `
     <div class="avaliacao-container">
       <div class="avaliacao-header">
