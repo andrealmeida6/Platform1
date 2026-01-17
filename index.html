@@ -10,19 +10,6 @@ title: Portal do Colaborador
 {% include components/calendar-section.html %}
 
 <!-- Notifications Section - Dinâmica -->
-<!-- 
-  NOTA POWER PAGES: Em Power Pages, esta secção seria implementada usando:
-  - Entity List para listar notificações do colaborador actual
-  - Liquid template para filtrar por colaborador: {% assign notificacoes = entities.formacao_notificacoes | where: "colaborador_id", user.id %}
-  - Web API para marcar como lida via JavaScript
-  
-  Exemplo Power Pages:
-  {% entitylist id:"notificacoes-list" %}
-    {% for item in entitylist.records %}
-      <div class="notification-item">{{ item.titulo }}</div>
-    {% endfor %}
-  {% endentitylist %}
--->
 <div class="notifications-section" id="notificationsSection">
   <div class="card-header">
     <div class="card-title">
@@ -43,8 +30,8 @@ title: Portal do Colaborador
   </div>
 </div>
 
-<!-- Artigos Atribuídos -->
-<div class="inventory-section">
+<!-- Artigos Atribuídos - Dinâmico -->
+<div class="inventory-section" id="inventorySection">
   <div class="card-header">
     <div class="card-title">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -54,51 +41,16 @@ title: Portal do Colaborador
     </div>
     <a href="#" class="card-action" onclick="verTodoInventario()">Ver todos</a>
   </div>
-  <table class="mini-table">
-    <thead>
-      <tr>
-        <th>Código</th>
-        <th>Descrição</th>
-        <th>Categoria</th>
-        <th>Qtd</th>
-        <th>Data Atribuição</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td><span class="item-code">EQ-2024-001</span></td>
-        <td>MacBook Pro 14" M3</td>
-        <td><span class="item-category">Equipamento</span></td>
-        <td>1</td>
-        <td>15/01/2025</td>
-      </tr>
-      <tr>
-        <td><span class="item-code">EQ-2024-045</span></td>
-        <td>Monitor Dell 27" 4K</td>
-        <td><span class="item-category">Equipamento</span></td>
-        <td>2</td>
-        <td>15/01/2025</td>
-      </tr>
-      <tr>
-        <td><span class="item-code">EC-2025-112</span></td>
-        <td>Caderno A5 Pautado</td>
-        <td><span class="item-category economato">Economato</span></td>
-        <td>3</td>
-        <td>01/11/2025</td>
-      </tr>
-      <tr>
-        <td><span class="item-code">SW-2024-008</span></td>
-        <td>Licença Microsoft 365</td>
-        <td><span class="item-category software">Software</span></td>
-        <td>1</td>
-        <td>15/01/2025</td>
-      </tr>
-    </tbody>
-  </table>
+  <div id="inventoryContent">
+    <div class="notification-loading">
+      <div class="spinner"></div>
+      <span>A carregar artigos...</span>
+    </div>
+  </div>
 </div>
 
-<!-- Deslocações -->
-<div class="trips-section">
+<!-- Deslocações - Dinâmico -->
+<div class="trips-section" id="tripsSection">
   <div class="card-header">
     <div class="card-title">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -109,57 +61,17 @@ title: Portal do Colaborador
     </div>
     <a href="#" class="card-action" onclick="verTodasDeslocacoes()">Ver todas</a>
   </div>
-  <table class="mini-table">
-    <thead>
-      <tr>
-        <th>Referência</th>
-        <th>Destino</th>
-        <th>Data Início</th>
-        <th>Data Fim</th>
-        <th>Km Previsto</th>
-        <th>Estado</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td><span class="item-code">BI-2025-0234</span></td>
-        <td>Coimbra - Reunião Cliente</td>
-        <td>22/11/2025</td>
-        <td>22/11/2025</td>
-        <td>420 km</td>
-        <td><span class="status-badge em-aprovacao">Em Aprovação</span></td>
-      </tr>
-      <tr>
-        <td><span class="item-code">BI-2025-0198</span></td>
-        <td>Porto - Formação</td>
-        <td>15/11/2025</td>
-        <td>16/11/2025</td>
-        <td>640 km</td>
-        <td><span class="status-badge aprovado">Aprovado</span></td>
-      </tr>
-      <tr>
-        <td><span class="item-code">BI-2025-0156</span></td>
-        <td>Évora - Workshop</td>
-        <td>05/11/2025</td>
-        <td>05/11/2025</td>
-        <td>280 km</td>
-        <td><span class="status-badge concluido">Concluído</span></td>
-      </tr>
-      <tr>
-        <td><span class="item-code">BI-2025-0089</span></td>
-        <td>Braga - Conferência</td>
-        <td>20/10/2025</td>
-        <td>21/10/2025</td>
-        <td>720 km</td>
-        <td><span class="status-badge concluido">Concluído</span></td>
-      </tr>
-    </tbody>
-  </table>
+  <div id="tripsContent">
+    <div class="notification-loading">
+      <div class="spinner"></div>
+      <span>A carregar deslocações...</span>
+    </div>
+  </div>
 </div>
 
 <style>
 /* ============================================ */
-/* ESTILOS PARA NOTIFICAÇÕES DINÂMICAS */
+/* ESTILOS PARA SECÇÕES DINÂMICAS */
 /* ============================================ */
 
 .notification-badge {
@@ -350,6 +262,96 @@ title: Portal do Colaborador
   font-size: 0.875rem;
 }
 
+/* Tabelas dinâmicas */
+.mini-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.mini-table th,
+.mini-table td {
+  padding: 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.mini-table th {
+  background: #f8fafc;
+  font-weight: 600;
+  color: #475569;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.mini-table tbody tr:hover {
+  background: #f8fafc;
+}
+
+.item-code {
+  font-family: 'Monaco', 'Consolas', monospace;
+  font-size: 0.8rem;
+  background: #f1f5f9;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  color: #475569;
+}
+
+.item-category {
+  font-size: 0.75rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+  color: #1e40af;
+  font-weight: 500;
+}
+
+.item-category.economato {
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  color: #92400e;
+}
+
+.item-category.software {
+  background: linear-gradient(135deg, #ede9fe, #ddd6fe);
+  color: #5b21b6;
+}
+
+/* Status badges */
+.status-badge {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-weight: 500;
+}
+
+.status-badge.em-aprovacao,
+.status-badge.pendente {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status-badge.aprovado {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.status-badge.concluido {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.status-badge.rejeitado,
+.status-badge.cancelado {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.status-badge.rascunho {
+  background: #f1f5f9;
+  color: #475569;
+}
+
 /* Toast */
 .toast-container {
   position: fixed;
@@ -389,24 +391,31 @@ title: Portal do Colaborador
   background: #dbeafe;
   color: #1e40af;
 }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .mini-table {
+    font-size: 0.8rem;
+  }
+  
+  .mini-table th,
+  .mini-table td {
+    padding: 0.5rem;
+  }
+  
+  .mini-table th:nth-child(4),
+  .mini-table td:nth-child(4),
+  .mini-table th:nth-child(5),
+  .mini-table td:nth-child(5) {
+    display: none;
+  }
+}
 </style>
 
 <script>
 // ============================================
-// NOTIFICAÇÕES DINÂMICAS - PORTAL DO COLABORADOR
+// PORTAL DO COLABORADOR - SECÇÕES DINÂMICAS
 // ============================================
-// 
-// NOTA POWER PAGES: Em Power Pages, este código seria adaptado para:
-// - Usar webapi.safeAjax() em vez de fetch direto
-// - Obter o utilizador atual via liquid: {{ user.id }}
-// - Usar entity logical names do Dataverse
-//
-// Exemplo Power Pages:
-// webapi.safeAjax({
-//   type: "GET",
-//   url: "/_api/cr_formacao_notificacoes?$filter=cr_colaborador_id eq " + userId,
-//   success: function(data) { renderNotificacoes(data.value); }
-// });
 
 let currentUser = null;
 let notificacoes = [];
@@ -438,20 +447,31 @@ document.addEventListener('DOMContentLoaded', async function() {
     currentUser = await AuthService.getCurrentUser();
     
     if (currentUser) {
-      await carregarNotificacoes();
+      // Carregar todas as secções em paralelo
+      await Promise.all([
+        carregarNotificacoes(),
+        carregarArtigosAtribuidos(),
+        carregarDeslocacoes()
+      ]);
     } else {
       renderNotificacoesVazias('Faça login para ver as suas notificações.');
+      renderArtigosVazios('Faça login para ver os seus artigos.');
+      renderDeslocacoesVazias('Faça login para ver as suas deslocações.');
     }
   } catch (error) {
     console.error('[Home] Erro ao inicializar:', error);
-    renderNotificacoesVazias('Erro ao carregar notificações.');
+    renderNotificacoesVazias('Erro ao carregar dados.');
   }
 });
 
-// Carregar notificações do colaborador
+// ==========================================
+// NOTIFICAÇÕES
+// ==========================================
+
 async function carregarNotificacoes() {
   try {
-    notificacoes = await DataService.getNotificacoesColaborador(currentUser.id);
+    // Usar a nova função que verifica e cria notificações de avaliação automaticamente
+    notificacoes = await DataService.getNotificacoesColaboradorCompletas(currentUser.id);
     console.log('[Notificações] Carregadas:', notificacoes.length);
     
     renderNotificacoes();
@@ -463,7 +483,6 @@ async function carregarNotificacoes() {
   }
 }
 
-// Renderizar notificações
 function renderNotificacoes() {
   const container = document.getElementById('notificationsList');
   
@@ -484,17 +503,18 @@ function renderNotificacoes() {
   container.innerHTML = toShow.map(n => renderNotificacaoItem(n)).join('');
 }
 
-// Renderizar um item de notificação
 function renderNotificacaoItem(notif) {
   const tipoConfig = getNotificacaoConfig(notif.tipo);
   const tempoRelativo = getTempoRelativo(notif.created_at);
   const unreadClass = notif.lida ? '' : 'unread';
   
+  // Obter título da formação se disponível
+  const tituloFormacao = notif.formacoes?.titulo || '';
+  
   // Botões de ação específicos por tipo
   let actionsHtml = '';
   
-  if (notif.tipo === 'questionario_formacao' && !notif.lida) {
-    // Notificação de questionário de avaliação
+  if ((notif.tipo === 'questionario_formacao' || notif.tipo === 'avaliacao_pendente') && !notif.lida) {
     actionsHtml = `
       <div class="notification-actions">
         <button class="notification-btn primary" onclick="irParaAvaliacao('${notif.formacao_id}', '${notif.id}')">
@@ -506,7 +526,6 @@ function renderNotificacaoItem(notif) {
       </div>
     `;
   } else if (notif.tipo === 'alocacao' && !notif.lida) {
-    // Notificação de alocação a formação
     actionsHtml = `
       <div class="notification-actions">
         <button class="notification-btn primary" onclick="irParaFormacao('${notif.formacao_id}', '${notif.id}')">
@@ -518,7 +537,6 @@ function renderNotificacaoItem(notif) {
       </div>
     `;
   } else if ((notif.tipo === 'sessao_iniciada' || notif.tipo === 'lembrete_sessao') && !notif.lida) {
-    // Notificação de sessão
     actionsHtml = `
       <div class="notification-actions">
         <button class="notification-btn primary" onclick="irParaFormacao('${notif.formacao_id}', '${notif.id}')">
@@ -528,6 +546,30 @@ function renderNotificacaoItem(notif) {
             <line x1="8" y1="2" x2="8" y2="6"/>
           </svg>
           Ver Detalhes
+        </button>
+      </div>
+    `;
+  } else if (notif.tipo === 'formacao_concluida' && !notif.lida) {
+    actionsHtml = `
+      <div class="notification-actions">
+        <button class="notification-btn primary" onclick="irParaFormacao('${notif.formacao_id}', '${notif.id}')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+            <polyline points="22 4 12 14.01 9 11.01"/>
+          </svg>
+          Ver Formação
+        </button>
+      </div>
+    `;
+  } else if (notif.tipo === 'resultado_disponivel' && !notif.lida) {
+    actionsHtml = `
+      <div class="notification-actions">
+        <button class="notification-btn primary" onclick="irParaFormacao('${notif.formacao_id}', '${notif.id}')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+          </svg>
+          Ver Resultado
         </button>
       </div>
     `;
@@ -548,7 +590,6 @@ function renderNotificacaoItem(notif) {
   `;
 }
 
-// Configuração por tipo de notificação
 function getNotificacaoConfig(tipo) {
   const configs = {
     'alocacao': {
@@ -601,7 +642,6 @@ function getNotificacaoConfig(tipo) {
   return configs[tipo] || configs['default'];
 }
 
-// Renderizar estado vazio
 function renderNotificacoesVazias(mensagem) {
   const container = document.getElementById('notificationsList');
   container.innerHTML = `
@@ -617,7 +657,6 @@ function renderNotificacoesVazias(mensagem) {
   document.getElementById('btnMarcarTodasLidas').style.display = 'none';
 }
 
-// Atualizar badge de contagem
 function atualizarBadge() {
   const naoLidas = notificacoes.filter(n => !n.lida).length;
   const badge = document.getElementById('notificationBadge');
@@ -633,7 +672,6 @@ function atualizarBadge() {
   }
 }
 
-// Calcular tempo relativo
 function getTempoRelativo(dataStr) {
   if (!dataStr) return '';
   
@@ -652,7 +690,6 @@ function getTempoRelativo(dataStr) {
   return data.toLocaleDateString('pt-PT', { day: 'numeric', month: 'short' });
 }
 
-// Marcar notificação como lida
 async function marcarNotificacaoLida(notificacaoId) {
   const notif = notificacoes.find(n => n.id === notificacaoId);
   if (!notif || notif.lida) return;
@@ -660,10 +697,8 @@ async function marcarNotificacaoLida(notificacaoId) {
   try {
     await DataService.marcarNotificacaoLida(notificacaoId);
     
-    // Atualizar localmente
     notif.lida = true;
     
-    // Atualizar UI
     const item = document.querySelector(`.notification-item[data-id="${notificacaoId}"]`);
     if (item) {
       item.classList.remove('unread');
@@ -676,17 +711,14 @@ async function marcarNotificacaoLida(notificacaoId) {
   }
 }
 
-// Marcar todas como lidas
 async function marcarTodasLidas() {
   if (!currentUser) return;
   
   try {
     await DataService.marcarTodasNotificacoesLidas(currentUser.id);
     
-    // Atualizar localmente
     notificacoes.forEach(n => n.lida = true);
     
-    // Atualizar UI
     document.querySelectorAll('.notification-item.unread').forEach(item => {
       item.classList.remove('unread');
     });
@@ -700,11 +732,9 @@ async function marcarTodasLidas() {
   }
 }
 
-// Ir para avaliação de formação
 function irParaAvaliacao(formacaoId, notificacaoId) {
   event.stopPropagation();
   
-  // Marcar notificação como lida antes de navegar
   if (notificacaoId) {
     DataService.marcarNotificacaoLida(notificacaoId).catch(console.error);
   }
@@ -713,11 +743,9 @@ function irParaAvaliacao(formacaoId, notificacaoId) {
   window.location.href = `${baseUrl}/formacao-detalhe?id=${formacaoId}&tab=avaliar`;
 }
 
-// Ir para formação
 function irParaFormacao(formacaoId, notificacaoId) {
   event.stopPropagation();
   
-  // Marcar notificação como lida antes de navegar
   if (notificacaoId) {
     DataService.marcarNotificacaoLida(notificacaoId).catch(console.error);
   }
@@ -726,7 +754,215 @@ function irParaFormacao(formacaoId, notificacaoId) {
   window.location.href = `${baseUrl}/formacao-detalhe?id=${formacaoId}`;
 }
 
-// Toast notifications
+// ==========================================
+// ARTIGOS ATRIBUÍDOS
+// ==========================================
+
+async function carregarArtigosAtribuidos() {
+  try {
+    const artigos = await DataService.getArtigosAtribuidosColaborador(currentUser.id);
+    console.log('[Artigos] Carregados:', artigos.length);
+    
+    renderArtigosAtribuidos(artigos);
+    
+  } catch (error) {
+    console.error('[Artigos] Erro ao carregar:', error);
+    renderArtigosVazios('Erro ao carregar artigos.');
+  }
+}
+
+function renderArtigosAtribuidos(artigos) {
+  const container = document.getElementById('inventoryContent');
+  
+  if (!artigos || artigos.length === 0) {
+    renderArtigosVazios('Não tem artigos atribuídos.');
+    return;
+  }
+  
+  // Mostrar apenas os 5 mais recentes
+  const toShow = artigos.slice(0, 5);
+  
+  container.innerHTML = `
+    <table class="mini-table">
+      <thead>
+        <tr>
+          <th>Código</th>
+          <th>Descrição</th>
+          <th>Categoria</th>
+          <th>Qtd</th>
+          <th>Data Atribuição</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${toShow.map(a => renderArtigoRow(a)).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+function renderArtigoRow(atribuicao) {
+  const artigo = atribuicao.artigos_inventario || {};
+  const categoria = artigo.categorias_inventario || {};
+  const categoriaClasse = getCategoriaClasse(categoria.codigo);
+  
+  const dataAtribuicao = atribuicao.data_atribuicao 
+    ? new Date(atribuicao.data_atribuicao).toLocaleDateString('pt-PT')
+    : '-';
+  
+  return `
+    <tr>
+      <td><span class="item-code">${artigo.codigo || '-'}</span></td>
+      <td>${artigo.nome || '-'}</td>
+      <td><span class="item-category ${categoriaClasse}">${categoria.nome || '-'}</span></td>
+      <td>${atribuicao.quantidade || 1}</td>
+      <td>${dataAtribuicao}</td>
+    </tr>
+  `;
+}
+
+function getCategoriaClasse(codigo) {
+  if (!codigo) return '';
+  const codigoUpper = codigo.toUpperCase();
+  if (codigoUpper.includes('ECO') || codigoUpper.includes('MAT')) return 'economato';
+  if (codigoUpper.includes('SW') || codigoUpper.includes('LIC') || codigoUpper.includes('SOFT')) return 'software';
+  return '';
+}
+
+function renderArtigosVazios(mensagem) {
+  const container = document.getElementById('inventoryContent');
+  container.innerHTML = `
+    <div class="notification-empty">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/>
+      </svg>
+      <p>${mensagem}</p>
+    </div>
+  `;
+}
+
+function verTodoInventario() {
+  const baseUrl = getBaseUrl();
+  window.location.href = `${baseUrl}/inventario`;
+}
+
+// ==========================================
+// DESLOCAÇÕES
+// ==========================================
+
+async function carregarDeslocacoes() {
+  try {
+    const deslocacoes = await DataService.getDeslocacoesColaborador(currentUser.id);
+    console.log('[Deslocações] Carregadas:', deslocacoes.length);
+    
+    renderDeslocacoes(deslocacoes);
+    
+  } catch (error) {
+    console.error('[Deslocações] Erro ao carregar:', error);
+    renderDeslocacoesVazias('Erro ao carregar deslocações.');
+  }
+}
+
+function renderDeslocacoes(deslocacoes) {
+  const container = document.getElementById('tripsContent');
+  
+  if (!deslocacoes || deslocacoes.length === 0) {
+    renderDeslocacoesVazias('Não tem deslocações registadas.');
+    return;
+  }
+  
+  // Ordenar por data mais recente
+  const sorted = [...deslocacoes].sort((a, b) => 
+    new Date(b.data_partida) - new Date(a.data_partida)
+  );
+  
+  // Mostrar apenas as 5 mais recentes
+  const toShow = sorted.slice(0, 5);
+  
+  container.innerHTML = `
+    <table class="mini-table">
+      <thead>
+        <tr>
+          <th>Destino</th>
+          <th>Data Partida</th>
+          <th>Data Chegada</th>
+          <th>Estado</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${toShow.map(d => renderDeslocacaoRow(d)).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+function renderDeslocacaoRow(deslocacao) {
+  const dataPartida = deslocacao.data_partida 
+    ? new Date(deslocacao.data_partida).toLocaleDateString('pt-PT')
+    : '-';
+  
+  const dataChegada = deslocacao.data_chegada 
+    ? new Date(deslocacao.data_chegada).toLocaleDateString('pt-PT')
+    : dataPartida;
+  
+  const estadoClasse = getEstadoClasse(deslocacao.estado);
+  const estadoLabel = getEstadoLabel(deslocacao.estado);
+  
+  return `
+    <tr onclick="verDeslocacao('${deslocacao.id}')" style="cursor: pointer;">
+      <td>${deslocacao.destino || '-'}</td>
+      <td>${dataPartida}</td>
+      <td>${dataChegada}</td>
+      <td><span class="status-badge ${estadoClasse}">${estadoLabel}</span></td>
+    </tr>
+  `;
+}
+
+function getEstadoClasse(estado) {
+  const classes = {
+    'Rascunho': 'rascunho',
+    'Pendente Aprovação': 'pendente',
+    'Aprovada': 'aprovado',
+    'Rejeitada': 'rejeitado',
+    'Concluída': 'concluido',
+    'Cancelada': 'cancelado'
+  };
+  return classes[estado] || '';
+}
+
+function getEstadoLabel(estado) {
+  const labels = {
+    'Pendente Aprovação': 'Pendente'
+  };
+  return labels[estado] || estado || '-';
+}
+
+function renderDeslocacoesVazias(mensagem) {
+  const container = document.getElementById('tripsContent');
+  container.innerHTML = `
+    <div class="notification-empty">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/>
+        <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>
+      </svg>
+      <p>${mensagem}</p>
+    </div>
+  `;
+}
+
+function verDeslocacao(id) {
+  const baseUrl = getBaseUrl();
+  window.location.href = `${baseUrl}/deslocacao-detalhe?id=${id}`;
+}
+
+function verTodasDeslocacoes() {
+  const baseUrl = getBaseUrl();
+  window.location.href = `${baseUrl}/deslocacoes`;
+}
+
+// ==========================================
+// UTILITÁRIOS
+// ==========================================
+
 function showToast(message, type = 'success') {
   let container = document.querySelector('.toast-container');
   if (!container) {
