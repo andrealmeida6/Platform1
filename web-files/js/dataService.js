@@ -532,6 +532,112 @@ const DataService = (function() {
     return await response.json();
   }
   
+  // ==========================================
+  // VERIFICAÇÃO E CRIAÇÃO AUTOMÁTICA DE NOTIFICAÇÕES DE AVALIAÇÃO
+  // ==========================================
+  
+  // Verificar avaliações pendentes e criar notificações se necessário
+  async function verificarECriarNotificacoesAvaliacao(colaboradorId) {
+    try {
+      // 1. Obter formações concluídas onde o colaborador está inscrito
+      const formacoes = await getFormacoes();
+      const formacoesConcluidas = formacoes.filter(f => f.estado === 'Concluída');
+      
+      // 2. Verificar inscrições do colaborador
+      const inscricoes = await retrieveMultipleRecords('formacao_inscricoes', {
+        filter: { colaborador_id: colaboradorId, estado: 'Inscrito' }
+      });
+      
+      const formacaoIdsInscritas = inscricoes.map(i => i.formacao_id);
+      
+      // 3. Obter avaliações já feitas pelo colaborador
+      const avaliacoes = await retrieveMultipleRecords('formacao_avaliacoes', {
+        filter: { colaborador_id: colaboradorId }
+      });
+      const formacaoIdsAvaliadas = avaliacoes.map(a => a.formacao_id);
+      
+      // 4. Obter notificações de avaliação existentes (para não duplicar)
+      const notificacoesExistentes = await retrieveMultipleRecords('formacao_notificacoes', {
+        filter: { colaborador_id: colaboradorId, tipo: 'questionario_formacao' }
+      });
+      const formacaoIdsComNotificacao = notificacoesExistentes.map(n => n.formacao_id);
+      
+      // 5. Encontrar formações concluídas que precisam de notificação
+      const notificacoesCriadas = [];
+      
+      for (const formacao of formacoesConcluidas) {
+        const estaInscrito = formacaoIdsInscritas.includes(formacao.id);
+        const jaAvaliou = formacaoIdsAvaliadas.includes(formacao.id);
+        const jaTemNotificacao = formacaoIdsComNotificacao.includes(formacao.id);
+        
+        if (estaInscrito && !jaAvaliou && !jaTemNotificacao) {
+          // Criar notificação de avaliação pendente
+          const notificacao = await criarNotificacaoQuestionario(
+            formacao.id,
+            colaboradorId,
+            formacao.titulo,
+            `A formação "${formacao.titulo}" foi concluída. Por favor, partilhe a sua opinião através do questionário de avaliação.`
+          );
+          notificacoesCriadas.push(notificacao);
+          console.log(`[DataService] Notificação de avaliação criada para formação: ${formacao.titulo}`);
+        }
+      }
+      
+      return notificacoesCriadas;
+    } catch (error) {
+      console.error('[DataService] Erro ao verificar notificações de avaliação:', error);
+      return [];
+    }
+  }
+  
+  // Obter notificações com verificação automática de avaliações pendentes
+  async function getNotificacoesColaboradorCompletas(colaboradorId) {
+    try {
+      // Primeiro, verificar e criar notificações de avaliação se necessário
+      await verificarECriarNotificacoesAvaliacao(colaboradorId);
+      
+      // Depois, obter todas as notificações
+      return await getNotificacoesColaborador(colaboradorId);
+    } catch (error) {
+      console.error('[DataService] Erro ao obter notificações completas:', error);
+      throw error;
+    }
+  }
+  
+  // Obter avaliações pendentes do colaborador (formações concluídas sem avaliação)
+  async function getAvaliacoesPendentes(colaboradorId) {
+    try {
+      const formacoes = await getFormacoes();
+      const formacoesConcluidas = formacoes.filter(f => f.estado === 'Concluída');
+      
+      const avaliacoesPendentes = [];
+      
+      for (const formacao of formacoesConcluidas) {
+        const estaInscrito = (formacao.formacao_inscricoes || []).some(
+          i => i.colaborador_id === colaboradorId && i.estado === 'Inscrito'
+        );
+        
+        const jaAvaliou = (formacao.formacao_avaliacoes || []).some(
+          a => a.colaborador_id === colaboradorId
+        );
+        
+        if (estaInscrito && !jaAvaliou) {
+          avaliacoesPendentes.push({
+            formacao_id: formacao.id,
+            titulo: formacao.titulo,
+            data_conclusao: formacao.data_conclusao,
+            tipo: 'avaliacao_pendente'
+          });
+        }
+      }
+      
+      return avaliacoesPendentes;
+    } catch (error) {
+      console.error('[DataService] Erro ao obter avaliações pendentes:', error);
+      return [];
+    }
+  }
+  
   async function toggleFavoritoFormacao(formacaoId, colaboradorId) {
     const favoritos = await retrieveMultipleRecords('formacao_favoritos', {
       filter: { formacao_id: formacaoId, colaborador_id: colaboradorId }
@@ -953,6 +1059,45 @@ const DataService = (function() {
   }
   
   // ==========================================
+  // INVENTÁRIO - Artigos Atribuídos ao Colaborador
+  // ==========================================
+  
+  async function getArtigosAtribuidosColaborador(colaboradorId) {
+    const select = '*,artigos_inventario(id,codigo,nome,descricao,categorias_inventario(id,codigo,nome))';
+    return retrieveWithRelations('atribuicoes_inventario', select, { 
+      colaborador_id: colaboradorId,
+      estado: 'Ativo'
+    });
+  }
+  
+  // ==========================================
+  // DESLOCAÇÕES DO COLABORADOR
+  // ==========================================
+  
+  async function getDeslocacoesColaborador(colaboradorId) {
+    try {
+      // Buscar todas as deslocações
+      const deslocacoes = await getDeslocacoes();
+      
+      // Filtrar deslocações onde o colaborador está envolvido
+      return deslocacoes.filter(d => {
+        // Verificar se é o criador
+        if (d.criado_por === colaboradorId) return true;
+        
+        // Verificar se está na lista de colaboradores
+        const envolvido = (d.deslocacao_colaboradores || []).some(
+          dc => dc.colaborador_id === colaboradorId
+        );
+        
+        return envolvido;
+      });
+    } catch (error) {
+      console.error('[DataService] Erro ao obter deslocações do colaborador:', error);
+      return [];
+    }
+  }
+  
+  // ==========================================
   // ESTATÍSTICAS
   // ==========================================
   
@@ -1063,6 +1208,9 @@ const DataService = (function() {
     criarNotificacaoQuestionario,
     criarNotificacaoFormacaoCancelada,
     getNotificacoesColaborador,
+    getNotificacoesColaboradorCompletas,
+    verificarECriarNotificacoesAvaliacao,
+    getAvaliacoesPendentes,
     marcarNotificacaoLida,
     marcarTodasNotificacoesLidas,
     contarNotificacoesNaoLidas,
@@ -1109,6 +1257,10 @@ const DataService = (function() {
     updateDeslocacao,
     deleteDeslocacao,
     getDeslocacaoStats,
+    getDeslocacoesColaborador,
+    
+    // Inventário
+    getArtigosAtribuidosColaborador,
     
     // Utilitários
     cleanFormadorName
