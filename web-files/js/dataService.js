@@ -240,7 +240,7 @@ const DataService = (function() {
   
   // --- FORMAÇÕES ---
   async function getFormacoes() {
-    const select = '*,entidades_formadoras(id,codigo,nome),formadores(id,nome,especialidade,tipo,colaborador_id),formacao_sessoes(id,data,hora_inicio,hora_fim,estado,codigo_entrada,codigo_saida,hora_abertura_entrada,hora_abertura_saida,hora_conclusao),formacao_inscricoes(id,colaborador_id,estado,tipo_inscricao,alocado_por,data_alocacao,notificacao_enviada,notificacao_lida),formacao_departamentos(id,departamento_id,departamentos(id,codigo,nome)),formacao_favoritos(id,colaborador_id),formacao_presencas(id,colaborador_id,sessao_id,presente,hora_entrada,hora_saida,validado),formacao_resultados(id,colaborador_id,resultado),formacao_avaliacoes(id,colaborador_id,score_conteudo,score_formador,score_organizacao,comentario,created_at),formacao_formadores(id,formador_id,entidade_id,principal,formadores(id,nome,colaborador_id),entidades_formadoras(id,nome)),formacao_anexos(id,nome,tipo,url,tamanho_bytes)';
+    const select = '*,entidades_formadoras(id,codigo,nome),formadores(id,nome,especialidade,tipo,colaborador_id),formacao_sessoes(id,data,hora_inicio,hora_fim,estado,codigo_entrada,codigo_saida,hora_abertura_entrada,hora_abertura_saida,hora_conclusao),formacao_inscricoes(id,colaborador_id,estado,tipo_inscricao,alocado_por,data_alocacao,notificacao_enviada,notificacao_lida),formacao_departamentos(id,departamento_id,departamentos(id,codigo,nome)),formacao_favoritos(id,colaborador_id),formacao_presencas(id,colaborador_id,sessao_id,presente,hora_entrada,hora_saida,validado),formacao_resultados(id,colaborador_id,resultado),formacao_avaliacoes(id,colaborador_id,score_conteudo,score_formador,score_organizacao,comentario,created_at,classificacao_geral),formacao_formadores(id,formador_id,entidade_id,principal,formadores(id,nome,colaborador_id),entidades_formadoras(id,nome)),formacao_anexos(id,nome,tipo,url,tamanho_bytes)';
     return retrieveWithRelations('formacoes', select);
   }
   
@@ -248,7 +248,7 @@ const DataService = (function() {
     // CORRIGIDO: Adicionados hints de FK para resolver referências ambíguas
     // - formacao_inscricoes: colaborador via formacao_inscricoes_colaborador_id_fkey
     // - formacao_presencas: colaborador via formacao_presencas_colaborador_id_fkey
-    const select = '*,entidades_formadoras(id,codigo,nome),formadores(id,nome,especialidade,tipo,colaborador_id),formacao_sessoes(id,data,hora_inicio,hora_fim,estado,codigo_entrada,codigo_saida,hora_abertura_entrada,hora_abertura_saida,hora_conclusao),formacao_inscricoes(id,colaborador_id,estado,tipo_inscricao,alocado_por,data_alocacao,notificacao_enviada,notificacao_lida,mensagem_alocacao,colaboradores!formacao_inscricoes_colaborador_id_fkey(id,nome,email,departamento_id)),formacao_departamentos(id,departamento_id,departamentos(id,codigo,nome)),formacao_favoritos(id,colaborador_id),formacao_presencas(id,colaborador_id,sessao_id,presente,hora_entrada,hora_saida,validado,colaboradores!formacao_presencas_colaborador_id_fkey(id,nome)),formacao_resultados(id,colaborador_id,resultado),formacao_avaliacoes(id,colaborador_id,score_conteudo,score_formador,score_organizacao,comentario,created_at),formacao_formadores(id,formador_id,entidade_id,principal,formadores!formacao_formadores_formador_id_fkey(id,nome,colaborador_id),entidades_formadoras!formacao_formadores_entidade_id_fkey(id,nome)),formacao_anexos(id,nome,tipo,url,tamanho_bytes)';
+    const select = '*,entidades_formadoras(id,codigo,nome),formadores(id,nome,especialidade,tipo,colaborador_id),formacao_sessoes(id,data,hora_inicio,hora_fim,estado,codigo_entrada,codigo_saida,hora_abertura_entrada,hora_abertura_saida,hora_conclusao),formacao_inscricoes(id,colaborador_id,estado,tipo_inscricao,alocado_por,data_alocacao,notificacao_enviada,notificacao_lida,mensagem_alocacao,colaboradores!formacao_inscricoes_colaborador_id_fkey(id,nome,email,departamento_id)),formacao_departamentos(id,departamento_id,departamentos(id,codigo,nome)),formacao_favoritos(id,colaborador_id),formacao_presencas(id,colaborador_id,sessao_id,presente,hora_entrada,hora_saida,validado,colaboradores!formacao_presencas_colaborador_id_fkey(id,nome)),formacao_resultados(id,colaborador_id,resultado),formacao_avaliacoes(id,colaborador_id,score_conteudo,score_formador,score_organizacao,comentario,created_at,classificacao_geral,classificacao_conteudo,classificacao_formador,classificacao_organizacao),formacao_formadores(id,formador_id,entidade_id,principal,formadores!formacao_formadores_formador_id_fkey(id,nome,colaborador_id),entidades_formadoras!formacao_formadores_entidade_id_fkey(id,nome)),formacao_anexos(id,nome,tipo,url,tamanho_bytes)';
     const result = await retrieveWithRelations('formacoes', select, { id });
     return result.length > 0 ? result[0] : null;
   }
@@ -389,6 +389,18 @@ const DataService = (function() {
   
   // --- NOTIFICAÇÕES DE FORMAÇÃO ---
   
+  // Criar notificação genérica
+  async function criarNotificacao(dados) {
+    return createRecord('formacao_notificacoes', {
+      colaborador_id: dados.colaborador_id,
+      formacao_id: dados.referencia_id || dados.formacao_id,
+      tipo: dados.tipo,
+      titulo: dados.titulo,
+      mensagem: dados.mensagem,
+      lida: false
+    });
+  }
+  
   // Criar notificação de alocação
   async function criarNotificacaoAlocacao(formacaoId, colaboradorId, tituloFormacao, mensagem = null) {
     return createRecord('formacao_notificacoes', {
@@ -421,6 +433,30 @@ const DataService = (function() {
       tipo: 'sessao_iniciada',
       titulo: `Sessão iniciada: ${tituloFormacao}`,
       mensagem: `A sessão da formação "${tituloFormacao}" já iniciou. Registe a sua presença.`,
+      lida: false
+    });
+  }
+  
+  // Criar notificação de questionário de avaliação
+  async function criarNotificacaoQuestionario(formacaoId, colaboradorId, tituloFormacao, mensagem = null) {
+    return createRecord('formacao_notificacoes', {
+      formacao_id: formacaoId,
+      colaborador_id: colaboradorId,
+      tipo: 'questionario_formacao',
+      titulo: `Avaliação de Formação`,
+      mensagem: mensagem || `Por favor, avalie a formação "${tituloFormacao}" que frequentou recentemente.`,
+      lida: false
+    });
+  }
+  
+  // Criar notificação de formação cancelada
+  async function criarNotificacaoFormacaoCancelada(formacaoId, colaboradorId, tituloFormacao, motivo) {
+    return createRecord('formacao_notificacoes', {
+      formacao_id: formacaoId,
+      colaborador_id: colaboradorId,
+      tipo: 'formacao_cancelada',
+      titulo: `Formação Cancelada`,
+      mensagem: `A formação "${tituloFormacao}" foi cancelada. Motivo: ${motivo}`,
       lida: false
     });
   }
@@ -536,6 +572,10 @@ const DataService = (function() {
       score_conteudo: avaliacao.conteudo,
       score_formador: avaliacao.formador,
       score_organizacao: avaliacao.organizacao,
+      classificacao_geral: avaliacao.geral || avaliacao.classificacao_geral,
+      classificacao_conteudo: avaliacao.conteudo || avaliacao.classificacao_conteudo,
+      classificacao_formador: avaliacao.formador || avaliacao.classificacao_formador,
+      classificacao_organizacao: avaliacao.organizacao || avaliacao.classificacao_organizacao,
       comentario: avaliacao.comentario,
       recomendaria: avaliacao.recomendaria
     });
@@ -1016,9 +1056,12 @@ const DataService = (function() {
     removerAlocacaoFormacao,
     
     // Notificações de Formação
+    criarNotificacao,
     criarNotificacaoAlocacao,
     criarNotificacaoLembreteSessao,
     criarNotificacaoSessaoIniciada,
+    criarNotificacaoQuestionario,
+    criarNotificacaoFormacaoCancelada,
     getNotificacoesColaborador,
     marcarNotificacaoLida,
     marcarTodasNotificacoesLidas,
