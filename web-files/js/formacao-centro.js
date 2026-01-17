@@ -12,6 +12,7 @@ let allFormacoes = [];
 let myFormacoes = [];
 let myPropostas = [];
 let weekFormations = [];
+let pendingEvaluations = [];
 let currentUser = null;
 let selectedFormacao = null;
 let formacaoCalendarDate = new Date();
@@ -62,6 +63,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     await loadFormacoes();
     await loadMyPropostas();
     loadWeekFormations();
+    loadPendingEvaluations();
     initFormacaoCalendar();
     
   } catch (error) {
@@ -114,6 +116,96 @@ async function loadMyPropostas() {
   } catch (error) {
     console.error('[Propostas] Erro ao carregar:', error);
   }
+}
+
+// ==========================================
+// AVALIAÇÕES PENDENTES
+// ==========================================
+
+function loadPendingEvaluations() {
+  if (!currentUser || !myFormacoes) {
+    pendingEvaluations = [];
+    renderPendingEvaluations();
+    return;
+  }
+  
+  // Encontrar formações concluídas onde o utilizador ainda não avaliou
+  pendingEvaluations = myFormacoes.filter(f => {
+    const jaAvaliou = (f.formacao_avaliacoes || []).some(a => a.colaborador_id === currentUser.id);
+    return f.estado === 'Concluída' && !jaAvaliou;
+  });
+  
+  console.log('[Avaliações Pendentes] Encontradas:', pendingEvaluations.length);
+  
+  renderPendingEvaluations();
+  updatePendingEvaluationsCard();
+}
+
+function renderPendingEvaluations() {
+  const section = document.getElementById('avaliacoesPendentesSection');
+  const tbody = document.getElementById('pendingEvalTableBody');
+  const badge = document.getElementById('pendingEvalCount');
+  
+  if (!section || !tbody) return;
+  
+  if (pendingEvaluations.length === 0) {
+    section.style.display = 'none';
+    return;
+  }
+  
+  section.style.display = 'block';
+  if (badge) badge.textContent = pendingEvaluations.length;
+  
+  tbody.innerHTML = pendingEvaluations.map(f => {
+    const formadorDisplay = getFormadorDisplay(f);
+    const dataConclusao = f.data_conclusao 
+      ? new Date(f.data_conclusao).toLocaleDateString('pt-PT', { day: 'numeric', month: 'short', year: 'numeric' })
+      : 'Recentemente';
+    
+    return `
+      <div class="pending-eval-row">
+        <div class="pending-eval-title">${f.titulo}</div>
+        <div class="pending-eval-info">${f.tipo || 'Formação'}</div>
+        <div class="pending-eval-info">${formadorDisplay}</div>
+        <div class="pending-eval-info">${f.duracao_horas || 0}h</div>
+        <div class="pending-eval-info">${dataConclusao}</div>
+        <div>
+          <button class="pending-eval-btn" onclick="irParaAvaliacaoFormacao('${f.id}')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+            </svg>
+            Avaliar
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function updatePendingEvaluationsCard() {
+  const card = document.getElementById('statPendentesCard');
+  if (!card) return;
+  
+  if (pendingEvaluations.length > 0) {
+    card.classList.add('has-pending');
+  } else {
+    card.classList.remove('has-pending');
+  }
+}
+
+function scrollToAvaliacoesPendentes() {
+  const section = document.getElementById('avaliacoesPendentesSection');
+  if (section && section.style.display !== 'none') {
+    section.scrollIntoView({ behavior: 'smooth' });
+  } else {
+    // Se não há avaliações pendentes, mostrar mensagem
+    showToast('Não tem avaliações pendentes de momento.', 'info');
+  }
+}
+
+function irParaAvaliacaoFormacao(formacaoId) {
+  const baseUrl = getBaseUrl();
+  window.location.href = `${baseUrl}/formacao-detalhe?id=${formacaoId}&tab=avaliar`;
 }
 
 // ==========================================
@@ -484,15 +576,28 @@ function renderMyFormacoes(formacoes) {
     const sessoes = (f.formacao_sessoes || []).sort((a, b) => new Date(a.data) - new Date(b.data));
     const dataStr = sessoes[0] ? formatDate(sessoes[0].data) : 'A definir';
     
+    // Verificar se precisa de avaliação
+    const jaAvaliou = (f.formacao_avaliacoes || []).some(a => a.colaborador_id === currentUser?.id);
+    const precisaAvaliar = f.estado === 'Concluída' && !jaAvaliou;
+    
     let progresso = 0, progressoClass = '';
     if (f.estado === 'Concluída') { progresso = 100; progressoClass = 'complete'; }
     else if (f.estado === 'Em Curso') { progresso = 50; progressoClass = 'in-progress'; }
     
+    const avaliarBtn = precisaAvaliar 
+      ? `<button class="btn-action btn-action-warning" onclick="event.stopPropagation(); irParaAvaliacaoFormacao('${f.id}')" title="Avaliar formação">
+           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+             <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+           </svg>
+         </button>`
+      : '';
+    
     return `
-      <div class="formacoes-table-row" onclick="goToFormacaoDetalhe('${f.id}')">
+      <div class="formacoes-table-row ${precisaAvaliar ? 'needs-evaluation' : ''}" onclick="goToFormacaoDetalhe('${f.id}')">
         <div class="formacao-title-cell">
           <strong>${f.titulo}</strong>
           ${f.modalidade === 'Obrigatória' ? '<span class="badge-mandatory">Obrigatória</span>' : ''}
+          ${precisaAvaliar ? '<span class="badge-evaluate">Avaliar</span>' : ''}
         </div>
         <div>${f.tipo || '-'}</div>
         <div>${formadorDisplay}</div>
@@ -503,7 +608,8 @@ function renderMyFormacoes(formacoes) {
           <span class="progress-text">${progresso}%</span>
         </div>
         <div><span class="status-badge ${getEstadoClass(f.estado)}">${f.estado}</span></div>
-        <div>
+        <div class="action-buttons">
+          ${avaliarBtn}
           <button class="btn-action" onclick="event.stopPropagation(); goToFormacaoDetalhe('${f.id}')">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
