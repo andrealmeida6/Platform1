@@ -51,7 +51,7 @@ title: Centro de Formação
         <p>Em Curso</p>
       </div>
     </div>
-    <div class="quick-stat-card">
+    <div class="quick-stat-card clickable" onclick="scrollToAvaliacoesPendentes()" id="statPendentesCard">
       <div class="quick-stat-icon orange">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
       </div>
@@ -67,6 +67,37 @@ title: Centro de Formação
       <div class="quick-stat-content">
         <h3 id="statAgendadas">0</h3>
         <p>Formações Disponíveis</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECÇÃO AVALIAÇÕES PENDENTES -->
+  <section class="pending-evaluations-section" id="avaliacoesPendentesSection" style="display: none;">
+    <div class="pending-evaluations-container">
+      <div class="pending-evaluations-header">
+        <div class="pending-evaluations-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+          </svg>
+          <span class="pending-evaluations-badge" id="pendingEvalCount">0</span>
+        </div>
+        <div class="pending-evaluations-title-wrapper">
+          <h3>Avaliações Pendentes</h3>
+          <p class="pending-evaluations-subtitle">Por favor, avalie as formações que frequentou para nos ajudar a melhorar</p>
+        </div>
+      </div>
+      <div class="pending-evaluations-table">
+        <div class="pending-eval-table-header">
+          <div>Formação</div>
+          <div>Tipo</div>
+          <div>Formador</div>
+          <div>Duração</div>
+          <div>Data Conclusão</div>
+          <div>Ação</div>
+        </div>
+        <div class="pending-eval-table-body" id="pendingEvalTableBody">
+          <!-- Avaliações pendentes serão inseridas aqui -->
+        </div>
       </div>
     </div>
   </section>
@@ -345,8 +376,193 @@ title: Centro de Formação
   </div>
 </div>
 
-<!-- Estilos para Formações Esta Semana -->
+<!-- Estilos para Avaliações Pendentes -->
 <style>
+/* Avaliações Pendentes Section */
+.pending-evaluations-section {
+  max-width: 1400px;
+  margin: 0 auto 1.5rem;
+  padding: 0 2rem;
+}
+
+.pending-evaluations-container {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border: 2px solid #f59e0b;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 20px rgba(245, 158, 11, 0.2);
+  animation: pulseGlow 2s ease-in-out infinite;
+}
+
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 4px 20px rgba(245, 158, 11, 0.2); }
+  50% { box-shadow: 0 4px 30px rgba(245, 158, 11, 0.35); }
+}
+
+.pending-evaluations-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.pending-evaluations-icon {
+  position: relative;
+  width: 52px;
+  height: 52px;
+  background: #f59e0b;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.pending-evaluations-icon svg {
+  width: 26px;
+  height: 26px;
+  color: white;
+}
+
+.pending-evaluations-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: #dc2626;
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 700;
+  min-width: 24px;
+  height: 24px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid #fef3c7;
+  animation: bounce 1s ease infinite;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+.pending-evaluations-title-wrapper h3 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #92400e;
+  margin: 0 0 0.25rem 0;
+}
+
+.pending-evaluations-subtitle {
+  font-size: 0.875rem;
+  color: #b45309;
+  margin: 0;
+}
+
+.pending-evaluations-table {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.pending-eval-table-header {
+  display: grid;
+  grid-template-columns: 2fr 0.8fr 1.2fr 0.7fr 1fr 1fr;
+  gap: 1rem;
+  padding: 0.875rem 1.25rem;
+  background: #fffbeb;
+  border-bottom: 2px solid #fde68a;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #92400e;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.pending-eval-table-body {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.pending-eval-row {
+  display: grid;
+  grid-template-columns: 2fr 0.8fr 1.2fr 0.7fr 1fr 1fr;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  align-items: center;
+  border-bottom: 1px solid #fef3c7;
+  transition: background-color 0.2s;
+}
+
+.pending-eval-row:last-child {
+  border-bottom: none;
+}
+
+.pending-eval-row:hover {
+  background-color: #fffbeb;
+}
+
+.pending-eval-title {
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 0.9rem;
+}
+
+.pending-eval-info {
+  color: #64748b;
+  font-size: 0.85rem;
+}
+
+.pending-eval-btn {
+  padding: 0.5rem 1rem;
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.pending-eval-btn:hover {
+  background: linear-gradient(135deg, #d97706, #b45309);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+}
+
+.pending-eval-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* Quick Stat Card clickable */
+.quick-stat-card.clickable {
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.quick-stat-card.clickable:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+.quick-stat-card.clickable.has-pending {
+  animation: attentionPulse 2s ease-in-out infinite;
+}
+
+@keyframes attentionPulse {
+  0%, 100% { box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15); }
+  50% { box-shadow: 0 4px 20px rgba(245, 158, 11, 0.35); }
+}
+
+/* Formações Esta Semana */
 .week-formations-section {
   max-width: 1400px;
   margin: 0 auto 1.5rem;
@@ -522,14 +738,17 @@ title: Centro de Formação
 }
 
 @media (max-width: 768px) {
+  .pending-evaluations-section,
   .week-formations-section {
     padding: 0 1rem;
   }
   
+  .pending-evaluations-container,
   .week-formations-container {
     padding: 1rem;
   }
   
+  .pending-evaluations-header,
   .week-formations-header {
     flex-direction: column;
     align-items: flex-start;
@@ -537,6 +756,19 @@ title: Centro de Formação
   
   .week-formations-subtitle {
     margin-left: 0;
+  }
+  
+  .pending-eval-table-header,
+  .pending-eval-row {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+  
+  .pending-eval-table-header > div:nth-child(3),
+  .pending-eval-table-header > div:nth-child(4),
+  .pending-eval-row > div:nth-child(3),
+  .pending-eval-row > div:nth-child(4) {
+    display: none;
   }
   
   .week-formation-item {
