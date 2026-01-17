@@ -58,18 +58,6 @@ title: Gestão de Formações
           <span class="stat-label">Em Aprovação</span>
         </div>
       </div>
-      <div class="stat-card blue">
-        <div class="stat-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
-            <polyline points="22 4 12 14.01 9 11.01"/>
-          </svg>
-        </div>
-        <div class="stat-info">
-          <span class="stat-number" id="statAprovados">0</span>
-          <span class="stat-label">Aprovados este mês</span>
-        </div>
-      </div>
       <div class="stat-card green">
         <div class="stat-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -95,6 +83,18 @@ title: Gestão de Formações
         <div class="stat-info">
           <span class="stat-number" id="statInscritos">0</span>
           <span class="stat-label">Inscritos Total</span>
+        </div>
+      </div>
+      <div class="stat-card blue">
+        <div class="stat-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+            <polyline points="22 4 12 14.01 9 11.01"/>
+          </svg>
+        </div>
+        <div class="stat-info">
+          <span class="stat-number" id="statConcluidas">0</span>
+          <span class="stat-label">Formações Concluídas</span>
         </div>
       </div>
     </div>
@@ -1017,15 +1017,15 @@ function updateStats() {
     p.estado === 'pendente_rh' ||
     p.estado === 'devolvido'
   ).length + formacoesAprovacao.length;
-  const aprovados = allPedidos.filter(p => p.estado === 'aprovado').length;
   const formacoes = allFormacoes.filter(f => f.estado === 'Agendada' || f.estado === 'Em Curso').length;
   const inscritos = allFormacoes.reduce((sum, f) => 
     sum + ((f.formacao_inscricoes || []).filter(i => i.estado === 'Inscrito').length), 0);
+  const concluidas = formacoesConcluidas.length;
   
   document.getElementById('statPendentes').textContent = pendentes;
-  document.getElementById('statAprovados').textContent = aprovados;
   document.getElementById('statFormacoes').textContent = formacoes;
   document.getElementById('statInscritos').textContent = inscritos;
+  document.getElementById('statConcluidas').textContent = concluidas;
 }
 
 // ==========================================
