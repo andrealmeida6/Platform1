@@ -39,7 +39,7 @@ title: Portal do Colaborador
       </svg>
       Artigos Atribuídos
     </div>
-    <a href="#" class="card-action" onclick="verTodoInventario()">Ver todos</a>
+    <a href="javascript:void(0)" class="card-action" onclick="verTodoInventario(); return false;">Ver todos</a>
   </div>
   <div id="inventoryContent">
     <div class="notification-loading">
@@ -59,7 +59,7 @@ title: Portal do Colaborador
       </svg>
       Deslocações
     </div>
-    <a href="#" class="card-action" onclick="verTodasDeslocacoes()">Ver todas</a>
+    <a href="javascript:void(0)" class="card-action" onclick="verTodasDeslocacoes(); return false;">Ver todas</a>
   </div>
   <div id="tripsContent">
     <div class="notification-loading">
@@ -446,6 +446,8 @@ document.addEventListener('DOMContentLoaded', async function() {
     await waitForServices();
     currentUser = await AuthService.getCurrentUser();
     
+    console.log('[Home] Utilizador atual:', currentUser?.nome || 'Não autenticado');
+    
     if (currentUser) {
       // Carregar todas as secções em paralelo
       await Promise.all([
@@ -760,8 +762,9 @@ function irParaFormacao(formacaoId, notificacaoId) {
 
 async function carregarArtigosAtribuidos() {
   try {
+    console.log('[Artigos] A carregar para colaborador:', currentUser.id);
     const artigos = await DataService.getArtigosAtribuidosColaborador(currentUser.id);
-    console.log('[Artigos] Carregados:', artigos.length);
+    console.log('[Artigos] Carregados:', artigos?.length || 0, artigos);
     
     renderArtigosAtribuidos(artigos);
     
@@ -841,6 +844,7 @@ function renderArtigosVazios(mensagem) {
 }
 
 function verTodoInventario() {
+  console.log('[Home] Redirecionando para inventário...');
   const baseUrl = getBaseUrl();
   window.location.href = `${baseUrl}/inventario`;
 }
@@ -851,8 +855,9 @@ function verTodoInventario() {
 
 async function carregarDeslocacoes() {
   try {
+    console.log('[Deslocações] A carregar para colaborador:', currentUser.id);
     const deslocacoes = await DataService.getDeslocacoesColaborador(currentUser.id);
-    console.log('[Deslocações] Carregadas:', deslocacoes.length);
+    console.log('[Deslocações] Carregadas:', deslocacoes?.length || 0, deslocacoes);
     
     renderDeslocacoes(deslocacoes);
     
@@ -955,6 +960,7 @@ function verDeslocacao(id) {
 }
 
 function verTodasDeslocacoes() {
+  console.log('[Home] Redirecionando para deslocações...');
   const baseUrl = getBaseUrl();
   window.location.href = `${baseUrl}/deslocacoes`;
 }
