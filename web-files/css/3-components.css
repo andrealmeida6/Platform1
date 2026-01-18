@@ -1,97 +1,11 @@
 /* ===================================================================
-   3. COMPONENTS (Profile, Quick Actions, Calendar Section, Toast)
+   3. COMPONENTS (Quick Actions, Calendar Section, Toast)
    Power Pages: Web File - components.css
    Usando variáveis de tema dinâmicas
+   
+   NOTA: Os estilos de profile-section foram movidos para o componente
+   _includes/components/profile-section.html (layout v4 com banner)
    =================================================================== */
-
-/* === PROFILE SECTION === */
-.profile-section {
-  background: var(--bg-card, var(--white));
-  border-radius: 12px;
-  padding: 1.5rem;
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-}
-
-.profile-avatar {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  background: var(--gradient-primary, linear-gradient(135deg, var(--primary-color) 0%, #007a62 100%));
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 2rem;
-  font-weight: 700;
-  flex-shrink: 0;
-}
-
-.profile-info {
-  flex: 1;
-  min-width: 200px;
-}
-
-.profile-name {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin-bottom: 0.5rem;
-}
-
-.profile-details {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1.25rem;
-}
-
-.profile-detail-item {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.profile-detail-label {
-  font-size: 0.7rem;
-  font-weight: 600;
-  color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.profile-detail-value {
-  font-size: 0.875rem;
-  color: var(--text-primary);
-  font-weight: 500;
-}
-
-.profile-status {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  background: var(--primary-light, #e6f7f1);
-  border-radius: 20px;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--primary-color);
-  flex-shrink: 0;
-}
-
-.status-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--primary-color);
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-}
 
 /* === QUICK ACTIONS === */
 .quick-actions {
