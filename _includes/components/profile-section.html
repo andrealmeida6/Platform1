@@ -1,4 +1,4 @@
-<!-- Profile Section - Layout Compacto -->
+<!-- Profile Section - Layout Compacto v4 com Banner -->
 <div class="profile-section" id="profileSection">
   <div class="profile-banner"></div>
   <div class="profile-content">
@@ -63,30 +63,37 @@
 
 <style>
 /* =========================================== */
-/* PROFILE SECTION - LAYOUT COMPACTO */
+/* PROFILE SECTION - LAYOUT COMPACTO V4       */
+/* Com Banner + Avatar Sobreposto             */
 /* =========================================== */
-.profile-section {
-  background: var(--white, #ffffff);
+
+/* Container principal */
+#profileSection.profile-section {
+  background: #ffffff;
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   margin-bottom: 1.5rem;
+  padding: 0;
 }
 
-.profile-banner {
+/* Banner verde no topo */
+#profileSection .profile-banner {
   height: 50px;
-  background: linear-gradient(135deg, var(--primary-color, #00b276) 0%, #007a62 100%);
+  background: linear-gradient(135deg, #00b276 0%, #007a62 100%);
   position: relative;
+  display: block;
 }
 
-.profile-banner::before {
+#profileSection .profile-banner::before {
   content: '';
   position: absolute;
   inset: 0;
   background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.08'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
 }
 
-.profile-content {
+/* Área de conteúdo */
+#profileSection .profile-content {
   padding: 0 1.5rem 1.25rem;
   display: flex;
   flex-wrap: wrap;
@@ -94,16 +101,18 @@
   align-items: center;
 }
 
-.profile-avatar-wrapper {
+/* Wrapper do avatar com margin negativo */
+#profileSection .profile-avatar-wrapper {
   margin-top: -30px;
   position: relative;
   z-index: 2;
 }
 
-.profile-avatar {
+/* Avatar quadrado com cantos arredondados */
+#profileSection .profile-avatar {
   width: 70px;
   height: 70px;
-  background: linear-gradient(135deg, var(--primary-color, #00b276) 0%, #007a62 100%);
+  background: linear-gradient(135deg, #00b276 0%, #007a62 100%);
   border-radius: 14px;
   display: flex;
   align-items: center;
@@ -111,78 +120,79 @@
   color: white;
   font-size: 1.5rem;
   font-weight: 800;
-  border: 3px solid var(--white, #ffffff);
+  border: 3px solid #ffffff;
   box-shadow: 0 6px 20px rgba(0, 178, 118, 0.25);
 }
 
-.profile-main {
+/* Área principal com nome e subtítulo */
+#profileSection .profile-main {
   flex: 1;
   min-width: 200px;
 }
 
-.profile-name {
+#profileSection .profile-name {
   font-size: 1.2rem;
   font-weight: 800;
-  color: var(--text-primary, #1e293b);
+  color: #1e293b;
   margin-bottom: 0.4rem;
 }
 
 /* Unidade Orgânica e Nº Colaborador na mesma linha */
-.profile-subtitle {
+#profileSection .profile-subtitle {
   display: flex;
   align-items: center;
   gap: 1.25rem;
   flex-wrap: wrap;
 }
 
-.profile-subtitle-item {
+#profileSection .profile-subtitle-item {
   display: flex;
   align-items: center;
   gap: 0.35rem;
 }
 
-.profile-subtitle-item svg {
+#profileSection .profile-subtitle-item svg {
   width: 14px;
   height: 14px;
-  color: var(--primary-color, #00b276);
+  color: #00b276;
   flex-shrink: 0;
 }
 
-.profile-subtitle-label {
+#profileSection .profile-subtitle-label {
   font-size: 0.65rem;
-  color: var(--text-muted, #94a3b8);
+  color: #94a3b8;
   text-transform: uppercase;
   letter-spacing: 0.3px;
   font-weight: 700;
 }
 
-.profile-subtitle-value {
+#profileSection .profile-subtitle-value {
   font-size: 0.8rem;
-  color: var(--text-secondary, #64748b);
+  color: #64748b;
   font-weight: 600;
 }
 
-.profile-separator {
+#profileSection .profile-separator {
   width: 1px;
   height: 20px;
-  background: var(--border-color, #e2e8f0);
+  background: #e2e8f0;
 }
 
 /* Detalhes (Email e Telefone) */
-.profile-details {
+#profileSection .profile-details {
   display: flex;
   gap: 1.5rem;
   flex-wrap: wrap;
   align-items: center;
 }
 
-.profile-detail {
+#profileSection .profile-detail {
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
-.profile-detail-icon {
+#profileSection .profile-detail-icon {
   width: 32px;
   height: 32px;
   background: #e6f7f1;
@@ -192,32 +202,33 @@
   justify-content: center;
 }
 
-.profile-detail-icon svg {
+#profileSection .profile-detail-icon svg {
   width: 16px;
   height: 16px;
-  color: var(--primary-color, #00b276);
+  color: #00b276;
 }
 
-.profile-detail-content {
+#profileSection .profile-detail-content {
   display: flex;
   flex-direction: column;
 }
 
-.profile-detail-label {
+#profileSection .profile-detail-label {
   font-size: 0.6rem;
-  color: var(--text-muted, #94a3b8);
+  color: #94a3b8;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   font-weight: 600;
 }
 
-.profile-detail-value {
+#profileSection .profile-detail-value {
   font-size: 0.8rem;
-  color: var(--text-primary, #1e293b);
+  color: #1e293b;
   font-weight: 600;
 }
 
-.profile-status {
+/* Status badge */
+#profileSection .profile-status {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -227,17 +238,17 @@
   font-weight: 700;
 }
 
-.profile-status.active {
+#profileSection .profile-status.active {
   background: #dcfce7;
   color: #166534;
 }
 
-.profile-status.inactive {
+#profileSection .profile-status.inactive {
   background: #fee2e2;
   color: #991b1b;
 }
 
-.profile-status-dot {
+#profileSection .profile-status-dot {
   width: 7px;
   height: 7px;
   background: currentColor;
@@ -252,73 +263,73 @@
 
 /* === RESPONSIVE === */
 @media (max-width: 900px) {
-  .profile-content {
+  #profileSection .profile-content {
     gap: 1rem;
   }
   
-  .profile-details {
+  #profileSection .profile-details {
     gap: 1rem;
   }
 }
 
 @media (max-width: 768px) {
-  .profile-content {
+  #profileSection .profile-content {
     flex-direction: column;
     text-align: center;
     align-items: center;
   }
 
-  .profile-avatar-wrapper {
+  #profileSection .profile-avatar-wrapper {
     margin: -30px auto 0;
   }
 
-  .profile-subtitle {
+  #profileSection .profile-subtitle {
     justify-content: center;
   }
 
-  .profile-details {
+  #profileSection .profile-details {
     justify-content: center;
   }
   
-  .profile-status {
+  #profileSection .profile-status {
     margin-top: 0.5rem;
   }
 }
 
 @media (max-width: 500px) {
-  .profile-content {
+  #profileSection .profile-content {
     padding: 0 1rem 1rem;
   }
   
-  .profile-details {
+  #profileSection .profile-details {
     flex-direction: column;
     gap: 0.75rem;
   }
 
-  .profile-subtitle {
+  #profileSection .profile-subtitle {
     flex-direction: column;
     gap: 0.5rem;
   }
 
-  .profile-separator {
+  #profileSection .profile-separator {
     display: none;
   }
   
-  .profile-name {
+  #profileSection .profile-name {
     font-size: 1.1rem;
   }
   
-  .profile-avatar {
+  #profileSection .profile-avatar {
     width: 60px;
     height: 60px;
     font-size: 1.25rem;
   }
   
-  .profile-avatar-wrapper {
+  #profileSection .profile-avatar-wrapper {
     margin-top: -25px;
   }
   
-  .profile-banner {
+  #profileSection .profile-banner {
     height: 40px;
   }
 }
