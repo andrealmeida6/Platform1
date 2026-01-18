@@ -1,28 +1,328 @@
-<!-- Profile Section - Dinâmico -->
+<!-- Profile Section - Layout Compacto -->
 <div class="profile-section" id="profileSection">
-  <div class="profile-avatar" id="profileAvatar">--</div>
-  <div class="profile-info">
-    <div class="profile-name" id="profileName">A carregar...</div>
-    <div class="profile-details">
-      <div class="profile-detail-item">
-        <span class="profile-detail-label">EMAIL</span>
-        <span class="profile-detail-value" id="profileEmail">-</span>
-      </div>
-      <div class="profile-detail-item">
-        <span class="profile-detail-label">TELEFONE</span>
-        <span class="profile-detail-value" id="profileTelefone">-</span>
-      </div>
-      <div class="profile-detail-item">
-        <span class="profile-detail-label">UNIDADE ORGÂNICA</span>
-        <span class="profile-detail-value" id="profileDepartamento">-</span>
+  <div class="profile-banner"></div>
+  <div class="profile-content">
+    <div class="profile-avatar-wrapper">
+      <div class="profile-avatar" id="profileAvatar">--</div>
+    </div>
+    <div class="profile-main">
+      <div class="profile-name" id="profileName">A carregar...</div>
+      <div class="profile-subtitle">
+        <!-- Unidade Orgânica -->
+        <div class="profile-subtitle-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+          <span class="profile-subtitle-label">Unidade Orgânica:</span>
+          <span class="profile-subtitle-value" id="profileDepartamento">-</span>
+        </div>
+        <span class="profile-separator"></span>
+        <!-- Nº Colaborador -->
+        <div class="profile-subtitle-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+          </svg>
+          <span class="profile-subtitle-label">Nº Colaborador:</span>
+          <span class="profile-subtitle-value" id="profileNumero">-</span>
+        </div>
       </div>
     </div>
-  </div>
-  <div class="profile-status active" id="profileStatus">
-    <span class="status-dot"></span>
-    <span id="profileStatusText">Ativo</span>
+    <div class="profile-details">
+      <div class="profile-detail">
+        <div class="profile-detail-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+            <polyline points="22,6 12,13 2,6"/>
+          </svg>
+        </div>
+        <div class="profile-detail-content">
+          <span class="profile-detail-label">Email</span>
+          <span class="profile-detail-value" id="profileEmail">-</span>
+        </div>
+      </div>
+      <div class="profile-detail">
+        <div class="profile-detail-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+          </svg>
+        </div>
+        <div class="profile-detail-content">
+          <span class="profile-detail-label">Telefone</span>
+          <span class="profile-detail-value" id="profileTelefone">-</span>
+        </div>
+      </div>
+    </div>
+    <div class="profile-status active" id="profileStatus">
+      <span class="profile-status-dot"></span>
+      <span id="profileStatusText">Ativo</span>
+    </div>
   </div>
 </div>
+
+<style>
+/* =========================================== */
+/* PROFILE SECTION - LAYOUT COMPACTO */
+/* =========================================== */
+.profile-section {
+  background: var(--white, #ffffff);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  margin-bottom: 1.5rem;
+}
+
+.profile-banner {
+  height: 50px;
+  background: linear-gradient(135deg, var(--primary-color, #00b276) 0%, #007a62 100%);
+  position: relative;
+}
+
+.profile-banner::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.08'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+.profile-content {
+  padding: 0 1.5rem 1.25rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  align-items: center;
+}
+
+.profile-avatar-wrapper {
+  margin-top: -30px;
+  position: relative;
+  z-index: 2;
+}
+
+.profile-avatar {
+  width: 70px;
+  height: 70px;
+  background: linear-gradient(135deg, var(--primary-color, #00b276) 0%, #007a62 100%);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.5rem;
+  font-weight: 800;
+  border: 3px solid var(--white, #ffffff);
+  box-shadow: 0 6px 20px rgba(0, 178, 118, 0.25);
+}
+
+.profile-main {
+  flex: 1;
+  min-width: 200px;
+}
+
+.profile-name {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--text-primary, #1e293b);
+  margin-bottom: 0.4rem;
+}
+
+/* Unidade Orgânica e Nº Colaborador na mesma linha */
+.profile-subtitle {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.profile-subtitle-item {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.profile-subtitle-item svg {
+  width: 14px;
+  height: 14px;
+  color: var(--primary-color, #00b276);
+  flex-shrink: 0;
+}
+
+.profile-subtitle-label {
+  font-size: 0.65rem;
+  color: var(--text-muted, #94a3b8);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  font-weight: 700;
+}
+
+.profile-subtitle-value {
+  font-size: 0.8rem;
+  color: var(--text-secondary, #64748b);
+  font-weight: 600;
+}
+
+.profile-separator {
+  width: 1px;
+  height: 20px;
+  background: var(--border-color, #e2e8f0);
+}
+
+/* Detalhes (Email e Telefone) */
+.profile-details {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.profile-detail {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.profile-detail-icon {
+  width: 32px;
+  height: 32px;
+  background: #e6f7f1;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile-detail-icon svg {
+  width: 16px;
+  height: 16px;
+  color: var(--primary-color, #00b276);
+}
+
+.profile-detail-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.profile-detail-label {
+  font-size: 0.6rem;
+  color: var(--text-muted, #94a3b8);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+.profile-detail-value {
+  font-size: 0.8rem;
+  color: var(--text-primary, #1e293b);
+  font-weight: 600;
+}
+
+.profile-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.9rem;
+  border-radius: 50px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.profile-status.active {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.profile-status.inactive {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.profile-status-dot {
+  width: 7px;
+  height: 7px;
+  background: currentColor;
+  border-radius: 50%;
+  animation: pulse-profile 2s infinite;
+}
+
+@keyframes pulse-profile {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.1); }
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 900px) {
+  .profile-content {
+    gap: 1rem;
+  }
+  
+  .profile-details {
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .profile-content {
+    flex-direction: column;
+    text-align: center;
+    align-items: center;
+  }
+
+  .profile-avatar-wrapper {
+    margin: -30px auto 0;
+  }
+
+  .profile-subtitle {
+    justify-content: center;
+  }
+
+  .profile-details {
+    justify-content: center;
+  }
+  
+  .profile-status {
+    margin-top: 0.5rem;
+  }
+}
+
+@media (max-width: 500px) {
+  .profile-content {
+    padding: 0 1rem 1rem;
+  }
+  
+  .profile-details {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .profile-subtitle {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .profile-separator {
+    display: none;
+  }
+  
+  .profile-name {
+    font-size: 1.1rem;
+  }
+  
+  .profile-avatar {
+    width: 60px;
+    height: 60px;
+    font-size: 1.25rem;
+  }
+  
+  .profile-avatar-wrapper {
+    margin-top: -25px;
+  }
+  
+  .profile-banner {
+    height: 40px;
+  }
+}
+</style>
 
 <script>
 // Atualizar interface do perfil com dados do utilizador
@@ -69,6 +369,12 @@ function updateProfileUI(user) {
   if (profileDepartamento) {
     const deptNome = user.departamentos?.nome || user.departamento_nome || '-';
     profileDepartamento.textContent = deptNome;
+  }
+  
+  // Número do Colaborador
+  const profileNumero = document.getElementById('profileNumero');
+  if (profileNumero) {
+    profileNumero.textContent = user.numero_colaborador || '-';
   }
   
   // Status
