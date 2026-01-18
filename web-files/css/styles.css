@@ -91,97 +91,11 @@ body {
   color: var(--text-secondary);
 }
 
-/* === PROFILE SECTION === */
-.profile-section {
-  background: var(--white);
-  border-radius: 16px;
-  padding: 1.5rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-  flex-wrap: wrap;
-  margin-bottom: 1.5rem;
-}
-
-.profile-avatar {
-  width: 80px;
-  height: 80px;
-  background: linear-gradient(135deg, var(--primary-color) 0%, #007a62 100%);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 2rem;
-  font-weight: 700;
-  flex-shrink: 0;
-}
-
-.profile-info {
-  flex: 1;
-  min-width: 200px;
-}
-
-.profile-name {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin-bottom: 0.5rem;
-}
-
-.profile-details {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1.25rem;
-}
-
-.profile-detail-item {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.profile-detail-label {
-  font-size: 0.7rem;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.profile-detail-value {
-  font-size: 0.85rem;
-  color: var(--text-primary);
-  font-weight: 500;
-}
-
-.profile-status {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  border-radius: 20px;
-  font-size: 0.8rem;
-  font-weight: 600;
-}
-
-.profile-status.active {
-  background: #dcfce7;
-  color: var(--success);
-}
-
-.status-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: currentColor;
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-}
+/* === PROFILE SECTION ===
+   NOTA: Os estilos do profile-section estão agora no componente
+   _includes/components/profile-section.html para evitar conflitos.
+   O componente usa layout com banner e avatar sobreposto.
+*/
 
 /* === QUICK ACTIONS === */
 .quick-actions {
@@ -1958,6 +1872,11 @@ body {
   color: var(--primary-color);
 }
 
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
 /* === RESPONSIVE === */
 @media (max-width: 1200px) {
   .calendar-cards {
@@ -2024,15 +1943,6 @@ body {
   .months-container {
     grid-template-columns: 1fr;
     gap: 0.75rem;
-  }
-
-  .profile-section {
-    flex-direction: column;
-    text-align: center;
-  }
-
-  .profile-status {
-    align-self: center;
   }
 
   .mini-table {
