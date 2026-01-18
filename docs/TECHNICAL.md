@@ -274,6 +274,9 @@ Converter os componentes `_includes/components/*.html` para Web Templates:
 
 **Exemplo - Conversão de Notificações:**
 
+> **Nota:** O código abaixo é específico para Power Pages e não executa em Jekyll/GitHub Pages.
+
+{% raw %}
 ```html
 <!-- Antes (Jekyll/Liquid atual) -->
 {% for notif in notificacoes %}
@@ -301,6 +304,7 @@ Converter os componentes `_includes/components/*.html` para Web Templates:
   </div>
 {% endfor %}
 ```
+{% endraw %}
 
 ### Passo 3: Configurar Web API
 
@@ -353,6 +357,7 @@ webapi.safeAjax({
 
 Converter `_layouts/default.html`:
 
+{% raw %}
 ```html
 <!-- Power Pages Page Template -->
 {% include 'Header' %}
@@ -366,6 +371,7 @@ Converter `_layouts/default.html`:
 <!-- Scripts -->
 <script src="~/js/app.js"></script>
 ```
+{% endraw %}
 
 ### Passo 7: Configurar Autenticação
 
