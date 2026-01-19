@@ -39,7 +39,7 @@ title: Portal do Colaborador
       </svg>
       Artigos Atribuídos
     </div>
-    <a href="javascript:void(0)" class="card-action" onclick="verTodoInventario(); return false;">Ver todos</a>
+    <a href="{{ '/inventario' | relative_url }}" class="card-action">Ver todos</a>
   </div>
   <div id="inventoryContent">
     <div class="notification-loading">
@@ -59,7 +59,7 @@ title: Portal do Colaborador
       </svg>
       Deslocações
     </div>
-    <a href="javascript:void(0)" class="card-action" onclick="verTodasDeslocacoes(); return false;">Ver todas</a>
+    <a href="{{ '/deslocacoes' | relative_url }}" class="card-action">Ver todas</a>
   </div>
   <div id="tripsContent">
     <div class="notification-loading">
@@ -843,12 +843,6 @@ function renderArtigosVazios(mensagem) {
   `;
 }
 
-function verTodoInventario() {
-  console.log('[Home] Redirecionando para inventário...');
-  const baseUrl = getBaseUrl();
-  window.location.href = `${baseUrl}/inventario`;
-}
-
 // ==========================================
 // DESLOCAÇÕES
 // ==========================================
@@ -957,12 +951,6 @@ function renderDeslocacoesVazias(mensagem) {
 function verDeslocacao(id) {
   const baseUrl = getBaseUrl();
   window.location.href = `${baseUrl}/deslocacao-detalhe?id=${id}`;
-}
-
-function verTodasDeslocacoes() {
-  console.log('[Home] Redirecionando para deslocações...');
-  const baseUrl = getBaseUrl();
-  window.location.href = `${baseUrl}/deslocacoes`;
 }
 
 // ==========================================
