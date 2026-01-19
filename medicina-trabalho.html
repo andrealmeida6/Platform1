@@ -1,0 +1,1221 @@
+---
+layout: default
+title: Medicina no Trabalho
+---
+
+<div class="medicina-page">
+  <!-- Header da Página -->
+  <div class="page-header-section">
+    <div class="page-header-left">
+      <h1 class="page-title">Medicina no Trabalho</h1>
+      <p class="page-subtitle">Gestão de consultas e exames médicos ocupacionais</p>
+    </div>
+    <div class="page-header-actions">
+      <button class="btn-primary" onclick="abrirModalNovaConsulta()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        Nova Marcação
+      </button>
+    </div>
+  </div>
+
+  <!-- Estatísticas Rápidas -->
+  <div class="stats-grid" id="statsGrid">
+    <div class="stat-card">
+      <div class="stat-icon agendada">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+          <line x1="16" y1="2" x2="16" y2="6"></line>
+          <line x1="8" y1="2" x2="8" y2="6"></line>
+          <line x1="3" y1="10" x2="21" y2="10"></line>
+        </svg>
+      </div>
+      <div class="stat-info">
+        <span class="stat-value" id="statAgendada">0</span>
+        <span class="stat-label">Agendadas</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon confirmada">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M22 11.08V12a10 10 0 11-5.93-9.14"></path>
+          <polyline points="22 4 12 14.01 9 11.01"></polyline>
+        </svg>
+      </div>
+      <div class="stat-info">
+        <span class="stat-value" id="statConfirmada">0</span>
+        <span class="stat-label">Confirmadas</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon realizada">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <line x1="16" y1="13" x2="8" y2="13"></line>
+          <line x1="16" y1="17" x2="8" y2="17"></line>
+        </svg>
+      </div>
+      <div class="stat-info">
+        <span class="stat-value" id="statRealizada">0</span>
+        <span class="stat-label">Realizadas</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon apto">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"></path>
+        </svg>
+      </div>
+      <div class="stat-info">
+        <span class="stat-value" id="statAptos">0</span>
+        <span class="stat-label">Aptos Este Ano</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Calendário de Consultas -->
+  <div class="calendar-section-medicina">
+    <div class="calendar-header">
+      <div class="calendar-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+          <line x1="16" y1="2" x2="16" y2="6"></line>
+          <line x1="8" y1="2" x2="8" y2="6"></line>
+          <line x1="3" y1="10" x2="21" y2="10"></line>
+        </svg>
+        Calendário de Consultas
+      </div>
+      <div class="calendar-nav">
+        <button class="calendar-nav-btn" onclick="mesAnterior()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+        </button>
+        <span class="calendar-month-label" id="calendarMonthLabel">Janeiro 2026</span>
+        <button class="calendar-nav-btn" onclick="mesSeguinte()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </button>
+      </div>
+    </div>
+    <div class="calendar-grid-medicina" id="calendarGrid">
+      <!-- Dias da semana -->
+      <div class="day-header">Dom</div>
+      <div class="day-header">Seg</div>
+      <div class="day-header">Ter</div>
+      <div class="day-header">Qua</div>
+      <div class="day-header">Qui</div>
+      <div class="day-header">Sex</div>
+      <div class="day-header">Sáb</div>
+      <!-- Dias do mês serão preenchidos via JavaScript -->
+    </div>
+  </div>
+
+  <!-- Próximas Consultas -->
+  <div class="upcoming-section">
+    <div class="section-header">
+      <div class="section-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+        Próximas Consultas
+      </div>
+    </div>
+    <div class="upcoming-list" id="upcomingList">
+      <!-- Preenchido via JavaScript -->
+    </div>
+  </div>
+
+  <!-- Filtros e Pesquisa -->
+  <div class="filters-section">
+    <div class="search-box">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <input type="text" id="searchInput" placeholder="Pesquisar por colaborador, tipo de consulta..." onkeyup="filtrarConsultas()">
+    </div>
+    <div class="filter-group">
+      <select id="filterEstado" onchange="filtrarConsultas()">
+        <option value="">Todos os Estados</option>
+        <option value="Agendada">Agendada</option>
+        <option value="Confirmada">Confirmada</option>
+        <option value="Realizada">Realizada</option>
+        <option value="Cancelada">Cancelada</option>
+        <option value="Não Compareceu">Não Compareceu</option>
+      </select>
+      <select id="filterTipo" onchange="filtrarConsultas()">
+        <option value="">Todos os Tipos</option>
+        <option value="PERIODICA">Periódica</option>
+        <option value="ADMISSAO">Admissão</option>
+        <option value="OCASIONAL">Ocasional</option>
+        <option value="REINTEGRACAO">Reintegração</option>
+        <option value="MUDANCA_FUNCAO">Mudança de Função</option>
+      </select>
+      <select id="filterResultado" onchange="filtrarConsultas()">
+        <option value="">Todos os Resultados</option>
+        <option value="Apto">Apto</option>
+        <option value="Apto Condicionado">Apto Condicionado</option>
+        <option value="Inapto Temporário">Inapto Temporário</option>
+        <option value="Inapto">Inapto</option>
+      </select>
+      <button class="btn-outline" onclick="limparFiltros()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+        Limpar
+      </button>
+    </div>
+  </div>
+
+  <!-- Tabela de Consultas -->
+  <div class="table-container">
+    <div class="table-header">
+      <div class="th" onclick="ordenarTabela('colaborador')">
+        <span>Colaborador</span>
+        <span class="sort-icon" id="sort-colaborador">↕</span>
+      </div>
+      <div class="th" onclick="ordenarTabela('data')">
+        <span>Data</span>
+        <span class="sort-icon" id="sort-data">↕</span>
+      </div>
+      <div class="th" onclick="ordenarTabela('tipo')">
+        <span>Tipo</span>
+        <span class="sort-icon" id="sort-tipo">↕</span>
+      </div>
+      <div class="th" onclick="ordenarTabela('hora')">
+        <span>Hora</span>
+        <span class="sort-icon" id="sort-hora">↕</span>
+      </div>
+      <div class="th" onclick="ordenarTabela('estado')">
+        <span>Estado</span>
+        <span class="sort-icon" id="sort-estado">↕</span>
+      </div>
+      <div class="th" onclick="ordenarTabela('resultado')">
+        <span>Resultado</span>
+        <span class="sort-icon" id="sort-resultado">↕</span>
+      </div>
+      <div class="th">Ações</div>
+    </div>
+    <div class="table-body" id="consultasTableBody">
+      <!-- Preenchido via JavaScript -->
+    </div>
+  </div>
+
+  <!-- Estado Vazio -->
+  <div class="empty-state" id="emptyState" style="display: none;">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"></path>
+    </svg>
+    <h3>Sem consultas registadas</h3>
+    <p>Não existem consultas de medicina no trabalho para mostrar.</p>
+    <button class="btn-primary" onclick="abrirModalNovaConsulta()">Agendar Consulta</button>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-state" id="loadingState">
+    <div class="spinner"></div>
+    <p>A carregar consultas...</p>
+  </div>
+</div>
+
+<!-- Modal Nova Consulta -->
+<div id="modalNovaConsulta" class="modal-overlay" style="display: none;">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2 class="modal-title" id="modalTitle">Nova Marcação</h2>
+      <button class="modal-close" onclick="fecharModal()">×</button>
+    </div>
+    <form id="formConsulta" onsubmit="event.preventDefault(); guardarConsulta();">
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Colaborador *</label>
+          <select id="selectColaborador" class="form-select" required>
+            <option value="">Selecione o colaborador...</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Tipo de Consulta *</label>
+          <select id="selectTipoConsulta" class="form-select" required>
+            <option value="">Selecione o tipo...</option>
+          </select>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Data *</label>
+            <input type="date" id="inputData" class="form-input" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Hora Início *</label>
+            <input type="time" id="inputHoraInicio" class="form-input" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Hora Fim</label>
+            <input type="time" id="inputHoraFim" class="form-input">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Local</label>
+          <input type="text" id="inputLocal" class="form-input" placeholder="Ex: Gabinete Médico - Piso 1">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Médico</label>
+          <input type="text" id="inputMedico" class="form-input" placeholder="Nome do médico">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Observações</label>
+          <textarea id="inputObservacoes" class="form-textarea" rows="3" placeholder="Observações adicionais..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" onclick="fecharModal()">Cancelar</button>
+        <button type="submit" class="btn-primary">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+          Guardar
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Detalhes/Resultado -->
+<div id="modalDetalhes" class="modal-overlay" style="display: none;">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2 class="modal-title">Detalhes da Consulta</h2>
+      <button class="modal-close" onclick="fecharModalDetalhes()">×</button>
+    </div>
+    <div class="modal-body" id="modalDetalhesBody">
+      <!-- Preenchido via JavaScript -->
+    </div>
+    <div class="modal-footer" id="modalDetalhesFooter">
+      <button type="button" class="btn-secondary" onclick="fecharModalDetalhes()">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<link rel="stylesheet" href="{% raw %}{{ '/web-files/css/medicina.css' | relative_url }}{% endraw %}">
+
+<style>
+/* Estilos adicionais do modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.modal-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  transition: color 0.2s;
+}
+
+.modal-close:hover {
+  color: #475569;
+}
+
+.modal-body {
+  padding: 1.5rem;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #e2e8f0;
+  background: #f8fafc;
+  border-radius: 0 0 16px 16px;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.form-label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 0.5rem;
+}
+
+.form-input,
+.form-select,
+.form-textarea {
+  width: 100%;
+  padding: 0.65rem 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+}
+
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+  outline: none;
+  border-color: #00b276;
+  box-shadow: 0 0 0 3px rgba(0, 178, 118, 0.1);
+}
+
+.form-textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1.25rem;
+  background: white;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-secondary:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+/* Detalhes no modal */
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.detail-item.full-width {
+  grid-column: span 2;
+}
+
+.detail-label {
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.detail-value {
+  font-size: 0.9rem;
+  color: #1e293b;
+  font-weight: 500;
+}
+
+/* Responsivo modal */
+@media (max-width: 640px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .detail-item.full-width {
+    grid-column: span 1;
+  }
+}
+</style>
+
+<script>
+// ============================================
+// MEDICINA NO TRABALHO - JAVASCRIPT
+// ============================================
+
+let consultas = [];
+let consultasFiltradas = [];
+let tiposConsulta = [];
+let colaboradores = [];
+let currentUser = null;
+let consultaEmEdicao = null;
+let mesAtual = new Date();
+let sortConfig = { coluna: null, direcao: 'asc' };
+
+// Mapeamento de estados e tipos
+const estadoClasses = {
+  'Agendada': 'status-agendada',
+  'Confirmada': 'status-confirmada',
+  'Realizada': 'status-realizada',
+  'Cancelada': 'status-cancelada',
+  'Não Compareceu': 'status-nao-compareceu'
+};
+
+const resultadoClasses = {
+  'Apto': 'apto',
+  'Apto Condicionado': 'apto-condicionado',
+  'Inapto Temporário': 'inapto-temporario',
+  'Inapto': 'inapto'
+};
+
+const tipoClasses = {
+  'PERIODICA': 'tipo-periodica',
+  'ADMISSAO': 'tipo-admissao',
+  'OCASIONAL': 'tipo-ocasional',
+  'REINTEGRACAO': 'tipo-reintegracao',
+  'MUDANCA_FUNCAO': 'tipo-mudanca-funcao'
+};
+
+// Inicialização
+document.addEventListener('DOMContentLoaded', async function() {
+  await carregarDados();
+  renderizarCalendario();
+});
+
+async function carregarDados() {
+  const loadingState = document.getElementById('loadingState');
+  const emptyState = document.getElementById('emptyState');
+  
+  loadingState.style.display = 'flex';
+  
+  try {
+    // Aguardar serviços
+    while (typeof AuthService === 'undefined' || typeof DataService === 'undefined') {
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    
+    currentUser = await AuthService.getCurrentUser();
+    
+    // Carregar tipos de consulta
+    tiposConsulta = await DataService.query('tipos_consulta_medicina', {
+      filters: [{ column: 'ativo', operator: 'eq', value: true }],
+      orderBy: { column: 'ordem', ascending: true }
+    });
+    
+    // Carregar colaboradores
+    colaboradores = await DataService.query('colaboradores', {
+      filters: [{ column: 'ativo', operator: 'eq', value: true }],
+      orderBy: { column: 'nome', ascending: true }
+    });
+    
+    // Carregar consultas com joins
+    const { data, error } = await DataService.supabase
+      .from('consultas_medicina')
+      .select(`
+        *,
+        colaborador:colaboradores(id, nome, numero_colaborador, departamento_id, departamentos(nome)),
+        tipo:tipos_consulta_medicina(id, codigo, nome)
+      `)
+      .order('data_marcacao', { ascending: false });
+    
+    if (error) throw error;
+    consultas = data || [];
+    consultasFiltradas = [...consultas];
+    
+    // Preencher selects do modal
+    preencherSelectTipos();
+    preencherSelectColaboradores();
+    
+    // Atualizar UI
+    atualizarEstatisticas();
+    renderizarTabela();
+    renderizarProximasConsultas();
+    
+  } catch (error) {
+    console.error('[Medicina] Erro ao carregar dados:', error);
+    showToast('Erro ao carregar dados de medicina no trabalho', 'error');
+  } finally {
+    loadingState.style.display = 'none';
+    
+    if (consultasFiltradas.length === 0) {
+      emptyState.style.display = 'flex';
+    }
+  }
+}
+
+function preencherSelectTipos() {
+  const select = document.getElementById('selectTipoConsulta');
+  select.innerHTML = '<option value="">Selecione o tipo...</option>';
+  
+  tiposConsulta.forEach(tipo => {
+    select.innerHTML += `<option value="${tipo.id}">${tipo.nome}</option>`;
+  });
+}
+
+function preencherSelectColaboradores() {
+  const select = document.getElementById('selectColaborador');
+  select.innerHTML = '<option value="">Selecione o colaborador...</option>';
+  
+  colaboradores.forEach(colab => {
+    select.innerHTML += `<option value="${colab.id}">${colab.nome} (${colab.numero_colaborador || 'N/A'})</option>`;
+  });
+}
+
+function atualizarEstatisticas() {
+  const stats = {
+    agendada: 0,
+    confirmada: 0,
+    realizada: 0,
+    aptos: 0
+  };
+  
+  const anoAtual = new Date().getFullYear();
+  
+  consultas.forEach(c => {
+    if (c.estado === 'Agendada') stats.agendada++;
+    if (c.estado === 'Confirmada') stats.confirmada++;
+    if (c.estado === 'Realizada') stats.realizada++;
+    
+    // Contar aptos este ano
+    if (c.resultado === 'Apto' && c.data_marcacao) {
+      const ano = new Date(c.data_marcacao).getFullYear();
+      if (ano === anoAtual) stats.aptos++;
+    }
+  });
+  
+  document.getElementById('statAgendada').textContent = stats.agendada;
+  document.getElementById('statConfirmada').textContent = stats.confirmada;
+  document.getElementById('statRealizada').textContent = stats.realizada;
+  document.getElementById('statAptos').textContent = stats.aptos;
+}
+
+// ============================================
+// CALENDÁRIO
+// ============================================
+
+function renderizarCalendario() {
+  const grid = document.getElementById('calendarGrid');
+  const label = document.getElementById('calendarMonthLabel');
+  
+  const ano = mesAtual.getFullYear();
+  const mes = mesAtual.getMonth();
+  
+  // Atualizar label
+  const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 
+                 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+  label.textContent = `${meses[mes]} ${ano}`;
+  
+  // Limpar dias anteriores (manter headers)
+  const headers = grid.querySelectorAll('.day-header');
+  grid.innerHTML = '';
+  headers.forEach(h => grid.appendChild(h));
+  
+  // Primeiro dia do mês
+  const primeiroDia = new Date(ano, mes, 1);
+  const ultimoDia = new Date(ano, mes + 1, 0);
+  
+  // Dias do mês anterior
+  const diasAnteriores = primeiroDia.getDay();
+  const ultimoDiaMesAnterior = new Date(ano, mes, 0).getDate();
+  
+  for (let i = diasAnteriores - 1; i >= 0; i--) {
+    const dia = ultimoDiaMesAnterior - i;
+    const cell = criarCelulaDia(dia, true);
+    grid.appendChild(cell);
+  }
+  
+  // Dias do mês atual
+  const hoje = new Date();
+  for (let dia = 1; dia <= ultimoDia.getDate(); dia++) {
+    const data = new Date(ano, mes, dia);
+    const isHoje = data.toDateString() === hoje.toDateString();
+    const consultasDoDia = consultas.filter(c => {
+      const dataConsulta = new Date(c.data_marcacao);
+      return dataConsulta.toDateString() === data.toDateString();
+    });
+    
+    const cell = criarCelulaDia(dia, false, isHoje, consultasDoDia);
+    grid.appendChild(cell);
+  }
+  
+  // Dias do próximo mês
+  const diasRestantes = 42 - (diasAnteriores + ultimoDia.getDate());
+  for (let dia = 1; dia <= diasRestantes; dia++) {
+    const cell = criarCelulaDia(dia, true);
+    grid.appendChild(cell);
+  }
+}
+
+function criarCelulaDia(dia, outroMes, isHoje = false, consultas = []) {
+  const cell = document.createElement('div');
+  cell.className = 'day-cell';
+  
+  if (outroMes) cell.classList.add('other-month');
+  if (isHoje) cell.classList.add('today');
+  if (consultas.length > 0) cell.classList.add('has-event');
+  
+  cell.innerHTML = `
+    <span>${dia}</span>
+    ${consultas.length > 0 ? '<span class="event-dot medicina"></span>' : ''}
+  `;
+  
+  if (consultas.length > 0) {
+    cell.onclick = () => mostrarConsultasDoDia(consultas);
+  }
+  
+  return cell;
+}
+
+function mesAnterior() {
+  mesAtual.setMonth(mesAtual.getMonth() - 1);
+  renderizarCalendario();
+}
+
+function mesSeguinte() {
+  mesAtual.setMonth(mesAtual.getMonth() + 1);
+  renderizarCalendario();
+}
+
+function mostrarConsultasDoDia(consultasDoDia) {
+  // Filtrar tabela para mostrar apenas as consultas do dia
+  consultasFiltradas = consultasDoDia;
+  renderizarTabela();
+}
+
+// ============================================
+// PRÓXIMAS CONSULTAS
+// ============================================
+
+function renderizarProximasConsultas() {
+  const container = document.getElementById('upcomingList');
+  const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0);
+  
+  // Filtrar consultas futuras
+  const proximas = consultas
+    .filter(c => {
+      const data = new Date(c.data_marcacao);
+      return data >= hoje && (c.estado === 'Agendada' || c.estado === 'Confirmada');
+    })
+    .sort((a, b) => new Date(a.data_marcacao) - new Date(b.data_marcacao))
+    .slice(0, 5);
+  
+  if (proximas.length === 0) {
+    container.innerHTML = `
+      <div class="empty-upcoming">
+        <p style="color: #64748b; text-align: center; padding: 1rem;">
+          Não existem consultas agendadas para os próximos dias.
+        </p>
+      </div>
+    `;
+    return;
+  }
+  
+  container.innerHTML = proximas.map(c => {
+    const data = new Date(c.data_marcacao);
+    const dia = data.getDate();
+    const mes = data.toLocaleString('pt-PT', { month: 'short' }).toUpperCase();
+    const nomeColaborador = c.colaborador?.nome || 'N/A';
+    const tipoNome = c.tipo?.nome || 'Consulta';
+    
+    return `
+      <div class="upcoming-item" onclick="verDetalhes('${c.id}')">
+        <div class="upcoming-date">
+          <span class="day">${dia}</span>
+          <span class="month">${mes}</span>
+        </div>
+        <div class="upcoming-info">
+          <div class="upcoming-tipo">${nomeColaborador}</div>
+          <div class="upcoming-hora">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            ${c.hora_inicio || '--:--'} - ${tipoNome}
+          </div>
+        </div>
+        <span class="status-badge ${estadoClasses[c.estado] || ''}">${c.estado}</span>
+      </div>
+    `;
+  }).join('');
+}
+
+// ============================================
+// TABELA
+// ============================================
+
+function renderizarTabela() {
+  const tbody = document.getElementById('consultasTableBody');
+  const emptyState = document.getElementById('emptyState');
+  
+  if (consultasFiltradas.length === 0) {
+    tbody.innerHTML = '';
+    emptyState.style.display = 'flex';
+    document.querySelector('.table-container').style.display = 'none';
+    return;
+  }
+  
+  emptyState.style.display = 'none';
+  document.querySelector('.table-container').style.display = 'block';
+  
+  tbody.innerHTML = consultasFiltradas.map(c => {
+    const nomeColaborador = c.colaborador?.nome || 'N/A';
+    const iniciais = getIniciais(nomeColaborador);
+    const dept = c.colaborador?.departamentos?.nome || '';
+    const tipoNome = c.tipo?.nome || 'N/A';
+    const tipoCodigo = c.tipo?.codigo || '';
+    const data = c.data_marcacao ? formatarData(c.data_marcacao) : '-';
+    const hora = c.hora_inicio || '--:--';
+    
+    return `
+      <div class="table-row">
+        <div class="td">
+          <div class="td-colaborador">
+            <div class="colaborador-avatar">${iniciais}</div>
+            <div class="colaborador-info">
+              <span class="colaborador-nome">${nomeColaborador}</span>
+              <span class="colaborador-dept">${dept}</span>
+            </div>
+          </div>
+        </div>
+        <div class="td">${data}</div>
+        <div class="td">
+          <span class="tipo-badge ${tipoClasses[tipoCodigo] || ''}">${tipoNome}</span>
+        </div>
+        <div class="td">${hora}</div>
+        <div class="td">
+          <span class="status-badge ${estadoClasses[c.estado] || ''}">${c.estado}</span>
+        </div>
+        <div class="td">
+          ${c.resultado ? `<span class="resultado-badge ${resultadoClasses[c.resultado] || ''}">${c.resultado}</span>` : '<span class="resultado-badge pendente">Pendente</span>'}
+        </div>
+        <div class="td">
+          ${criarBotoesAcao(c)}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function criarBotoesAcao(consulta) {
+  let html = '<div class="action-buttons">';
+  
+  // Sempre mostrar botão de ver
+  html += `
+    <button class="action-btn primary" onclick="verDetalhes('${consulta.id}')" title="Ver detalhes">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+        <circle cx="12" cy="12" r="3"/>
+      </svg>
+    </button>
+  `;
+  
+  // Botão de editar (apenas para agendadas e confirmadas)
+  if (consulta.estado === 'Agendada' || consulta.estado === 'Confirmada') {
+    html += `
+      <button class="action-btn" onclick="editarConsulta('${consulta.id}')" title="Editar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+          <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+        </svg>
+      </button>
+    `;
+  }
+  
+  // Botão de cancelar (apenas para agendadas e confirmadas)
+  if (consulta.estado === 'Agendada' || consulta.estado === 'Confirmada') {
+    html += `
+      <button class="action-btn danger" onclick="cancelarConsulta('${consulta.id}')" title="Cancelar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    `;
+  }
+  
+  html += '</div>';
+  return html;
+}
+
+// ============================================
+// FILTROS E ORDENAÇÃO
+// ============================================
+
+function filtrarConsultas() {
+  const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+  const estadoFilter = document.getElementById('filterEstado').value;
+  const tipoFilter = document.getElementById('filterTipo').value;
+  const resultadoFilter = document.getElementById('filterResultado').value;
+  
+  consultasFiltradas = consultas.filter(c => {
+    const nomeColaborador = c.colaborador?.nome || '';
+    const tipoNome = c.tipo?.nome || '';
+    const tipoCodigo = c.tipo?.codigo || '';
+    
+    const matchSearch = !searchTerm || 
+      nomeColaborador.toLowerCase().includes(searchTerm) ||
+      tipoNome.toLowerCase().includes(searchTerm);
+    
+    const matchEstado = !estadoFilter || c.estado === estadoFilter;
+    const matchTipo = !tipoFilter || tipoCodigo === tipoFilter;
+    const matchResultado = !resultadoFilter || c.resultado === resultadoFilter;
+    
+    return matchSearch && matchEstado && matchTipo && matchResultado;
+  });
+  
+  renderizarTabela();
+}
+
+function limparFiltros() {
+  document.getElementById('searchInput').value = '';
+  document.getElementById('filterEstado').value = '';
+  document.getElementById('filterTipo').value = '';
+  document.getElementById('filterResultado').value = '';
+  
+  consultasFiltradas = [...consultas];
+  sortConfig = { coluna: null, direcao: 'asc' };
+  
+  document.querySelectorAll('.sort-icon').forEach(el => {
+    el.textContent = '↕';
+    el.classList.remove('active');
+  });
+  
+  renderizarTabela();
+}
+
+function ordenarTabela(coluna) {
+  if (sortConfig.coluna === coluna) {
+    sortConfig.direcao = sortConfig.direcao === 'asc' ? 'desc' : 'asc';
+  } else {
+    sortConfig.coluna = coluna;
+    sortConfig.direcao = 'asc';
+  }
+  
+  // Atualizar indicadores
+  document.querySelectorAll('.sort-icon').forEach(el => {
+    el.textContent = '↕';
+    el.classList.remove('active');
+  });
+  const sortIcon = document.getElementById(`sort-${coluna}`);
+  if (sortIcon) {
+    sortIcon.textContent = sortConfig.direcao === 'asc' ? '↑' : '↓';
+    sortIcon.classList.add('active');
+  }
+  
+  // Ordenar
+  consultasFiltradas.sort((a, b) => {
+    let valorA, valorB;
+    
+    switch(coluna) {
+      case 'colaborador':
+        valorA = a.colaborador?.nome || '';
+        valorB = b.colaborador?.nome || '';
+        break;
+      case 'data':
+        valorA = new Date(a.data_marcacao);
+        valorB = new Date(b.data_marcacao);
+        break;
+      case 'tipo':
+        valorA = a.tipo?.nome || '';
+        valorB = b.tipo?.nome || '';
+        break;
+      case 'hora':
+        valorA = a.hora_inicio || '';
+        valorB = b.hora_inicio || '';
+        break;
+      case 'estado':
+        valorA = a.estado || '';
+        valorB = b.estado || '';
+        break;
+      case 'resultado':
+        valorA = a.resultado || '';
+        valorB = b.resultado || '';
+        break;
+      default:
+        return 0;
+    }
+    
+    if (typeof valorA === 'string') {
+      valorA = valorA.toLowerCase();
+      valorB = valorB.toLowerCase();
+    }
+    
+    if (valorA < valorB) return sortConfig.direcao === 'asc' ? -1 : 1;
+    if (valorA > valorB) return sortConfig.direcao === 'asc' ? 1 : -1;
+    return 0;
+  });
+  
+  renderizarTabela();
+}
+
+// ============================================
+// MODAL - NOVA CONSULTA
+// ============================================
+
+function abrirModalNovaConsulta() {
+  consultaEmEdicao = null;
+  document.getElementById('modalTitle').textContent = 'Nova Marcação';
+  document.getElementById('formConsulta').reset();
+  document.getElementById('modalNovaConsulta').style.display = 'flex';
+}
+
+function fecharModal() {
+  document.getElementById('modalNovaConsulta').style.display = 'none';
+  consultaEmEdicao = null;
+}
+
+async function editarConsulta(id) {
+  const consulta = consultas.find(c => c.id === id);
+  if (!consulta) return;
+  
+  consultaEmEdicao = consulta;
+  document.getElementById('modalTitle').textContent = 'Editar Marcação';
+  
+  document.getElementById('selectColaborador').value = consulta.colaborador_id || '';
+  document.getElementById('selectTipoConsulta').value = consulta.tipo_consulta_id || '';
+  document.getElementById('inputData').value = consulta.data_marcacao || '';
+  document.getElementById('inputHoraInicio').value = consulta.hora_inicio || '';
+  document.getElementById('inputHoraFim').value = consulta.hora_fim || '';
+  document.getElementById('inputLocal').value = consulta.local || '';
+  document.getElementById('inputMedico').value = consulta.medico_nome || '';
+  document.getElementById('inputObservacoes').value = consulta.observacoes || '';
+  
+  document.getElementById('modalNovaConsulta').style.display = 'flex';
+}
+
+async function guardarConsulta() {
+  try {
+    const dados = {
+      colaborador_id: document.getElementById('selectColaborador').value,
+      tipo_consulta_id: document.getElementById('selectTipoConsulta').value,
+      data_marcacao: document.getElementById('inputData').value,
+      hora_inicio: document.getElementById('inputHoraInicio').value,
+      hora_fim: document.getElementById('inputHoraFim').value || null,
+      local: document.getElementById('inputLocal').value || null,
+      medico_nome: document.getElementById('inputMedico').value || null,
+      observacoes: document.getElementById('inputObservacoes').value || null,
+      agendado_por: currentUser?.id
+    };
+    
+    if (consultaEmEdicao) {
+      // Atualizar
+      dados.updated_at = new Date().toISOString();
+      await DataService.update('consultas_medicina', consultaEmEdicao.id, dados);
+      showToast('Consulta atualizada com sucesso', 'success');
+    } else {
+      // Criar nova
+      dados.estado = 'Agendada';
+      await DataService.insert('consultas_medicina', dados);
+      showToast('Consulta agendada com sucesso', 'success');
+    }
+    
+    fecharModal();
+    await carregarDados();
+    renderizarCalendario();
+    
+  } catch (error) {
+    console.error('[Medicina] Erro ao guardar consulta:', error);
+    showToast('Erro ao guardar consulta', 'error');
+  }
+}
+
+async function cancelarConsulta(id) {
+  if (!confirm('Tem a certeza que deseja cancelar esta consulta?')) return;
+  
+  try {
+    await DataService.update('consultas_medicina', id, {
+      estado: 'Cancelada',
+      cancelado_em: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    });
+    
+    showToast('Consulta cancelada com sucesso', 'success');
+    await carregarDados();
+    renderizarCalendario();
+    
+  } catch (error) {
+    console.error('[Medicina] Erro ao cancelar consulta:', error);
+    showToast('Erro ao cancelar consulta', 'error');
+  }
+}
+
+// ============================================
+// MODAL - DETALHES
+// ============================================
+
+function verDetalhes(id) {
+  const consulta = consultas.find(c => c.id === id);
+  if (!consulta) return;
+  
+  const body = document.getElementById('modalDetalhesBody');
+  const footer = document.getElementById('modalDetalhesFooter');
+  
+  const nomeColaborador = consulta.colaborador?.nome || 'N/A';
+  const dept = consulta.colaborador?.departamentos?.nome || '-';
+  const tipoNome = consulta.tipo?.nome || '-';
+  const data = consulta.data_marcacao ? formatarData(consulta.data_marcacao) : '-';
+  
+  body.innerHTML = `
+    <div class="detail-grid">
+      <div class="detail-item">
+        <span class="detail-label">Colaborador</span>
+        <span class="detail-value">${nomeColaborador}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Departamento</span>
+        <span class="detail-value">${dept}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Tipo de Consulta</span>
+        <span class="detail-value">${tipoNome}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Data</span>
+        <span class="detail-value">${data}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Hora</span>
+        <span class="detail-value">${consulta.hora_inicio || '--:--'} - ${consulta.hora_fim || '--:--'}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Local</span>
+        <span class="detail-value">${consulta.local || '-'}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Médico</span>
+        <span class="detail-value">${consulta.medico_nome || '-'}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Estado</span>
+        <span class="status-badge ${estadoClasses[consulta.estado] || ''}">${consulta.estado}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Resultado</span>
+        ${consulta.resultado ? `<span class="resultado-badge ${resultadoClasses[consulta.resultado] || ''}">${consulta.resultado}</span>` : '<span class="resultado-badge pendente">Pendente</span>'}
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Próxima Consulta</span>
+        <span class="detail-value">${consulta.data_proxima_consulta ? formatarData(consulta.data_proxima_consulta) : '-'}</span>
+      </div>
+      ${consulta.observacoes ? `
+        <div class="detail-item full-width">
+          <span class="detail-label">Observações</span>
+          <span class="detail-value">${consulta.observacoes}</span>
+        </div>
+      ` : ''}
+      ${consulta.observacoes_resultado ? `
+        <div class="detail-item full-width">
+          <span class="detail-label">Observações do Resultado</span>
+          <span class="detail-value">${consulta.observacoes_resultado}</span>
+        </div>
+      ` : ''}
+    </div>
+  `;
+  
+  // Mostrar botão de registar resultado se a consulta está confirmada
+  if (consulta.estado === 'Confirmada' || consulta.estado === 'Realizada') {
+    footer.innerHTML = `
+      <button type="button" class="btn-secondary" onclick="fecharModalDetalhes()">Fechar</button>
+      <button type="button" class="btn-primary" onclick="registarResultado('${consulta.id}')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+        </svg>
+        Registar Resultado
+      </button>
+    `;
+  } else {
+    footer.innerHTML = `
+      <button type="button" class="btn-secondary" onclick="fecharModalDetalhes()">Fechar</button>
+    `;
+  }
+  
+  document.getElementById('modalDetalhes').style.display = 'flex';
+}
+
+function fecharModalDetalhes() {
+  document.getElementById('modalDetalhes').style.display = 'none';
+}
+
+function registarResultado(id) {
+  // TODO: Implementar modal de registo de resultado
+  fecharModalDetalhes();
+  showToast('Funcionalidade de registo de resultado em desenvolvimento', 'info');
+}
+
+// ============================================
+// UTILITÁRIOS
+// ============================================
+
+function getIniciais(nome) {
+  if (!nome) return '?';
+  return nome.split(' ')
+    .filter(p => p.length > 0)
+    .map(p => p[0].toUpperCase())
+    .slice(0, 2)
+    .join('');
+}
+
+function formatarData(dataStr) {
+  if (!dataStr) return '-';
+  const data = new Date(dataStr);
+  return data.toLocaleDateString('pt-PT');
+}
+
+function showToast(message, type = 'success') {
+  if (typeof window.showToast === 'function') {
+    window.showToast(message, type);
+  } else {
+    alert(message);
+  }
+}
+</script>
