@@ -31,6 +31,12 @@
         </svg>
         <span>Formação</span>
       </a>
+      <a href="{{ '/medicina-trabalho' | relative_url }}" class="nav-link {% if page.url contains 'medicina' %}active{% endif %}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
+        </svg>
+        <span>Medicina</span>
+      </a>
       <a href="{{ '/backoffice' | relative_url }}" class="nav-link nav-link-admin {% if page.url contains 'backoffice' %}active{% endif %}" id="navBackoffice" style="display: none;">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="12" cy="12" r="3"/>
@@ -164,6 +170,14 @@
             </svg>
             Pedir Reembolsos
           </button>
+          
+          <!-- Medicina no Trabalho -->
+          <button class="user-action-btn" onclick="openMedicinaTrabaho()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"></path>
+            </svg>
+            Medicina no Trabalho
+          </button>
         </div>
       </div>
     </div>
@@ -228,6 +242,11 @@ function openPedirReembolsos() {
   } else {
     window.location.href = '{{ "/reembolsos" | relative_url }}';
   }
+  closeUserPanel();
+}
+
+function openMedicinaTrabaho() {
+  window.location.href = '{{ "/medicina-trabalho" | relative_url }}';
   closeUserPanel();
 }
 
