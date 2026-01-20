@@ -1049,30 +1049,31 @@ async function carregarDados() {
     
     currentUser = await AuthService.getCurrentUser();
     
-    // Carregar tipos de consulta
-    tiposConsulta = await DataService.query('tipos_consulta_medicina', {
-      filters: [{ column: 'ativo', operator: 'eq', value: true }],
-      orderBy: { column: 'ordem', ascending: true }
-    });
+    // Carregar tipos de consulta usando DataService
+    try {
+      tiposConsulta = await DataService.getTiposConsultaMedicina();
+    } catch (e) {
+      console.warn('[Medicina] Erro ao carregar tipos de consulta:', e);
+      tiposConsulta = [];
+    }
     
-    // Carregar colaboradores
-    colaboradores = await DataService.query('colaboradores', {
-      filters: [{ column: 'ativo', operator: 'eq', value: true }],
-      orderBy: { column: 'nome', ascending: true }
-    });
+    // Carregar colaboradores usando DataService
+    try {
+      colaboradores = await DataService.getColaboradores();
+    } catch (e) {
+      console.warn('[Medicina] Erro ao carregar colaboradores:', e);
+      colaboradores = [];
+    }
     
-    // Carregar consultas com joins
-    const { data, error } = await DataService.supabase
-      .from('consultas_medicina')
-      .select(`
-        *,
-        colaborador:colaboradores(id, nome, numero_colaborador, departamento_id, departamentos(nome)),
-        tipo:tipos_consulta_medicina(id, codigo, nome)
-      `)
-      .order('data_marcacao', { ascending: false });
+    // Carregar consultas usando DataService.getConsultasMedicina()
+    // Esta função já retorna array vazio em caso de erro, não quebra a página
+    try {
+      consultas = await DataService.getConsultasMedicina();
+    } catch (e) {
+      console.warn('[Medicina] Erro ao carregar consultas:', e);
+      consultas = [];
+    }
     
-    if (error) throw error;
-    consultas = data || [];
     consultasFiltradas = [...consultas];
     
     // Preencher selects do modal
@@ -1086,7 +1087,9 @@ async function carregarDados() {
     
   } catch (error) {
     console.error('[Medicina] Erro ao carregar dados:', error);
-    showToast('Erro ao carregar dados de medicina no trabalho', 'error');
+    // NÃO mostrar erro ao utilizador - simplesmente mostrar estado vazio
+    consultas = [];
+    consultasFiltradas = [];
   } finally {
     loadingState.style.display = 'none';
     
@@ -1285,7 +1288,7 @@ function renderizarMes(gridId, labelId, data, offset) {
   }
 }
 
-function criarCelulaDia(dia, data, outroMes, isHoje = false, isSelected = false, consultas = []) {
+function criarCelulaDia(dia, data, outroMes, isHoje = false, isSelected = false, consultasDia = []) {
   const cell = document.createElement('div');
   cell.className = 'day-number';
   
@@ -1293,12 +1296,12 @@ function criarCelulaDia(dia, data, outroMes, isHoje = false, isSelected = false,
   if (isHoje) cell.classList.add('today');
   if (isSelected) cell.classList.add('selected');
   
-  if (consultas.length > 0) {
+  if (consultasDia.length > 0) {
     cell.classList.add('has-event');
     // Adicionar classe do estado prioritário
-    if (consultas.some(c => c.estado === 'Confirmada')) {
+    if (consultasDia.some(c => c.estado === 'Confirmada')) {
       cell.classList.add('confirmada');
-    } else if (consultas.some(c => c.estado === 'Agendada')) {
+    } else if (consultasDia.some(c => c.estado === 'Agendada')) {
       cell.classList.add('agendada');
     } else {
       cell.classList.add('realizada');
@@ -1308,7 +1311,7 @@ function criarCelulaDia(dia, data, outroMes, isHoje = false, isSelected = false,
   cell.textContent = dia;
   
   if (!outroMes) {
-    cell.onclick = () => selecionarData(data, consultas);
+    cell.onclick = () => selecionarData(data, consultasDia);
   }
   
   return cell;
@@ -1669,11 +1672,11 @@ async function guardarConsulta() {
     
     if (consultaEmEdicao) {
       dados.updated_at = new Date().toISOString();
-      await DataService.update('consultas_medicina', consultaEmEdicao.id, dados);
+      await DataService.updateConsultaMedicina(consultaEmEdicao.id, dados);
       showToast('Consulta atualizada com sucesso', 'success');
     } else {
       dados.estado = 'Agendada';
-      await DataService.insert('consultas_medicina', dados);
+      await DataService.createConsultaMedicina(dados);
       showToast('Consulta agendada com sucesso', 'success');
     }
     
@@ -1692,11 +1695,7 @@ async function cancelarConsulta(id) {
   if (!confirm('Tem a certeza que deseja cancelar esta consulta?')) return;
   
   try {
-    await DataService.update('consultas_medicina', id, {
-      estado: 'Cancelada',
-      cancelado_em: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    });
+    await DataService.cancelarConsultaMedicina(id);
     
     showToast('Consulta cancelada com sucesso', 'success');
     await carregarDados();
