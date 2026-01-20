@@ -76,58 +76,109 @@ title: Medicina no Trabalho
     </div>
   </div>
 
-  <!-- Calendário de Consultas -->
-  <div class="calendar-section-medicina">
-    <div class="calendar-header">
-      <div class="calendar-title">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-          <line x1="16" y1="2" x2="16" y2="6"></line>
-          <line x1="8" y1="2" x2="8" y2="6"></line>
-          <line x1="3" y1="10" x2="21" y2="10"></line>
-        </svg>
-        Calendário de Consultas
+  <!-- Calendário de Consultas - IGUAL À HOME -->
+  <div class="calendar-section">
+    <div class="calendar-cards">
+      <div class="calendar-card blue">
+        <div class="calendar-card-label">Agendadas</div>
+        <div class="calendar-card-number" id="cardAgendadas">0</div>
+        <div class="calendar-card-info" id="cardProximaAgendada">-</div>
       </div>
-      <div class="calendar-nav">
-        <button class="calendar-nav-btn" onclick="mesAnterior()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="15 18 9 12 15 6"></polyline>
-          </svg>
-        </button>
-        <span class="calendar-month-label" id="calendarMonthLabel">Janeiro 2026</span>
-        <button class="calendar-nav-btn" onclick="mesSeguinte()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="9 18 15 12 9 6"></polyline>
-          </svg>
-        </button>
-      </div>
-    </div>
-    <div class="calendar-grid-medicina" id="calendarGrid">
-      <!-- Dias da semana -->
-      <div class="day-header">Dom</div>
-      <div class="day-header">Seg</div>
-      <div class="day-header">Ter</div>
-      <div class="day-header">Qua</div>
-      <div class="day-header">Qui</div>
-      <div class="day-header">Sex</div>
-      <div class="day-header">Sáb</div>
-      <!-- Dias do mês serão preenchidos via JavaScript -->
-    </div>
-  </div>
 
-  <!-- Próximas Consultas -->
-  <div class="upcoming-section">
-    <div class="section-header">
-      <div class="section-title">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="10"></circle>
-          <polyline points="12 6 12 12 16 14"></polyline>
-        </svg>
-        Próximas Consultas
+      <div class="calendar-card green">
+        <div class="calendar-card-label">Confirmadas</div>
+        <div class="calendar-card-number" id="cardConfirmadas">0</div>
+        <div class="calendar-card-info" id="cardProximaConfirmada">-</div>
+      </div>
+
+      <div class="calendar-card orange">
+        <div class="calendar-card-label">Este Mês</div>
+        <div class="calendar-card-number" id="cardEsteMes">0</div>
+        <div class="calendar-card-info">Consultas programadas</div>
+      </div>
+
+      <div class="calendar-card purple">
+        <div class="calendar-card-label">Próxima Semana</div>
+        <div class="calendar-card-number" id="cardProximaSemana">0</div>
+        <div class="calendar-card-info">Consultas agendadas</div>
       </div>
     </div>
-    <div class="upcoming-list" id="upcomingList">
-      <!-- Preenchido via JavaScript -->
+
+    <button class="calendar-toggle-btn" id="calendarToggleBtn" onclick="toggleCalendar()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="6 9 12 15 18 9"/>
+      </svg>
+      Ver Calendário
+    </button>
+
+    <!-- Collapsible Calendar Section - IGUAL À HOME -->
+    <div class="calendar-collapsible" id="calendarCollapsible">
+      <div class="calendar-wrapper">
+        <!-- Dual Calendar -->
+        <div class="dual-calendar-container">
+          <!-- Minimal Legend -->
+          <div class="calendar-legend-minimal">
+            <span class="legend-dot agendada" title="Agendada"></span>
+            <span class="legend-dot confirmada" title="Confirmada"></span>
+            <span class="legend-dot realizada" title="Realizada"></span>
+          </div>
+          
+          <div class="months-container">
+            <!-- Current Month -->
+            <div class="calendar-month">
+              <div class="month-header">
+                <button class="nav-arrow" id="prevMonth" onclick="mesAnterior()">◀</button>
+                <span id="currentMonthName">Janeiro 2026</span>
+                <span style="width: 28px;"></span>
+              </div>
+              
+              <div class="calendar-grid days">
+                <p>D</p><p>S</p><p>T</p><p>Q</p><p>Q</p><p>S</p><p>S</p>
+              </div>
+              
+              <div class="calendar-grid" id="currentMonthGrid"></div>
+            </div>
+
+            <!-- Next Month -->
+            <div class="calendar-month">
+              <div class="month-header">
+                <span style="width: 28px;"></span>
+                <span id="nextMonthName">Fevereiro 2026</span>
+                <button class="nav-arrow" id="nextMonth" onclick="mesSeguinte()">▶</button>
+              </div>
+              
+              <div class="calendar-grid days">
+                <p>D</p><p>S</p><p>T</p><p>Q</p><p>Q</p><p>S</p><p>S</p>
+              </div>
+              
+              <div class="calendar-grid" id="nextMonthGrid"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Info Panel (Events Only) -->
+        <div class="info-panel">
+          <div class="events-panel">
+            <div class="events-header">
+              <div>
+                <h3 class="events-title" id="eventsTitle">Próximas Consultas</h3>
+                <span class="selected-date-info" id="selectedDateInfo" style="display: none;"></span>
+              </div>
+              <button class="clear-filter-btn" id="clearFilterBtn" onclick="limparFiltroData()" style="display: none;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+                Limpar
+              </button>
+            </div>
+            
+            <div class="events-container-scroll" id="eventsContainer">
+              <!-- Events will be populated by JavaScript -->
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -307,6 +358,437 @@ title: Medicina no Trabalho
 </div>
 
 <style>
+/* ============================================ */
+/* CALENDÁRIO - ESTILOS IGUAIS À HOME */
+/* ============================================ */
+
+/* Calendar Cards */
+.calendar-cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.calendar-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.25rem;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.calendar-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.calendar-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+}
+
+.calendar-card.blue::before { background: #3b82f6; }
+.calendar-card.green::before { background: #00b276; }
+.calendar-card.orange::before { background: #f59e0b; }
+.calendar-card.purple::before { background: #8b5cf6; }
+
+.calendar-card-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+}
+
+.calendar-card-number {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1e293b;
+  line-height: 1;
+  margin-bottom: 0.25rem;
+}
+
+.calendar-card-info {
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+
+/* Calendar Toggle Button */
+.calendar-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.75rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  color: #475569;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.calendar-toggle-btn:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+.calendar-toggle-btn svg {
+  width: 18px;
+  height: 18px;
+  transition: transform 0.3s;
+}
+
+.calendar-toggle-btn.active svg {
+  transform: rotate(180deg);
+}
+
+/* Calendar Collapsible */
+.calendar-collapsible {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease-out, margin 0.4s ease-out;
+  margin-top: 0;
+}
+
+.calendar-collapsible.show {
+  max-height: 800px;
+  margin-top: 1rem;
+}
+
+.calendar-wrapper {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1.5rem;
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+
+/* Dual Calendar */
+.dual-calendar-container {
+  position: relative;
+}
+
+.calendar-legend-minimal {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.legend-dot.agendada { background: #3b82f6; }
+.legend-dot.confirmada { background: #00b276; }
+.legend-dot.realizada { background: #8b5cf6; }
+
+.months-container {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+}
+
+.calendar-month {
+  background: #fafbfc;
+  border-radius: 12px;
+  padding: 1.25rem;
+  border: 1px solid #f0f2f4;
+}
+
+.month-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  color: #1e293b;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.nav-arrow {
+  background: white;
+  border: 1px solid #e9ecf4;
+  color: #64748b;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  font-size: 0.75rem;
+}
+
+.nav-arrow:hover {
+  background: #f8fafb;
+  border-color: #3b82f6;
+  color: #3b82f6;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+
+.calendar-grid.days {
+  margin-bottom: 8px;
+}
+
+.calendar-grid.days p {
+  color: #94a3b8;
+  text-align: center;
+  padding: 6px 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.day-number {
+  background: white;
+  border: 1px solid #f0f2f4;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  color: #1e293b;
+  font-weight: 500;
+  position: relative;
+}
+
+.day-number:hover {
+  background: #f8fafb;
+  border-color: #3b82f6;
+  transform: translateY(-1px);
+}
+
+.day-number.other-month {
+  color: #94a3b8;
+  opacity: 0.4;
+}
+
+.day-number.today {
+  background: #3b82f6;
+  color: white;
+  font-weight: 700;
+  border-color: #3b82f6;
+}
+
+.day-number.selected {
+  background: #dbeafe;
+  border-color: #3b82f6;
+  color: #1e40af;
+}
+
+.day-number.has-event::after {
+  content: '';
+  position: absolute;
+  bottom: 3px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #3b82f6;
+}
+
+.day-number.has-event.agendada::after { background: #3b82f6; }
+.day-number.has-event.confirmada::after { background: #00b276; }
+.day-number.has-event.realizada::after { background: #8b5cf6; }
+
+/* Events Panel */
+.info-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.events-panel {
+  background: #fafbfc;
+  border-radius: 12px;
+  border: 1px solid #f0f2f4;
+  overflow: hidden;
+  max-height: 450px;
+  display: flex;
+  flex-direction: column;
+}
+
+.events-header {
+  position: sticky;
+  top: 0;
+  background: #f8fafc;
+  padding: 1rem;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 10;
+}
+
+.events-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+}
+
+.selected-date-info {
+  font-size: 0.75rem;
+  color: #3b82f6;
+  font-weight: 500;
+}
+
+.clear-filter-btn {
+  background: none;
+  border: none;
+  color: #64748b;
+  font-size: 0.8rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.clear-filter-btn:hover {
+  background: rgba(0,0,0,0.05);
+  color: #1e293b;
+}
+
+.clear-filter-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+.events-container-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.5rem;
+}
+
+.event-item {
+  padding: 0.75rem;
+  display: flex;
+  gap: 0.75rem;
+  border-radius: 8px;
+  transition: background 0.2s;
+  cursor: pointer;
+  margin-bottom: 0.5rem;
+  background: white;
+  border: 1px solid #f0f2f4;
+}
+
+.event-item:hover {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+
+.event-date {
+  flex-shrink: 0;
+  width: 44px;
+  text-align: center;
+}
+
+.event-day {
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.event-day.agendada { color: #3b82f6; }
+.event-day.confirmada { color: #00b276; }
+.event-day.realizada { color: #8b5cf6; }
+
+.event-month {
+  font-size: 0.7rem;
+  color: #64748b;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.event-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.event-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 0.15rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.event-meta {
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.event-badge {
+  font-size: 0.65rem;
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.event-badge.agendada {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.event-badge.confirmada {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.event-badge.realizada {
+  background: #ede9fe;
+  color: #5b21b6;
+}
+
+.events-empty {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: #94a3b8;
+}
+
+.events-empty svg {
+  width: 40px;
+  height: 40px;
+  margin-bottom: 0.5rem;
+  opacity: 0.5;
+}
+
+.events-empty p {
+  margin: 0;
+  font-size: 0.85rem;
+}
+
 /* Estilos adicionais do modal */
 .modal-overlay {
   position: fixed;
@@ -409,8 +891,8 @@ title: Medicina no Trabalho
 .form-select:focus,
 .form-textarea:focus {
   outline: none;
-  border-color: #00b276;
-  box-shadow: 0 0 0 3px rgba(0, 178, 118, 0.1);
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .form-textarea {
@@ -469,8 +951,26 @@ title: Medicina no Trabalho
   font-weight: 500;
 }
 
-/* Responsivo modal */
-@media (max-width: 640px) {
+/* Responsivo */
+@media (max-width: 1024px) {
+  .calendar-wrapper {
+    grid-template-columns: 1fr;
+  }
+  
+  .calendar-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .calendar-cards {
+    grid-template-columns: 1fr;
+  }
+  
+  .months-container {
+    grid-template-columns: 1fr;
+  }
+  
   .form-row {
     grid-template-columns: 1fr;
   }
@@ -498,6 +998,8 @@ let currentUser = null;
 let consultaEmEdicao = null;
 let mesAtual = new Date();
 let sortConfig = { coluna: null, direcao: 'asc' };
+let selectedDate = null;
+let calendarExpanded = false;
 
 // Mapeamento de estados e tipos
 const estadoClasses = {
@@ -523,10 +1025,14 @@ const tipoClasses = {
   'MUDANCA_FUNCAO': 'tipo-mudanca-funcao'
 };
 
+const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 
+               'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+
 // Inicialização
 document.addEventListener('DOMContentLoaded', async function() {
   await carregarDados();
   renderizarCalendario();
+  renderizarEventos();
 });
 
 async function carregarDados() {
@@ -575,8 +1081,8 @@ async function carregarDados() {
     
     // Atualizar UI
     atualizarEstatisticas();
+    atualizarCards();
     renderizarTabela();
-    renderizarProximasConsultas();
     
   } catch (error) {
     console.error('[Medicina] Erro ao carregar dados:', error);
@@ -636,28 +1142,112 @@ function atualizarEstatisticas() {
   document.getElementById('statAptos').textContent = stats.aptos;
 }
 
+function atualizarCards() {
+  const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0);
+  
+  const proximaSemana = new Date(hoje);
+  proximaSemana.setDate(proximaSemana.getDate() + 7);
+  
+  const inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+  const fimMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0);
+  
+  let agendadas = 0;
+  let confirmadas = 0;
+  let esteMes = 0;
+  let proximaSemanaCount = 0;
+  let proximaAgendada = null;
+  let proximaConfirmada = null;
+  
+  consultas.forEach(c => {
+    const dataConsulta = new Date(c.data_marcacao);
+    dataConsulta.setHours(0, 0, 0, 0);
+    
+    if (c.estado === 'Agendada') {
+      agendadas++;
+      if (dataConsulta >= hoje && (!proximaAgendada || dataConsulta < new Date(proximaAgendada))) {
+        proximaAgendada = c.data_marcacao;
+      }
+    }
+    
+    if (c.estado === 'Confirmada') {
+      confirmadas++;
+      if (dataConsulta >= hoje && (!proximaConfirmada || dataConsulta < new Date(proximaConfirmada))) {
+        proximaConfirmada = c.data_marcacao;
+      }
+    }
+    
+    if (dataConsulta >= inicioMes && dataConsulta <= fimMes && (c.estado === 'Agendada' || c.estado === 'Confirmada')) {
+      esteMes++;
+    }
+    
+    if (dataConsulta >= hoje && dataConsulta <= proximaSemana && (c.estado === 'Agendada' || c.estado === 'Confirmada')) {
+      proximaSemanaCount++;
+    }
+  });
+  
+  document.getElementById('cardAgendadas').textContent = agendadas;
+  document.getElementById('cardConfirmadas').textContent = confirmadas;
+  document.getElementById('cardEsteMes').textContent = esteMes;
+  document.getElementById('cardProximaSemana').textContent = proximaSemanaCount;
+  
+  document.getElementById('cardProximaAgendada').textContent = proximaAgendada ? 
+    `Próxima: ${formatarDataCurta(proximaAgendada)}` : 'Sem consultas';
+  document.getElementById('cardProximaConfirmada').textContent = proximaConfirmada ? 
+    `Próxima: ${formatarDataCurta(proximaConfirmada)}` : 'Sem consultas';
+}
+
 // ============================================
 // CALENDÁRIO
 // ============================================
 
+function toggleCalendar() {
+  const collapsible = document.getElementById('calendarCollapsible');
+  const btn = document.getElementById('calendarToggleBtn');
+  
+  calendarExpanded = !calendarExpanded;
+  
+  if (calendarExpanded) {
+    collapsible.classList.add('show');
+    btn.classList.add('active');
+    btn.innerHTML = `
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="6 9 12 15 18 9"/>
+      </svg>
+      Ocultar Calendário
+    `;
+  } else {
+    collapsible.classList.remove('show');
+    btn.classList.remove('active');
+    btn.innerHTML = `
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="6 9 12 15 18 9"/>
+      </svg>
+      Ver Calendário
+    `;
+  }
+}
+
 function renderizarCalendario() {
-  const grid = document.getElementById('calendarGrid');
-  const label = document.getElementById('calendarMonthLabel');
+  renderizarMes('currentMonthGrid', 'currentMonthName', mesAtual, 0);
   
-  const ano = mesAtual.getFullYear();
-  const mes = mesAtual.getMonth();
+  const proximoMes = new Date(mesAtual);
+  proximoMes.setMonth(proximoMes.getMonth() + 1);
+  renderizarMes('nextMonthGrid', 'nextMonthName', proximoMes, 1);
+}
+
+function renderizarMes(gridId, labelId, data, offset) {
+  const grid = document.getElementById(gridId);
+  const label = document.getElementById(labelId);
   
-  // Atualizar label
-  const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 
-                 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+  const ano = data.getFullYear();
+  const mes = data.getMonth();
+  
   label.textContent = `${meses[mes]} ${ano}`;
   
-  // Limpar dias anteriores (manter headers)
-  const headers = grid.querySelectorAll('.day-header');
+  // Limpar grid
   grid.innerHTML = '';
-  headers.forEach(h => grid.appendChild(h));
   
-  // Primeiro dia do mês
   const primeiroDia = new Date(ano, mes, 1);
   const ultimoDia = new Date(ano, mes + 1, 0);
   
@@ -667,50 +1257,92 @@ function renderizarCalendario() {
   
   for (let i = diasAnteriores - 1; i >= 0; i--) {
     const dia = ultimoDiaMesAnterior - i;
-    const cell = criarCelulaDia(dia, true);
+    const cell = criarCelulaDia(dia, new Date(ano, mes - 1, dia), true);
     grid.appendChild(cell);
   }
   
   // Dias do mês atual
   const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0);
+  
   for (let dia = 1; dia <= ultimoDia.getDate(); dia++) {
-    const data = new Date(ano, mes, dia);
-    const isHoje = data.toDateString() === hoje.toDateString();
-    const consultasDoDia = consultas.filter(c => {
-      const dataConsulta = new Date(c.data_marcacao);
-      return dataConsulta.toDateString() === data.toDateString();
-    });
+    const dataAtual = new Date(ano, mes, dia);
+    const isHoje = dataAtual.getTime() === hoje.getTime();
+    const isSelected = selectedDate && dataAtual.getTime() === selectedDate.getTime();
+    const consultasDoDia = getConsultasDoDia(dataAtual);
     
-    const cell = criarCelulaDia(dia, false, isHoje, consultasDoDia);
+    const cell = criarCelulaDia(dia, dataAtual, false, isHoje, isSelected, consultasDoDia);
     grid.appendChild(cell);
   }
   
   // Dias do próximo mês
-  const diasRestantes = 42 - (diasAnteriores + ultimoDia.getDate());
+  const totalCells = diasAnteriores + ultimoDia.getDate();
+  const diasRestantes = totalCells <= 35 ? 35 - totalCells : 42 - totalCells;
+  
   for (let dia = 1; dia <= diasRestantes; dia++) {
-    const cell = criarCelulaDia(dia, true);
+    const cell = criarCelulaDia(dia, new Date(ano, mes + 1, dia), true);
     grid.appendChild(cell);
   }
 }
 
-function criarCelulaDia(dia, outroMes, isHoje = false, consultas = []) {
+function criarCelulaDia(dia, data, outroMes, isHoje = false, isSelected = false, consultas = []) {
   const cell = document.createElement('div');
-  cell.className = 'day-cell';
+  cell.className = 'day-number';
   
   if (outroMes) cell.classList.add('other-month');
   if (isHoje) cell.classList.add('today');
-  if (consultas.length > 0) cell.classList.add('has-event');
-  
-  cell.innerHTML = `
-    <span>${dia}</span>
-    ${consultas.length > 0 ? '<span class="event-dot medicina"></span>' : ''}
-  `;
+  if (isSelected) cell.classList.add('selected');
   
   if (consultas.length > 0) {
-    cell.onclick = () => mostrarConsultasDoDia(consultas);
+    cell.classList.add('has-event');
+    // Adicionar classe do estado prioritário
+    if (consultas.some(c => c.estado === 'Confirmada')) {
+      cell.classList.add('confirmada');
+    } else if (consultas.some(c => c.estado === 'Agendada')) {
+      cell.classList.add('agendada');
+    } else {
+      cell.classList.add('realizada');
+    }
+  }
+  
+  cell.textContent = dia;
+  
+  if (!outroMes) {
+    cell.onclick = () => selecionarData(data, consultas);
   }
   
   return cell;
+}
+
+function getConsultasDoDia(data) {
+  return consultas.filter(c => {
+    const dataConsulta = new Date(c.data_marcacao);
+    return dataConsulta.toDateString() === data.toDateString();
+  });
+}
+
+function selecionarData(data, consultasDoDia) {
+  selectedDate = data;
+  renderizarCalendario();
+  
+  if (consultasDoDia.length > 0) {
+    renderizarEventos(consultasDoDia, data);
+    document.getElementById('clearFilterBtn').style.display = 'flex';
+    document.getElementById('selectedDateInfo').style.display = 'block';
+    document.getElementById('selectedDateInfo').textContent = formatarDataLonga(data);
+    document.getElementById('eventsTitle').textContent = 'Consultas do Dia';
+  } else {
+    limparFiltroData();
+  }
+}
+
+function limparFiltroData() {
+  selectedDate = null;
+  renderizarCalendario();
+  renderizarEventos();
+  document.getElementById('clearFilterBtn').style.display = 'none';
+  document.getElementById('selectedDateInfo').style.display = 'none';
+  document.getElementById('eventsTitle').textContent = 'Próximas Consultas';
 }
 
 function mesAnterior() {
@@ -723,65 +1355,63 @@ function mesSeguinte() {
   renderizarCalendario();
 }
 
-function mostrarConsultasDoDia(consultasDoDia) {
-  // Filtrar tabela para mostrar apenas as consultas do dia
-  consultasFiltradas = consultasDoDia;
-  renderizarTabela();
-}
-
 // ============================================
-// PRÓXIMAS CONSULTAS
+// EVENTOS/CONSULTAS NO PAINEL
 // ============================================
 
-function renderizarProximasConsultas() {
-  const container = document.getElementById('upcomingList');
+function renderizarEventos(consultasLista = null, dataSelecionada = null) {
+  const container = document.getElementById('eventsContainer');
   const hoje = new Date();
   hoje.setHours(0, 0, 0, 0);
   
-  // Filtrar consultas futuras
-  const proximas = consultas
-    .filter(c => {
-      const data = new Date(c.data_marcacao);
-      return data >= hoje && (c.estado === 'Agendada' || c.estado === 'Confirmada');
-    })
-    .sort((a, b) => new Date(a.data_marcacao) - new Date(b.data_marcacao))
-    .slice(0, 5);
+  let consultasParaMostrar;
   
-  if (proximas.length === 0) {
+  if (consultasLista) {
+    consultasParaMostrar = consultasLista;
+  } else {
+    // Mostrar próximas consultas (futuras ou de hoje)
+    consultasParaMostrar = consultas
+      .filter(c => {
+        const data = new Date(c.data_marcacao);
+        return data >= hoje && (c.estado === 'Agendada' || c.estado === 'Confirmada');
+      })
+      .sort((a, b) => new Date(a.data_marcacao) - new Date(b.data_marcacao))
+      .slice(0, 10);
+  }
+  
+  if (consultasParaMostrar.length === 0) {
     container.innerHTML = `
-      <div class="empty-upcoming">
-        <p style="color: #64748b; text-align: center; padding: 1rem;">
-          Não existem consultas agendadas para os próximos dias.
-        </p>
+      <div class="events-empty">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+          <line x1="16" y1="2" x2="16" y2="6"></line>
+          <line x1="8" y1="2" x2="8" y2="6"></line>
+        </svg>
+        <p>${dataSelecionada ? 'Sem consultas neste dia' : 'Sem consultas agendadas'}</p>
       </div>
     `;
     return;
   }
   
-  container.innerHTML = proximas.map(c => {
+  container.innerHTML = consultasParaMostrar.map(c => {
     const data = new Date(c.data_marcacao);
     const dia = data.getDate();
-    const mes = data.toLocaleString('pt-PT', { month: 'short' }).toUpperCase();
+    const mes = meses[data.getMonth()].substring(0, 3).toUpperCase();
     const nomeColaborador = c.colaborador?.nome || 'N/A';
     const tipoNome = c.tipo?.nome || 'Consulta';
+    const estadoClass = c.estado.toLowerCase().replace(' ', '-');
     
     return `
-      <div class="upcoming-item" onclick="verDetalhes('${c.id}')">
-        <div class="upcoming-date">
-          <span class="day">${dia}</span>
-          <span class="month">${mes}</span>
+      <div class="event-item" onclick="verDetalhes('${c.id}')">
+        <div class="event-date">
+          <div class="event-day ${estadoClass}">${dia}</div>
+          <div class="event-month">${mes}</div>
         </div>
-        <div class="upcoming-info">
-          <div class="upcoming-tipo">${nomeColaborador}</div>
-          <div class="upcoming-hora">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="10"></circle>
-              <polyline points="12 6 12 12 16 14"></polyline>
-            </svg>
-            ${c.hora_inicio || '--:--'} - ${tipoNome}
-          </div>
+        <div class="event-details">
+          <div class="event-title">${nomeColaborador}</div>
+          <div class="event-meta">${c.hora_inicio || '--:--'} • ${tipoNome}</div>
         </div>
-        <span class="status-badge ${estadoClasses[c.estado] || ''}">${c.estado}</span>
+        <span class="event-badge ${estadoClass}">${c.estado}</span>
       </div>
     `;
   }).join('');
@@ -847,7 +1477,6 @@ function renderizarTabela() {
 function criarBotoesAcao(consulta) {
   let html = '<div class="action-buttons">';
   
-  // Sempre mostrar botão de ver
   html += `
     <button class="action-btn primary" onclick="verDetalhes('${consulta.id}')" title="Ver detalhes">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -857,7 +1486,6 @@ function criarBotoesAcao(consulta) {
     </button>
   `;
   
-  // Botão de editar (apenas para agendadas e confirmadas)
   if (consulta.estado === 'Agendada' || consulta.estado === 'Confirmada') {
     html += `
       <button class="action-btn" onclick="editarConsulta('${consulta.id}')" title="Editar">
@@ -867,10 +1495,7 @@ function criarBotoesAcao(consulta) {
         </svg>
       </button>
     `;
-  }
-  
-  // Botão de cancelar (apenas para agendadas e confirmadas)
-  if (consulta.estado === 'Agendada' || consulta.estado === 'Confirmada') {
+    
     html += `
       <button class="action-btn danger" onclick="cancelarConsulta('${consulta.id}')" title="Cancelar">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -938,7 +1563,6 @@ function ordenarTabela(coluna) {
     sortConfig.direcao = 'asc';
   }
   
-  // Atualizar indicadores
   document.querySelectorAll('.sort-icon').forEach(el => {
     el.textContent = '↕';
     el.classList.remove('active');
@@ -949,7 +1573,6 @@ function ordenarTabela(coluna) {
     sortIcon.classList.add('active');
   }
   
-  // Ordenar
   consultasFiltradas.sort((a, b) => {
     let valorA, valorB;
     
@@ -1045,12 +1668,10 @@ async function guardarConsulta() {
     };
     
     if (consultaEmEdicao) {
-      // Atualizar
       dados.updated_at = new Date().toISOString();
       await DataService.update('consultas_medicina', consultaEmEdicao.id, dados);
       showToast('Consulta atualizada com sucesso', 'success');
     } else {
-      // Criar nova
       dados.estado = 'Agendada';
       await DataService.insert('consultas_medicina', dados);
       showToast('Consulta agendada com sucesso', 'success');
@@ -1059,6 +1680,7 @@ async function guardarConsulta() {
     fecharModal();
     await carregarDados();
     renderizarCalendario();
+    renderizarEventos();
     
   } catch (error) {
     console.error('[Medicina] Erro ao guardar consulta:', error);
@@ -1079,6 +1701,7 @@ async function cancelarConsulta(id) {
     showToast('Consulta cancelada com sucesso', 'success');
     await carregarDados();
     renderizarCalendario();
+    renderizarEventos();
     
   } catch (error) {
     console.error('[Medicina] Erro ao cancelar consulta:', error);
@@ -1159,7 +1782,6 @@ function verDetalhes(id) {
     </div>
   `;
   
-  // Mostrar botão de registar resultado se a consulta está confirmada
   if (consulta.estado === 'Confirmada' || consulta.estado === 'Realizada') {
     footer.innerHTML = `
       <button type="button" class="btn-secondary" onclick="fecharModalDetalhes()">Fechar</button>
@@ -1185,7 +1807,6 @@ function fecharModalDetalhes() {
 }
 
 function registarResultado(id) {
-  // TODO: Implementar modal de registo de resultado
   fecharModalDetalhes();
   showToast('Funcionalidade de registo de resultado em desenvolvimento', 'info');
 }
@@ -1207,6 +1828,21 @@ function formatarData(dataStr) {
   if (!dataStr) return '-';
   const data = new Date(dataStr);
   return data.toLocaleDateString('pt-PT');
+}
+
+function formatarDataCurta(dataStr) {
+  if (!dataStr) return '-';
+  const data = new Date(dataStr);
+  return data.toLocaleDateString('pt-PT', { day: '2-digit', month: '2-digit' });
+}
+
+function formatarDataLonga(data) {
+  return data.toLocaleDateString('pt-PT', { 
+    weekday: 'long', 
+    day: 'numeric', 
+    month: 'long', 
+    year: 'numeric' 
+  });
 }
 
 function showToast(message, type = 'success') {
