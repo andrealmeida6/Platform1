@@ -26,6 +26,68 @@ const DataService = (function() {
   }
   
   // ==========================================
+  // FUNÇÕES GENÉRICAS - COMPATIBILIDADE
+  // ==========================================
+  
+  // Função query genérica (compatível com páginas que usam DataService.query)
+  async function query(entityName, options = {}) {
+    try {
+      let url = `${SUPABASE_URL}/rest/v1/${entityName}`;
+      const params = new URLSearchParams();
+      
+      // Select
+      if (options.select) {
+        params.append('select', options.select);
+      }
+      
+      // Filters
+      if (options.filters && Array.isArray(options.filters)) {
+        options.filters.forEach(f => {
+          const op = f.operator || 'eq';
+          params.append(f.column, `${op}.${f.value}`);
+        });
+      }
+      
+      // Order By
+      if (options.orderBy) {
+        const dir = options.orderBy.ascending !== false ? 'asc' : 'desc';
+        params.append('order', `${options.orderBy.column}.${dir}`);
+      }
+      
+      // Limit
+      if (options.limit) {
+        params.append('limit', options.limit);
+      }
+      
+      const queryString = params.toString();
+      if (queryString) {
+        url += `?${queryString}`;
+      }
+      
+      const response = await fetch(url, { headers });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error(`[DataService] Erro ao fazer query ${entityName}:`, error);
+      throw error;
+    }
+  }
+  
+  // Função insert genérica (wrapper para createRecord)
+  async function insert(entityName, data) {
+    return createRecord(entityName, data);
+  }
+  
+  // Função update genérica (wrapper para updateRecord)
+  async function update(entityName, id, data) {
+    return updateRecord(entityName, id, data);
+  }
+  
+  // ==========================================
   // FUNÇÕES AUXILIARES
   // ==========================================
   
@@ -238,6 +300,139 @@ const DataService = (function() {
     });
   }
   
+  // ==========================================
+  // MEDICINA NO TRABALHO
+  // ==========================================
+  
+  // Obter tipos de consulta de medicina
+  async function getTiposConsultaMedicina() {
+    return retrieveMultipleRecords('tipos_consulta_medicina', {
+      filter: { ativo: true },
+      orderby: 'ordem.asc'
+    });
+  }
+  
+  // Obter todas as consultas de medicina com relações
+  async function getConsultasMedicina() {
+    // Usar FK hints para resolver referências ambíguas
+    const select = '*,colaborador:colaboradores!consultas_medicina_colaborador_id_fkey(id,nome,numero_colaborador,departamento_id,departamentos(id,nome)),tipo:tipos_consulta_medicina(id,codigo,nome)';
+    
+    try {
+      let url = `${SUPABASE_URL}/rest/v1/consultas_medicina?select=${encodeURIComponent(select)}&order=data_marcacao.desc`;
+      const response = await fetch(url, { headers });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('[DataService] Erro ao buscar consultas_medicina:', errorText);
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error('[DataService] Erro ao buscar consultas de medicina:', error);
+      // Retornar array vazio em vez de lançar erro para não quebrar a página
+      return [];
+    }
+  }
+  
+  // Obter consulta por ID
+  async function getConsultaMedicinaById(id) {
+    const select = '*,colaborador:colaboradores!consultas_medicina_colaborador_id_fkey(id,nome,numero_colaborador,departamento_id,departamentos(id,nome)),tipo:tipos_consulta_medicina(id,codigo,nome)';
+    const result = await retrieveWithRelations('consultas_medicina', select, { id });
+    return result.length > 0 ? result[0] : null;
+  }
+  
+  // Obter consultas de um colaborador específico
+  async function getConsultasMedicinaColaborador(colaboradorId) {
+    const select = '*,colaborador:colaboradores!consultas_medicina_colaborador_id_fkey(id,nome,numero_colaborador,departamento_id,departamentos(id,nome)),tipo:tipos_consulta_medicina(id,codigo,nome)';
+    
+    try {
+      let url = `${SUPABASE_URL}/rest/v1/consultas_medicina?select=${encodeURIComponent(select)}&colaborador_id=eq.${colaboradorId}&order=data_marcacao.desc`;
+      const response = await fetch(url, { headers });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error('[DataService] Erro ao buscar consultas do colaborador:', error);
+      return [];
+    }
+  }
+  
+  // Criar nova consulta de medicina
+  async function createConsultaMedicina(data) {
+    return createRecord('consultas_medicina', data);
+  }
+  
+  // Atualizar consulta de medicina
+  async function updateConsultaMedicina(id, data) {
+    return updateRecord('consultas_medicina', id, data);
+  }
+  
+  // Cancelar consulta de medicina
+  async function cancelarConsultaMedicina(id, motivo = null) {
+    return updateRecord('consultas_medicina', id, {
+      estado: 'Cancelada',
+      cancelado_em: new Date().toISOString(),
+      motivo_cancelamento: motivo,
+      updated_at: new Date().toISOString()
+    });
+  }
+  
+  // Confirmar consulta de medicina
+  async function confirmarConsultaMedicina(id) {
+    return updateRecord('consultas_medicina', id, {
+      estado: 'Confirmada',
+      confirmado_em: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    });
+  }
+  
+  // Registar resultado de consulta de medicina
+  async function registarResultadoConsultaMedicina(id, resultado, observacoes = null, dataProximaConsulta = null) {
+    return updateRecord('consultas_medicina', id, {
+      estado: 'Realizada',
+      resultado: resultado,
+      observacoes_resultado: observacoes,
+      data_proxima_consulta: dataProximaConsulta,
+      realizado_em: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    });
+  }
+  
+  // Obter estatísticas de medicina no trabalho
+  async function getMedicinaStats() {
+    try {
+      const consultas = await getConsultasMedicina();
+      const anoAtual = new Date().getFullYear();
+      
+      const stats = {
+        agendadas: 0,
+        confirmadas: 0,
+        realizadas: 0,
+        aptos: 0
+      };
+      
+      consultas.forEach(c => {
+        if (c.estado === 'Agendada') stats.agendadas++;
+        if (c.estado === 'Confirmada') stats.confirmadas++;
+        if (c.estado === 'Realizada') stats.realizadas++;
+        
+        if (c.resultado === 'Apto' && c.data_marcacao) {
+          const ano = new Date(c.data_marcacao).getFullYear();
+          if (ano === anoAtual) stats.aptos++;
+        }
+      });
+      
+      return stats;
+    } catch (error) {
+      console.error('[DataService] Erro ao obter estatísticas de medicina:', error);
+      return { agendadas: 0, confirmadas: 0, realizadas: 0, aptos: 0 };
+    }
+  }
+
   // --- FORMAÇÕES ---
   async function getFormacoes() {
     const select = '*,entidades_formadoras(id,codigo,nome),formadores(id,nome,especialidade,tipo,colaborador_id),formacao_sessoes(id,data,hora_inicio,hora_fim,estado,codigo_entrada,codigo_saida,hora_abertura_entrada,hora_abertura_saida,hora_conclusao),formacao_inscricoes(id,colaborador_id,estado,tipo_inscricao,alocado_por,data_alocacao,notificacao_enviada,notificacao_lida),formacao_departamentos(id,departamento_id,departamentos(id,codigo,nome)),formacao_favoritos(id,colaborador_id),formacao_presencas(id,colaborador_id,sessao_id,presente,hora_entrada,hora_saida,validado),formacao_resultados(id,colaborador_id,resultado),formacao_avaliacoes(id,colaborador_id,score_conteudo,score_formador,score_organizacao,comentario,created_at,classificacao_geral),formacao_formadores(id,formador_id,entidade_id,principal,formadores(id,nome,colaborador_id),entidades_formadoras(id,nome)),formacao_anexos(id,nome,tipo,url,tamanho_bytes)';
@@ -1154,7 +1349,12 @@ const DataService = (function() {
     getBaseUrl,
     getHeaders,
     
-    // Funções genéricas
+    // Funções genéricas (compatibilidade)
+    query,
+    insert,
+    update,
+    
+    // Funções genéricas internas
     retrieveMultipleRecords,
     retrieveRecord,
     createRecord,
@@ -1182,6 +1382,18 @@ const DataService = (function() {
     // Tipos de Transporte
     getTiposTransporte,
     getTiposTransportePublico,
+    
+    // Medicina no Trabalho
+    getTiposConsultaMedicina,
+    getConsultasMedicina,
+    getConsultaMedicinaById,
+    getConsultasMedicinaColaborador,
+    createConsultaMedicina,
+    updateConsultaMedicina,
+    cancelarConsultaMedicina,
+    confirmarConsultaMedicina,
+    registarResultadoConsultaMedicina,
+    getMedicinaStats,
     
     // Formações
     getFormacoes,
