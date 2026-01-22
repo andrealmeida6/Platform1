@@ -263,8 +263,21 @@ title: Medicina no Trabalho
 
 <style>
 /* ============================================ */
-/* CALENDÁRIO - ESTILOS */
+/* CALENDÁRIO - ESTILOS CRÍTICOS */
 /* ============================================ */
+
+/* OVERRIDE dos estilos globais de styles.css */
+.medicina-page .calendar-collapsible {
+  max-height: 0 !important;
+  overflow: hidden !important;
+  opacity: 0 !important;
+  transition: max-height 0.4s ease-out, opacity 0.3s ease !important;
+}
+
+.medicina-page .calendar-collapsible.show {
+  max-height: 800px !important;
+  opacity: 1 !important;
+}
 
 /* Calendar Toggle Button */
 .calendar-toggle-btn {
@@ -298,17 +311,6 @@ title: Medicina no Trabalho
 
 .calendar-toggle-btn.active svg {
   transform: rotate(180deg);
-}
-
-/* Calendar Collapsible */
-.calendar-collapsible {
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.4s ease-out;
-}
-
-.calendar-collapsible.show {
-  max-height: 800px;
 }
 
 .calendar-wrapper {
