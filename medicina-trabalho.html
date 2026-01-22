@@ -4,27 +4,47 @@ title: Medicina no Trabalho
 ---
 
 <div class="medicina-page">
-  <!-- Header da Página -->
-  <div class="page-header-section">
-    <div class="page-header-left">
-      <h1 class="page-title">Medicina no Trabalho</h1>
-      <p class="page-subtitle">Gestão de consultas e exames médicos ocupacionais</p>
+  <!-- Hero Section -->
+  <section class="medicina-hero">
+    <div class="hero-inner">
+      <div class="hero-content">
+        <h1 class="hero-title">Saúde <span>Ocupacional</span></h1>
+        <p class="hero-subtitle">Acompanhe as suas consultas e exames de medicina no trabalho</p>
+        <div class="hero-cta">
+          <button class="hero-btn hero-btn-primary" onclick="scrollToCalendario()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+            Ver Calendário
+          </button>
+          <button class="hero-btn hero-btn-secondary" onclick="scrollToHistorico()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+            </svg>
+            Histórico de Consultas
+          </button>
+          <a href="{{ '/gestao-medicina' | relative_url }}" class="hero-btn hero-btn-secondary" id="btnGestaoMedicina" style="display: none; text-decoration: none;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 20h9"></path>
+              <path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+            </svg>
+            Gerir Medicina no Trabalho
+          </a>
+        </div>
+      </div>
     </div>
-    <div class="page-header-actions">
-      <button class="btn-primary" onclick="abrirModalNovaConsulta()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="12" y1="5" x2="12" y2="19"></line>
-          <line x1="5" y1="12" x2="19" y2="12"></line>
-        </svg>
-        Nova Marcação
-      </button>
-    </div>
-  </div>
+  </section>
 
   <!-- Estatísticas Rápidas -->
-  <div class="stats-grid" id="statsGrid">
-    <div class="stat-card">
-      <div class="stat-icon agendada">
+  <section class="quick-stats medicina-stats">
+    <div class="quick-stat-card">
+      <div class="quick-stat-icon blue">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
           <line x1="16" y1="2" x2="16" y2="6"></line>
@@ -32,25 +52,25 @@ title: Medicina no Trabalho
           <line x1="3" y1="10" x2="21" y2="10"></line>
         </svg>
       </div>
-      <div class="stat-info">
-        <span class="stat-value" id="statAgendada">0</span>
-        <span class="stat-label">Agendadas</span>
+      <div class="quick-stat-content">
+        <h3 id="statAgendada">0</h3>
+        <p>Agendadas</p>
       </div>
     </div>
-    <div class="stat-card">
-      <div class="stat-icon confirmada">
+    <div class="quick-stat-card">
+      <div class="quick-stat-icon green">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M22 11.08V12a10 10 0 11-5.93-9.14"></path>
           <polyline points="22 4 12 14.01 9 11.01"></polyline>
         </svg>
       </div>
-      <div class="stat-info">
-        <span class="stat-value" id="statConfirmada">0</span>
-        <span class="stat-label">Confirmadas</span>
+      <div class="quick-stat-content">
+        <h3 id="statConfirmada">0</h3>
+        <p>Confirmadas</p>
       </div>
     </div>
-    <div class="stat-card">
-      <div class="stat-icon realizada">
+    <div class="quick-stat-card">
+      <div class="quick-stat-icon purple">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"></path>
           <polyline points="14 2 14 8 20 8"></polyline>
@@ -58,56 +78,78 @@ title: Medicina no Trabalho
           <line x1="16" y1="17" x2="8" y2="17"></line>
         </svg>
       </div>
-      <div class="stat-info">
-        <span class="stat-value" id="statRealizada">0</span>
-        <span class="stat-label">Realizadas</span>
+      <div class="quick-stat-content">
+        <h3 id="statRealizada">0</h3>
+        <p>Realizadas</p>
       </div>
     </div>
-    <div class="stat-card">
-      <div class="stat-icon apto">
+    <div class="quick-stat-card">
+      <div class="quick-stat-icon green">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"></path>
         </svg>
       </div>
-      <div class="stat-info">
-        <span class="stat-value" id="statAptos">0</span>
-        <span class="stat-label">Aptos Este Ano</span>
+      <div class="quick-stat-content">
+        <h3 id="statAptos">0</h3>
+        <p>Aptos Este Ano</p>
       </div>
     </div>
-  </div>
+  </section>
+
+  <!-- Próxima Consulta Destaque -->
+  <section class="next-appointment-section" id="nextAppointmentSection" style="display: none;">
+    <div class="next-appointment-container">
+      <div class="next-appointment-header">
+        <div class="next-appointment-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+        </div>
+        <div class="next-appointment-title-wrapper">
+          <h3>Próxima Consulta</h3>
+          <p class="next-appointment-subtitle" id="nextAppointmentDate">-</p>
+        </div>
+      </div>
+      <div class="next-appointment-details" id="nextAppointmentDetails">
+        <!-- Preenchido via JavaScript -->
+      </div>
+    </div>
+  </section>
 
   <!-- Calendário de Consultas -->
-  <div class="calendar-section">
-    <button class="calendar-toggle-btn active" id="calendarToggleBtn" onclick="toggleCalendar()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <polyline points="6 9 12 15 18 9"/>
-      </svg>
-      Ocultar Calendário
-    </button>
+  <section class="calendar-section" id="calendarioSection">
+    <div class="calendar-section-header">
+      <button class="calendar-toggle-btn" id="calendarToggleBtn" onclick="toggleCalendar()">
+        <span class="toggle-label">Calendário de Consultas</span>
+        <svg class="toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"/></svg>
+        <span class="toggle-action" id="toggleActionText">Esconder</span>
+      </button>
+    </div>
 
-    <!-- Collapsible Calendar Section - Visível por defeito -->
-    <div class="calendar-collapsible show" id="calendarCollapsible">
+    <!-- Collapsible Calendar Section -->
+    <div class="calendar-content expanded" id="calendarCollapsible">
       <div class="calendar-wrapper">
         <!-- Dual Calendar -->
         <div class="dual-calendar-container">
           <!-- Minimal Legend -->
-          <div class="calendar-legend-minimal">
-            <span class="legend-dot agendada" title="Agendada"></span>
-            <span class="legend-dot confirmada" title="Confirmada"></span>
-            <span class="legend-dot realizada" title="Realizada"></span>
+          <div class="calendar-legend">
+            <span class="legend-chip"><span class="legend-chip-color agendada"></span>Agendada</span>
+            <span class="legend-chip"><span class="legend-chip-color confirmada"></span>Confirmada</span>
+            <span class="legend-chip"><span class="legend-chip-color realizada"></span>Realizada</span>
           </div>
           
           <div class="months-container">
             <!-- Current Month -->
             <div class="calendar-month">
               <div class="month-header">
-                <button class="nav-arrow" id="prevMonth" onclick="mesAnterior()">◀</button>
+                <button class="nav-arrow" id="prevMonth" onclick="mesAnterior()">‹</button>
                 <span id="currentMonthName">Janeiro 2026</span>
-                <span style="width: 28px;"></span>
+                <div style="width: 32px;"></div>
               </div>
               
               <div class="calendar-grid days">
-                <p>D</p><p>S</p><p>T</p><p>Q</p><p>Q</p><p>S</p><p>S</p>
+                <p>Dom</p><p>Seg</p><p>Ter</p><p>Qua</p><p>Qui</p><p>Sex</p><p>Sáb</p>
               </div>
               
               <div class="calendar-grid" id="currentMonthGrid"></div>
@@ -116,13 +158,13 @@ title: Medicina no Trabalho
             <!-- Next Month -->
             <div class="calendar-month">
               <div class="month-header">
-                <span style="width: 28px;"></span>
+                <div style="width: 32px;"></div>
                 <span id="nextMonthName">Fevereiro 2026</span>
-                <button class="nav-arrow" id="nextMonth" onclick="mesSeguinte()">▶</button>
+                <button class="nav-arrow" id="nextMonth" onclick="mesSeguinte()">›</button>
               </div>
               
               <div class="calendar-grid days">
-                <p>D</p><p>S</p><p>T</p><p>Q</p><p>Q</p><p>S</p><p>S</p>
+                <p>Dom</p><p>Seg</p><p>Ter</p><p>Qua</p><p>Qui</p><p>Sex</p><p>Sáb</p>
               </div>
               
               <div class="calendar-grid" id="nextMonthGrid"></div>
@@ -154,80 +196,47 @@ title: Medicina no Trabalho
         </div>
       </div>
     </div>
-  </div>
+  </section>
 
-  <!-- Filtros e Pesquisa -->
-  <div class="filters-section">
-    <div class="search-box">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <circle cx="11" cy="11" r="8"></circle>
-        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-      </svg>
-      <input type="text" id="searchInput" placeholder="Pesquisar por tipo de consulta..." onkeyup="filtrarConsultas()">
+  <!-- Histórico de Consultas -->
+  <section class="history-section" id="historicoSection">
+    <div class="table-wrapper">
+      <div class="table-header-section">
+        <h3>Histórico de Consultas</h3>
+        <div class="table-actions">
+          <div class="table-tabs">
+            <button class="table-tab active" data-filter="all" onclick="filterConsultas('all')">Todas</button>
+            <button class="table-tab" data-filter="agendadas" onclick="filterConsultas('agendadas')">Agendadas</button>
+            <button class="table-tab" data-filter="realizadas" onclick="filterConsultas('realizadas')">Realizadas</button>
+          </div>
+          <div class="table-search">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="text" id="searchInput" placeholder="Pesquisar..." oninput="filtrarConsultas()">
+          </div>
+        </div>
+      </div>
+      <div class="table-content">
+        <div class="consultas-table-header">
+          <div>Data</div>
+          <div>Tipo</div>
+          <div>Hora</div>
+          <div>Local</div>
+          <div>Estado</div>
+          <div>Resultado</div>
+          <div>Ações</div>
+        </div>
+        <div class="consultas-table-body" id="consultasTableBody">
+          <div class="table-loading">
+            <div class="spinner"></div>
+            <span class="loading-text">A carregar...</span>
+          </div>
+        </div>
+      </div>
     </div>
-    <div class="filter-group">
-      <select id="filterEstado" onchange="filtrarConsultas()">
-        <option value="">Todos os Estados</option>
-        <option value="Agendada">Agendada</option>
-        <option value="Confirmada">Confirmada</option>
-        <option value="Realizada">Realizada</option>
-        <option value="Cancelada">Cancelada</option>
-        <option value="Não Compareceu">Não Compareceu</option>
-      </select>
-      <select id="filterTipo" onchange="filtrarConsultas()">
-        <option value="">Todos os Tipos</option>
-        <option value="PERIODICA">Periódica</option>
-        <option value="ADMISSAO">Admissão</option>
-        <option value="OCASIONAL">Ocasional</option>
-        <option value="REINTEGRACAO">Reintegração</option>
-        <option value="MUDANCA_FUNCAO">Mudança de Função</option>
-      </select>
-      <select id="filterResultado" onchange="filtrarConsultas()">
-        <option value="">Todos os Resultados</option>
-        <option value="Apto">Apto</option>
-        <option value="Apto Condicionado">Apto Condicionado</option>
-        <option value="Inapto Temporário">Inapto Temporário</option>
-        <option value="Inapto">Inapto</option>
-      </select>
-      <button class="btn-outline" onclick="limparFiltros()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M6 18L18 6M6 6l12 12"/>
-        </svg>
-        Limpar
-      </button>
-    </div>
-  </div>
-
-  <!-- Tabela de Consultas -->
-  <div class="table-container">
-    <div class="table-header">
-      <div class="th" onclick="ordenarTabela('data')">
-        <span>Data</span>
-        <span class="sort-icon" id="sort-data">↕</span>
-      </div>
-      <div class="th" onclick="ordenarTabela('tipo')">
-        <span>Tipo</span>
-        <span class="sort-icon" id="sort-tipo">↕</span>
-      </div>
-      <div class="th" onclick="ordenarTabela('hora')">
-        <span>Hora</span>
-        <span class="sort-icon" id="sort-hora">↕</span>
-      </div>
-      <div class="th">Local</div>
-      <div class="th" onclick="ordenarTabela('estado')">
-        <span>Estado</span>
-        <span class="sort-icon" id="sort-estado">↕</span>
-      </div>
-      <div class="th" onclick="ordenarTabela('resultado')">
-        <span>Resultado</span>
-        <span class="sort-icon" id="sort-resultado">↕</span>
-      </div>
-      <div class="th">Ações</div>
-    </div>
-    <div class="table-body" id="consultasTableBody">
-      <!-- Preenchido via JavaScript -->
-    </div>
-  </div>
+  </section>
 
   <!-- Estado Vazio -->
   <div class="empty-state" id="emptyState" style="display: none;">
@@ -237,79 +246,352 @@ title: Medicina no Trabalho
     <h3>Sem consultas registadas</h3>
     <p>Não existem consultas de medicina no trabalho para mostrar.</p>
   </div>
-
-  <!-- Loading -->
-  <div class="loading-state" id="loadingState">
-    <div class="spinner"></div>
-    <p>A carregar consultas...</p>
-  </div>
 </div>
 
 <!-- Modal Detalhes/Resultado -->
 <div id="modalDetalhes" class="modal-overlay" style="display: none;">
   <div class="modal-content">
     <div class="modal-header">
-      <h2 class="modal-title">Detalhes da Consulta</h2>
+      <h3 class="modal-title">Detalhes da Consulta</h3>
       <button class="modal-close" onclick="fecharModalDetalhes()">×</button>
     </div>
     <div class="modal-body" id="modalDetalhesBody">
       <!-- Preenchido via JavaScript -->
     </div>
     <div class="modal-footer" id="modalDetalhesFooter">
-      <button type="button" class="btn-secondary" onclick="fecharModalDetalhes()">Fechar</button>
+      <button type="button" class="btn btn-secondary" onclick="fecharModalDetalhes()">Fechar</button>
     </div>
   </div>
 </div>
 
 <style>
 /* ============================================ */
-/* CALENDÁRIO - ESTILOS CRÍTICOS */
+/* MEDICINA NO TRABALHO - HERO & LAYOUT */
 /* ============================================ */
 
-/* OVERRIDE dos estilos globais de styles.css */
-.medicina-page .calendar-collapsible {
-  max-height: 0 !important;
-  overflow: hidden !important;
-  opacity: 0 !important;
-  transition: max-height 0.4s ease-out, opacity 0.3s ease !important;
+.medicina-page {
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
-.medicina-page .calendar-collapsible.show {
-  max-height: 800px !important;
-  opacity: 1 !important;
+/* Hero Section */
+.medicina-hero {
+  background: linear-gradient(135deg, #00b276 0%, #007a62 100%);
+  border-radius: 20px;
+  padding: 3rem 2.5rem;
+  margin: 0 2rem 1.5rem;
+  position: relative;
+  overflow: hidden;
 }
 
-/* Calendar Toggle Button */
-.calendar-toggle-btn {
+.medicina-hero::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -10%;
+  width: 400px;
+  height: 400px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 50%;
+}
+
+.medicina-hero::after {
+  content: '';
+  position: absolute;
+  bottom: -30%;
+  left: 10%;
+  width: 250px;
+  height: 250px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 50%;
+}
+
+.hero-inner {
+  position: relative;
+  z-index: 1;
+}
+
+.hero-content {
+  max-width: 700px;
+}
+
+.hero-title {
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: white;
+  margin: 0 0 0.75rem 0;
+  line-height: 1.2;
+}
+
+.hero-title span {
+  color: #a7f3d0;
+}
+
+.hero-subtitle {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0 0 1.75rem 0;
+}
+
+.hero-cta {
   display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.hero-btn {
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
   gap: 0.5rem;
-  width: 100%;
-  padding: 0.75rem;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  color: #475569;
-  font-size: 0.875rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 10px;
+  font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
+  border: none;
+  font-family: inherit;
+}
+
+.hero-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.hero-btn-primary {
+  background: white;
+  color: #00b276;
+}
+
+.hero-btn-primary:hover {
+  background: #f0fdf4;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.hero-btn-secondary {
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.hero-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: translateY(-2px);
+}
+
+/* Quick Stats */
+.quick-stats.medicina-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin: 0 2rem 1.5rem;
+}
+
+.quick-stat-card {
+  background: white;
+  border-radius: 14px;
+  padding: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition: all 0.2s;
+}
+
+.quick-stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.quick-stat-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.quick-stat-icon svg {
+  width: 26px;
+  height: 26px;
+}
+
+.quick-stat-icon.blue {
+  background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+  color: #2563eb;
+}
+
+.quick-stat-icon.green {
+  background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+  color: #059669;
+}
+
+.quick-stat-icon.purple {
+  background: linear-gradient(135deg, #ede9fe, #ddd6fe);
+  color: #7c3aed;
+}
+
+.quick-stat-icon.orange {
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  color: #d97706;
+}
+
+.quick-stat-content h3 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+  line-height: 1;
+}
+
+.quick-stat-content p {
+  font-size: 0.8rem;
+  color: #64748b;
+  margin: 0.25rem 0 0 0;
+}
+
+/* Próxima Consulta Destaque */
+.next-appointment-section {
+  margin: 0 2rem 1.5rem;
+}
+
+.next-appointment-container {
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  border: 2px solid #3b82f6;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 20px rgba(59, 130, 246, 0.15);
+}
+
+.next-appointment-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
   margin-bottom: 1rem;
+}
+
+.next-appointment-icon {
+  width: 52px;
+  height: 52px;
+  background: #3b82f6;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.next-appointment-icon svg {
+  width: 26px;
+  height: 26px;
+  color: white;
+}
+
+.next-appointment-title-wrapper h3 {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #1e40af;
+  margin: 0 0 0.25rem 0;
+}
+
+.next-appointment-subtitle {
+  font-size: 0.9rem;
+  color: #3b82f6;
+  margin: 0;
+  font-weight: 600;
+}
+
+.next-appointment-details {
+  background: white;
+  border-radius: 12px;
+  padding: 1.25rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+}
+
+.appointment-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.appointment-detail-label {
+  font-size: 0.7rem;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+
+.appointment-detail-value {
+  font-size: 0.9rem;
+  color: #1e293b;
+  font-weight: 600;
+}
+
+/* Calendar Section */
+.calendar-section {
+  background: white;
+  border-radius: 16px;
+  margin: 0 2rem 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+
+.calendar-section-header {
+  padding: 0;
+}
+
+.calendar-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 1rem 1.5rem;
+  background: #f8fafc;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
 .calendar-toggle-btn:hover {
   background: #f1f5f9;
-  border-color: #cbd5e1;
 }
 
-.calendar-toggle-btn svg {
-  width: 18px;
-  height: 18px;
+.toggle-label {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.toggle-icon {
+  width: 20px;
+  height: 20px;
+  color: #64748b;
   transition: transform 0.3s;
 }
 
-.calendar-toggle-btn.active svg {
+.toggle-action {
+  font-size: 0.85rem;
+  color: #00b276;
+  font-weight: 600;
+}
+
+.calendar-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease-out;
+}
+
+.calendar-content.expanded {
+  max-height: 800px;
+}
+
+.calendar-content.expanded .toggle-icon {
   transform: rotate(180deg);
 }
 
@@ -317,33 +599,38 @@ title: Medicina no Trabalho
   display: grid;
   grid-template-columns: 2fr 1fr;
   gap: 1.5rem;
-  background: white;
-  border-radius: 12px;
   padding: 1.5rem;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
 }
 
-/* Dual Calendar */
 .dual-calendar-container {
   position: relative;
 }
 
-.calendar-legend-minimal {
+.calendar-legend {
   display: flex;
-  gap: 0.5rem;
+  gap: 1rem;
   justify-content: center;
   margin-bottom: 1rem;
 }
 
-.legend-dot {
+.legend-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.legend-chip-color {
   width: 10px;
   height: 10px;
   border-radius: 50%;
 }
 
-.legend-dot.agendada { background: #3b82f6; }
-.legend-dot.confirmada { background: #00b276; }
-.legend-dot.realizada { background: #8b5cf6; }
+.legend-chip-color.agendada { background: #3b82f6; }
+.legend-chip-color.confirmada { background: #00b276; }
+.legend-chip-color.realizada { background: #8b5cf6; }
 
 .months-container {
   display: grid;
@@ -365,7 +652,7 @@ title: Medicina no Trabalho
   margin-bottom: 1rem;
   color: #1e293b;
   font-weight: 600;
-  font-size: 0.875rem;
+  font-size: 0.9rem;
 }
 
 .nav-arrow {
@@ -380,13 +667,13 @@ title: Medicina no Trabalho
   align-items: center;
   justify-content: center;
   transition: all 0.2s ease;
-  font-size: 0.75rem;
+  font-size: 1rem;
 }
 
 .nav-arrow:hover {
   background: #f8fafb;
-  border-color: #3b82f6;
-  color: #3b82f6;
+  border-color: #00b276;
+  color: #00b276;
 }
 
 .calendar-grid {
@@ -427,7 +714,7 @@ title: Medicina no Trabalho
 
 .day-number:hover {
   background: #f8fafb;
-  border-color: #3b82f6;
+  border-color: #00b276;
   transform: translateY(-1px);
 }
 
@@ -437,16 +724,16 @@ title: Medicina no Trabalho
 }
 
 .day-number.today {
-  background: #3b82f6;
+  background: #00b276;
   color: white;
   font-weight: 700;
-  border-color: #3b82f6;
+  border-color: #00b276;
 }
 
 .day-number.selected {
-  background: #dbeafe;
-  border-color: #3b82f6;
-  color: #1e40af;
+  background: #d1fae5;
+  border-color: #00b276;
+  color: #065f46;
 }
 
 .day-number.has-event::after {
@@ -474,7 +761,7 @@ title: Medicina no Trabalho
   border-radius: 12px;
   border: 1px solid #f0f2f4;
   overflow: hidden;
-  max-height: 450px;
+  max-height: 400px;
   display: flex;
   flex-direction: column;
 }
@@ -500,7 +787,7 @@ title: Medicina no Trabalho
 
 .selected-date-info {
   font-size: 0.75rem;
-  color: #3b82f6;
+  color: #00b276;
   font-weight: 500;
 }
 
@@ -600,6 +887,7 @@ title: Medicina no Trabalho
   border-radius: 4px;
   font-weight: 600;
   white-space: nowrap;
+  align-self: flex-start;
 }
 
 .event-badge.agendada {
@@ -635,7 +923,294 @@ title: Medicina no Trabalho
   font-size: 0.85rem;
 }
 
-/* Estilos adicionais do modal */
+/* History Section */
+.history-section {
+  margin: 0 2rem 1.5rem;
+}
+
+.table-wrapper {
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.table-header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid #f1f5f9;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.table-header-section h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+}
+
+.table-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.table-tabs {
+  display: flex;
+  background: #f1f5f9;
+  border-radius: 8px;
+  padding: 4px;
+}
+
+.table-tab {
+  padding: 0.5rem 1rem;
+  background: none;
+  border: none;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.table-tab:hover {
+  color: #1e293b;
+}
+
+.table-tab.active {
+  background: white;
+  color: #00b276;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.table-search {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #f8fafc;
+  padding: 0.5rem 0.875rem;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.table-search svg {
+  width: 16px;
+  height: 16px;
+  color: #94a3b8;
+}
+
+.table-search input {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 0.85rem;
+  width: 150px;
+  color: #1e293b;
+}
+
+.table-content {
+  overflow-x: auto;
+}
+
+.consultas-table-header {
+  display: grid;
+  grid-template-columns: 100px 150px 80px 1fr 100px 120px 80px;
+  gap: 1rem;
+  padding: 0.875rem 1.5rem;
+  background: #f8fafc;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.consultas-table-body {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.consulta-row {
+  display: grid;
+  grid-template-columns: 100px 150px 80px 1fr 100px 120px 80px;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  align-items: center;
+  border-bottom: 1px solid #f1f5f9;
+  transition: background 0.2s;
+}
+
+.consulta-row:hover {
+  background: #f8fafc;
+}
+
+.consulta-row:last-child {
+  border-bottom: none;
+}
+
+.consulta-data {
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 0.9rem;
+}
+
+.consulta-tipo {
+  display: inline-flex;
+  padding: 0.3rem 0.75rem;
+  background: #f1f5f9;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  color: #475569;
+  font-weight: 500;
+}
+
+.consulta-tipo.tipo-periodica { background: #dbeafe; color: #1e40af; }
+.consulta-tipo.tipo-admissao { background: #d1fae5; color: #065f46; }
+.consulta-tipo.tipo-ocasional { background: #fef3c7; color: #92400e; }
+.consulta-tipo.tipo-reintegracao { background: #ede9fe; color: #5b21b6; }
+.consulta-tipo.tipo-mudanca-funcao { background: #fce7f3; color: #9d174d; }
+
+.consulta-hora {
+  color: #64748b;
+  font-size: 0.85rem;
+}
+
+.consulta-local {
+  color: #475569;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.consulta-estado {
+  display: inline-flex;
+  padding: 0.3rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.consulta-estado.status-agendada { background: #dbeafe; color: #1e40af; }
+.consulta-estado.status-confirmada { background: #d1fae5; color: #065f46; }
+.consulta-estado.status-realizada { background: #ede9fe; color: #5b21b6; }
+.consulta-estado.status-cancelada { background: #fee2e2; color: #991b1b; }
+
+.consulta-resultado {
+  display: inline-flex;
+  padding: 0.3rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.consulta-resultado.apto { background: #d1fae5; color: #065f46; }
+.consulta-resultado.apto-condicionado { background: #fef3c7; color: #92400e; }
+.consulta-resultado.inapto-temporario { background: #fee2e2; color: #991b1b; }
+.consulta-resultado.inapto { background: #fee2e2; color: #991b1b; }
+.consulta-resultado.pendente { background: #f1f5f9; color: #64748b; }
+
+.consulta-acoes {
+  display: flex;
+  justify-content: center;
+}
+
+.action-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  background: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.action-btn svg {
+  width: 16px;
+  height: 16px;
+  color: #64748b;
+}
+
+.action-btn:hover {
+  background: #00b276;
+  border-color: #00b276;
+}
+
+.action-btn:hover svg {
+  color: white;
+}
+
+/* Loading State */
+.table-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  gap: 1rem;
+}
+
+.spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid #e2e8f0;
+  border-top-color: #00b276;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-text {
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+/* Empty State */
+.empty-state {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+  margin: 0 2rem;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.empty-state svg {
+  width: 64px;
+  height: 64px;
+  color: #cbd5e1;
+  margin-bottom: 1rem;
+}
+
+.empty-state h3 {
+  font-size: 1.1rem;
+  color: #1e293b;
+  margin: 0 0 0.5rem 0;
+}
+
+.empty-state p {
+  color: #64748b;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+/* Modal */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -665,29 +1240,34 @@ title: Medicina no Trabalho
   justify-content: space-between;
   align-items: center;
   padding: 1.25rem 1.5rem;
-  border-bottom: 1px solid #e2e8f0;
+  background: linear-gradient(135deg, #00b276, #007a62);
+  border-radius: 16px 16px 0 0;
 }
 
 .modal-title {
   font-size: 1.1rem;
   font-weight: 600;
-  color: #1e293b;
+  color: white;
   margin: 0;
 }
 
 .modal-close {
-  background: none;
+  background: rgba(255,255,255,0.2);
   border: none;
   font-size: 1.5rem;
-  color: #94a3b8;
+  color: white;
   cursor: pointer;
-  padding: 0;
-  line-height: 1;
-  transition: color 0.2s;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
 }
 
 .modal-close:hover {
-  color: #475569;
+  background: rgba(255,255,255,0.3);
 }
 
 .modal-body {
@@ -704,19 +1284,23 @@ title: Medicina no Trabalho
   border-radius: 0 0 16px 16px;
 }
 
-.btn-secondary {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
+.btn {
   padding: 0.65rem 1.25rem;
-  background: white;
-  color: #475569;
-  border: 1px solid #e2e8f0;
   border-radius: 8px;
   font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-secondary {
+  background: white;
+  color: #475569;
+  border: 1px solid #e2e8f0;
 }
 
 .btn-secondary:hover {
@@ -724,7 +1308,6 @@ title: Medicina no Trabalho
   border-color: #cbd5e1;
 }
 
-/* Detalhes no modal */
 .detail-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -755,16 +1338,68 @@ title: Medicina no Trabalho
   font-weight: 500;
 }
 
-/* Responsivo */
+/* Responsive */
 @media (max-width: 1024px) {
   .calendar-wrapper {
     grid-template-columns: 1fr;
   }
+  
+  .quick-stats.medicina-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 @media (max-width: 768px) {
+  .medicina-hero {
+    margin: 0 1rem 1rem;
+    padding: 2rem 1.5rem;
+  }
+  
+  .hero-title {
+    font-size: 1.75rem;
+  }
+  
+  .hero-cta {
+    flex-direction: column;
+  }
+  
+  .hero-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .quick-stats.medicina-stats,
+  .next-appointment-section,
+  .calendar-section,
+  .history-section,
+  .empty-state {
+    margin-left: 1rem;
+    margin-right: 1rem;
+  }
+  
+  .quick-stats.medicina-stats {
+    grid-template-columns: 1fr 1fr;
+  }
+  
   .months-container {
     grid-template-columns: 1fr;
+  }
+  
+  .table-header-section {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .consultas-table-header,
+  .consulta-row {
+    grid-template-columns: 80px 1fr 80px 80px;
+  }
+  
+  .consultas-table-header > div:nth-child(3),
+  .consultas-table-header > div:nth-child(4),
+  .consulta-row > div:nth-child(3),
+  .consulta-row > div:nth-child(4) {
+    display: none;
   }
   
   .detail-grid {
@@ -773,6 +1408,12 @@ title: Medicina no Trabalho
   
   .detail-item.full-width {
     grid-column: span 1;
+  }
+}
+
+@media (max-width: 480px) {
+  .quick-stats.medicina-stats {
+    grid-template-columns: 1fr;
   }
 }
 </style>
@@ -787,9 +1428,9 @@ let consultasFiltradas = [];
 let tiposConsulta = [];
 let currentUser = null;
 let mesAtual = new Date();
-let sortConfig = { coluna: null, direcao: 'asc' };
 let selectedDate = null;
-let calendarExpanded = true; // Calendário visível por defeito
+let calendarExpanded = true;
+let currentFilter = 'all';
 
 // Mapeamento de estados e tipos
 const estadoClasses = {
@@ -823,14 +1464,11 @@ document.addEventListener('DOMContentLoaded', async function() {
   await carregarDados();
   renderizarCalendario();
   renderizarEventos();
+  mostrarProximaConsulta();
+  verificarPermissoes();
 });
 
 async function carregarDados() {
-  const loadingState = document.getElementById('loadingState');
-  const emptyState = document.getElementById('emptyState');
-  
-  loadingState.style.display = 'flex';
-  
   try {
     // Aguardar serviços
     while (typeof AuthService === 'undefined' || typeof DataService === 'undefined') {
@@ -839,15 +1477,15 @@ async function carregarDados() {
     
     currentUser = await AuthService.getCurrentUser();
     
-    // Carregar tipos de consulta usando DataService
+    // Carregar tipos de consulta
     try {
       tiposConsulta = await DataService.getTiposConsultaMedicina();
     } catch (e) {
-      console.warn('[Medicina] Erro ao carregar tipos de consulta:', e);
+      console.warn('[Medicina] Erro ao carregar tipos:', e);
       tiposConsulta = [];
     }
     
-    // Carregar apenas as consultas do colaborador atual
+    // Carregar consultas do colaborador atual
     try {
       if (currentUser && currentUser.id) {
         consultas = await DataService.getConsultasMedicinaColaborador(currentUser.id);
@@ -869,23 +1507,19 @@ async function carregarDados() {
     console.error('[Medicina] Erro ao carregar dados:', error);
     consultas = [];
     consultasFiltradas = [];
-  } finally {
-    loadingState.style.display = 'none';
-    
-    if (consultasFiltradas.length === 0) {
-      emptyState.style.display = 'flex';
-    }
+  }
+}
+
+function verificarPermissoes() {
+  // Mostrar botão de gestão apenas para RH
+  if (currentUser && currentUser.departamento_codigo === 'AFR-RH') {
+    const btnGestao = document.getElementById('btnGestaoMedicina');
+    if (btnGestao) btnGestao.style.display = 'inline-flex';
   }
 }
 
 function atualizarEstatisticas() {
-  const stats = {
-    agendada: 0,
-    confirmada: 0,
-    realizada: 0,
-    aptos: 0
-  };
-  
+  const stats = { agendada: 0, confirmada: 0, realizada: 0, aptos: 0 };
   const anoAtual = new Date().getFullYear();
   
   consultas.forEach(c => {
@@ -893,7 +1527,6 @@ function atualizarEstatisticas() {
     if (c.estado === 'Confirmada') stats.confirmada++;
     if (c.estado === 'Realizada') stats.realizada++;
     
-    // Contar aptos este ano
     if (c.resultado === 'Apto' && c.data_marcacao) {
       const ano = new Date(c.data_marcacao).getFullYear();
       if (ano === anoAtual) stats.aptos++;
@@ -906,46 +1539,84 @@ function atualizarEstatisticas() {
   document.getElementById('statAptos').textContent = stats.aptos;
 }
 
+function mostrarProximaConsulta() {
+  const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0);
+  
+  const proxima = consultas
+    .filter(c => {
+      const data = new Date(c.data_marcacao);
+      return data >= hoje && (c.estado === 'Agendada' || c.estado === 'Confirmada');
+    })
+    .sort((a, b) => new Date(a.data_marcacao) - new Date(b.data_marcacao))[0];
+  
+  if (proxima) {
+    const section = document.getElementById('nextAppointmentSection');
+    const dateEl = document.getElementById('nextAppointmentDate');
+    const detailsEl = document.getElementById('nextAppointmentDetails');
+    
+    const data = new Date(proxima.data_marcacao);
+    dateEl.textContent = data.toLocaleDateString('pt-PT', { 
+      weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' 
+    });
+    
+    const tipoNome = proxima.tipo?.nome || 'Consulta';
+    
+    detailsEl.innerHTML = `
+      <div class="appointment-detail">
+        <span class="appointment-detail-label">Tipo</span>
+        <span class="appointment-detail-value">${tipoNome}</span>
+      </div>
+      <div class="appointment-detail">
+        <span class="appointment-detail-label">Hora</span>
+        <span class="appointment-detail-value">${proxima.hora_inicio || '--:--'}</span>
+      </div>
+      <div class="appointment-detail">
+        <span class="appointment-detail-label">Local</span>
+        <span class="appointment-detail-value">${proxima.local || 'A definir'}</span>
+      </div>
+      <div class="appointment-detail">
+        <span class="appointment-detail-label">Médico</span>
+        <span class="appointment-detail-value">${proxima.medico_nome || 'A definir'}</span>
+      </div>
+      <div class="appointment-detail">
+        <span class="appointment-detail-label">Estado</span>
+        <span class="appointment-detail-value">${proxima.estado}</span>
+      </div>
+    `;
+    
+    section.style.display = 'block';
+  }
+}
+
 // ============================================
 // CALENDÁRIO
 // ============================================
 
 function toggleCalendar() {
-  const collapsible = document.getElementById('calendarCollapsible');
-  const btn = document.getElementById('calendarToggleBtn');
+  const content = document.getElementById('calendarCollapsible');
+  const actionText = document.getElementById('toggleActionText');
   
   calendarExpanded = !calendarExpanded;
   
   if (calendarExpanded) {
-    collapsible.classList.add('show');
-    btn.classList.add('active');
-    btn.innerHTML = `
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <polyline points="6 9 12 15 18 9"/>
-      </svg>
-      Ocultar Calendário
-    `;
+    content.classList.add('expanded');
+    actionText.textContent = 'Esconder';
   } else {
-    collapsible.classList.remove('show');
-    btn.classList.remove('active');
-    btn.innerHTML = `
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <polyline points="6 9 12 15 18 9"/>
-      </svg>
-      Ver Calendário
-    `;
+    content.classList.remove('expanded');
+    actionText.textContent = 'Mostrar';
   }
 }
 
 function renderizarCalendario() {
-  renderizarMes('currentMonthGrid', 'currentMonthName', mesAtual, 0);
+  renderizarMes('currentMonthGrid', 'currentMonthName', mesAtual);
   
   const proximoMes = new Date(mesAtual);
   proximoMes.setMonth(proximoMes.getMonth() + 1);
-  renderizarMes('nextMonthGrid', 'nextMonthName', proximoMes, 1);
+  renderizarMes('nextMonthGrid', 'nextMonthName', proximoMes);
 }
 
-function renderizarMes(gridId, labelId, data, offset) {
+function renderizarMes(gridId, labelId, data) {
   const grid = document.getElementById(gridId);
   const label = document.getElementById(labelId);
   
@@ -953,21 +1624,17 @@ function renderizarMes(gridId, labelId, data, offset) {
   const mes = data.getMonth();
   
   label.textContent = `${meses[mes]} ${ano}`;
-  
-  // Limpar grid
   grid.innerHTML = '';
   
   const primeiroDia = new Date(ano, mes, 1);
   const ultimoDia = new Date(ano, mes + 1, 0);
-  
-  // Dias do mês anterior
   const diasAnteriores = primeiroDia.getDay();
   const ultimoDiaMesAnterior = new Date(ano, mes, 0).getDate();
   
+  // Dias do mês anterior
   for (let i = diasAnteriores - 1; i >= 0; i--) {
     const dia = ultimoDiaMesAnterior - i;
-    const cell = criarCelulaDia(dia, new Date(ano, mes - 1, dia), true);
-    grid.appendChild(cell);
+    grid.appendChild(criarCelulaDia(dia, new Date(ano, mes - 1, dia), true));
   }
   
   // Dias do mês atual
@@ -980,8 +1647,7 @@ function renderizarMes(gridId, labelId, data, offset) {
     const isSelected = selectedDate && dataAtual.getTime() === selectedDate.getTime();
     const consultasDoDia = getConsultasDoDia(dataAtual);
     
-    const cell = criarCelulaDia(dia, dataAtual, false, isHoje, isSelected, consultasDoDia);
-    grid.appendChild(cell);
+    grid.appendChild(criarCelulaDia(dia, dataAtual, false, isHoje, isSelected, consultasDoDia));
   }
   
   // Dias do próximo mês
@@ -989,8 +1655,7 @@ function renderizarMes(gridId, labelId, data, offset) {
   const diasRestantes = totalCells <= 35 ? 35 - totalCells : 42 - totalCells;
   
   for (let dia = 1; dia <= diasRestantes; dia++) {
-    const cell = criarCelulaDia(dia, new Date(ano, mes + 1, dia), true);
-    grid.appendChild(cell);
+    grid.appendChild(criarCelulaDia(dia, new Date(ano, mes + 1, dia), true));
   }
 }
 
@@ -1004,7 +1669,6 @@ function criarCelulaDia(dia, data, outroMes, isHoje = false, isSelected = false,
   
   if (consultasDia.length > 0) {
     cell.classList.add('has-event');
-    // Adicionar classe do estado prioritário
     if (consultasDia.some(c => c.estado === 'Confirmada')) {
       cell.classList.add('confirmada');
     } else if (consultasDia.some(c => c.estado === 'Agendada')) {
@@ -1078,7 +1742,6 @@ function renderizarEventos(consultasLista = null, dataSelecionada = null) {
   if (consultasLista) {
     consultasParaMostrar = consultasLista;
   } else {
-    // Mostrar próximas consultas (futuras ou de hoje)
     consultasParaMostrar = consultas
       .filter(c => {
         const data = new Date(c.data_marcacao);
@@ -1132,16 +1795,17 @@ function renderizarEventos(consultasLista = null, dataSelecionada = null) {
 function renderizarTabela() {
   const tbody = document.getElementById('consultasTableBody');
   const emptyState = document.getElementById('emptyState');
+  const historySection = document.getElementById('historicoSection');
   
   if (consultasFiltradas.length === 0) {
     tbody.innerHTML = '';
+    historySection.style.display = 'none';
     emptyState.style.display = 'flex';
-    document.querySelector('.table-container').style.display = 'none';
     return;
   }
   
   emptyState.style.display = 'none';
-  document.querySelector('.table-container').style.display = 'block';
+  historySection.style.display = 'block';
   
   tbody.innerHTML = consultasFiltradas.map(c => {
     const tipoNome = c.tipo?.nome || 'N/A';
@@ -1151,28 +1815,24 @@ function renderizarTabela() {
     const local = c.local || '-';
     
     return `
-      <div class="table-row">
-        <div class="td">${data}</div>
-        <div class="td">
-          <span class="tipo-badge ${tipoClasses[tipoCodigo] || ''}">${tipoNome}</span>
+      <div class="consulta-row">
+        <div class="consulta-data">${data}</div>
+        <div><span class="consulta-tipo ${tipoClasses[tipoCodigo] || ''}">${tipoNome}</span></div>
+        <div class="consulta-hora">${hora}</div>
+        <div class="consulta-local">${local}</div>
+        <div><span class="consulta-estado ${estadoClasses[c.estado] || ''}">${c.estado}</span></div>
+        <div>
+          ${c.resultado 
+            ? `<span class="consulta-resultado ${resultadoClasses[c.resultado] || ''}">${c.resultado}</span>` 
+            : '<span class="consulta-resultado pendente">Pendente</span>'}
         </div>
-        <div class="td">${hora}</div>
-        <div class="td">${local}</div>
-        <div class="td">
-          <span class="status-badge ${estadoClasses[c.estado] || ''}">${c.estado}</span>
-        </div>
-        <div class="td">
-          ${c.resultado ? `<span class="resultado-badge ${resultadoClasses[c.resultado] || ''}">${c.resultado}</span>` : '<span class="resultado-badge pendente">Pendente</span>'}
-        </div>
-        <div class="td">
-          <div class="action-buttons">
-            <button class="action-btn primary" onclick="verDetalhes('${c.id}')" title="Ver detalhes">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                <circle cx="12" cy="12" r="3"/>
-              </svg>
-            </button>
-          </div>
+        <div class="consulta-acoes">
+          <button class="action-btn" onclick="verDetalhes('${c.id}')" title="Ver detalhes">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          </button>
         </div>
       </div>
     `;
@@ -1180,114 +1840,52 @@ function renderizarTabela() {
 }
 
 // ============================================
-// FILTROS E ORDENAÇÃO
+// FILTROS
 // ============================================
+
+function filterConsultas(filter) {
+  currentFilter = filter;
+  
+  // Atualizar tabs
+  document.querySelectorAll('.table-tab').forEach(tab => {
+    tab.classList.toggle('active', tab.dataset.filter === filter);
+  });
+  
+  // Filtrar
+  if (filter === 'all') {
+    consultasFiltradas = [...consultas];
+  } else if (filter === 'agendadas') {
+    consultasFiltradas = consultas.filter(c => c.estado === 'Agendada' || c.estado === 'Confirmada');
+  } else if (filter === 'realizadas') {
+    consultasFiltradas = consultas.filter(c => c.estado === 'Realizada');
+  }
+  
+  // Aplicar pesquisa também
+  filtrarConsultas();
+}
 
 function filtrarConsultas() {
   const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-  const estadoFilter = document.getElementById('filterEstado').value;
-  const tipoFilter = document.getElementById('filterTipo').value;
-  const resultadoFilter = document.getElementById('filterResultado').value;
   
-  consultasFiltradas = consultas.filter(c => {
-    const tipoNome = c.tipo?.nome || '';
-    const tipoCodigo = c.tipo?.codigo || '';
-    
-    const matchSearch = !searchTerm || 
-      tipoNome.toLowerCase().includes(searchTerm);
-    
-    const matchEstado = !estadoFilter || c.estado === estadoFilter;
-    const matchTipo = !tipoFilter || tipoCodigo === tipoFilter;
-    const matchResultado = !resultadoFilter || c.resultado === resultadoFilter;
-    
-    return matchSearch && matchEstado && matchTipo && matchResultado;
-  });
+  let base = consultas;
+  if (currentFilter === 'agendadas') {
+    base = consultas.filter(c => c.estado === 'Agendada' || c.estado === 'Confirmada');
+  } else if (currentFilter === 'realizadas') {
+    base = consultas.filter(c => c.estado === 'Realizada');
+  }
   
-  renderizarTabela();
-}
-
-function limparFiltros() {
-  document.getElementById('searchInput').value = '';
-  document.getElementById('filterEstado').value = '';
-  document.getElementById('filterTipo').value = '';
-  document.getElementById('filterResultado').value = '';
-  
-  consultasFiltradas = [...consultas];
-  sortConfig = { coluna: null, direcao: 'asc' };
-  
-  document.querySelectorAll('.sort-icon').forEach(el => {
-    el.textContent = '↕';
-    el.classList.remove('active');
-  });
-  
-  renderizarTabela();
-}
-
-function ordenarTabela(coluna) {
-  if (sortConfig.coluna === coluna) {
-    sortConfig.direcao = sortConfig.direcao === 'asc' ? 'desc' : 'asc';
+  if (searchTerm) {
+    consultasFiltradas = base.filter(c => {
+      const tipoNome = c.tipo?.nome || '';
+      const local = c.local || '';
+      return tipoNome.toLowerCase().includes(searchTerm) || 
+             local.toLowerCase().includes(searchTerm);
+    });
   } else {
-    sortConfig.coluna = coluna;
-    sortConfig.direcao = 'asc';
+    consultasFiltradas = [...base];
   }
-  
-  document.querySelectorAll('.sort-icon').forEach(el => {
-    el.textContent = '↕';
-    el.classList.remove('active');
-  });
-  const sortIcon = document.getElementById(`sort-${coluna}`);
-  if (sortIcon) {
-    sortIcon.textContent = sortConfig.direcao === 'asc' ? '↑' : '↓';
-    sortIcon.classList.add('active');
-  }
-  
-  consultasFiltradas.sort((a, b) => {
-    let valorA, valorB;
-    
-    switch(coluna) {
-      case 'data':
-        valorA = new Date(a.data_marcacao);
-        valorB = new Date(b.data_marcacao);
-        break;
-      case 'tipo':
-        valorA = a.tipo?.nome || '';
-        valorB = b.tipo?.nome || '';
-        break;
-      case 'hora':
-        valorA = a.hora_inicio || '';
-        valorB = b.hora_inicio || '';
-        break;
-      case 'estado':
-        valorA = a.estado || '';
-        valorB = b.estado || '';
-        break;
-      case 'resultado':
-        valorA = a.resultado || '';
-        valorB = b.resultado || '';
-        break;
-      default:
-        return 0;
-    }
-    
-    if (typeof valorA === 'string') {
-      valorA = valorA.toLowerCase();
-      valorB = valorB.toLowerCase();
-    }
-    
-    if (valorA < valorB) return sortConfig.direcao === 'asc' ? -1 : 1;
-    if (valorA > valorB) return sortConfig.direcao === 'asc' ? 1 : -1;
-    return 0;
-  });
   
   renderizarTabela();
-}
-
-// ============================================
-// MODAL - NOVA CONSULTA (placeholder)
-// ============================================
-
-function abrirModalNovaConsulta() {
-  showToast('A funcionalidade de nova marcação está disponível apenas para RH', 'info');
 }
 
 // ============================================
@@ -1299,8 +1897,6 @@ function verDetalhes(id) {
   if (!consulta) return;
   
   const body = document.getElementById('modalDetalhesBody');
-  const footer = document.getElementById('modalDetalhesFooter');
-  
   const tipoNome = consulta.tipo?.nome || '-';
   const data = consulta.data_marcacao ? formatarData(consulta.data_marcacao) : '-';
   
@@ -1328,11 +1924,13 @@ function verDetalhes(id) {
       </div>
       <div class="detail-item">
         <span class="detail-label">Estado</span>
-        <span class="status-badge ${estadoClasses[consulta.estado] || ''}">${consulta.estado}</span>
+        <span class="consulta-estado ${estadoClasses[consulta.estado] || ''}">${consulta.estado}</span>
       </div>
       <div class="detail-item">
         <span class="detail-label">Resultado</span>
-        ${consulta.resultado ? `<span class="resultado-badge ${resultadoClasses[consulta.resultado] || ''}">${consulta.resultado}</span>` : '<span class="resultado-badge pendente">Pendente</span>'}
+        ${consulta.resultado 
+          ? `<span class="consulta-resultado ${resultadoClasses[consulta.resultado] || ''}">${consulta.resultado}</span>` 
+          : '<span class="consulta-resultado pendente">Pendente</span>'}
       </div>
       <div class="detail-item">
         <span class="detail-label">Próxima Consulta</span>
@@ -1353,15 +1951,24 @@ function verDetalhes(id) {
     </div>
   `;
   
-  footer.innerHTML = `
-    <button type="button" class="btn-secondary" onclick="fecharModalDetalhes()">Fechar</button>
-  `;
-  
   document.getElementById('modalDetalhes').style.display = 'flex';
 }
 
 function fecharModalDetalhes() {
   document.getElementById('modalDetalhes').style.display = 'none';
+}
+
+// ============================================
+// NAVEGAÇÃO
+// ============================================
+
+function scrollToCalendario() {
+  document.getElementById('calendarioSection').scrollIntoView({ behavior: 'smooth' });
+  if (!calendarExpanded) toggleCalendar();
+}
+
+function scrollToHistorico() {
+  document.getElementById('historicoSection').scrollIntoView({ behavior: 'smooth' });
 }
 
 // ============================================
@@ -1376,10 +1983,7 @@ function formatarData(dataStr) {
 
 function formatarDataLonga(data) {
   return data.toLocaleDateString('pt-PT', { 
-    weekday: 'long', 
-    day: 'numeric', 
-    month: 'long', 
-    year: 'numeric' 
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' 
   });
 }
 
