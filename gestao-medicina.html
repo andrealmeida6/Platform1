@@ -1,0 +1,2025 @@
+---
+layout: default
+title: Gestão de Medicina no Trabalho
+---
+
+<div class="gestao-medicina-page">
+  <!-- Header da Página -->
+  <div class="page-header-section">
+    <div class="page-header-left">
+      <a href="{{ '/medicina-trabalho' | relative_url }}" class="back-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+        Voltar
+      </a>
+      <h1 class="page-title">Gestão de Medicina no Trabalho</h1>
+      <p class="page-subtitle">Gerir consultas e exames médicos de todos os colaboradores</p>
+    </div>
+    <div class="page-header-actions">
+      <button class="btn-primary" onclick="abrirModalNovaConsulta()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        Nova Marcação
+      </button>
+    </div>
+  </div>
+
+  <!-- Estatísticas Gerais -->
+  <section class="stats-overview">
+    <div class="stat-card">
+      <div class="stat-icon blue">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"></path>
+          <circle cx="9" cy="7" r="4"></circle>
+          <path d="M23 21v-2a4 4 0 00-3-3.87"></path>
+          <path d="M16 3.13a4 4 0 010 7.75"></path>
+        </svg>
+      </div>
+      <div class="stat-content">
+        <span class="stat-value" id="statTotalColaboradores">0</span>
+        <span class="stat-label">Colaboradores</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon orange">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+          <line x1="16" y1="2" x2="16" y2="6"></line>
+          <line x1="8" y1="2" x2="8" y2="6"></line>
+          <line x1="3" y1="10" x2="21" y2="10"></line>
+        </svg>
+      </div>
+      <div class="stat-content">
+        <span class="stat-value" id="statAgendadas">0</span>
+        <span class="stat-label">Consultas Agendadas</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon green">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M22 11.08V12a10 10 0 11-5.93-9.14"></path>
+          <polyline points="22 4 12 14.01 9 11.01"></polyline>
+        </svg>
+      </div>
+      <div class="stat-content">
+        <span class="stat-value" id="statConfirmadas">0</span>
+        <span class="stat-label">Confirmadas</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon purple">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+        </svg>
+      </div>
+      <div class="stat-content">
+        <span class="stat-value" id="statRealizadas">0</span>
+        <span class="stat-label">Realizadas Este Mês</span>
+      </div>
+    </div>
+    <div class="stat-card alert">
+      <div class="stat-icon red">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+      </div>
+      <div class="stat-content">
+        <span class="stat-value" id="statPendentes">0</span>
+        <span class="stat-label">Exames em Falta</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Calendário de Consultas -->
+  <section class="calendar-section">
+    <div class="calendar-section-header">
+      <button class="calendar-toggle-btn" id="calendarToggleBtn" onclick="toggleCalendar()">
+        <span class="toggle-label">Calendário de Consultas</span>
+        <svg class="toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"/></svg>
+        <span class="toggle-action" id="toggleActionText">Esconder</span>
+      </button>
+    </div>
+    <div class="calendar-content expanded" id="calendarCollapsible">
+      <div class="calendar-wrapper">
+        <div class="dual-calendar-container">
+          <div class="calendar-legend">
+            <span class="legend-chip"><span class="legend-chip-color agendada"></span>Agendada</span>
+            <span class="legend-chip"><span class="legend-chip-color confirmada"></span>Confirmada</span>
+            <span class="legend-chip"><span class="legend-chip-color realizada"></span>Realizada</span>
+          </div>
+          <div class="months-container">
+            <div class="calendar-month">
+              <div class="month-header">
+                <button class="nav-arrow" onclick="mesAnterior()">‹</button>
+                <span id="currentMonthName">Janeiro 2026</span>
+                <div style="width: 32px;"></div>
+              </div>
+              <div class="calendar-grid days"><p>Dom</p><p>Seg</p><p>Ter</p><p>Qua</p><p>Qui</p><p>Sex</p><p>Sáb</p></div>
+              <div class="calendar-grid" id="currentMonthGrid"></div>
+            </div>
+            <div class="calendar-month">
+              <div class="month-header">
+                <div style="width: 32px;"></div>
+                <span id="nextMonthName">Fevereiro 2026</span>
+                <button class="nav-arrow" onclick="mesSeguinte()">›</button>
+              </div>
+              <div class="calendar-grid days"><p>Dom</p><p>Seg</p><p>Ter</p><p>Qua</p><p>Qui</p><p>Sex</p><p>Sáb</p></div>
+              <div class="calendar-grid" id="nextMonthGrid"></div>
+            </div>
+          </div>
+        </div>
+        <div class="info-panel">
+          <div class="events-panel">
+            <div class="events-header">
+              <div>
+                <h3 class="events-title" id="eventsTitle">Próximas Consultas</h3>
+                <span class="selected-date-info" id="selectedDateInfo" style="display: none;"></span>
+              </div>
+              <button class="clear-filter-btn" id="clearFilterBtn" onclick="limparFiltroData()" style="display: none;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+                Limpar
+              </button>
+            </div>
+            <div class="events-container-scroll" id="eventsContainer"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tabela de Consultas -->
+  <section class="table-section">
+    <div class="table-wrapper">
+      <div class="table-header-section">
+        <h3>Todas as Consultas</h3>
+        <div class="table-actions">
+          <div class="table-tabs">
+            <button class="table-tab active" data-filter="all" onclick="filterConsultas('all')">Todas</button>
+            <button class="table-tab" data-filter="agendadas" onclick="filterConsultas('agendadas')">Agendadas</button>
+            <button class="table-tab" data-filter="confirmadas" onclick="filterConsultas('confirmadas')">Confirmadas</button>
+            <button class="table-tab" data-filter="realizadas" onclick="filterConsultas('realizadas')">Realizadas</button>
+          </div>
+          <div class="table-search">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="text" id="searchInput" placeholder="Pesquisar colaborador..." oninput="filtrarConsultas()">
+          </div>
+        </div>
+      </div>
+      <div class="table-content">
+        <div class="consultas-table-header">
+          <div>Colaborador</div>
+          <div>Data</div>
+          <div>Tipo</div>
+          <div>Hora</div>
+          <div>Local</div>
+          <div>Estado</div>
+          <div>Resultado</div>
+          <div>Ações</div>
+        </div>
+        <div class="consultas-table-body" id="consultasTableBody">
+          <div class="table-loading">
+            <div class="spinner"></div>
+            <span class="loading-text">A carregar...</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Estado Vazio -->
+  <div class="empty-state" id="emptyState" style="display: none;">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"></path>
+    </svg>
+    <h3>Sem consultas registadas</h3>
+    <p>Não existem consultas de medicina no trabalho para mostrar.</p>
+    <button class="btn-primary" onclick="abrirModalNovaConsulta()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+      Criar Primeira Marcação
+    </button>
+  </div>
+</div>
+
+<!-- Modal Nova Consulta -->
+<div id="modalNovaConsulta" class="modal-overlay" style="display: none;">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 class="modal-title">Nova Marcação de Consulta</h3>
+      <button class="modal-close" onclick="fecharModalNovaConsulta()">×</button>
+    </div>
+    <div class="modal-body">
+      <form id="formNovaConsulta">
+        <div class="form-group">
+          <label class="form-label">Colaborador *</label>
+          <select class="form-input" id="novoColaborador" required>
+            <option value="">Selecionar colaborador...</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Tipo de Consulta *</label>
+            <select class="form-input" id="novoTipo" required>
+              <option value="">Selecionar tipo...</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Data *</label>
+            <input type="date" class="form-input" id="novoData" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Hora Início *</label>
+            <input type="time" class="form-input" id="novoHoraInicio" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Hora Fim</label>
+            <input type="time" class="form-input" id="novoHoraFim">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Local *</label>
+          <input type="text" class="form-input" id="novoLocal" placeholder="Ex: Centro Médico Empresarial - Sala 1" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Médico</label>
+          <input type="text" class="form-input" id="novoMedico" placeholder="Nome do médico">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Observações</label>
+          <textarea class="form-input" id="novoObservacoes" rows="3" placeholder="Observações adicionais..."></textarea>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" onclick="fecharModalNovaConsulta()">Cancelar</button>
+      <button type="button" class="btn btn-primary" onclick="guardarNovaConsulta()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"></path>
+          <polyline points="17 21 17 13 7 13 7 21"></polyline>
+          <polyline points="7 3 7 8 15 8"></polyline>
+        </svg>
+        Guardar Marcação
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Detalhes/Editar -->
+<div id="modalDetalhes" class="modal-overlay" style="display: none;">
+  <div class="modal-content modal-large">
+    <div class="modal-header">
+      <h3 class="modal-title" id="modalDetalhesTitulo">Detalhes da Consulta</h3>
+      <button class="modal-close" onclick="fecharModalDetalhes()">×</button>
+    </div>
+    <div class="modal-body" id="modalDetalhesBody"></div>
+    <div class="modal-footer" id="modalDetalhesFooter">
+      <button type="button" class="btn btn-secondary" onclick="fecharModalDetalhes()">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<style>
+/* ============================================ */
+/* GESTÃO MEDICINA - ESTILOS */
+/* ============================================ */
+
+.gestao-medicina-page {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 2rem 2rem;
+}
+
+/* Header */
+.page-header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 1.5rem 0;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.page-header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #64748b;
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.back-link:hover {
+  color: #00b276;
+}
+
+.back-link svg {
+  width: 18px;
+  height: 18px;
+}
+
+.page-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+}
+
+.page-subtitle {
+  font-size: 0.9rem;
+  color: #64748b;
+  margin: 0;
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, #00b276, #009966);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 178, 118, 0.3);
+}
+
+.btn-primary svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Stats Overview */
+.stats-overview {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.stat-card {
+  background: white;
+  border-radius: 14px;
+  padding: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition: all 0.2s;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.stat-card.alert {
+  border: 2px solid #fecaca;
+  background: linear-gradient(135deg, #fef2f2, #fee2e2);
+}
+
+.stat-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.stat-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.stat-icon.blue { background: linear-gradient(135deg, #dbeafe, #bfdbfe); color: #2563eb; }
+.stat-icon.green { background: linear-gradient(135deg, #d1fae5, #a7f3d0); color: #059669; }
+.stat-icon.orange { background: linear-gradient(135deg, #fef3c7, #fde68a); color: #d97706; }
+.stat-icon.purple { background: linear-gradient(135deg, #ede9fe, #ddd6fe); color: #7c3aed; }
+.stat-icon.red { background: linear-gradient(135deg, #fecaca, #fca5a5); color: #dc2626; }
+
+.stat-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1e293b;
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: #64748b;
+  margin-top: 0.25rem;
+}
+
+/* Calendar Section */
+.calendar-section {
+  background: white;
+  border-radius: 16px;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+
+.calendar-section-header {
+  padding: 0;
+}
+
+.calendar-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 1rem 1.5rem;
+  background: #f8fafc;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.calendar-toggle-btn:hover {
+  background: #f1f5f9;
+}
+
+.toggle-label {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.toggle-icon {
+  width: 20px;
+  height: 20px;
+  color: #64748b;
+  transition: transform 0.3s;
+}
+
+.toggle-action {
+  font-size: 0.85rem;
+  color: #00b276;
+  font-weight: 600;
+}
+
+.calendar-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease-out;
+}
+
+.calendar-content.expanded {
+  max-height: 800px;
+}
+
+.calendar-content.expanded .toggle-icon {
+  transform: rotate(180deg);
+}
+
+.calendar-wrapper {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1.5rem;
+  padding: 1.5rem;
+}
+
+.dual-calendar-container {
+  position: relative;
+}
+
+.calendar-legend {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.legend-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.legend-chip-color {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.legend-chip-color.agendada { background: #3b82f6; }
+.legend-chip-color.confirmada { background: #00b276; }
+.legend-chip-color.realizada { background: #8b5cf6; }
+
+.months-container {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+}
+
+.calendar-month {
+  background: #fafbfc;
+  border-radius: 12px;
+  padding: 1.25rem;
+  border: 1px solid #f0f2f4;
+}
+
+.month-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  color: #1e293b;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.nav-arrow {
+  background: white;
+  border: 1px solid #e9ecf4;
+  color: #64748b;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  font-size: 1rem;
+}
+
+.nav-arrow:hover {
+  background: #f8fafb;
+  border-color: #00b276;
+  color: #00b276;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+
+.calendar-grid.days {
+  margin-bottom: 8px;
+}
+
+.calendar-grid.days p {
+  color: #94a3b8;
+  text-align: center;
+  padding: 6px 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.day-number {
+  background: white;
+  border: 1px solid #f0f2f4;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  color: #1e293b;
+  font-weight: 500;
+  position: relative;
+}
+
+.day-number:hover {
+  background: #f8fafb;
+  border-color: #00b276;
+  transform: translateY(-1px);
+}
+
+.day-number.other-month {
+  color: #94a3b8;
+  opacity: 0.4;
+}
+
+.day-number.today {
+  background: #00b276;
+  color: white;
+  font-weight: 700;
+  border-color: #00b276;
+}
+
+.day-number.selected {
+  background: #d1fae5;
+  border-color: #00b276;
+  color: #065f46;
+}
+
+.day-number.has-event::after {
+  content: '';
+  position: absolute;
+  bottom: 3px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #3b82f6;
+}
+
+.day-number.has-event.agendada::after { background: #3b82f6; }
+.day-number.has-event.confirmada::after { background: #00b276; }
+.day-number.has-event.realizada::after { background: #8b5cf6; }
+
+/* Events Panel */
+.info-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.events-panel {
+  background: #fafbfc;
+  border-radius: 12px;
+  border: 1px solid #f0f2f4;
+  overflow: hidden;
+  max-height: 400px;
+  display: flex;
+  flex-direction: column;
+}
+
+.events-header {
+  position: sticky;
+  top: 0;
+  background: #f8fafc;
+  padding: 1rem;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 10;
+}
+
+.events-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+}
+
+.selected-date-info {
+  font-size: 0.75rem;
+  color: #00b276;
+  font-weight: 500;
+}
+
+.clear-filter-btn {
+  background: none;
+  border: none;
+  color: #64748b;
+  font-size: 0.8rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.clear-filter-btn:hover {
+  background: rgba(0,0,0,0.05);
+  color: #1e293b;
+}
+
+.clear-filter-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+.events-container-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.5rem;
+}
+
+.event-item {
+  padding: 0.75rem;
+  display: flex;
+  gap: 0.75rem;
+  border-radius: 8px;
+  transition: background 0.2s;
+  cursor: pointer;
+  margin-bottom: 0.5rem;
+  background: white;
+  border: 1px solid #f0f2f4;
+}
+
+.event-item:hover {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+
+.event-date {
+  flex-shrink: 0;
+  width: 44px;
+  text-align: center;
+}
+
+.event-day {
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.event-day.agendada { color: #3b82f6; }
+.event-day.confirmada { color: #00b276; }
+.event-day.realizada { color: #8b5cf6; }
+
+.event-month {
+  font-size: 0.7rem;
+  color: #64748b;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.event-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.event-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 0.15rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.event-meta {
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.event-badge {
+  font-size: 0.65rem;
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  font-weight: 600;
+  white-space: nowrap;
+  align-self: flex-start;
+}
+
+.event-badge.agendada { background: #dbeafe; color: #1e40af; }
+.event-badge.confirmada { background: #d1fae5; color: #065f46; }
+.event-badge.realizada { background: #ede9fe; color: #5b21b6; }
+
+.events-empty {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: #94a3b8;
+}
+
+.events-empty svg {
+  width: 40px;
+  height: 40px;
+  margin-bottom: 0.5rem;
+  opacity: 0.5;
+}
+
+.events-empty p {
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+/* Table Section */
+.table-section {
+  margin-bottom: 1.5rem;
+}
+
+.table-wrapper {
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.table-header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid #f1f5f9;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.table-header-section h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+}
+
+.table-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.table-tabs {
+  display: flex;
+  background: #f1f5f9;
+  border-radius: 8px;
+  padding: 4px;
+}
+
+.table-tab {
+  padding: 0.5rem 1rem;
+  background: none;
+  border: none;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.table-tab:hover {
+  color: #1e293b;
+}
+
+.table-tab.active {
+  background: white;
+  color: #00b276;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.table-search {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #f8fafc;
+  padding: 0.5rem 0.875rem;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.table-search svg {
+  width: 16px;
+  height: 16px;
+  color: #94a3b8;
+}
+
+.table-search input {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 0.85rem;
+  width: 180px;
+  color: #1e293b;
+}
+
+.table-content {
+  overflow-x: auto;
+}
+
+.consultas-table-header {
+  display: grid;
+  grid-template-columns: 1.5fr 100px 130px 80px 1fr 100px 110px 100px;
+  gap: 1rem;
+  padding: 0.875rem 1.5rem;
+  background: #f8fafc;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.consultas-table-body {
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.consulta-row {
+  display: grid;
+  grid-template-columns: 1.5fr 100px 130px 80px 1fr 100px 110px 100px;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  align-items: center;
+  border-bottom: 1px solid #f1f5f9;
+  transition: background 0.2s;
+}
+
+.consulta-row:hover {
+  background: #f8fafc;
+}
+
+.consulta-row:last-child {
+  border-bottom: none;
+}
+
+.colaborador-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.colaborador-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #00b276, #007a62);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+.colaborador-nome {
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 0.9rem;
+}
+
+.consulta-data {
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 0.85rem;
+}
+
+.consulta-tipo {
+  display: inline-flex;
+  padding: 0.3rem 0.75rem;
+  background: #f1f5f9;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  color: #475569;
+  font-weight: 500;
+}
+
+.consulta-tipo.tipo-periodica { background: #dbeafe; color: #1e40af; }
+.consulta-tipo.tipo-admissao { background: #d1fae5; color: #065f46; }
+.consulta-tipo.tipo-ocasional { background: #fef3c7; color: #92400e; }
+.consulta-tipo.tipo-reintegracao { background: #ede9fe; color: #5b21b6; }
+.consulta-tipo.tipo-mudanca-funcao { background: #fce7f3; color: #9d174d; }
+
+.consulta-hora {
+  color: #64748b;
+  font-size: 0.85rem;
+}
+
+.consulta-local {
+  color: #475569;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.consulta-estado {
+  display: inline-flex;
+  padding: 0.3rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.consulta-estado.status-agendada { background: #dbeafe; color: #1e40af; }
+.consulta-estado.status-confirmada { background: #d1fae5; color: #065f46; }
+.consulta-estado.status-realizada { background: #ede9fe; color: #5b21b6; }
+.consulta-estado.status-cancelada { background: #fee2e2; color: #991b1b; }
+
+.consulta-resultado {
+  display: inline-flex;
+  padding: 0.3rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.consulta-resultado.apto { background: #d1fae5; color: #065f46; }
+.consulta-resultado.apto-condicionado { background: #fef3c7; color: #92400e; }
+.consulta-resultado.inapto-temporario { background: #fee2e2; color: #991b1b; }
+.consulta-resultado.inapto { background: #fee2e2; color: #991b1b; }
+.consulta-resultado.pendente { background: #f1f5f9; color: #64748b; }
+
+.consulta-acoes {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.action-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  background: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.action-btn svg {
+  width: 16px;
+  height: 16px;
+  color: #64748b;
+}
+
+.action-btn:hover {
+  background: #00b276;
+  border-color: #00b276;
+}
+
+.action-btn:hover svg {
+  color: white;
+}
+
+.action-btn.edit:hover {
+  background: #3b82f6;
+  border-color: #3b82f6;
+}
+
+/* Loading State */
+.table-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  gap: 1rem;
+}
+
+.spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid #e2e8f0;
+  border-top-color: #00b276;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-text {
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+/* Empty State */
+.empty-state {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.empty-state svg {
+  width: 64px;
+  height: 64px;
+  color: #cbd5e1;
+  margin-bottom: 1rem;
+}
+
+.empty-state h3 {
+  font-size: 1.1rem;
+  color: #1e293b;
+  margin: 0 0 0.5rem 0;
+}
+
+.empty-state p {
+  color: #64748b;
+  font-size: 0.9rem;
+  margin: 0 0 1.5rem 0;
+}
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 550px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+}
+
+.modal-content.modal-large {
+  max-width: 700px;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1.5rem;
+  background: linear-gradient(135deg, #00b276, #007a62);
+  border-radius: 16px 16px 0 0;
+}
+
+.modal-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: white;
+  margin: 0;
+}
+
+.modal-close {
+  background: rgba(255,255,255,0.2);
+  border: none;
+  font-size: 1.5rem;
+  color: white;
+  cursor: pointer;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.modal-close:hover {
+  background: rgba(255,255,255,0.3);
+}
+
+.modal-body {
+  padding: 1.5rem;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #e2e8f0;
+  background: #f8fafc;
+  border-radius: 0 0 16px 16px;
+}
+
+/* Form */
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.form-label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 0.5rem;
+}
+
+.form-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: #1e293b;
+  transition: all 0.2s;
+  background: white;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #00b276;
+  box-shadow: 0 0 0 3px rgba(0, 178, 118, 0.1);
+}
+
+.form-input::placeholder {
+  color: #94a3b8;
+}
+
+textarea.form-input {
+  resize: vertical;
+  min-height: 80px;
+}
+
+select.form-input {
+  cursor: pointer;
+}
+
+.btn {
+  padding: 0.75rem 1.25rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.btn-secondary {
+  background: white;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+}
+
+.btn-secondary:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #00b276, #009966);
+  color: white;
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 178, 118, 0.3);
+}
+
+/* Detail Grid */
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.detail-item.full-width {
+  grid-column: span 2;
+}
+
+.detail-label {
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.detail-value {
+  font-size: 0.9rem;
+  color: #1e293b;
+  font-weight: 500;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .stats-overview {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 1024px) {
+  .calendar-wrapper {
+    grid-template-columns: 1fr;
+  }
+  
+  .stats-overview {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .consultas-table-header,
+  .consulta-row {
+    grid-template-columns: 1.2fr 80px 100px 1fr 80px 80px;
+  }
+  
+  .consultas-table-header > div:nth-child(4),
+  .consultas-table-header > div:nth-child(7),
+  .consulta-row > div:nth-child(4),
+  .consulta-row > div:nth-child(7) {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .gestao-medicina-page {
+    padding: 0 1rem 1rem;
+  }
+  
+  .page-header-section {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .stats-overview {
+    grid-template-columns: 1fr 1fr;
+  }
+  
+  .months-container {
+    grid-template-columns: 1fr;
+  }
+  
+  .table-header-section {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .detail-item.full-width {
+    grid-column: span 1;
+  }
+}
+</style>
+
+<script>
+// ============================================
+// GESTÃO MEDICINA NO TRABALHO - JAVASCRIPT
+// ============================================
+
+let consultas = [];
+let consultasFiltradas = [];
+let colaboradores = [];
+let tiposConsulta = [];
+let currentUser = null;
+let mesAtual = new Date();
+let selectedDate = null;
+let calendarExpanded = true;
+let currentFilter = 'all';
+
+const estadoClasses = {
+  'Agendada': 'status-agendada',
+  'Confirmada': 'status-confirmada',
+  'Realizada': 'status-realizada',
+  'Cancelada': 'status-cancelada'
+};
+
+const resultadoClasses = {
+  'Apto': 'apto',
+  'Apto Condicionado': 'apto-condicionado',
+  'Inapto Temporário': 'inapto-temporario',
+  'Inapto': 'inapto'
+};
+
+const tipoClasses = {
+  'PERIODICA': 'tipo-periodica',
+  'ADMISSAO': 'tipo-admissao',
+  'OCASIONAL': 'tipo-ocasional',
+  'REINTEGRACAO': 'tipo-reintegracao',
+  'MUDANCA_FUNCAO': 'tipo-mudanca-funcao'
+};
+
+const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 
+               'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+
+// Inicialização
+document.addEventListener('DOMContentLoaded', async function() {
+  await verificarPermissoes();
+  await carregarDados();
+  renderizarCalendario();
+  renderizarEventos();
+});
+
+async function verificarPermissoes() {
+  try {
+    while (typeof AuthService === 'undefined') {
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    
+    currentUser = await AuthService.getCurrentUser();
+    
+    // Verificar se é RH
+    if (!currentUser || currentUser.departamento_codigo !== 'AFR-RH') {
+      showToast('Não tem permissões para aceder a esta página', 'error');
+      setTimeout(() => {
+        window.location.href = '{{ "/medicina-trabalho" | relative_url }}';
+      }, 2000);
+      return false;
+    }
+    return true;
+  } catch (e) {
+    console.error('Erro ao verificar permissões:', e);
+    return false;
+  }
+}
+
+async function carregarDados() {
+  try {
+    while (typeof DataService === 'undefined') {
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    
+    // Carregar colaboradores
+    try {
+      colaboradores = await DataService.getColaboradores();
+    } catch (e) {
+      console.warn('Erro ao carregar colaboradores:', e);
+      colaboradores = [];
+    }
+    
+    // Carregar tipos de consulta
+    try {
+      tiposConsulta = await DataService.getTiposConsultaMedicina();
+    } catch (e) {
+      console.warn('Erro ao carregar tipos:', e);
+      tiposConsulta = [];
+    }
+    
+    // Carregar TODAS as consultas (gestão)
+    try {
+      consultas = await DataService.getConsultasMedicina();
+    } catch (e) {
+      console.warn('Erro ao carregar consultas:', e);
+      consultas = [];
+    }
+    
+    consultasFiltradas = [...consultas];
+    
+    // Popular selects
+    popularSelectColaboradores();
+    popularSelectTipos();
+    
+    // Atualizar UI
+    atualizarEstatisticas();
+    renderizarTabela();
+    
+  } catch (error) {
+    console.error('Erro ao carregar dados:', error);
+  }
+}
+
+function popularSelectColaboradores() {
+  const select = document.getElementById('novoColaborador');
+  select.innerHTML = '<option value="">Selecionar colaborador...</option>';
+  
+  colaboradores.forEach(c => {
+    const option = document.createElement('option');
+    option.value = c.id;
+    option.textContent = c.nome;
+    select.appendChild(option);
+  });
+}
+
+function popularSelectTipos() {
+  const select = document.getElementById('novoTipo');
+  select.innerHTML = '<option value="">Selecionar tipo...</option>';
+  
+  tiposConsulta.forEach(t => {
+    const option = document.createElement('option');
+    option.value = t.id;
+    option.textContent = t.nome;
+    select.appendChild(option);
+  });
+}
+
+function atualizarEstatisticas() {
+  const hoje = new Date();
+  const inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+  
+  const stats = {
+    totalColaboradores: colaboradores.length,
+    agendadas: consultas.filter(c => c.estado === 'Agendada').length,
+    confirmadas: consultas.filter(c => c.estado === 'Confirmada').length,
+    realizadasMes: consultas.filter(c => {
+      const data = new Date(c.data_marcacao);
+      return c.estado === 'Realizada' && data >= inicioMes;
+    }).length,
+    pendentes: 0 // TODO: calcular colaboradores sem exame no prazo
+  };
+  
+  document.getElementById('statTotalColaboradores').textContent = stats.totalColaboradores;
+  document.getElementById('statAgendadas').textContent = stats.agendadas;
+  document.getElementById('statConfirmadas').textContent = stats.confirmadas;
+  document.getElementById('statRealizadas').textContent = stats.realizadasMes;
+  document.getElementById('statPendentes').textContent = stats.pendentes;
+}
+
+// ============================================
+// CALENDÁRIO
+// ============================================
+
+function toggleCalendar() {
+  const content = document.getElementById('calendarCollapsible');
+  const actionText = document.getElementById('toggleActionText');
+  
+  calendarExpanded = !calendarExpanded;
+  
+  if (calendarExpanded) {
+    content.classList.add('expanded');
+    actionText.textContent = 'Esconder';
+  } else {
+    content.classList.remove('expanded');
+    actionText.textContent = 'Mostrar';
+  }
+}
+
+function renderizarCalendario() {
+  renderizarMes('currentMonthGrid', 'currentMonthName', mesAtual);
+  
+  const proximoMes = new Date(mesAtual);
+  proximoMes.setMonth(proximoMes.getMonth() + 1);
+  renderizarMes('nextMonthGrid', 'nextMonthName', proximoMes);
+}
+
+function renderizarMes(gridId, labelId, data) {
+  const grid = document.getElementById(gridId);
+  const label = document.getElementById(labelId);
+  
+  const ano = data.getFullYear();
+  const mes = data.getMonth();
+  
+  label.textContent = `${meses[mes]} ${ano}`;
+  grid.innerHTML = '';
+  
+  const primeiroDia = new Date(ano, mes, 1);
+  const ultimoDia = new Date(ano, mes + 1, 0);
+  const diasAnteriores = primeiroDia.getDay();
+  const ultimoDiaMesAnterior = new Date(ano, mes, 0).getDate();
+  
+  for (let i = diasAnteriores - 1; i >= 0; i--) {
+    const dia = ultimoDiaMesAnterior - i;
+    grid.appendChild(criarCelulaDia(dia, new Date(ano, mes - 1, dia), true));
+  }
+  
+  const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0);
+  
+  for (let dia = 1; dia <= ultimoDia.getDate(); dia++) {
+    const dataAtual = new Date(ano, mes, dia);
+    const isHoje = dataAtual.getTime() === hoje.getTime();
+    const isSelected = selectedDate && dataAtual.getTime() === selectedDate.getTime();
+    const consultasDoDia = getConsultasDoDia(dataAtual);
+    
+    grid.appendChild(criarCelulaDia(dia, dataAtual, false, isHoje, isSelected, consultasDoDia));
+  }
+  
+  const totalCells = diasAnteriores + ultimoDia.getDate();
+  const diasRestantes = totalCells <= 35 ? 35 - totalCells : 42 - totalCells;
+  
+  for (let dia = 1; dia <= diasRestantes; dia++) {
+    grid.appendChild(criarCelulaDia(dia, new Date(ano, mes + 1, dia), true));
+  }
+}
+
+function criarCelulaDia(dia, data, outroMes, isHoje = false, isSelected = false, consultasDia = []) {
+  const cell = document.createElement('div');
+  cell.className = 'day-number';
+  
+  if (outroMes) cell.classList.add('other-month');
+  if (isHoje) cell.classList.add('today');
+  if (isSelected) cell.classList.add('selected');
+  
+  if (consultasDia.length > 0) {
+    cell.classList.add('has-event');
+    if (consultasDia.some(c => c.estado === 'Confirmada')) {
+      cell.classList.add('confirmada');
+    } else if (consultasDia.some(c => c.estado === 'Agendada')) {
+      cell.classList.add('agendada');
+    } else {
+      cell.classList.add('realizada');
+    }
+  }
+  
+  cell.textContent = dia;
+  
+  if (!outroMes) {
+    cell.onclick = () => selecionarData(data, consultasDia);
+  }
+  
+  return cell;
+}
+
+function getConsultasDoDia(data) {
+  return consultas.filter(c => {
+    const dataConsulta = new Date(c.data_marcacao);
+    return dataConsulta.toDateString() === data.toDateString();
+  });
+}
+
+function selecionarData(data, consultasDoDia) {
+  selectedDate = data;
+  renderizarCalendario();
+  
+  if (consultasDoDia.length > 0) {
+    renderizarEventos(consultasDoDia, data);
+    document.getElementById('clearFilterBtn').style.display = 'flex';
+    document.getElementById('selectedDateInfo').style.display = 'block';
+    document.getElementById('selectedDateInfo').textContent = formatarDataLonga(data);
+    document.getElementById('eventsTitle').textContent = 'Consultas do Dia';
+  } else {
+    limparFiltroData();
+  }
+}
+
+function limparFiltroData() {
+  selectedDate = null;
+  renderizarCalendario();
+  renderizarEventos();
+  document.getElementById('clearFilterBtn').style.display = 'none';
+  document.getElementById('selectedDateInfo').style.display = 'none';
+  document.getElementById('eventsTitle').textContent = 'Próximas Consultas';
+}
+
+function mesAnterior() {
+  mesAtual.setMonth(mesAtual.getMonth() - 1);
+  renderizarCalendario();
+}
+
+function mesSeguinte() {
+  mesAtual.setMonth(mesAtual.getMonth() + 1);
+  renderizarCalendario();
+}
+
+// ============================================
+// EVENTOS
+// ============================================
+
+function renderizarEventos(consultasLista = null, dataSelecionada = null) {
+  const container = document.getElementById('eventsContainer');
+  const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0);
+  
+  let consultasParaMostrar;
+  
+  if (consultasLista) {
+    consultasParaMostrar = consultasLista;
+  } else {
+    consultasParaMostrar = consultas
+      .filter(c => {
+        const data = new Date(c.data_marcacao);
+        return data >= hoje && (c.estado === 'Agendada' || c.estado === 'Confirmada');
+      })
+      .sort((a, b) => new Date(a.data_marcacao) - new Date(b.data_marcacao))
+      .slice(0, 10);
+  }
+  
+  if (consultasParaMostrar.length === 0) {
+    container.innerHTML = `
+      <div class="events-empty">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+          <line x1="16" y1="2" x2="16" y2="6"></line>
+          <line x1="8" y1="2" x2="8" y2="6"></line>
+        </svg>
+        <p>${dataSelecionada ? 'Sem consultas neste dia' : 'Sem consultas agendadas'}</p>
+      </div>
+    `;
+    return;
+  }
+  
+  container.innerHTML = consultasParaMostrar.map(c => {
+    const data = new Date(c.data_marcacao);
+    const dia = data.getDate();
+    const mes = meses[data.getMonth()].substring(0, 3).toUpperCase();
+    const colaboradorNome = c.colaborador?.nome || 'Colaborador';
+    const estadoClass = c.estado.toLowerCase().replace(' ', '-');
+    
+    return `
+      <div class="event-item" onclick="verDetalhes('${c.id}')">
+        <div class="event-date">
+          <div class="event-day ${estadoClass}">${dia}</div>
+          <div class="event-month">${mes}</div>
+        </div>
+        <div class="event-details">
+          <div class="event-title">${colaboradorNome}</div>
+          <div class="event-meta">${c.hora_inicio || '--:--'} • ${c.tipo?.nome || 'Consulta'}</div>
+        </div>
+        <span class="event-badge ${estadoClass}">${c.estado}</span>
+      </div>
+    `;
+  }).join('');
+}
+
+// ============================================
+// TABELA
+// ============================================
+
+function renderizarTabela() {
+  const tbody = document.getElementById('consultasTableBody');
+  const emptyState = document.getElementById('emptyState');
+  const tableSection = document.querySelector('.table-section');
+  
+  if (consultasFiltradas.length === 0) {
+    tbody.innerHTML = '';
+    tableSection.style.display = 'none';
+    emptyState.style.display = 'flex';
+    return;
+  }
+  
+  emptyState.style.display = 'none';
+  tableSection.style.display = 'block';
+  
+  tbody.innerHTML = consultasFiltradas.map(c => {
+    const colaboradorNome = c.colaborador?.nome || 'N/A';
+    const iniciais = colaboradorNome.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+    const tipoNome = c.tipo?.nome || 'N/A';
+    const tipoCodigo = c.tipo?.codigo || '';
+    const data = c.data_marcacao ? formatarData(c.data_marcacao) : '-';
+    const hora = c.hora_inicio || '--:--';
+    const local = c.local || '-';
+    
+    return `
+      <div class="consulta-row">
+        <div class="colaborador-info">
+          <div class="colaborador-avatar">${iniciais}</div>
+          <span class="colaborador-nome">${colaboradorNome}</span>
+        </div>
+        <div class="consulta-data">${data}</div>
+        <div><span class="consulta-tipo ${tipoClasses[tipoCodigo] || ''}">${tipoNome}</span></div>
+        <div class="consulta-hora">${hora}</div>
+        <div class="consulta-local">${local}</div>
+        <div><span class="consulta-estado ${estadoClasses[c.estado] || ''}">${c.estado}</span></div>
+        <div>
+          ${c.resultado 
+            ? `<span class="consulta-resultado ${resultadoClasses[c.resultado] || ''}">${c.resultado}</span>` 
+            : '<span class="consulta-resultado pendente">Pendente</span>'}
+        </div>
+        <div class="consulta-acoes">
+          <button class="action-btn" onclick="verDetalhes('${c.id}')" title="Ver detalhes">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          </button>
+          <button class="action-btn edit" onclick="editarConsulta('${c.id}')" title="Editar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+              <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ============================================
+// FILTROS
+// ============================================
+
+function filterConsultas(filter) {
+  currentFilter = filter;
+  
+  document.querySelectorAll('.table-tab').forEach(tab => {
+    tab.classList.toggle('active', tab.dataset.filter === filter);
+  });
+  
+  if (filter === 'all') {
+    consultasFiltradas = [...consultas];
+  } else if (filter === 'agendadas') {
+    consultasFiltradas = consultas.filter(c => c.estado === 'Agendada');
+  } else if (filter === 'confirmadas') {
+    consultasFiltradas = consultas.filter(c => c.estado === 'Confirmada');
+  } else if (filter === 'realizadas') {
+    consultasFiltradas = consultas.filter(c => c.estado === 'Realizada');
+  }
+  
+  filtrarConsultas();
+}
+
+function filtrarConsultas() {
+  const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+  
+  let base = consultas;
+  if (currentFilter === 'agendadas') {
+    base = consultas.filter(c => c.estado === 'Agendada');
+  } else if (currentFilter === 'confirmadas') {
+    base = consultas.filter(c => c.estado === 'Confirmada');
+  } else if (currentFilter === 'realizadas') {
+    base = consultas.filter(c => c.estado === 'Realizada');
+  }
+  
+  if (searchTerm) {
+    consultasFiltradas = base.filter(c => {
+      const nome = c.colaborador?.nome || '';
+      return nome.toLowerCase().includes(searchTerm);
+    });
+  } else {
+    consultasFiltradas = [...base];
+  }
+  
+  renderizarTabela();
+}
+
+// ============================================
+// MODAIS
+// ============================================
+
+function abrirModalNovaConsulta() {
+  document.getElementById('formNovaConsulta').reset();
+  document.getElementById('modalNovaConsulta').style.display = 'flex';
+}
+
+function fecharModalNovaConsulta() {
+  document.getElementById('modalNovaConsulta').style.display = 'none';
+}
+
+async function guardarNovaConsulta() {
+  const colaboradorId = document.getElementById('novoColaborador').value;
+  const tipoId = document.getElementById('novoTipo').value;
+  const data = document.getElementById('novoData').value;
+  const horaInicio = document.getElementById('novoHoraInicio').value;
+  const horaFim = document.getElementById('novoHoraFim').value;
+  const local = document.getElementById('novoLocal').value;
+  const medico = document.getElementById('novoMedico').value;
+  const observacoes = document.getElementById('novoObservacoes').value;
+  
+  if (!colaboradorId || !tipoId || !data || !horaInicio || !local) {
+    showToast('Por favor preencha todos os campos obrigatórios', 'error');
+    return;
+  }
+  
+  try {
+    const novaConsulta = {
+      colaborador_id: colaboradorId,
+      tipo_consulta_id: tipoId,
+      data_marcacao: data,
+      hora_inicio: horaInicio,
+      hora_fim: horaFim || null,
+      local: local,
+      medico_nome: medico || null,
+      observacoes: observacoes || null,
+      estado: 'Agendada',
+      agendado_por: currentUser.id
+    };
+    
+    await DataService.createConsultaMedicina(novaConsulta);
+    
+    showToast('Consulta agendada com sucesso!', 'success');
+    fecharModalNovaConsulta();
+    await carregarDados();
+    renderizarCalendario();
+    renderizarEventos();
+    
+  } catch (error) {
+    console.error('Erro ao criar consulta:', error);
+    showToast('Erro ao agendar consulta', 'error');
+  }
+}
+
+function verDetalhes(id) {
+  const consulta = consultas.find(c => c.id === id);
+  if (!consulta) return;
+  
+  const body = document.getElementById('modalDetalhesBody');
+  const colaboradorNome = consulta.colaborador?.nome || '-';
+  const tipoNome = consulta.tipo?.nome || '-';
+  const data = consulta.data_marcacao ? formatarData(consulta.data_marcacao) : '-';
+  
+  body.innerHTML = `
+    <div class="detail-grid">
+      <div class="detail-item">
+        <span class="detail-label">Colaborador</span>
+        <span class="detail-value">${colaboradorNome}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Tipo de Consulta</span>
+        <span class="detail-value">${tipoNome}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Data</span>
+        <span class="detail-value">${data}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Hora</span>
+        <span class="detail-value">${consulta.hora_inicio || '--:--'} - ${consulta.hora_fim || '--:--'}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Local</span>
+        <span class="detail-value">${consulta.local || '-'}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Médico</span>
+        <span class="detail-value">${consulta.medico_nome || '-'}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Estado</span>
+        <span class="consulta-estado ${estadoClasses[consulta.estado] || ''}">${consulta.estado}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Resultado</span>
+        ${consulta.resultado 
+          ? `<span class="consulta-resultado ${resultadoClasses[consulta.resultado] || ''}">${consulta.resultado}</span>` 
+          : '<span class="consulta-resultado pendente">Pendente</span>'}
+      </div>
+      ${consulta.observacoes ? `
+        <div class="detail-item full-width">
+          <span class="detail-label">Observações</span>
+          <span class="detail-value">${consulta.observacoes}</span>
+        </div>
+      ` : ''}
+    </div>
+  `;
+  
+  document.getElementById('modalDetalhes').style.display = 'flex';
+}
+
+function fecharModalDetalhes() {
+  document.getElementById('modalDetalhes').style.display = 'none';
+}
+
+function editarConsulta(id) {
+  // TODO: Implementar edição
+  showToast('Funcionalidade de edição em desenvolvimento', 'info');
+}
+
+// ============================================
+// UTILITÁRIOS
+// ============================================
+
+function formatarData(dataStr) {
+  if (!dataStr) return '-';
+  const data = new Date(dataStr);
+  return data.toLocaleDateString('pt-PT');
+}
+
+function formatarDataLonga(data) {
+  return data.toLocaleDateString('pt-PT', { 
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' 
+  });
+}
+
+function showToast(message, type = 'success') {
+  if (typeof window.showToast === 'function') {
+    window.showToast(message, type);
+  } else {
+    alert(message);
+  }
+}
+</script>
