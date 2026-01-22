@@ -76,43 +76,17 @@ title: Medicina no Trabalho
     </div>
   </div>
 
-  <!-- Calendário de Consultas - IGUAL À HOME -->
+  <!-- Calendário de Consultas -->
   <div class="calendar-section">
-    <div class="calendar-cards">
-      <div class="calendar-card blue">
-        <div class="calendar-card-label">Agendadas</div>
-        <div class="calendar-card-number" id="cardAgendadas">0</div>
-        <div class="calendar-card-info" id="cardProximaAgendada">-</div>
-      </div>
-
-      <div class="calendar-card green">
-        <div class="calendar-card-label">Confirmadas</div>
-        <div class="calendar-card-number" id="cardConfirmadas">0</div>
-        <div class="calendar-card-info" id="cardProximaConfirmada">-</div>
-      </div>
-
-      <div class="calendar-card orange">
-        <div class="calendar-card-label">Este Mês</div>
-        <div class="calendar-card-number" id="cardEsteMes">0</div>
-        <div class="calendar-card-info">Consultas programadas</div>
-      </div>
-
-      <div class="calendar-card purple">
-        <div class="calendar-card-label">Próxima Semana</div>
-        <div class="calendar-card-number" id="cardProximaSemana">0</div>
-        <div class="calendar-card-info">Consultas agendadas</div>
-      </div>
-    </div>
-
-    <button class="calendar-toggle-btn" id="calendarToggleBtn" onclick="toggleCalendar()">
+    <button class="calendar-toggle-btn active" id="calendarToggleBtn" onclick="toggleCalendar()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <polyline points="6 9 12 15 18 9"/>
       </svg>
-      Ver Calendário
+      Ocultar Calendário
     </button>
 
-    <!-- Collapsible Calendar Section - IGUAL À HOME -->
-    <div class="calendar-collapsible" id="calendarCollapsible">
+    <!-- Collapsible Calendar Section - Visível por defeito -->
+    <div class="calendar-collapsible show" id="calendarCollapsible">
       <div class="calendar-wrapper">
         <!-- Dual Calendar -->
         <div class="dual-calendar-container">
@@ -189,7 +163,7 @@ title: Medicina no Trabalho
         <circle cx="11" cy="11" r="8"></circle>
         <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
       </svg>
-      <input type="text" id="searchInput" placeholder="Pesquisar por colaborador, tipo de consulta..." onkeyup="filtrarConsultas()">
+      <input type="text" id="searchInput" placeholder="Pesquisar por tipo de consulta..." onkeyup="filtrarConsultas()">
     </div>
     <div class="filter-group">
       <select id="filterEstado" onchange="filtrarConsultas()">
@@ -227,10 +201,6 @@ title: Medicina no Trabalho
   <!-- Tabela de Consultas -->
   <div class="table-container">
     <div class="table-header">
-      <div class="th" onclick="ordenarTabela('colaborador')">
-        <span>Colaborador</span>
-        <span class="sort-icon" id="sort-colaborador">↕</span>
-      </div>
       <div class="th" onclick="ordenarTabela('data')">
         <span>Data</span>
         <span class="sort-icon" id="sort-data">↕</span>
@@ -243,6 +213,7 @@ title: Medicina no Trabalho
         <span>Hora</span>
         <span class="sort-icon" id="sort-hora">↕</span>
       </div>
+      <div class="th">Local</div>
       <div class="th" onclick="ordenarTabela('estado')">
         <span>Estado</span>
         <span class="sort-icon" id="sort-estado">↕</span>
@@ -265,79 +236,12 @@ title: Medicina no Trabalho
     </svg>
     <h3>Sem consultas registadas</h3>
     <p>Não existem consultas de medicina no trabalho para mostrar.</p>
-    <button class="btn-primary" onclick="abrirModalNovaConsulta()">Agendar Consulta</button>
   </div>
 
   <!-- Loading -->
   <div class="loading-state" id="loadingState">
     <div class="spinner"></div>
     <p>A carregar consultas...</p>
-  </div>
-</div>
-
-<!-- Modal Nova Consulta -->
-<div id="modalNovaConsulta" class="modal-overlay" style="display: none;">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h2 class="modal-title" id="modalTitle">Nova Marcação</h2>
-      <button class="modal-close" onclick="fecharModal()">×</button>
-    </div>
-    <form id="formConsulta" onsubmit="event.preventDefault(); guardarConsulta();">
-      <div class="modal-body">
-        <div class="form-group">
-          <label class="form-label">Colaborador *</label>
-          <select id="selectColaborador" class="form-select" required>
-            <option value="">Selecione o colaborador...</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Tipo de Consulta *</label>
-          <select id="selectTipoConsulta" class="form-select" required>
-            <option value="">Selecione o tipo...</option>
-          </select>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label">Data *</label>
-            <input type="date" id="inputData" class="form-input" required>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Hora Início *</label>
-            <input type="time" id="inputHoraInicio" class="form-input" required>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Hora Fim</label>
-            <input type="time" id="inputHoraFim" class="form-input">
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Local</label>
-          <input type="text" id="inputLocal" class="form-input" placeholder="Ex: Gabinete Médico - Piso 1">
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Médico</label>
-          <input type="text" id="inputMedico" class="form-input" placeholder="Nome do médico">
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Observações</label>
-          <textarea id="inputObservacoes" class="form-textarea" rows="3" placeholder="Observações adicionais..."></textarea>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn-secondary" onclick="fecharModal()">Cancelar</button>
-        <button type="submit" class="btn-primary">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="20 6 9 17 4 12"></polyline>
-          </svg>
-          Guardar
-        </button>
-      </div>
-    </form>
   </div>
 </div>
 
@@ -359,67 +263,8 @@ title: Medicina no Trabalho
 
 <style>
 /* ============================================ */
-/* CALENDÁRIO - ESTILOS IGUAIS À HOME */
+/* CALENDÁRIO - ESTILOS */
 /* ============================================ */
-
-/* Calendar Cards */
-.calendar-cards {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
-
-.calendar-card {
-  background: white;
-  border-radius: 12px;
-  padding: 1.25rem;
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.calendar-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
-
-.calendar-card::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 4px;
-}
-
-.calendar-card.blue::before { background: #3b82f6; }
-.calendar-card.green::before { background: #00b276; }
-.calendar-card.orange::before { background: #f59e0b; }
-.calendar-card.purple::before { background: #8b5cf6; }
-
-.calendar-card-label {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: #64748b;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 0.5rem;
-}
-
-.calendar-card-number {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #1e293b;
-  line-height: 1;
-  margin-bottom: 0.25rem;
-}
-
-.calendar-card-info {
-  font-size: 0.8rem;
-  color: #94a3b8;
-}
 
 /* Calendar Toggle Button */
 .calendar-toggle-btn {
@@ -437,6 +282,7 @@ title: Medicina no Trabalho
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
+  margin-bottom: 1rem;
 }
 
 .calendar-toggle-btn:hover {
@@ -458,13 +304,11 @@ title: Medicina no Trabalho
 .calendar-collapsible {
   max-height: 0;
   overflow: hidden;
-  transition: max-height 0.4s ease-out, margin 0.4s ease-out;
-  margin-top: 0;
+  transition: max-height 0.4s ease-out;
 }
 
 .calendar-collapsible.show {
   max-height: 800px;
-  margin-top: 1rem;
 }
 
 .calendar-wrapper {
@@ -858,48 +702,6 @@ title: Medicina no Trabalho
   border-radius: 0 0 16px 16px;
 }
 
-.form-group {
-  margin-bottom: 1rem;
-}
-
-.form-row {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
-}
-
-.form-label {
-  display: block;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: #475569;
-  margin-bottom: 0.5rem;
-}
-
-.form-input,
-.form-select,
-.form-textarea {
-  width: 100%;
-  padding: 0.65rem 1rem;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  font-size: 0.875rem;
-  transition: all 0.2s;
-}
-
-.form-input:focus,
-.form-select:focus,
-.form-textarea:focus {
-  outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-
-.form-textarea {
-  resize: vertical;
-  min-height: 80px;
-}
-
 .btn-secondary {
   display: inline-flex;
   align-items: center;
@@ -956,22 +758,10 @@ title: Medicina no Trabalho
   .calendar-wrapper {
     grid-template-columns: 1fr;
   }
-  
-  .calendar-cards {
-    grid-template-columns: repeat(2, 1fr);
-  }
 }
 
 @media (max-width: 768px) {
-  .calendar-cards {
-    grid-template-columns: 1fr;
-  }
-  
   .months-container {
-    grid-template-columns: 1fr;
-  }
-  
-  .form-row {
     grid-template-columns: 1fr;
   }
   
@@ -993,13 +783,11 @@ title: Medicina no Trabalho
 let consultas = [];
 let consultasFiltradas = [];
 let tiposConsulta = [];
-let colaboradores = [];
 let currentUser = null;
-let consultaEmEdicao = null;
 let mesAtual = new Date();
 let sortConfig = { coluna: null, direcao: 'asc' };
 let selectedDate = null;
-let calendarExpanded = false;
+let calendarExpanded = true; // Calendário visível por defeito
 
 // Mapeamento de estados e tipos
 const estadoClasses = {
@@ -1057,18 +845,13 @@ async function carregarDados() {
       tiposConsulta = [];
     }
     
-    // Carregar colaboradores usando DataService
+    // Carregar apenas as consultas do colaborador atual
     try {
-      colaboradores = await DataService.getColaboradores();
-    } catch (e) {
-      console.warn('[Medicina] Erro ao carregar colaboradores:', e);
-      colaboradores = [];
-    }
-    
-    // Carregar consultas usando DataService.getConsultasMedicina()
-    // Esta função já retorna array vazio em caso de erro, não quebra a página
-    try {
-      consultas = await DataService.getConsultasMedicina();
+      if (currentUser && currentUser.id) {
+        consultas = await DataService.getConsultasMedicinaColaborador(currentUser.id);
+      } else {
+        consultas = [];
+      }
     } catch (e) {
       console.warn('[Medicina] Erro ao carregar consultas:', e);
       consultas = [];
@@ -1076,18 +859,12 @@ async function carregarDados() {
     
     consultasFiltradas = [...consultas];
     
-    // Preencher selects do modal
-    preencherSelectTipos();
-    preencherSelectColaboradores();
-    
     // Atualizar UI
     atualizarEstatisticas();
-    atualizarCards();
     renderizarTabela();
     
   } catch (error) {
     console.error('[Medicina] Erro ao carregar dados:', error);
-    // NÃO mostrar erro ao utilizador - simplesmente mostrar estado vazio
     consultas = [];
     consultasFiltradas = [];
   } finally {
@@ -1097,24 +874,6 @@ async function carregarDados() {
       emptyState.style.display = 'flex';
     }
   }
-}
-
-function preencherSelectTipos() {
-  const select = document.getElementById('selectTipoConsulta');
-  select.innerHTML = '<option value="">Selecione o tipo...</option>';
-  
-  tiposConsulta.forEach(tipo => {
-    select.innerHTML += `<option value="${tipo.id}">${tipo.nome}</option>`;
-  });
-}
-
-function preencherSelectColaboradores() {
-  const select = document.getElementById('selectColaborador');
-  select.innerHTML = '<option value="">Selecione o colaborador...</option>';
-  
-  colaboradores.forEach(colab => {
-    select.innerHTML += `<option value="${colab.id}">${colab.nome} (${colab.numero_colaborador || 'N/A'})</option>`;
-  });
 }
 
 function atualizarEstatisticas() {
@@ -1143,61 +902,6 @@ function atualizarEstatisticas() {
   document.getElementById('statConfirmada').textContent = stats.confirmada;
   document.getElementById('statRealizada').textContent = stats.realizada;
   document.getElementById('statAptos').textContent = stats.aptos;
-}
-
-function atualizarCards() {
-  const hoje = new Date();
-  hoje.setHours(0, 0, 0, 0);
-  
-  const proximaSemana = new Date(hoje);
-  proximaSemana.setDate(proximaSemana.getDate() + 7);
-  
-  const inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
-  const fimMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0);
-  
-  let agendadas = 0;
-  let confirmadas = 0;
-  let esteMes = 0;
-  let proximaSemanaCount = 0;
-  let proximaAgendada = null;
-  let proximaConfirmada = null;
-  
-  consultas.forEach(c => {
-    const dataConsulta = new Date(c.data_marcacao);
-    dataConsulta.setHours(0, 0, 0, 0);
-    
-    if (c.estado === 'Agendada') {
-      agendadas++;
-      if (dataConsulta >= hoje && (!proximaAgendada || dataConsulta < new Date(proximaAgendada))) {
-        proximaAgendada = c.data_marcacao;
-      }
-    }
-    
-    if (c.estado === 'Confirmada') {
-      confirmadas++;
-      if (dataConsulta >= hoje && (!proximaConfirmada || dataConsulta < new Date(proximaConfirmada))) {
-        proximaConfirmada = c.data_marcacao;
-      }
-    }
-    
-    if (dataConsulta >= inicioMes && dataConsulta <= fimMes && (c.estado === 'Agendada' || c.estado === 'Confirmada')) {
-      esteMes++;
-    }
-    
-    if (dataConsulta >= hoje && dataConsulta <= proximaSemana && (c.estado === 'Agendada' || c.estado === 'Confirmada')) {
-      proximaSemanaCount++;
-    }
-  });
-  
-  document.getElementById('cardAgendadas').textContent = agendadas;
-  document.getElementById('cardConfirmadas').textContent = confirmadas;
-  document.getElementById('cardEsteMes').textContent = esteMes;
-  document.getElementById('cardProximaSemana').textContent = proximaSemanaCount;
-  
-  document.getElementById('cardProximaAgendada').textContent = proximaAgendada ? 
-    `Próxima: ${formatarDataCurta(proximaAgendada)}` : 'Sem consultas';
-  document.getElementById('cardProximaConfirmada').textContent = proximaConfirmada ? 
-    `Próxima: ${formatarDataCurta(proximaConfirmada)}` : 'Sem consultas';
 }
 
 // ============================================
@@ -1400,7 +1104,6 @@ function renderizarEventos(consultasLista = null, dataSelecionada = null) {
     const data = new Date(c.data_marcacao);
     const dia = data.getDate();
     const mes = meses[data.getMonth()].substring(0, 3).toUpperCase();
-    const nomeColaborador = c.colaborador?.nome || 'N/A';
     const tipoNome = c.tipo?.nome || 'Consulta';
     const estadoClass = c.estado.toLowerCase().replace(' ', '-');
     
@@ -1411,8 +1114,8 @@ function renderizarEventos(consultasLista = null, dataSelecionada = null) {
           <div class="event-month">${mes}</div>
         </div>
         <div class="event-details">
-          <div class="event-title">${nomeColaborador}</div>
-          <div class="event-meta">${c.hora_inicio || '--:--'} • ${tipoNome}</div>
+          <div class="event-title">${tipoNome}</div>
+          <div class="event-meta">${c.hora_inicio || '--:--'} • ${c.local || 'Local a definir'}</div>
         </div>
         <span class="event-badge ${estadoClass}">${c.estado}</span>
       </div>
@@ -1439,30 +1142,20 @@ function renderizarTabela() {
   document.querySelector('.table-container').style.display = 'block';
   
   tbody.innerHTML = consultasFiltradas.map(c => {
-    const nomeColaborador = c.colaborador?.nome || 'N/A';
-    const iniciais = getIniciais(nomeColaborador);
-    const dept = c.colaborador?.departamentos?.nome || '';
     const tipoNome = c.tipo?.nome || 'N/A';
     const tipoCodigo = c.tipo?.codigo || '';
     const data = c.data_marcacao ? formatarData(c.data_marcacao) : '-';
     const hora = c.hora_inicio || '--:--';
+    const local = c.local || '-';
     
     return `
       <div class="table-row">
-        <div class="td">
-          <div class="td-colaborador">
-            <div class="colaborador-avatar">${iniciais}</div>
-            <div class="colaborador-info">
-              <span class="colaborador-nome">${nomeColaborador}</span>
-              <span class="colaborador-dept">${dept}</span>
-            </div>
-          </div>
-        </div>
         <div class="td">${data}</div>
         <div class="td">
           <span class="tipo-badge ${tipoClasses[tipoCodigo] || ''}">${tipoNome}</span>
         </div>
         <div class="td">${hora}</div>
+        <div class="td">${local}</div>
         <div class="td">
           <span class="status-badge ${estadoClasses[c.estado] || ''}">${c.estado}</span>
         </div>
@@ -1470,46 +1163,18 @@ function renderizarTabela() {
           ${c.resultado ? `<span class="resultado-badge ${resultadoClasses[c.resultado] || ''}">${c.resultado}</span>` : '<span class="resultado-badge pendente">Pendente</span>'}
         </div>
         <div class="td">
-          ${criarBotoesAcao(c)}
+          <div class="action-buttons">
+            <button class="action-btn primary" onclick="verDetalhes('${c.id}')" title="Ver detalhes">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
     `;
   }).join('');
-}
-
-function criarBotoesAcao(consulta) {
-  let html = '<div class="action-buttons">';
-  
-  html += `
-    <button class="action-btn primary" onclick="verDetalhes('${consulta.id}')" title="Ver detalhes">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-        <circle cx="12" cy="12" r="3"/>
-      </svg>
-    </button>
-  `;
-  
-  if (consulta.estado === 'Agendada' || consulta.estado === 'Confirmada') {
-    html += `
-      <button class="action-btn" onclick="editarConsulta('${consulta.id}')" title="Editar">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
-          <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
-        </svg>
-      </button>
-    `;
-    
-    html += `
-      <button class="action-btn danger" onclick="cancelarConsulta('${consulta.id}')" title="Cancelar">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M6 18L18 6M6 6l12 12"/>
-        </svg>
-      </button>
-    `;
-  }
-  
-  html += '</div>';
-  return html;
 }
 
 // ============================================
@@ -1523,12 +1188,10 @@ function filtrarConsultas() {
   const resultadoFilter = document.getElementById('filterResultado').value;
   
   consultasFiltradas = consultas.filter(c => {
-    const nomeColaborador = c.colaborador?.nome || '';
     const tipoNome = c.tipo?.nome || '';
     const tipoCodigo = c.tipo?.codigo || '';
     
     const matchSearch = !searchTerm || 
-      nomeColaborador.toLowerCase().includes(searchTerm) ||
       tipoNome.toLowerCase().includes(searchTerm);
     
     const matchEstado = !estadoFilter || c.estado === estadoFilter;
@@ -1580,10 +1243,6 @@ function ordenarTabela(coluna) {
     let valorA, valorB;
     
     switch(coluna) {
-      case 'colaborador':
-        valorA = a.colaborador?.nome || '';
-        valorB = b.colaborador?.nome || '';
-        break;
       case 'data':
         valorA = new Date(a.data_marcacao);
         valorB = new Date(b.data_marcacao);
@@ -1622,90 +1281,11 @@ function ordenarTabela(coluna) {
 }
 
 // ============================================
-// MODAL - NOVA CONSULTA
+// MODAL - NOVA CONSULTA (placeholder)
 // ============================================
 
 function abrirModalNovaConsulta() {
-  consultaEmEdicao = null;
-  document.getElementById('modalTitle').textContent = 'Nova Marcação';
-  document.getElementById('formConsulta').reset();
-  document.getElementById('modalNovaConsulta').style.display = 'flex';
-}
-
-function fecharModal() {
-  document.getElementById('modalNovaConsulta').style.display = 'none';
-  consultaEmEdicao = null;
-}
-
-async function editarConsulta(id) {
-  const consulta = consultas.find(c => c.id === id);
-  if (!consulta) return;
-  
-  consultaEmEdicao = consulta;
-  document.getElementById('modalTitle').textContent = 'Editar Marcação';
-  
-  document.getElementById('selectColaborador').value = consulta.colaborador_id || '';
-  document.getElementById('selectTipoConsulta').value = consulta.tipo_consulta_id || '';
-  document.getElementById('inputData').value = consulta.data_marcacao || '';
-  document.getElementById('inputHoraInicio').value = consulta.hora_inicio || '';
-  document.getElementById('inputHoraFim').value = consulta.hora_fim || '';
-  document.getElementById('inputLocal').value = consulta.local || '';
-  document.getElementById('inputMedico').value = consulta.medico_nome || '';
-  document.getElementById('inputObservacoes').value = consulta.observacoes || '';
-  
-  document.getElementById('modalNovaConsulta').style.display = 'flex';
-}
-
-async function guardarConsulta() {
-  try {
-    const dados = {
-      colaborador_id: document.getElementById('selectColaborador').value,
-      tipo_consulta_id: document.getElementById('selectTipoConsulta').value,
-      data_marcacao: document.getElementById('inputData').value,
-      hora_inicio: document.getElementById('inputHoraInicio').value,
-      hora_fim: document.getElementById('inputHoraFim').value || null,
-      local: document.getElementById('inputLocal').value || null,
-      medico_nome: document.getElementById('inputMedico').value || null,
-      observacoes: document.getElementById('inputObservacoes').value || null,
-      agendado_por: currentUser?.id
-    };
-    
-    if (consultaEmEdicao) {
-      dados.updated_at = new Date().toISOString();
-      await DataService.updateConsultaMedicina(consultaEmEdicao.id, dados);
-      showToast('Consulta atualizada com sucesso', 'success');
-    } else {
-      dados.estado = 'Agendada';
-      await DataService.createConsultaMedicina(dados);
-      showToast('Consulta agendada com sucesso', 'success');
-    }
-    
-    fecharModal();
-    await carregarDados();
-    renderizarCalendario();
-    renderizarEventos();
-    
-  } catch (error) {
-    console.error('[Medicina] Erro ao guardar consulta:', error);
-    showToast('Erro ao guardar consulta', 'error');
-  }
-}
-
-async function cancelarConsulta(id) {
-  if (!confirm('Tem a certeza que deseja cancelar esta consulta?')) return;
-  
-  try {
-    await DataService.cancelarConsultaMedicina(id);
-    
-    showToast('Consulta cancelada com sucesso', 'success');
-    await carregarDados();
-    renderizarCalendario();
-    renderizarEventos();
-    
-  } catch (error) {
-    console.error('[Medicina] Erro ao cancelar consulta:', error);
-    showToast('Erro ao cancelar consulta', 'error');
-  }
+  showToast('A funcionalidade de nova marcação está disponível apenas para RH', 'info');
 }
 
 // ============================================
@@ -1719,21 +1299,11 @@ function verDetalhes(id) {
   const body = document.getElementById('modalDetalhesBody');
   const footer = document.getElementById('modalDetalhesFooter');
   
-  const nomeColaborador = consulta.colaborador?.nome || 'N/A';
-  const dept = consulta.colaborador?.departamentos?.nome || '-';
   const tipoNome = consulta.tipo?.nome || '-';
   const data = consulta.data_marcacao ? formatarData(consulta.data_marcacao) : '-';
   
   body.innerHTML = `
     <div class="detail-grid">
-      <div class="detail-item">
-        <span class="detail-label">Colaborador</span>
-        <span class="detail-value">${nomeColaborador}</span>
-      </div>
-      <div class="detail-item">
-        <span class="detail-label">Departamento</span>
-        <span class="detail-value">${dept}</span>
-      </div>
       <div class="detail-item">
         <span class="detail-label">Tipo de Consulta</span>
         <span class="detail-value">${tipoNome}</span>
@@ -1781,22 +1351,9 @@ function verDetalhes(id) {
     </div>
   `;
   
-  if (consulta.estado === 'Confirmada' || consulta.estado === 'Realizada') {
-    footer.innerHTML = `
-      <button type="button" class="btn-secondary" onclick="fecharModalDetalhes()">Fechar</button>
-      <button type="button" class="btn-primary" onclick="registarResultado('${consulta.id}')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"></path>
-          <polyline points="14 2 14 8 20 8"></polyline>
-        </svg>
-        Registar Resultado
-      </button>
-    `;
-  } else {
-    footer.innerHTML = `
-      <button type="button" class="btn-secondary" onclick="fecharModalDetalhes()">Fechar</button>
-    `;
-  }
+  footer.innerHTML = `
+    <button type="button" class="btn-secondary" onclick="fecharModalDetalhes()">Fechar</button>
+  `;
   
   document.getElementById('modalDetalhes').style.display = 'flex';
 }
@@ -1805,34 +1362,14 @@ function fecharModalDetalhes() {
   document.getElementById('modalDetalhes').style.display = 'none';
 }
 
-function registarResultado(id) {
-  fecharModalDetalhes();
-  showToast('Funcionalidade de registo de resultado em desenvolvimento', 'info');
-}
-
 // ============================================
 // UTILITÁRIOS
 // ============================================
-
-function getIniciais(nome) {
-  if (!nome) return '?';
-  return nome.split(' ')
-    .filter(p => p.length > 0)
-    .map(p => p[0].toUpperCase())
-    .slice(0, 2)
-    .join('');
-}
 
 function formatarData(dataStr) {
   if (!dataStr) return '-';
   const data = new Date(dataStr);
   return data.toLocaleDateString('pt-PT');
-}
-
-function formatarDataCurta(dataStr) {
-  if (!dataStr) return '-';
-  const data = new Date(dataStr);
-  return data.toLocaleDateString('pt-PT', { day: '2-digit', month: '2-digit' });
 }
 
 function formatarDataLonga(data) {
