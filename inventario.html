@@ -38,73 +38,84 @@ title: Inventário
   min-height: calc(100vh - 70px);
 }
 
-/* Hero Section */
-.inv-hero {
+/* Hero Section - Novo Design */
+.learning-hero {
   background: transparent !important;
-  background-color: transparent !important;
-  padding: 2.5rem 2rem;
+  padding: 3rem 2rem;
   position: relative;
   overflow: hidden;
 }
 
-.inv-hero-inner {
+.hero-inner {
   max-width: 1400px;
   margin: 0 auto;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 1rem;
   position: relative;
   z-index: 1;
-  background: transparent !important;
-  background-color: transparent !important;
 }
 
-.inv-hero-content {
-  background: transparent !important;
-  background-color: transparent !important;
+.hero-content {
+  text-align: center;
 }
 
-.inv-hero-content h1 {
-  font-size: 2rem;
+.hero-title {
+  font-size: 2.5rem;
   font-weight: 700;
-  margin: 0 0 0.5rem;
-  color: #000000 !important;
-  background: transparent !important;
-  background-color: transparent !important;
+  color: #1e293b;
+  margin: 0 0 1.5rem;
+  line-height: 1.2;
 }
 
-.inv-hero-content p {
-  margin: 0;
-  color: #64748b;
-  font-size: 1rem;
-  background: transparent !important;
+.hero-title span {
+  color: var(--primary-color, #00b276);
 }
 
-.inv-hero-btn {
+.hero-cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+  align-items: center;
+}
+
+.hero-btn {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
   padding: 0.875rem 1.5rem;
-  background: var(--primary-color, #00b276) !important;
-  color: white;
   border: none;
   border-radius: 10px;
   font-size: 0.9rem;
   font-weight: 600;
-  text-decoration: none;
+  cursor: pointer;
   transition: all 0.2s;
+  font-family: inherit;
 }
 
-.inv-hero-btn:hover {
+.hero-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.hero-btn-primary {
+  background: var(--primary-color, #00b276) !important;
+  color: white;
+}
+
+.hero-btn-primary:hover {
   background: var(--primary-hover, #009661) !important;
   transform: translateY(-2px);
 }
 
-.inv-hero-btn svg {
-  width: 20px;
-  height: 20px;
+.hero-btn-secondary {
+  background: white !important;
+  color: #374151;
+  border: 2px solid #e2e8f0;
+}
+
+.hero-btn-secondary:hover {
+  border-color: var(--primary-color, #00b276);
+  color: var(--primary-color, #00b276);
+  transform: translateY(-2px);
 }
 
 /* Quick Stats */
@@ -569,17 +580,21 @@ title: Inventário
 }
 
 @media (max-width: 768px) {
-  .inv-hero {
+  .learning-hero {
     padding: 2rem 1rem;
   }
   
-  .inv-hero-inner {
-    flex-direction: column;
-    text-align: center;
+  .hero-title {
+    font-size: 1.75rem;
   }
   
-  .inv-hero-content h1 {
-    font-size: 1.5rem;
+  .hero-cta {
+    flex-direction: column;
+  }
+  
+  .hero-btn {
+    width: 100%;
+    justify-content: center;
   }
   
   .inv-quick-stats,
@@ -621,20 +636,30 @@ title: Inventário
 </style>
 
 <div class="inventario-platform">
-  <!-- Hero Section -->
-  <section class="inv-hero">
-    <div class="inv-hero-inner">
-      <div class="inv-hero-content">
-        <h1>Meu Inventário</h1>
-        <p>Gerir equipamentos e requisições</p>
+  <!-- Hero Section - Novo Design -->
+  <section class="learning-hero">
+    <div class="hero-inner">
+      <div class="hero-content">
+        <h1 class="hero-title">Gerir o seu <span>inventário</span></h1>
+        <div class="hero-cta">
+          <button class="hero-btn hero-btn-primary" onclick="scrollToMeuInventario()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
+            Meu Inventário
+          </button>
+          <a href="{{ '/novo-pedido-inventario' | relative_url }}" class="hero-btn hero-btn-secondary" style="text-decoration: none;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            Novo Pedido
+          </a>
+          <button class="hero-btn hero-btn-secondary" onclick="changeTabFromCard('emcurso')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Pedidos em Curso
+          </button>
+          <button class="hero-btn hero-btn-secondary" onclick="changeTabFromCard('historico')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            Histórico
+          </button>
+        </div>
       </div>
-      <a href="{{ '/novo-pedido-inventario' | relative_url }}" class="inv-hero-btn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="12" y1="5" x2="12" y2="19"></line>
-          <line x1="5" y1="12" x2="19" y2="12"></line>
-        </svg>
-        Novo Pedido
-      </a>
     </div>
   </section>
 
@@ -679,7 +704,7 @@ title: Inventário
   </section>
 
   <!-- Main Content -->
-  <section class="inv-main-section">
+  <section class="inv-main-section" id="mainSection">
     <!-- Filters -->
     <div class="inv-filters">
       <div class="inv-filter-group search">
@@ -837,6 +862,10 @@ var dadosHistorico = [
   { id: 'PED-2024-0075', tipo: 'Requisição', item: 'Portátil Dell Latitude', qtd: 1, local: 'Escritório Lisboa', data: '01/03/2024', dataConclusao: '15/03/2024', estado: 'Entregue' },
   { id: 'PED-2024-0042', tipo: 'Devolução', item: 'Telemóvel Samsung S21', qtd: 1, local: 'Armazém Central', data: '15/02/2024', dataConclusao: '20/02/2024', estado: 'Devolvido' }
 ];
+
+function scrollToMeuInventario() {
+  document.getElementById('mainSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
 
 function atualizarStats() {
   document.getElementById('statAtribuidos').textContent = dadosAtribuidos.length;
