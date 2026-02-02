@@ -31,91 +31,11 @@ title: Inventário
 <link rel="stylesheet" href="{{ '/web-files/css/formacao.css' | relative_url }}">
 
 <style>
-/* === INVENTÁRIO PAGE - Estrutura igual a formacao.html === */
+/* === INVENTÁRIO PAGE === */
 .inventario-platform {
   background: transparent !important;
   background-color: transparent !important;
   min-height: calc(100vh - 70px);
-}
-
-/* Hero Section - Novo Design */
-.learning-hero {
-  background: transparent !important;
-  padding: 3rem 2rem;
-  position: relative;
-  overflow: hidden;
-}
-
-.hero-inner {
-  max-width: 1400px;
-  margin: 0 auto;
-  position: relative;
-  z-index: 1;
-}
-
-.hero-content {
-  text-align: center;
-}
-
-.hero-title {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: #1e293b;
-  margin: 0 0 1.5rem;
-  line-height: 1.2;
-}
-
-.hero-title span {
-  color: var(--primary-color, #00b276);
-}
-
-.hero-cta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  justify-content: center;
-  align-items: center;
-}
-
-.hero-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.875rem 1.5rem;
-  border: none;
-  border-radius: 10px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-  font-family: inherit;
-}
-
-.hero-btn svg {
-  width: 20px;
-  height: 20px;
-}
-
-.hero-btn-primary {
-  background: var(--primary-color, #00b276) !important;
-  color: white;
-}
-
-.hero-btn-primary:hover {
-  background: var(--primary-hover, #009661) !important;
-  transform: translateY(-2px);
-}
-
-.hero-btn-secondary {
-  background: white !important;
-  color: #374151;
-  border: 2px solid #e2e8f0;
-}
-
-.hero-btn-secondary:hover {
-  border-color: var(--primary-color, #00b276);
-  color: var(--primary-color, #00b276);
-  transform: translateY(-2px);
 }
 
 /* Quick Stats */
@@ -580,23 +500,6 @@ title: Inventário
 }
 
 @media (max-width: 768px) {
-  .learning-hero {
-    padding: 2rem 1rem;
-  }
-  
-  .hero-title {
-    font-size: 1.75rem;
-  }
-  
-  .hero-cta {
-    flex-direction: column;
-  }
-  
-  .hero-btn {
-    width: 100%;
-    justify-content: center;
-  }
-  
   .inv-quick-stats,
   .inv-main-section {
     padding: 0 1rem;
@@ -636,7 +539,7 @@ title: Inventário
 </style>
 
 <div class="inventario-platform">
-  <!-- Hero Section - Novo Design -->
+  <!-- Hero Section - Igual à página de formação -->
   <section class="learning-hero">
     <div class="hero-inner">
       <div class="hero-content">
@@ -646,18 +549,18 @@ title: Inventário
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
             Meu Inventário
           </button>
-          <a href="{{ '/novo-pedido-inventario' | relative_url }}" class="hero-btn hero-btn-secondary" style="text-decoration: none;">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-            Novo Pedido
-          </a>
           <button class="hero-btn hero-btn-secondary" onclick="changeTabFromCard('emcurso')">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
             Pedidos em Curso
           </button>
-          <button class="hero-btn hero-btn-secondary" onclick="changeTabFromCard('historico')">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-            Histórico
-          </button>
+          <a href="{{ '/novo-pedido-inventario' | relative_url }}" class="hero-btn hero-btn-secondary" style="text-decoration: none;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Novo Pedido
+          </a>
+          <a href="{{ '/gestao-inventario' | relative_url }}" class="hero-btn hero-btn-secondary" id="btnGestaoInventario" style="display: none; text-decoration: none;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            Gerir Inventário
+          </a>
         </div>
       </div>
     </div>
