@@ -44,6 +44,8 @@ title: Inventário
   padding: 3rem 2rem;
   position: relative;
   overflow: hidden;
+  border-radius: 0 0 28px 28px;
+  margin: 0 1rem;
 }
 
 .inventario-hero::before {
@@ -79,7 +81,7 @@ title: Inventário
 }
 
 .inventario-hero .hero-content {
-  text-align: center;
+  text-align: right;
 }
 
 .inventario-hero .hero-title {
@@ -98,7 +100,7 @@ title: Inventário
   display: flex;
   flex-wrap: wrap;
   gap: 1rem;
-  justify-content: center;
+  justify-content: flex-end;
   align-items: center;
 }
 
@@ -610,14 +612,21 @@ title: Inventário
 @media (max-width: 768px) {
   .inventario-hero {
     padding: 2rem 1rem;
+    border-radius: 0 0 20px 20px;
+    margin: 0 0.5rem;
   }
   
   .inventario-hero .hero-title {
     font-size: 1.75rem;
   }
   
+  .inventario-hero .hero-content {
+    text-align: center;
+  }
+  
   .inventario-hero .hero-cta {
     flex-direction: column;
+    justify-content: center;
   }
   
   .inventario-hero .hero-btn {
