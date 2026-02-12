@@ -29,6 +29,7 @@ title: Inventário
 {% endraw %}
 
 <link rel="stylesheet" href="{{ '/web-files/css/formacao.css' | relative_url }}">
+<script src="{{ '/web-files/js/dataService.js' | relative_url }}"></script>
 
 <style>
 /* === INVENTÁRIO PAGE === */
@@ -421,7 +422,8 @@ title: Inventário
 .inv-status-ativo { background: #d1fae5 !important; color: #065f46; }
 .inv-status-rascunho { background: #f1f5f9 !important; color: #64748b; }
 .inv-status-submetido { background: #dbeafe !important; color: #1e40af; }
-.inv-status-em-preparacao, .inv-status-em-preparação { background: #fef3c7 !important; color: #92400e; }
+.inv-status-em-aprovação, .inv-status-em-aprovacao { background: #fef3c7 !important; color: #92400e; }
+.inv-status-em-preparação, .inv-status-em-preparacao { background: #fef3c7 !important; color: #92400e; }
 .inv-status-pronto-para-levantamento { background: #e0e7ff !important; color: #3730a3; }
 .inv-status-entregue { background: #d1fae5 !important; color: #065f46; }
 .inv-status-devolvido { background: #f1f5f9 !important; color: #64748b; }
@@ -491,6 +493,13 @@ title: Inventário
 
 .inv-empty-state p {
   font-size: 0.875rem;
+  color: #64748b;
+}
+
+/* Loading State */
+.inv-loading {
+  padding: 2rem;
+  text-align: center;
   color: #64748b;
 }
 
@@ -706,7 +715,7 @@ title: Inventário
         </svg>
       </div>
       <div class="inv-quick-stat-content">
-        <h3 id="statAtribuidos">0</h3>
+        <h3 id="statAtribuidos">-</h3>
         <p>Itens Atribuídos</p>
       </div>
     </div>
@@ -719,7 +728,7 @@ title: Inventário
         </svg>
       </div>
       <div class="inv-quick-stat-content">
-        <h3 id="statEmCurso">0</h3>
+        <h3 id="statEmCurso">-</h3>
         <p>Pedidos em Curso</p>
       </div>
     </div>
@@ -731,7 +740,7 @@ title: Inventário
         </svg>
       </div>
       <div class="inv-quick-stat-content">
-        <h3 id="statHistorico">0</h3>
+        <h3 id="statHistorico">-</h3>
         <p>Histórico</p>
       </div>
     </div>
@@ -797,7 +806,9 @@ title: Inventário
                 <th>Ações</th>
               </tr>
             </thead>
-            <tbody id="bodyAtribuidos"></tbody>
+            <tbody id="bodyAtribuidos">
+              <tr><td colspan="9"><div class="inv-loading">A carregar...</div></td></tr>
+            </tbody>
           </table>
         </div>
       </div>
@@ -818,7 +829,9 @@ title: Inventário
                 <th>Ações</th>
               </tr>
             </thead>
-            <tbody id="bodyEmCurso"></tbody>
+            <tbody id="bodyEmCurso">
+              <tr><td colspan="8"><div class="inv-loading">A carregar...</div></td></tr>
+            </tbody>
           </table>
         </div>
       </div>
@@ -840,7 +853,9 @@ title: Inventário
                 <th>Ações</th>
               </tr>
             </thead>
-            <tbody id="bodyHistorico"></tbody>
+            <tbody id="bodyHistorico">
+              <tr><td colspan="9"><div class="inv-loading">A carregar...</div></td></tr>
+            </tbody>
           </table>
         </div>
       </div>
@@ -862,6 +877,20 @@ title: Inventário
   </div>
 </div>
 
+<!-- Modal Ver Pedido -->
+<div class="inv-modal-overlay" id="modalPedido">
+  <div class="inv-modal">
+    <div class="inv-modal-header">
+      <h3>Detalhes do Pedido</h3>
+      <button class="inv-modal-close" onclick="fecharModal('modalPedido')">×</button>
+    </div>
+    <div class="inv-modal-body" id="modalPedidoContent"></div>
+    <div class="inv-modal-footer">
+      <button class="inv-action-btn" onclick="fecharModal('modalPedido')">Fechar</button>
+    </div>
+  </div>
+</div>
+
 <script>
 {% raw %}
 /**
@@ -879,27 +908,147 @@ title: Inventário
  */
 {% endraw %}
 
-// Dados de exemplo
-var dadosAtribuidos = [
-  { codigo: 'INF-001', descricao: 'Portátil Dell Latitude 5520', categoria: 'Informática', qtd: 1, serie: 'DL5520-2024-0142', dataAtribuicao: '15/03/2024', localizacao: 'Escritório Lisboa', estado: 'Ativo', alocadoA: 'André Borges', tipoAlocacao: 'pessoal' },
-  { codigo: 'INF-005', descricao: 'Monitor LG 27" 4K', categoria: 'Informática', qtd: 2, serie: 'LG27-2024-0089', dataAtribuicao: '15/03/2024', localizacao: 'Escritório Lisboa', estado: 'Ativo', alocadoA: 'André Borges', tipoAlocacao: 'pessoal' },
-  { codigo: 'MOB-001', descricao: 'Cadeira Ergonómica Herman Miller', categoria: 'Mobiliário', qtd: 1, serie: 'HM-2024-0567', dataAtribuicao: '20/01/2024', localizacao: 'Escritório Lisboa', estado: 'Ativo', alocadoA: 'André Borges', tipoAlocacao: 'pessoal' },
-  { codigo: 'INF-TEC-002', descricao: 'Teclado e Rato Wireless Logitech', categoria: 'Informática', qtd: 1, serie: 'LOG-2024-0234', dataAtribuicao: '15/03/2024', localizacao: 'Escritório Lisboa', estado: 'Ativo', alocadoA: 'André Borges', tipoAlocacao: 'pessoal' }
-];
+// ==========================================
+// VARIÁVEIS GLOBAIS
+// ==========================================
 
-var dadosEmCurso = [
-  { id: 'PED-2024-0089', tipo: 'Requisição', item: 'Headset USB Jabra Evolve2', qtd: 1, local: 'Escritório Lisboa', data: '10/01/2025', estado: 'Em Preparação' },
-  { id: 'PED-2024-0091', tipo: 'Substituição', item: 'Monitor Dell 24"', qtd: 1, local: 'Escritório Porto', data: '08/01/2025', estado: 'Pronto para Levantamento' }
-];
+// Dados carregados da base de dados
+var dadosAtribuidos = [];
+var dadosEmCurso = [];
+var dadosHistorico = [];
+var todosPedidos = [];
 
-var dadosHistorico = [
-  { id: 'PED-2024-0075', tipo: 'Requisição', item: 'Portátil Dell Latitude', qtd: 1, local: 'Escritório Lisboa', data: '01/03/2024', dataConclusao: '15/03/2024', estado: 'Entregue' },
-  { id: 'PED-2024-0042', tipo: 'Devolução', item: 'Telemóvel Samsung S21', qtd: 1, local: 'Armazém Central', data: '15/02/2024', dataConclusao: '20/02/2024', estado: 'Devolvido' }
-];
+// Estados para classificação
+const ESTADOS_EM_CURSO = ['Rascunho', 'Submetido', 'Em Aprovação', 'Em Preparação', 'Pronto para Levantamento'];
+const ESTADOS_HISTORICO = ['Entregue', 'Devolvido', 'Indeferido', 'Cancelado'];
 
-function scrollToMeuInventario() {
-  document.getElementById('mainSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+// ID do colaborador atual (em produção viria da sessão)
+const COLABORADOR_ID_ATUAL = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
+
+// ==========================================
+// INICIALIZAÇÃO
+// ==========================================
+
+document.addEventListener('DOMContentLoaded', async function() {
+  await carregarDados();
+  atualizarFiltroEstado('atribuidos');
+});
+
+async function carregarDados() {
+  try {
+    console.log('[Inventário] A carregar dados...');
+    
+    // Carregar atribuições e pedidos em paralelo
+    const [atribuicoes, pedidos] = await Promise.all([
+      DataService.getArtigosAtribuidosColaborador(COLABORADOR_ID_ATUAL),
+      DataService.getPedidosInventarioColaborador(COLABORADOR_ID_ATUAL)
+    ]);
+    
+    console.log('[Inventário] Atribuições carregadas:', atribuicoes);
+    console.log('[Inventário] Pedidos carregados:', pedidos);
+    
+    // Processar atribuições
+    dadosAtribuidos = atribuicoes.map(a => ({
+      id: a.id,
+      codigo: a.artigos_inventario?.codigo || 'N/A',
+      descricao: a.artigos_inventario?.nome || 'Artigo desconhecido',
+      categoria: a.artigos_inventario?.categorias_inventario?.nome || 'Sem Categoria',
+      qtd: a.quantidade || 1,
+      serie: a.numero_serie || '-',
+      dataAtribuicao: formatarData(a.data_atribuicao),
+      localizacao: a.localizacao || 'Não especificado',
+      estado: a.estado || 'Ativo',
+      alocadoA: 'Utilizador Atual',
+      tipoAlocacao: a.tipo_alocacao || 'pessoal'
+    }));
+    
+    // Guardar todos os pedidos
+    todosPedidos = pedidos;
+    
+    // Separar pedidos em "Em Curso" e "Histórico"
+    dadosEmCurso = pedidos
+      .filter(p => ESTADOS_EM_CURSO.includes(p.estado))
+      .map(formatarPedido);
+    
+    dadosHistorico = pedidos
+      .filter(p => ESTADOS_HISTORICO.includes(p.estado))
+      .map(formatarPedido);
+    
+    console.log('[Inventário] Dados processados - Atribuídos:', dadosAtribuidos.length, 'Em Curso:', dadosEmCurso.length, 'Histórico:', dadosHistorico.length);
+    
+    // Atualizar UI
+    atualizarStats();
+    renderAtribuidos();
+    renderEmCurso();
+    renderHistorico();
+    
+  } catch (error) {
+    console.error('[Inventário] Erro ao carregar dados:', error);
+    
+    // Mostrar erro nas tabelas
+    document.getElementById('bodyAtribuidos').innerHTML = '<tr><td colspan="9"><div class="inv-empty-state"><h3>Erro ao carregar</h3><p>Não foi possível carregar os dados. Tente recarregar a página.</p></div></td></tr>';
+    document.getElementById('bodyEmCurso').innerHTML = '<tr><td colspan="8"><div class="inv-empty-state"><h3>Erro ao carregar</h3><p>Não foi possível carregar os dados.</p></div></td></tr>';
+    document.getElementById('bodyHistorico').innerHTML = '<tr><td colspan="9"><div class="inv-empty-state"><h3>Erro ao carregar</h3><p>Não foi possível carregar os dados.</p></div></td></tr>';
+    
+    // Mostrar zeros nas stats
+    document.getElementById('statAtribuidos').textContent = '0';
+    document.getElementById('statEmCurso').textContent = '0';
+    document.getElementById('statHistorico').textContent = '0';
+    document.getElementById('badgeAtribuidos').textContent = '0';
+    document.getElementById('badgeEmCurso').textContent = '0';
+    document.getElementById('badgeHistorico').textContent = '0';
+  }
 }
+
+// ==========================================
+// FORMATAÇÃO DE DADOS
+// ==========================================
+
+function formatarPedido(p) {
+  // Determinar nome do artigo
+  let nomeArtigo = 'Artigo desconhecido';
+  if (p.artigos_inventario?.nome) {
+    nomeArtigo = p.artigos_inventario.nome;
+  } else if (p.artigo_personalizado_nome) {
+    nomeArtigo = p.artigo_personalizado_nome;
+  }
+  
+  // Determinar local destino
+  let localDestino = 'Pessoal';
+  if (p.tipo_alocacao === 'unidade' && p.unidade_organica) {
+    localDestino = p.unidade_organica.nome || p.unidade_organica.codigo || 'Unidade Orgânica';
+  } else if (p.tipo_alocacao === 'local' && p.local_especifico) {
+    localDestino = p.local_especifico;
+  }
+  
+  return {
+    id: p.id,
+    numeroPedido: p.numero_pedido || 'N/A',
+    tipo: p.tipo || 'Requisição',
+    item: nomeArtigo,
+    qtd: p.quantidade || 1,
+    local: localDestino,
+    data: formatarData(p.created_at),
+    dataConclusao: formatarData(p.data_entrega || p.data_aprovacao),
+    estado: p.estado || 'Submetido',
+    observacoes: p.observacoes,
+    comentarioAprovacao: p.comentario_aprovacao
+  };
+}
+
+function formatarData(dataStr) {
+  if (!dataStr) return '-';
+  try {
+    const data = new Date(dataStr);
+    return data.toLocaleDateString('pt-PT');
+  } catch {
+    return dataStr;
+  }
+}
+
+// ==========================================
+// ATUALIZAÇÃO DE UI
+// ==========================================
 
 function atualizarStats() {
   document.getElementById('statAtribuidos').textContent = dadosAtribuidos.length;
@@ -921,17 +1070,17 @@ function renderAtribuidos() {
   dadosAtribuidos.forEach(function(a) {
     var estadoClass = a.estado.toLowerCase().replace(/\s+/g, '-');
     html += '<tr>';
-    html += '<td><strong>' + a.codigo + '</strong></td>';
-    html += '<td>' + a.descricao + '</td>';
-    html += '<td>' + a.categoria + '</td>';
+    html += '<td><strong>' + escapeHtml(a.codigo) + '</strong></td>';
+    html += '<td>' + escapeHtml(a.descricao) + '</td>';
+    html += '<td>' + escapeHtml(a.categoria) + '</td>';
     html += '<td>' + a.qtd + '</td>';
-    html += '<td><code>' + a.serie + '</code></td>';
-    html += '<td>' + a.dataAtribuicao + '</td>';
-    html += '<td>' + a.localizacao + '</td>';
-    html += '<td><span class="inv-status-badge inv-status-' + estadoClass + '">' + a.estado + '</span></td>';
+    html += '<td><code>' + escapeHtml(a.serie) + '</code></td>';
+    html += '<td>' + escapeHtml(a.dataAtribuicao) + '</td>';
+    html += '<td>' + escapeHtml(a.localizacao) + '</td>';
+    html += '<td><span class="inv-status-badge inv-status-' + estadoClass + '">' + escapeHtml(a.estado) + '</span></td>';
     html += '<td><div class="inv-action-buttons">';
-    html += '<button class="inv-action-btn primary" onclick="verDetalhesArtigo(\'' + a.codigo + '\')">Ver</button>';
-    html += '<button class="inv-action-btn" onclick="iniciarDevolucao(\'' + a.codigo + '\', \'' + a.descricao + '\')">Devolver</button>';
+    html += '<button class="inv-action-btn primary" onclick="verDetalhesArtigo(\'' + a.id + '\')">Ver</button>';
+    html += '<button class="inv-action-btn" onclick="iniciarDevolucao(\'' + a.id + '\', \'' + escapeHtml(a.descricao) + '\')">Devolver</button>';
     html += '</div></td>';
     html += '</tr>';
   });
@@ -941,7 +1090,7 @@ function renderAtribuidos() {
 function renderEmCurso() {
   var tbody = document.getElementById('bodyEmCurso');
   if (dadosEmCurso.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="8"><div class="inv-empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg><h3>Sem pedidos em curso</h3><p>Não tem pedidos pendentes.</p></div></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8"><div class="inv-empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg><h3>Sem pedidos em curso</h3><p>Não tem pedidos pendentes. Crie um novo pedido para requisitar artigos.</p></div></td></tr>';
     return;
   }
   
@@ -949,17 +1098,20 @@ function renderEmCurso() {
   dadosEmCurso.forEach(function(p) {
     var estadoClass = p.estado.toLowerCase().replace(/\s+/g, '-');
     html += '<tr>';
-    html += '<td><strong>' + p.id + '</strong></td>';
-    html += '<td>' + p.tipo + '</td>';
-    html += '<td>' + p.item + '</td>';
+    html += '<td><strong>' + escapeHtml(p.numeroPedido) + '</strong></td>';
+    html += '<td>' + escapeHtml(p.tipo) + '</td>';
+    html += '<td>' + escapeHtml(p.item) + '</td>';
     html += '<td>' + p.qtd + '</td>';
-    html += '<td>' + p.local + '</td>';
-    html += '<td>' + p.data + '</td>';
-    html += '<td><span class="inv-status-badge inv-status-' + estadoClass + '">' + p.estado + '</span></td>';
+    html += '<td>' + escapeHtml(p.local) + '</td>';
+    html += '<td>' + escapeHtml(p.data) + '</td>';
+    html += '<td><span class="inv-status-badge inv-status-' + estadoClass + '">' + escapeHtml(p.estado) + '</span></td>';
     html += '<td><div class="inv-action-buttons">';
     html += '<button class="inv-action-btn primary" onclick="verPedido(\'' + p.id + '\')">Ver</button>';
     if (p.estado === 'Pronto para Levantamento') {
       html += '<button class="inv-action-btn success" onclick="confirmarLevantamento(\'' + p.id + '\')">Confirmar</button>';
+    }
+    if (p.estado === 'Rascunho') {
+      html += '<button class="inv-action-btn" onclick="cancelarPedido(\'' + p.id + '\')">Cancelar</button>';
     }
     html += '</div></td>';
     html += '</tr>';
@@ -978,14 +1130,14 @@ function renderHistorico() {
   dadosHistorico.forEach(function(p) {
     var estadoClass = p.estado.toLowerCase().replace(/\s+/g, '-');
     html += '<tr>';
-    html += '<td><strong>' + p.id + '</strong></td>';
-    html += '<td>' + p.tipo + '</td>';
-    html += '<td>' + p.item + '</td>';
+    html += '<td><strong>' + escapeHtml(p.numeroPedido) + '</strong></td>';
+    html += '<td>' + escapeHtml(p.tipo) + '</td>';
+    html += '<td>' + escapeHtml(p.item) + '</td>';
     html += '<td>' + p.qtd + '</td>';
-    html += '<td>' + p.local + '</td>';
-    html += '<td>' + p.data + '</td>';
-    html += '<td>' + p.dataConclusao + '</td>';
-    html += '<td><span class="inv-status-badge inv-status-' + estadoClass + '">' + p.estado + '</span></td>';
+    html += '<td>' + escapeHtml(p.local) + '</td>';
+    html += '<td>' + escapeHtml(p.data) + '</td>';
+    html += '<td>' + escapeHtml(p.dataConclusao) + '</td>';
+    html += '<td><span class="inv-status-badge inv-status-' + estadoClass + '">' + escapeHtml(p.estado) + '</span></td>';
     html += '<td><div class="inv-action-buttons">';
     html += '<button class="inv-action-btn primary" onclick="verPedido(\'' + p.id + '\')">Ver</button>';
     html += '</div></td>';
@@ -993,6 +1145,10 @@ function renderHistorico() {
   });
   tbody.innerHTML = html;
 }
+
+// ==========================================
+// NAVEGAÇÃO DE TABS
+// ==========================================
 
 function changeTab(tabName) {
   document.querySelectorAll('.inv-tab-btn').forEach(function(btn) { btn.classList.remove('active'); });
@@ -1028,11 +1184,11 @@ function atualizarFiltroEstado(tabName) {
   if (tabName === 'atribuidos') {
     filterEstado.innerHTML += '<option value="Ativo">Ativo</option><option value="Em Manutenção">Em Manutenção</option>';
   } else if (tabName === 'emcurso') {
-    ['Rascunho', 'Submetido', 'Em Preparação', 'Pronto para Levantamento'].forEach(function(e) {
+    ESTADOS_EM_CURSO.forEach(function(e) {
       filterEstado.innerHTML += '<option value="' + e + '">' + e + '</option>';
     });
   } else if (tabName === 'historico') {
-    ['Entregue', 'Devolvido', 'Indeferido', 'Cancelado'].forEach(function(e) {
+    ESTADOS_HISTORICO.forEach(function(e) {
       filterEstado.innerHTML += '<option value="' + e + '">' + e + '</option>';
     });
   }
@@ -1042,23 +1198,27 @@ function filtrarTabela() {
   var search = document.getElementById('searchInput').value.toLowerCase();
   var categoria = document.getElementById('filterCategoria').value;
   var estado = document.getElementById('filterEstado').value;
-  console.log('Filtrar:', search, categoria, estado);
+  console.log('[Inventário] Filtrar:', search, categoria, estado);
+  // TODO: Implementar filtro nas tabelas
 }
 
-function verDetalhesArtigo(codigo) {
-  var artigo = dadosAtribuidos.find(function(a) { return a.codigo === codigo; });
+// ==========================================
+// AÇÕES
+// ==========================================
+
+function verDetalhesArtigo(id) {
+  var artigo = dadosAtribuidos.find(function(a) { return a.id === id; });
   if (!artigo) return;
   
   var content = '<div class="inv-detalhe-grid">' +
-    '<div class="inv-detalhe-item"><span class="inv-detalhe-label">Código</span><span class="inv-detalhe-value">' + artigo.codigo + '</span></div>' +
-    '<div class="inv-detalhe-item"><span class="inv-detalhe-label">Descrição</span><span class="inv-detalhe-value">' + artigo.descricao + '</span></div>' +
-    '<div class="inv-detalhe-item"><span class="inv-detalhe-label">Categoria</span><span class="inv-detalhe-value">' + artigo.categoria + '</span></div>' +
+    '<div class="inv-detalhe-item"><span class="inv-detalhe-label">Código</span><span class="inv-detalhe-value">' + escapeHtml(artigo.codigo) + '</span></div>' +
+    '<div class="inv-detalhe-item"><span class="inv-detalhe-label">Descrição</span><span class="inv-detalhe-value">' + escapeHtml(artigo.descricao) + '</span></div>' +
+    '<div class="inv-detalhe-item"><span class="inv-detalhe-label">Categoria</span><span class="inv-detalhe-value">' + escapeHtml(artigo.categoria) + '</span></div>' +
     '<div class="inv-detalhe-item"><span class="inv-detalhe-label">Quantidade</span><span class="inv-detalhe-value">' + artigo.qtd + '</span></div>' +
-    '<div class="inv-detalhe-item"><span class="inv-detalhe-label">Nº de Série</span><span class="inv-detalhe-value"><code>' + artigo.serie + '</code></span></div>' +
-    '<div class="inv-detalhe-item"><span class="inv-detalhe-label">Data Atribuição</span><span class="inv-detalhe-value">' + artigo.dataAtribuicao + '</span></div>' +
-    '<div class="inv-detalhe-item"><span class="inv-detalhe-label">Localização</span><span class="inv-detalhe-value">' + artigo.localizacao + '</span></div>' +
-    '<div class="inv-detalhe-item"><span class="inv-detalhe-label">Estado</span><span class="inv-detalhe-value"><span class="inv-status-badge inv-status-' + artigo.estado.toLowerCase() + '">' + artigo.estado + '</span></span></div>' +
-    '<div class="inv-detalhe-item"><span class="inv-detalhe-label">Alocado a</span><span class="inv-detalhe-value">' + artigo.alocadoA + '</span></div>' +
+    '<div class="inv-detalhe-item"><span class="inv-detalhe-label">Nº de Série</span><span class="inv-detalhe-value"><code>' + escapeHtml(artigo.serie) + '</code></span></div>' +
+    '<div class="inv-detalhe-item"><span class="inv-detalhe-label">Data Atribuição</span><span class="inv-detalhe-value">' + escapeHtml(artigo.dataAtribuicao) + '</span></div>' +
+    '<div class="inv-detalhe-item"><span class="inv-detalhe-label">Localização</span><span class="inv-detalhe-value">' + escapeHtml(artigo.localizacao) + '</span></div>' +
+    '<div class="inv-detalhe-item"><span class="inv-detalhe-label">Estado</span><span class="inv-detalhe-value"><span class="inv-status-badge inv-status-' + artigo.estado.toLowerCase() + '">' + escapeHtml(artigo.estado) + '</span></span></div>' +
     '</div>';
   
   document.getElementById('modalDetalhesContent').innerHTML = content;
@@ -1066,36 +1226,91 @@ function verDetalhesArtigo(codigo) {
 }
 
 function verPedido(id) {
-  alert('A carregar detalhes do pedido ' + id + '...');
+  var pedido = [...dadosEmCurso, ...dadosHistorico].find(function(p) { return p.id === id; });
+  if (!pedido) {
+    alert('Pedido não encontrado');
+    return;
+  }
+  
+  var estadoClass = pedido.estado.toLowerCase().replace(/\s+/g, '-');
+  
+  var content = '<div class="inv-detalhe-grid">' +
+    '<div class="inv-detalhe-item"><span class="inv-detalhe-label">Nº Pedido</span><span class="inv-detalhe-value"><strong>' + escapeHtml(pedido.numeroPedido) + '</strong></span></div>' +
+    '<div class="inv-detalhe-item"><span class="inv-detalhe-label">Tipo</span><span class="inv-detalhe-value">' + escapeHtml(pedido.tipo) + '</span></div>' +
+    '<div class="inv-detalhe-item"><span class="inv-detalhe-label">Artigo</span><span class="inv-detalhe-value">' + escapeHtml(pedido.item) + '</span></div>' +
+    '<div class="inv-detalhe-item"><span class="inv-detalhe-label">Quantidade</span><span class="inv-detalhe-value">' + pedido.qtd + '</span></div>' +
+    '<div class="inv-detalhe-item"><span class="inv-detalhe-label">Local Destino</span><span class="inv-detalhe-value">' + escapeHtml(pedido.local) + '</span></div>' +
+    '<div class="inv-detalhe-item"><span class="inv-detalhe-label">Data Pedido</span><span class="inv-detalhe-value">' + escapeHtml(pedido.data) + '</span></div>' +
+    '<div class="inv-detalhe-item"><span class="inv-detalhe-label">Estado</span><span class="inv-detalhe-value"><span class="inv-status-badge inv-status-' + estadoClass + '">' + escapeHtml(pedido.estado) + '</span></span></div>';
+  
+  if (pedido.dataConclusao && pedido.dataConclusao !== '-') {
+    content += '<div class="inv-detalhe-item"><span class="inv-detalhe-label">Data Conclusão</span><span class="inv-detalhe-value">' + escapeHtml(pedido.dataConclusao) + '</span></div>';
+  }
+  
+  if (pedido.observacoes) {
+    content += '<div class="inv-detalhe-item" style="grid-column: 1/-1;"><span class="inv-detalhe-label">Observações</span><span class="inv-detalhe-value">' + escapeHtml(pedido.observacoes) + '</span></div>';
+  }
+  
+  if (pedido.comentarioAprovacao) {
+    content += '<div class="inv-detalhe-item" style="grid-column: 1/-1;"><span class="inv-detalhe-label">Comentário de Aprovação</span><span class="inv-detalhe-value">' + escapeHtml(pedido.comentarioAprovacao) + '</span></div>';
+  }
+  
+  content += '</div>';
+  
+  document.getElementById('modalPedidoContent').innerHTML = content;
+  document.getElementById('modalPedido').classList.add('show');
 }
 
-function iniciarDevolucao(codigo, descricao) {
-  if (confirm('Pretende iniciar o processo de devolução do artigo:\n\n' + codigo + ' - ' + descricao + '?')) {
-    window.location.href = '{{ "/novo-pedido-inventario" | relative_url }}?tipo=devolucao&codigo=' + codigo;
+function iniciarDevolucao(id, descricao) {
+  if (confirm('Pretende iniciar o processo de devolução do artigo:\n\n' + descricao + '?')) {
+    window.location.href = '{{ "/novo-pedido-inventario" | relative_url }}?tipo=devolucao&artigo=' + id;
   }
 }
 
-function confirmarLevantamento(id) {
-  if (confirm('Confirmar o levantamento do pedido ' + id + '?\n\nAo confirmar, declara que recebeu o(s) item(ns).')) {
-    alert('Levantamento confirmado com sucesso!');
+async function confirmarLevantamento(id) {
+  if (confirm('Confirmar o levantamento do pedido?\n\nAo confirmar, declara que recebeu o(s) item(ns).')) {
+    try {
+      await DataService.confirmarEntregaPedido(id);
+      alert('Levantamento confirmado com sucesso!');
+      await carregarDados();
+    } catch (error) {
+      console.error('[Inventário] Erro ao confirmar levantamento:', error);
+      alert('Erro ao confirmar levantamento: ' + error.message);
+    }
   }
 }
+
+async function cancelarPedido(id) {
+  if (confirm('Tem a certeza que pretende cancelar este pedido?\n\nEsta ação não pode ser revertida.')) {
+    try {
+      await DataService.cancelarPedidoInventario(id);
+      alert('Pedido cancelado com sucesso!');
+      await carregarDados();
+    } catch (error) {
+      console.error('[Inventário] Erro ao cancelar pedido:', error);
+      alert('Erro ao cancelar pedido: ' + error.message);
+    }
+  }
+}
+
+// ==========================================
+// UTILITÁRIOS
+// ==========================================
 
 function fecharModal(modalId) {
   document.getElementById(modalId).classList.remove('show');
+}
+
+function escapeHtml(text) {
+  if (!text) return '';
+  var div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
 }
 
 document.addEventListener('click', function(e) {
   if (e.target.classList.contains('inv-modal-overlay')) {
     e.target.classList.remove('show');
   }
-});
-
-document.addEventListener('DOMContentLoaded', function() {
-  atualizarStats();
-  renderAtribuidos();
-  renderEmCurso();
-  renderHistorico();
-  atualizarFiltroEstado('atribuidos');
 });
 </script>
