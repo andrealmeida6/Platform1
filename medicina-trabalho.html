@@ -248,8 +248,8 @@ title: Saúde e Medicina no Trabalho
   </div>
 </div>
 
-<!-- Modal Detalhes/Resultado -->
-<div id="modalDetalhes" class="medicina-modal-overlay" onclick="fecharModalDetalhesOverlay(event)">
+<!-- Modal Detalhes/Resultado - posicionado fora do .medicina-page para evitar stacking context -->
+<div id="modalDetalhes" class="medicina-modal-overlay" style="display: none;" onclick="fecharModalDetalhesOverlay(event)">
   <div class="medicina-modal-content">
     <div class="medicina-modal-header">
       <h3 class="medicina-modal-title">Detalhes da Consulta</h3>
@@ -1211,7 +1211,8 @@ title: Saúde e Medicina no Trabalho
 }
 
 /* ============================================ */
-/* MODAL - Classes específicas para evitar conflitos */
+/* MODAL - Inline styles são aplicados via JS   */
+/* CSS abaixo serve apenas como fallback        */
 /* ============================================ */
 
 .medicina-modal-overlay {
@@ -1905,10 +1906,12 @@ function filtrarConsultas() {
 }
 
 // ============================================
-// MODAL - DETALHES
+// MODAL - DETALHES (usa inline styles para bypass total de conflitos CSS)
 // ============================================
 
 function verDetalhes(id) {
+  console.log('[Medicina] verDetalhes chamado com ID:', id);
+  
   // Procurar consulta com conversão de tipo para garantir match
   const idStr = String(id);
   let consulta = consultas.find(c => String(c.id) === idStr);
@@ -1919,9 +1922,11 @@ function verDetalhes(id) {
   }
   
   if (!consulta) {
-    console.warn('[Medicina] Consulta não encontrada com ID:', id);
+    console.warn('[Medicina] Consulta não encontrada com ID:', id, '| Total consultas:', consultas.length);
     return;
   }
+  
+  console.log('[Medicina] Consulta encontrada:', consulta.tipo?.nome || consulta.estado);
   
   const body = document.getElementById('modalDetalhesBody');
   if (!body) {
@@ -1985,12 +1990,27 @@ function verDetalhes(id) {
     </div>
   `;
   
-  // Mostrar modal com classe active (evita conflitos de CSS)
+  // Mostrar modal - usar INLINE STYLES diretamente para bypass total de conflitos CSS
   const modal = document.getElementById('modalDetalhes');
   if (modal) {
     modal.classList.add('active');
+    // Força inline style - tem prioridade absoluta sobre qualquer CSS externo
+    modal.style.display = 'flex';
+    modal.style.position = 'fixed';
+    modal.style.top = '0';
+    modal.style.left = '0';
+    modal.style.right = '0';
+    modal.style.bottom = '0';
+    modal.style.zIndex = '99999';
+    modal.style.alignItems = 'center';
+    modal.style.justifyContent = 'center';
+    modal.style.background = 'rgba(0, 0, 0, 0.5)';
+    modal.style.padding = '1rem';
     // Prevenir scroll do body
     document.body.style.overflow = 'hidden';
+    console.log('[Medicina] Modal aberto com sucesso');
+  } else {
+    console.error('[Medicina] Elemento #modalDetalhes não encontrado no DOM');
   }
 }
 
@@ -1998,7 +2018,10 @@ function fecharModalDetalhes() {
   const modal = document.getElementById('modalDetalhes');
   if (modal) {
     modal.classList.remove('active');
+    // Limpar inline styles - voltar ao estado escondido
+    modal.style.display = 'none';
     document.body.style.overflow = '';
+    console.log('[Medicina] Modal fechado');
   }
 }
 
