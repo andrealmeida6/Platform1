@@ -1254,15 +1254,210 @@ const DataService = (function() {
   }
   
   // ==========================================
-  // INVENTÁRIO - Artigos Atribuídos ao Colaborador
+  // INVENTÁRIO - Gestão Completa
   // ==========================================
   
+  // --- CATEGORIAS DE INVENTÁRIO ---
+  async function getCategoriasInventario() {
+    return retrieveMultipleRecords('categorias_inventario', {
+      filter: { ativo: true },
+      orderby: 'ordem.asc,nome.asc'
+    });
+  }
+  
+  // --- ARTIGOS DE INVENTÁRIO ---
+  async function getArtigosInventario() {
+    const select = '*,categorias_inventario(id,codigo,nome)';
+    try {
+      let url = `${SUPABASE_URL}/rest/v1/artigos_inventario?select=${encodeURIComponent(select)}&ativo=eq.true&order=nome.asc`;
+      const response = await fetch(url, { headers });
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      return await response.json();
+    } catch (error) {
+      console.error('[DataService] Erro ao buscar artigos de inventário:', error);
+      return [];
+    }
+  }
+  
+  async function getArtigoInventarioById(id) {
+    const select = '*,categorias_inventario(id,codigo,nome)';
+    const result = await retrieveWithRelations('artigos_inventario', select, { id });
+    return result.length > 0 ? result[0] : null;
+  }
+  
+  // --- ATRIBUIÇÕES DE INVENTÁRIO ---
   async function getArtigosAtribuidosColaborador(colaboradorId) {
     const select = '*,artigos_inventario(id,codigo,nome,descricao,categorias_inventario(id,codigo,nome))';
     return retrieveWithRelations('atribuicoes_inventario', select, { 
       colaborador_id: colaboradorId,
       estado: 'Ativo'
     });
+  }
+  
+  async function getTodasAtribuicoesInventario() {
+    const select = '*,artigos_inventario(id,codigo,nome,descricao,categorias_inventario(id,codigo,nome)),colaboradores!atribuicoes_inventario_colaborador_id_fkey(id,nome,numero_colaborador,departamentos(id,nome))';
+    try {
+      let url = `${SUPABASE_URL}/rest/v1/atribuicoes_inventario?select=${encodeURIComponent(select)}&order=data_atribuicao.desc`;
+      const response = await fetch(url, { headers });
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      return await response.json();
+    } catch (error) {
+      console.error('[DataService] Erro ao buscar atribuições de inventário:', error);
+      return [];
+    }
+  }
+  
+  // --- PEDIDOS DE INVENTÁRIO ---
+  
+  // Gerar número de pedido único
+  async function gerarNumeroPedidoInventario() {
+    const ano = new Date().getFullYear();
+    const pedidos = await retrieveMultipleRecords('pedidos_inventario', {
+      select: 'numero_pedido',
+      orderby: 'created_at.desc',
+      top: 1
+    });
+    
+    let sequencia = 1;
+    if (pedidos.length > 0 && pedidos[0].numero_pedido) {
+      const match = pedidos[0].numero_pedido.match(/PED-(\d{4})-(\d+)/);
+      if (match && match[1] === ano.toString()) {
+        sequencia = parseInt(match[2]) + 1;
+      }
+    }
+    
+    return `PED-${ano}-${sequencia.toString().padStart(4, '0')}`;
+  }
+  
+  // Obter todos os pedidos de inventário
+  async function getPedidosInventario() {
+    const select = '*,solicitante:colaboradores!pedidos_inventario_solicitante_id_fkey(id,nome,email,departamento_id,departamentos(id,codigo,nome)),artigos_inventario(id,codigo,nome,categorias_inventario(id,nome)),unidade_organica:departamentos!pedidos_inventario_unidade_organica_id_fkey(id,codigo,nome),aprovador:colaboradores!pedidos_inventario_aprovado_por_fkey(id,nome)';
+    try {
+      let url = `${SUPABASE_URL}/rest/v1/pedidos_inventario?select=${encodeURIComponent(select)}&order=created_at.desc`;
+      const response = await fetch(url, { headers });
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('[DataService] Erro response:', errorText);
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('[DataService] Erro ao buscar pedidos de inventário:', error);
+      return [];
+    }
+  }
+  
+  // Obter pedidos de inventário do colaborador
+  async function getPedidosInventarioColaborador(colaboradorId) {
+    const select = '*,solicitante:colaboradores!pedidos_inventario_solicitante_id_fkey(id,nome,email,departamento_id,departamentos(id,codigo,nome)),artigos_inventario(id,codigo,nome,categorias_inventario(id,nome)),unidade_organica:departamentos!pedidos_inventario_unidade_organica_id_fkey(id,codigo,nome),aprovador:colaboradores!pedidos_inventario_aprovado_por_fkey(id,nome)';
+    try {
+      let url = `${SUPABASE_URL}/rest/v1/pedidos_inventario?select=${encodeURIComponent(select)}&solicitante_id=eq.${colaboradorId}&order=created_at.desc`;
+      const response = await fetch(url, { headers });
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      return await response.json();
+    } catch (error) {
+      console.error('[DataService] Erro ao buscar pedidos do colaborador:', error);
+      return [];
+    }
+  }
+  
+  // Obter pedido de inventário por ID
+  async function getPedidoInventarioById(id) {
+    const select = '*,solicitante:colaboradores!pedidos_inventario_solicitante_id_fkey(id,nome,email,departamento_id,departamentos(id,codigo,nome)),artigos_inventario(id,codigo,nome,descricao,categorias_inventario(id,codigo,nome)),unidade_organica:departamentos!pedidos_inventario_unidade_organica_id_fkey(id,codigo,nome),aprovador:colaboradores!pedidos_inventario_aprovado_por_fkey(id,nome),pedidos_inventario_anexos(id,nome_ficheiro,url,tipo_ficheiro,tamanho_bytes)';
+    const result = await retrieveWithRelations('pedidos_inventario', select, { id });
+    return result.length > 0 ? result[0] : null;
+  }
+  
+  // Criar pedido de inventário
+  async function createPedidoInventario(data) {
+    // Gerar número de pedido se não fornecido
+    if (!data.numero_pedido) {
+      data.numero_pedido = await gerarNumeroPedidoInventario();
+    }
+    
+    // Definir estado padrão como Submetido se não especificado
+    if (!data.estado) {
+      data.estado = 'Submetido';
+    }
+    
+    return createRecord('pedidos_inventario', data);
+  }
+  
+  // Atualizar pedido de inventário
+  async function updatePedidoInventario(id, data) {
+    data.updated_at = new Date().toISOString();
+    return updateRecord('pedidos_inventario', id, data);
+  }
+  
+  // Submeter pedido (de rascunho para submetido)
+  async function submeterPedidoInventario(id) {
+    return updatePedidoInventario(id, {
+      estado: 'Submetido'
+    });
+  }
+  
+  // Aprovar pedido de inventário
+  async function aprovarPedidoInventario(id, aprovadorId, comentario = '') {
+    return updatePedidoInventario(id, {
+      estado: 'Em Preparação',
+      aprovado_por: aprovadorId,
+      data_aprovacao: new Date().toISOString(),
+      comentario_aprovacao: comentario
+    });
+  }
+  
+  // Rejeitar/Indeferir pedido de inventário
+  async function rejeitarPedidoInventario(id, aprovadorId, comentario) {
+    return updatePedidoInventario(id, {
+      estado: 'Indeferido',
+      aprovado_por: aprovadorId,
+      data_aprovacao: new Date().toISOString(),
+      comentario_aprovacao: comentario
+    });
+  }
+  
+  // Marcar pedido como pronto para levantamento
+  async function pedidoProntoLevantamento(id) {
+    return updatePedidoInventario(id, {
+      estado: 'Pronto para Levantamento'
+    });
+  }
+  
+  // Confirmar entrega do pedido
+  async function confirmarEntregaPedido(id) {
+    return updatePedidoInventario(id, {
+      estado: 'Entregue',
+      data_entrega: new Date().toISOString()
+    });
+  }
+  
+  // Cancelar pedido de inventário
+  async function cancelarPedidoInventario(id) {
+    return updatePedidoInventario(id, {
+      estado: 'Cancelado'
+    });
+  }
+  
+  // Obter estatísticas de inventário do colaborador
+  async function getInventarioStatsColaborador(colaboradorId) {
+    try {
+      const [atribuicoes, pedidos] = await Promise.all([
+        getArtigosAtribuidosColaborador(colaboradorId),
+        getPedidosInventarioColaborador(colaboradorId)
+      ]);
+      
+      const estadosEmCurso = ['Rascunho', 'Submetido', 'Em Aprovação', 'Em Preparação', 'Pronto para Levantamento'];
+      const estadosHistorico = ['Entregue', 'Devolvido', 'Indeferido', 'Cancelado'];
+      
+      return {
+        atribuidos: atribuicoes.length,
+        emCurso: pedidos.filter(p => estadosEmCurso.includes(p.estado)).length,
+        historico: pedidos.filter(p => estadosHistorico.includes(p.estado)).length
+      };
+    } catch (error) {
+      console.error('[DataService] Erro ao obter estatísticas de inventário:', error);
+      return { atribuidos: 0, emCurso: 0, historico: 0 };
+    }
   }
   
   // ==========================================
@@ -1471,8 +1666,29 @@ const DataService = (function() {
     getDeslocacaoStats,
     getDeslocacoesColaborador,
     
-    // Inventário
+    // Inventário - Categorias e Artigos
+    getCategoriasInventario,
+    getArtigosInventario,
+    getArtigoInventarioById,
+    
+    // Inventário - Atribuições
     getArtigosAtribuidosColaborador,
+    getTodasAtribuicoesInventario,
+    
+    // Inventário - Pedidos
+    gerarNumeroPedidoInventario,
+    getPedidosInventario,
+    getPedidosInventarioColaborador,
+    getPedidoInventarioById,
+    createPedidoInventario,
+    updatePedidoInventario,
+    submeterPedidoInventario,
+    aprovarPedidoInventario,
+    rejeitarPedidoInventario,
+    pedidoProntoLevantamento,
+    confirmarEntregaPedido,
+    cancelarPedidoInventario,
+    getInventarioStatsColaborador,
     
     // Utilitários
     cleanFormadorName
