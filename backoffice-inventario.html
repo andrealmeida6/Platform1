@@ -1,0 +1,1777 @@
+---
+layout: default
+title: Gestão de Inventário - Backoffice
+---
+{% raw %}
+<!-- 
+  Power Pages: Esta página equivale a uma Entity List com Entity Form para gestão administrativa
+  FetchXML para listar inventário completo:
+  <fetch>
+    <entity name="inv_artigos">
+      <attribute name="codigo"/>
+      <attribute name="nome"/>
+      <attribute name="categoria_id"/>
+      <attribute name="quantidade_stock"/>
+      <attribute name="estado"/>
+      <link-entity name="inv_categorias" from="id" to="categoria_id">
+        <attribute name="nome" alias="categoria_nome"/>
+      </link-entity>
+    </entity>
+  </fetch>
+-->
+{% endraw %}
+
+<link rel="stylesheet" href="{{ '/web-files/css/formacao.css' | relative_url }}">
+<script src="{{ '/web-files/js/dataService.js' | relative_url }}"></script>
+<script src="{{ '/web-files/js/authService.js' | relative_url }}"></script>
+
+<style>
+/* ============================================ */
+/* BACKOFFICE INVENTÁRIO - ESTILOS */
+/* ============================================ */
+
+.backoffice-inventario {
+  min-height: calc(100vh - 70px);
+  padding: 2rem 0;
+  background: transparent !important;
+}
+
+.responsive-wrapper {
+  width: 90%;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Page Header */
+.page-header {
+  margin-bottom: 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.page-header-content h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 0.5rem;
+}
+
+.page-header-content p {
+  color: #64748b;
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+.page-header-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.header-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  border-radius: 10px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+  font-family: inherit;
+  text-decoration: none;
+}
+
+.header-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.header-btn-primary {
+  background: linear-gradient(135deg, #00b276 0%, #009661 100%);
+  color: white;
+}
+
+.header-btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 178, 118, 0.3);
+}
+
+.header-btn-secondary {
+  background: white;
+  color: #475569;
+  border: 2px solid #e2e8f0;
+}
+
+.header-btn-secondary:hover {
+  border-color: #00b276;
+  color: #00b276;
+}
+
+/* Filtros */
+.filters-container {
+  background: white;
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+}
+
+.filters-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.filter-group label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #374151;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.filter-group select,
+.filter-group input {
+  padding: 0.75rem 1rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 0.875rem;
+  font-family: inherit;
+  transition: border-color 0.15s ease;
+  background: white;
+}
+
+.filter-group select:focus,
+.filter-group input:focus {
+  outline: none;
+  border-color: #00b276;
+  box-shadow: 0 0 0 3px rgba(0, 178, 118, 0.1);
+}
+
+/* KPI Cards */
+.kpi-container {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (max-width: 1200px) {
+  .kpi-container {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .kpi-container {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.kpi-card {
+  background: white;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.kpi-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+}
+
+.kpi-label {
+  font-size: 0.75rem;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.kpi-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 0.25rem;
+}
+
+.kpi-trend {
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.kpi-trend.positive {
+  color: #00b276;
+}
+
+.kpi-trend.negative {
+  color: #dc2626;
+}
+
+/* Ações Rápidas */
+.quick-actions {
+  background: white;
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+}
+
+.quick-actions h2 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 1rem;
+}
+
+.actions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.action-btn {
+  padding: 1.25rem;
+  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+  border: 2px solid transparent;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-family: inherit;
+  text-align: left;
+}
+
+.action-btn:hover {
+  background: white;
+  border-color: #00b276;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 178, 118, 0.15);
+}
+
+.action-btn-icon {
+  width: 44px;
+  height: 44px;
+  background: linear-gradient(135deg, #00b276 0%, #009661 100%);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+  color: white;
+}
+
+.action-btn-content {
+  flex: 1;
+}
+
+.action-btn-title {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 0.25rem;
+}
+
+.action-btn-desc {
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 400;
+}
+
+/* Caixa de Pesquisa */
+.search-container {
+  background: white;
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+}
+
+.search-box {
+  position: relative;
+  width: 100%;
+}
+
+.search-box input {
+  width: 100%;
+  padding: 0.875rem 1rem 0.875rem 3rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 0.875rem;
+  font-family: inherit;
+  transition: border-color 0.15s ease;
+}
+
+.search-box input:focus {
+  outline: none;
+  border-color: #00b276;
+  box-shadow: 0 0 0 3px rgba(0, 178, 118, 0.1);
+}
+
+.search-box::before {
+  content: '🔍';
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1rem;
+}
+
+.search-results-info {
+  margin-top: 0.75rem;
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+/* Tabelas */
+.table-container {
+  background: white;
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+}
+
+.table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.table-header h2 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+}
+
+.bo-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 900px;
+}
+
+.bo-table thead {
+  background: linear-gradient(135deg, #00b276 0%, #009661 100%);
+}
+
+.bo-table th {
+  padding: 1rem;
+  text-align: left;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.bo-table td {
+  padding: 1rem;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 0.875rem;
+  color: #1e293b;
+}
+
+.bo-table tbody tr {
+  transition: all 0.2s ease;
+}
+
+.bo-table tbody tr:hover {
+  background: #f8fafc;
+  transform: translateX(4px);
+}
+
+.bo-table td strong {
+  color: #00b276;
+  font-weight: 600;
+}
+
+.bo-table code {
+  background: #f1f5f9;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  color: #475569;
+}
+
+/* Badges */
+.badge {
+  display: inline-block;
+  padding: 0.3rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.badge.stock { background: #dbeafe; color: #1e40af; }
+.badge.imobilizado { background: #f3e8ff; color: #7c3aed; }
+.badge.consumivel { background: #fef3c7; color: #92400e; }
+
+.badge.em-stock { background: #d1fae5; color: #065f46; }
+.badge.em-uso { background: #dbeafe; color: #1e40af; }
+.badge.atribuido { background: #e0e7ff; color: #3730a3; }
+.badge.obsoleto { background: #fed7aa; color: #9a3412; }
+.badge.abatido { background: #fecaca; color: #991b1b; }
+.badge.manutencao { background: #fef3c7; color: #92400e; }
+
+.badge.entrada { background: #d1fae5; color: #065f46; }
+.badge.saida { background: #fee2e2; color: #991b1b; }
+.badge.transferencia { background: #dbeafe; color: #1e40af; }
+.badge.ajuste { background: #fef3c7; color: #92400e; }
+
+/* Ações da Tabela */
+.table-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: nowrap;
+}
+
+.btn-action {
+  padding: 0.4rem 0.75rem;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #475569;
+  white-space: nowrap;
+  font-family: inherit;
+}
+
+.btn-action:hover {
+  background: #f0fdf4;
+  border-color: #00b276;
+  color: #00b276;
+}
+
+.btn-action.btn-primary {
+  background: #00b276;
+  color: white;
+  border-color: #00b276;
+}
+
+.btn-action.btn-primary:hover {
+  background: #009661;
+}
+
+.view-all-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #00b276;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  margin-top: 1rem;
+  padding: 0.5rem 0;
+  transition: gap 0.2s ease;
+}
+
+.view-all-link:hover {
+  gap: 0.75rem;
+}
+
+/* Quantity */
+.quantity-change {
+  font-weight: 600;
+}
+
+.quantity-change.positive {
+  color: #00b276;
+}
+
+.quantity-change.negative {
+  color: #dc2626;
+}
+
+/* Loading & Empty States */
+.loading-state,
+.empty-state {
+  padding: 3rem;
+  text-align: center;
+  color: #64748b;
+}
+
+.empty-state svg {
+  width: 64px;
+  height: 64px;
+  color: #e2e8f0;
+  margin-bottom: 1rem;
+}
+
+.empty-state h3 {
+  font-size: 1.1rem;
+  color: #1e293b;
+  margin-bottom: 0.5rem;
+}
+
+/* Modal */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.modal-overlay.show {
+  display: flex;
+}
+
+.modal {
+  background: white;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 800px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-header {
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid #f1f5f9;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+}
+
+.modal-close {
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: #f8fafc;
+  border-radius: 8px;
+  font-size: 1.25rem;
+  color: #64748b;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.modal-close:hover {
+  background: #f1f5f9;
+  color: #1e293b;
+}
+
+.modal-body {
+  padding: 2rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.modal-footer {
+  padding: 1.5rem 2rem;
+  border-top: 1px solid #f1f5f9;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.modal-section {
+  margin-bottom: 2rem;
+}
+
+.modal-section:last-child {
+  margin-bottom: 0;
+}
+
+.modal-section h4 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #f1f5f9;
+}
+
+.modal-field-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.modal-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.modal-field-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.modal-field-value {
+  font-size: 0.875rem;
+  color: #1e293b;
+  font-weight: 500;
+}
+
+.modal-card {
+  background: #f0fdf4;
+  border-radius: 10px;
+  padding: 1.25rem;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.modal-card-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.modal-card-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+}
+
+.modal-card-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+/* Form */
+.form-group {
+  margin-bottom: 1.25rem;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.5rem;
+}
+
+.form-group label.required::after {
+  content: " *";
+  color: #dc2626;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 0.875rem;
+  font-family: inherit;
+  transition: border-color 0.15s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #00b276;
+  box-shadow: 0 0 0 3px rgba(0, 178, 118, 0.1);
+}
+
+.form-group textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .responsive-wrapper {
+    width: 95%;
+  }
+  
+  .page-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .page-header-actions {
+    justify-content: stretch;
+  }
+  
+  .page-header-actions .header-btn {
+    flex: 1;
+    justify-content: center;
+  }
+  
+  .filters-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .actions-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .modal-field-grid,
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .modal-card {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+
+<div class="backoffice-inventario">
+  <div class="responsive-wrapper">
+    <!-- Page Header -->
+    <div class="page-header">
+      <div class="page-header-content">
+        <h1>Gestão de Inventário</h1>
+        <p>Visão global dos artigos de inventário, atribuições e movimentos</p>
+      </div>
+      <div class="page-header-actions">
+        <button class="header-btn header-btn-primary" onclick="abrirModalNovoArtigo()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Novo Artigo
+        </button>
+        <a href="{{ '/inventario' | relative_url }}" class="header-btn header-btn-secondary">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+          Voltar ao Inventário
+        </a>
+      </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="filters-container">
+      <div class="filters-grid">
+        <div class="filter-group">
+          <label for="filtroCategoria">Categoria</label>
+          <select id="filtroCategoria" onchange="aplicarFiltros()">
+            <option value="">Todas as categorias</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="filtroEstado">Estado</label>
+          <select id="filtroEstado" onchange="aplicarFiltros()">
+            <option value="">Todos os estados</option>
+            <option value="disponivel">Disponível</option>
+            <option value="atribuido">Atribuído</option>
+            <option value="manutencao">Em Manutenção</option>
+            <option value="obsoleto">Obsoleto</option>
+            <option value="abatido">Abatido</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="filtroTipo">Tipo</label>
+          <select id="filtroTipo" onchange="aplicarFiltros()">
+            <option value="">Todos os tipos</option>
+            <option value="imobilizado">Imobilizado</option>
+            <option value="stock">Stock</option>
+            <option value="consumivel">Consumível</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="filtroDepartamento">Departamento</label>
+          <select id="filtroDepartamento" onchange="aplicarFiltros()">
+            <option value="">Todos os departamentos</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="kpi-container">
+      <div class="kpi-card">
+        <div class="kpi-label">Total de Artigos</div>
+        <div class="kpi-value" id="kpiTotalArtigos">-</div>
+        <div class="kpi-trend" id="kpiTotalArtigosTrend">Artigos registados</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Disponíveis</div>
+        <div class="kpi-value" id="kpiDisponiveis">-</div>
+        <div class="kpi-trend positive">Em stock</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Atribuídos</div>
+        <div class="kpi-value" id="kpiAtribuidos">-</div>
+        <div class="kpi-trend">Alocados a colaboradores</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Pedidos Pendentes</div>
+        <div class="kpi-value" id="kpiPedidosPendentes">-</div>
+        <div class="kpi-trend" id="kpiPedidosTrend">A aguardar aprovação</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Categorias</div>
+        <div class="kpi-value" id="kpiCategorias">-</div>
+        <div class="kpi-trend">Tipos de artigos</div>
+      </div>
+    </div>
+
+    <!-- Ações Rápidas -->
+    <div class="quick-actions">
+      <h2>Ações Rápidas</h2>
+      <div class="actions-grid">
+        <button class="action-btn" onclick="abrirModalNovoArtigo()">
+          <div class="action-btn-icon">➕</div>
+          <div class="action-btn-content">
+            <span class="action-btn-title">Novo Artigo</span>
+            <span class="action-btn-desc">Adicionar novo artigo ao catálogo</span>
+          </div>
+        </button>
+        <button class="action-btn" onclick="abrirModalNovaAtribuicao()">
+          <div class="action-btn-icon">📦</div>
+          <div class="action-btn-content">
+            <span class="action-btn-title">Nova Atribuição</span>
+            <span class="action-btn-desc">Atribuir artigo a colaborador</span>
+          </div>
+        </button>
+        <button class="action-btn" onclick="verPedidosPendentes()">
+          <div class="action-btn-icon">📋</div>
+          <div class="action-btn-content">
+            <span class="action-btn-title">Pedidos Pendentes</span>
+            <span class="action-btn-desc">Gerir pedidos de requisição</span>
+          </div>
+        </button>
+        <button class="action-btn" onclick="exportarRelatorio()">
+          <div class="action-btn-icon">📊</div>
+          <div class="action-btn-content">
+            <span class="action-btn-title">Exportar Relatório</span>
+            <span class="action-btn-desc">Gerar relatório de inventário</span>
+          </div>
+        </button>
+      </div>
+    </div>
+
+    <!-- Pesquisa -->
+    <div class="search-container">
+      <div class="search-box">
+        <input 
+          type="text" 
+          id="searchInput" 
+          placeholder="Pesquisar por código, nome, categoria, colaborador..." 
+          oninput="pesquisarArtigos()"
+        />
+      </div>
+      <div class="search-results-info" id="searchResultsInfo"></div>
+    </div>
+
+    <!-- Tabela de Artigos -->
+    <div class="table-container">
+      <div class="table-header">
+        <h2>Catálogo de Artigos</h2>
+      </div>
+      <div class="table-wrapper">
+        <table class="bo-table">
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th>Nome</th>
+              <th>Categoria</th>
+              <th>Stock</th>
+              <th>Atribuídos</th>
+              <th>Estado</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="artigosTableBody">
+            <tr><td colspan="7"><div class="loading-state">A carregar artigos...</div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Tabela de Pedidos Pendentes -->
+    <div class="table-container">
+      <div class="table-header">
+        <h2>Pedidos Pendentes de Aprovação</h2>
+      </div>
+      <div class="table-wrapper">
+        <table class="bo-table">
+          <thead>
+            <tr>
+              <th>Nº Pedido</th>
+              <th>Solicitante</th>
+              <th>Artigo</th>
+              <th>Qtd</th>
+              <th>Data Pedido</th>
+              <th>Estado</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="pedidosTableBody">
+            <tr><td colspan="7"><div class="loading-state">A carregar pedidos...</div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Tabela de Atribuições Recentes -->
+    <div class="table-container">
+      <div class="table-header">
+        <h2>Atribuições Recentes</h2>
+      </div>
+      <div class="table-wrapper">
+        <table class="bo-table">
+          <thead>
+            <tr>
+              <th>Artigo</th>
+              <th>Colaborador</th>
+              <th>Departamento</th>
+              <th>Data Atribuição</th>
+              <th>Localização</th>
+              <th>Estado</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="atribuicoesTableBody">
+            <tr><td colspan="7"><div class="loading-state">A carregar atribuições...</div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Ficha do Artigo -->
+<div class="modal-overlay" id="modalFichaArtigo">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modalArtigoTitulo">Ficha do Artigo</h3>
+      <button class="modal-close" onclick="fecharModal('modalFichaArtigo')">×</button>
+    </div>
+    <div class="modal-body" id="modalArtigoContent">
+      <!-- Conteúdo dinâmico -->
+    </div>
+    <div class="modal-footer">
+      <button class="header-btn header-btn-secondary" onclick="fecharModal('modalFichaArtigo')">Fechar</button>
+      <button class="header-btn header-btn-primary" onclick="editarArtigo()">Editar Artigo</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Novo Artigo -->
+<div class="modal-overlay" id="modalNovoArtigo">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Novo Artigo de Inventário</h3>
+      <button class="modal-close" onclick="fecharModal('modalNovoArtigo')">×</button>
+    </div>
+    <div class="modal-body">
+      <form id="formNovoArtigo">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="artCodigo" class="required">Código</label>
+            <input type="text" id="artCodigo" placeholder="Ex: INF-001" required>
+          </div>
+          <div class="form-group">
+            <label for="artCategoria" class="required">Categoria</label>
+            <select id="artCategoria" required>
+              <option value="">Selecione...</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="artNome" class="required">Nome</label>
+          <input type="text" id="artNome" placeholder="Nome do artigo" required>
+        </div>
+        <div class="form-group">
+          <label for="artDescricao">Descrição</label>
+          <textarea id="artDescricao" placeholder="Descrição detalhada do artigo"></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="artStockInicial">Stock Inicial</label>
+            <input type="number" id="artStockInicial" min="0" value="0">
+          </div>
+          <div class="form-group">
+            <label for="artStockMinimo">Stock Mínimo</label>
+            <input type="number" id="artStockMinimo" min="0" value="0">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="artLocalizacao">Localização Padrão</label>
+          <input type="text" id="artLocalizacao" placeholder="Ex: Armazém Principal">
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="header-btn header-btn-secondary" onclick="fecharModal('modalNovoArtigo')">Cancelar</button>
+      <button class="header-btn header-btn-primary" onclick="guardarNovoArtigo()">Criar Artigo</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Nova Atribuição -->
+<div class="modal-overlay" id="modalNovaAtribuicao">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Nova Atribuição de Artigo</h3>
+      <button class="modal-close" onclick="fecharModal('modalNovaAtribuicao')">×</button>
+    </div>
+    <div class="modal-body">
+      <form id="formNovaAtribuicao">
+        <div class="form-group">
+          <label for="atribArtigo" class="required">Artigo</label>
+          <select id="atribArtigo" required>
+            <option value="">Selecione o artigo...</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="atribColaborador" class="required">Colaborador</label>
+          <select id="atribColaborador" required>
+            <option value="">Selecione o colaborador...</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="atribQuantidade" class="required">Quantidade</label>
+            <input type="number" id="atribQuantidade" min="1" value="1" required>
+          </div>
+          <div class="form-group">
+            <label for="atribData">Data de Atribuição</label>
+            <input type="date" id="atribData">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="atribNumeroSerie">Número de Série</label>
+          <input type="text" id="atribNumeroSerie" placeholder="Opcional">
+        </div>
+        <div class="form-group">
+          <label for="atribLocalizacao">Localização</label>
+          <input type="text" id="atribLocalizacao" placeholder="Ex: Gabinete 301 - Piso 3">
+        </div>
+        <div class="form-group">
+          <label for="atribObservacoes">Observações</label>
+          <textarea id="atribObservacoes" placeholder="Notas adicionais"></textarea>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="header-btn header-btn-secondary" onclick="fecharModal('modalNovaAtribuicao')">Cancelar</button>
+      <button class="header-btn header-btn-primary" onclick="guardarNovaAtribuicao()">Criar Atribuição</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Aprovar/Rejeitar Pedido -->
+<div class="modal-overlay" id="modalAcaoPedido">
+  <div class="modal" style="max-width: 500px;">
+    <div class="modal-header">
+      <h3 id="modalAcaoTitulo">Ação sobre Pedido</h3>
+      <button class="modal-close" onclick="fecharModal('modalAcaoPedido')">×</button>
+    </div>
+    <div class="modal-body">
+      <div id="modalAcaoPedidoInfo"></div>
+      <div class="form-group">
+        <label for="acaoComentario">Comentário</label>
+        <textarea id="acaoComentario" placeholder="Adicione um comentário (opcional para aprovação, obrigatório para rejeição)"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer" id="modalAcaoFooter">
+      <!-- Botões dinâmicos -->
+    </div>
+  </div>
+</div>
+
+<script>
+// ==========================================
+// VARIÁVEIS GLOBAIS
+// ==========================================
+let currentUser = null;
+let artigos = [];
+let categorias = [];
+let colaboradores = [];
+let departamentos = [];
+let atribuicoes = [];
+let pedidos = [];
+let pedidoAtual = null;
+
+// ==========================================
+// INICIALIZAÇÃO
+// ==========================================
+document.addEventListener('DOMContentLoaded', async function() {
+  await inicializar();
+});
+
+async function inicializar() {
+  try {
+    // Verificar permissões
+    currentUser = await AuthService.getCurrentUser();
+    
+    if (!currentUser || !AuthService.isAdmin(currentUser)) {
+      alert('Acesso não autorizado. Apenas utilizadores do Núcleo AFR podem aceder a esta página.');
+      window.location.href = '{{ "/inventario" | relative_url }}';
+      return;
+    }
+    
+    console.log('[Backoffice Inventário] Utilizador:', currentUser.nome);
+    
+    // Carregar dados em paralelo
+    await Promise.all([
+      carregarCategorias(),
+      carregarColaboradores(),
+      carregarDepartamentos()
+    ]);
+    
+    // Carregar dados principais
+    await Promise.all([
+      carregarArtigos(),
+      carregarPedidos(),
+      carregarAtribuicoes()
+    ]);
+    
+    // Preencher filtros
+    preencherFiltros();
+    
+    // Atualizar KPIs
+    atualizarKPIs();
+    
+  } catch (error) {
+    console.error('[Backoffice Inventário] Erro na inicialização:', error);
+  }
+}
+
+// ==========================================
+// CARREGAMENTO DE DADOS
+// ==========================================
+
+async function carregarCategorias() {
+  try {
+    categorias = await DataService.getCategoriasInventario();
+    console.log('[Backoffice] Categorias carregadas:', categorias.length);
+  } catch (error) {
+    console.error('[Backoffice] Erro ao carregar categorias:', error);
+    categorias = [];
+  }
+}
+
+async function carregarColaboradores() {
+  try {
+    colaboradores = await DataService.getColaboradores();
+    console.log('[Backoffice] Colaboradores carregados:', colaboradores.length);
+  } catch (error) {
+    console.error('[Backoffice] Erro ao carregar colaboradores:', error);
+    colaboradores = [];
+  }
+}
+
+async function carregarDepartamentos() {
+  try {
+    departamentos = await DataService.getDepartamentos();
+    console.log('[Backoffice] Departamentos carregados:', departamentos.length);
+  } catch (error) {
+    console.error('[Backoffice] Erro ao carregar departamentos:', error);
+    departamentos = [];
+  }
+}
+
+async function carregarArtigos() {
+  try {
+    artigos = await DataService.getArtigosInventario();
+    console.log('[Backoffice] Artigos carregados:', artigos.length);
+    renderizarArtigos();
+  } catch (error) {
+    console.error('[Backoffice] Erro ao carregar artigos:', error);
+    document.getElementById('artigosTableBody').innerHTML = 
+      '<tr><td colspan="7"><div class="empty-state"><h3>Erro ao carregar</h3><p>Não foi possível carregar os artigos.</p></div></td></tr>';
+  }
+}
+
+async function carregarPedidos() {
+  try {
+    const todosPedidos = await DataService.getPedidosInventario();
+    pedidos = todosPedidos.filter(p => ['Submetido', 'Em Aprovação', 'Em Preparação'].includes(p.estado));
+    console.log('[Backoffice] Pedidos pendentes:', pedidos.length);
+    renderizarPedidos();
+  } catch (error) {
+    console.error('[Backoffice] Erro ao carregar pedidos:', error);
+    document.getElementById('pedidosTableBody').innerHTML = 
+      '<tr><td colspan="7"><div class="empty-state"><h3>Erro ao carregar</h3><p>Não foi possível carregar os pedidos.</p></div></td></tr>';
+  }
+}
+
+async function carregarAtribuicoes() {
+  try {
+    atribuicoes = await DataService.getTodasAtribuicoesInventario();
+    console.log('[Backoffice] Atribuições carregadas:', atribuicoes.length);
+    renderizarAtribuicoes();
+  } catch (error) {
+    console.error('[Backoffice] Erro ao carregar atribuições:', error);
+    document.getElementById('atribuicoesTableBody').innerHTML = 
+      '<tr><td colspan="7"><div class="empty-state"><h3>Erro ao carregar</h3><p>Não foi possível carregar as atribuições.</p></div></td></tr>';
+  }
+}
+
+// ==========================================
+// RENDERIZAÇÃO
+// ==========================================
+
+function renderizarArtigos() {
+  const tbody = document.getElementById('artigosTableBody');
+  
+  if (!artigos || artigos.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg><h3>Sem artigos</h3><p>Não existem artigos de inventário registados.</p></div></td></tr>';
+    return;
+  }
+  
+  let html = '';
+  artigos.slice(0, 20).forEach(a => {
+    const categoria = a.categorias_inventario?.nome || 'Sem categoria';
+    const stock = a.quantidade_stock || 0;
+    
+    // Contar atribuições deste artigo
+    const numAtribuidos = atribuicoes.filter(at => at.artigo_id === a.id && at.estado === 'Ativo').length;
+    
+    // Determinar estado
+    let estado = 'disponivel';
+    let estadoLabel = 'Disponível';
+    if (stock === 0 && numAtribuidos === 0) {
+      estado = 'sem-stock';
+      estadoLabel = 'Sem Stock';
+    } else if (numAtribuidos > 0) {
+      estado = 'atribuido';
+      estadoLabel = 'Atribuído';
+    }
+    
+    html += `
+      <tr>
+        <td><strong>${escapeHtml(a.codigo)}</strong></td>
+        <td>${escapeHtml(a.nome)}</td>
+        <td>${escapeHtml(categoria)}</td>
+        <td>${stock}</td>
+        <td>${numAtribuidos}</td>
+        <td><span class="badge ${estado}">${estadoLabel}</span></td>
+        <td>
+          <div class="table-actions">
+            <button class="btn-action btn-primary" onclick="verFichaArtigo('${a.id}')">Ver</button>
+            <button class="btn-action" onclick="editarArtigoById('${a.id}')">Editar</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  });
+  
+  tbody.innerHTML = html;
+}
+
+function renderizarPedidos() {
+  const tbody = document.getElementById('pedidosTableBody');
+  
+  if (!pedidos || pedidos.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg><h3>Sem pedidos pendentes</h3><p>Não existem pedidos a aguardar aprovação.</p></div></td></tr>';
+    return;
+  }
+  
+  let html = '';
+  pedidos.slice(0, 10).forEach(p => {
+    const solicitante = p.solicitante?.nome || 'N/A';
+    const artigo = p.artigos_inventario?.nome || p.artigo_personalizado_nome || 'N/A';
+    const data = p.created_at ? new Date(p.created_at).toLocaleDateString('pt-PT') : '-';
+    const estadoClass = p.estado.toLowerCase().replace(/\s+/g, '-');
+    
+    html += `
+      <tr>
+        <td><strong>${escapeHtml(p.numero_pedido || 'N/A')}</strong></td>
+        <td>${escapeHtml(solicitante)}</td>
+        <td>${escapeHtml(artigo)}</td>
+        <td>${p.quantidade || 1}</td>
+        <td>${data}</td>
+        <td><span class="badge ${estadoClass}">${escapeHtml(p.estado)}</span></td>
+        <td>
+          <div class="table-actions">
+            <button class="btn-action btn-primary" onclick="aprovarPedido('${p.id}')">Aprovar</button>
+            <button class="btn-action" onclick="rejeitarPedido('${p.id}')">Rejeitar</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  });
+  
+  tbody.innerHTML = html;
+}
+
+function renderizarAtribuicoes() {
+  const tbody = document.getElementById('atribuicoesTableBody');
+  
+  if (!atribuicoes || atribuicoes.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg><h3>Sem atribuições</h3><p>Não existem atribuições registadas.</p></div></td></tr>';
+    return;
+  }
+  
+  // Ordenar por data mais recente
+  const sorted = [...atribuicoes].sort((a, b) => new Date(b.data_atribuicao) - new Date(a.data_atribuicao));
+  
+  let html = '';
+  sorted.slice(0, 10).forEach(a => {
+    const artigo = a.artigos_inventario?.nome || 'N/A';
+    const colaborador = a.colaboradores?.nome || 'N/A';
+    const departamento = a.colaboradores?.departamentos?.nome || '-';
+    const data = a.data_atribuicao ? new Date(a.data_atribuicao).toLocaleDateString('pt-PT') : '-';
+    const estadoClass = (a.estado || 'ativo').toLowerCase();
+    
+    html += `
+      <tr>
+        <td>${escapeHtml(artigo)}</td>
+        <td>${escapeHtml(colaborador)}</td>
+        <td>${escapeHtml(departamento)}</td>
+        <td>${data}</td>
+        <td>${escapeHtml(a.localizacao || '-')}</td>
+        <td><span class="badge ${estadoClass}">${escapeHtml(a.estado || 'Ativo')}</span></td>
+        <td>
+          <div class="table-actions">
+            <button class="btn-action" onclick="verAtribuicao('${a.id}')">Ver</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  });
+  
+  tbody.innerHTML = html;
+}
+
+// ==========================================
+// KPIS
+// ==========================================
+
+function atualizarKPIs() {
+  // Total de artigos
+  document.getElementById('kpiTotalArtigos').textContent = artigos.length;
+  
+  // Disponíveis (com stock > 0)
+  const disponiveis = artigos.filter(a => (a.quantidade_stock || 0) > 0).length;
+  document.getElementById('kpiDisponiveis').textContent = disponiveis;
+  
+  // Total de atribuições ativas
+  const atribuicoesAtivas = atribuicoes.filter(a => a.estado === 'Ativo').length;
+  document.getElementById('kpiAtribuidos').textContent = atribuicoesAtivas;
+  
+  // Pedidos pendentes
+  document.getElementById('kpiPedidosPendentes').textContent = pedidos.length;
+  
+  // Categorias
+  document.getElementById('kpiCategorias').textContent = categorias.length;
+}
+
+// ==========================================
+// FILTROS
+// ==========================================
+
+function preencherFiltros() {
+  // Categorias
+  const selectCategoria = document.getElementById('filtroCategoria');
+  categorias.forEach(c => {
+    selectCategoria.innerHTML += `<option value="${c.id}">${escapeHtml(c.nome)}</option>`;
+  });
+  
+  // Departamentos
+  const selectDepartamento = document.getElementById('filtroDepartamento');
+  departamentos.forEach(d => {
+    selectDepartamento.innerHTML += `<option value="${d.id}">${escapeHtml(d.nome)}</option>`;
+  });
+  
+  // Categorias no form de novo artigo
+  const selectArtCategoria = document.getElementById('artCategoria');
+  categorias.forEach(c => {
+    selectArtCategoria.innerHTML += `<option value="${c.id}">${escapeHtml(c.nome)}</option>`;
+  });
+  
+  // Artigos no form de atribuição
+  const selectArtigo = document.getElementById('atribArtigo');
+  artigos.forEach(a => {
+    selectArtigo.innerHTML += `<option value="${a.id}">${escapeHtml(a.codigo)} - ${escapeHtml(a.nome)}</option>`;
+  });
+  
+  // Colaboradores no form de atribuição
+  const selectColaborador = document.getElementById('atribColaborador');
+  colaboradores.forEach(c => {
+    selectColaborador.innerHTML += `<option value="${c.id}">${escapeHtml(c.nome)}</option>`;
+  });
+}
+
+function aplicarFiltros() {
+  // TODO: Implementar filtros
+  console.log('[Backoffice] Aplicar filtros');
+}
+
+function pesquisarArtigos() {
+  const termo = document.getElementById('searchInput').value.toLowerCase().trim();
+  
+  if (!termo) {
+    renderizarArtigos();
+    document.getElementById('searchResultsInfo').textContent = '';
+    return;
+  }
+  
+  const resultados = artigos.filter(a => 
+    (a.codigo && a.codigo.toLowerCase().includes(termo)) ||
+    (a.nome && a.nome.toLowerCase().includes(termo)) ||
+    (a.categorias_inventario?.nome && a.categorias_inventario.nome.toLowerCase().includes(termo))
+  );
+  
+  document.getElementById('searchResultsInfo').textContent = 
+    `${resultados.length} resultado(s) encontrado(s) para "${termo}"`;
+  
+  // Renderizar resultados filtrados
+  const tbody = document.getElementById('artigosTableBody');
+  if (resultados.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><h3>Sem resultados</h3><p>Nenhum artigo encontrado para a pesquisa.</p></div></td></tr>';
+    return;
+  }
+  
+  let html = '';
+  resultados.forEach(a => {
+    const categoria = a.categorias_inventario?.nome || 'Sem categoria';
+    const stock = a.quantidade_stock || 0;
+    const numAtribuidos = atribuicoes.filter(at => at.artigo_id === a.id && at.estado === 'Ativo').length;
+    
+    html += `
+      <tr>
+        <td><strong>${escapeHtml(a.codigo)}</strong></td>
+        <td>${escapeHtml(a.nome)}</td>
+        <td>${escapeHtml(categoria)}</td>
+        <td>${stock}</td>
+        <td>${numAtribuidos}</td>
+        <td><span class="badge disponivel">Disponível</span></td>
+        <td>
+          <div class="table-actions">
+            <button class="btn-action btn-primary" onclick="verFichaArtigo('${a.id}')">Ver</button>
+            <button class="btn-action" onclick="editarArtigoById('${a.id}')">Editar</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  });
+  
+  tbody.innerHTML = html;
+}
+
+// ==========================================
+// MODAIS E AÇÕES
+// ==========================================
+
+function abrirModal(modalId) {
+  document.getElementById(modalId).classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+function fecharModal(modalId) {
+  document.getElementById(modalId).classList.remove('show');
+  document.body.style.overflow = '';
+}
+
+function abrirModalNovoArtigo() {
+  // Limpar form
+  document.getElementById('formNovoArtigo').reset();
+  abrirModal('modalNovoArtigo');
+}
+
+function abrirModalNovaAtribuicao() {
+  // Limpar form
+  document.getElementById('formNovaAtribuicao').reset();
+  // Definir data padrão
+  document.getElementById('atribData').value = new Date().toISOString().split('T')[0];
+  abrirModal('modalNovaAtribuicao');
+}
+
+function verFichaArtigo(id) {
+  const artigo = artigos.find(a => a.id === id);
+  if (!artigo) return;
+  
+  document.getElementById('modalArtigoTitulo').textContent = artigo.nome;
+  
+  const categoria = artigo.categorias_inventario?.nome || 'Sem categoria';
+  const numAtribuidos = atribuicoes.filter(at => at.artigo_id === id && at.estado === 'Ativo').length;
+  
+  document.getElementById('modalArtigoContent').innerHTML = `
+    <div class="modal-section">
+      <h4>Informações Gerais</h4>
+      <div class="modal-field-grid">
+        <div class="modal-field">
+          <span class="modal-field-label">Código</span>
+          <span class="modal-field-value">${escapeHtml(artigo.codigo)}</span>
+        </div>
+        <div class="modal-field">
+          <span class="modal-field-label">Categoria</span>
+          <span class="modal-field-value">${escapeHtml(categoria)}</span>
+        </div>
+        <div class="modal-field">
+          <span class="modal-field-label">Nome</span>
+          <span class="modal-field-value">${escapeHtml(artigo.nome)}</span>
+        </div>
+        <div class="modal-field">
+          <span class="modal-field-label">Descrição</span>
+          <span class="modal-field-value">${escapeHtml(artigo.descricao || '-')}</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-section">
+      <h4>Stock e Atribuições</h4>
+      <div class="modal-card">
+        <div class="modal-card-item">
+          <span class="modal-card-label">Stock Atual</span>
+          <span class="modal-card-value">${artigo.quantidade_stock || 0}</span>
+        </div>
+        <div class="modal-card-item">
+          <span class="modal-card-label">Stock Mínimo</span>
+          <span class="modal-card-value">${artigo.stock_minimo || 0}</span>
+        </div>
+        <div class="modal-card-item">
+          <span class="modal-card-label">Unidades Atribuídas</span>
+          <span class="modal-card-value">${numAtribuidos}</span>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  abrirModal('modalFichaArtigo');
+}
+
+async function guardarNovoArtigo() {
+  const codigo = document.getElementById('artCodigo').value.trim();
+  const nome = document.getElementById('artNome').value.trim();
+  const categoriaId = document.getElementById('artCategoria').value;
+  
+  if (!codigo || !nome || !categoriaId) {
+    alert('Por favor preencha todos os campos obrigatórios.');
+    return;
+  }
+  
+  try {
+    const novoArtigo = {
+      codigo: codigo,
+      nome: nome,
+      categoria_id: categoriaId,
+      descricao: document.getElementById('artDescricao').value.trim() || null,
+      quantidade_stock: parseInt(document.getElementById('artStockInicial').value) || 0,
+      stock_minimo: parseInt(document.getElementById('artStockMinimo').value) || 0,
+      localizacao_padrao: document.getElementById('artLocalizacao').value.trim() || null,
+      ativo: true
+    };
+    
+    await DataService.createRecord('artigos_inventario', novoArtigo);
+    alert('Artigo criado com sucesso!');
+    fecharModal('modalNovoArtigo');
+    await carregarArtigos();
+    atualizarKPIs();
+    
+  } catch (error) {
+    console.error('[Backoffice] Erro ao criar artigo:', error);
+    alert('Erro ao criar artigo: ' + error.message);
+  }
+}
+
+async function guardarNovaAtribuicao() {
+  const artigoId = document.getElementById('atribArtigo').value;
+  const colaboradorId = document.getElementById('atribColaborador').value;
+  const quantidade = parseInt(document.getElementById('atribQuantidade').value) || 1;
+  
+  if (!artigoId || !colaboradorId) {
+    alert('Por favor preencha todos os campos obrigatórios.');
+    return;
+  }
+  
+  try {
+    const novaAtribuicao = {
+      artigo_id: artigoId,
+      colaborador_id: colaboradorId,
+      quantidade: quantidade,
+      data_atribuicao: document.getElementById('atribData').value || new Date().toISOString().split('T')[0],
+      numero_serie: document.getElementById('atribNumeroSerie').value.trim() || null,
+      localizacao: document.getElementById('atribLocalizacao').value.trim() || null,
+      observacoes: document.getElementById('atribObservacoes').value.trim() || null,
+      tipo_alocacao: 'pessoal',
+      estado: 'Ativo'
+    };
+    
+    await DataService.createRecord('atribuicoes_inventario', novaAtribuicao);
+    alert('Atribuição criada com sucesso!');
+    fecharModal('modalNovaAtribuicao');
+    await carregarAtribuicoes();
+    atualizarKPIs();
+    
+  } catch (error) {
+    console.error('[Backoffice] Erro ao criar atribuição:', error);
+    alert('Erro ao criar atribuição: ' + error.message);
+  }
+}
+
+function aprovarPedido(id) {
+  const pedido = pedidos.find(p => p.id === id);
+  if (!pedido) return;
+  
+  pedidoAtual = pedido;
+  document.getElementById('modalAcaoTitulo').textContent = 'Aprovar Pedido';
+  document.getElementById('modalAcaoPedidoInfo').innerHTML = `
+    <p><strong>Pedido:</strong> ${pedido.numero_pedido}</p>
+    <p><strong>Solicitante:</strong> ${pedido.solicitante?.nome || 'N/A'}</p>
+    <p><strong>Artigo:</strong> ${pedido.artigos_inventario?.nome || pedido.artigo_personalizado_nome || 'N/A'}</p>
+    <p><strong>Quantidade:</strong> ${pedido.quantidade || 1}</p>
+  `;
+  document.getElementById('modalAcaoFooter').innerHTML = `
+    <button class="header-btn header-btn-secondary" onclick="fecharModal('modalAcaoPedido')">Cancelar</button>
+    <button class="header-btn header-btn-primary" onclick="confirmarAprovacao()">Confirmar Aprovação</button>
+  `;
+  abrirModal('modalAcaoPedido');
+}
+
+function rejeitarPedido(id) {
+  const pedido = pedidos.find(p => p.id === id);
+  if (!pedido) return;
+  
+  pedidoAtual = pedido;
+  document.getElementById('modalAcaoTitulo').textContent = 'Rejeitar Pedido';
+  document.getElementById('modalAcaoPedidoInfo').innerHTML = `
+    <p><strong>Pedido:</strong> ${pedido.numero_pedido}</p>
+    <p><strong>Solicitante:</strong> ${pedido.solicitante?.nome || 'N/A'}</p>
+    <p><strong>Artigo:</strong> ${pedido.artigos_inventario?.nome || pedido.artigo_personalizado_nome || 'N/A'}</p>
+    <p>Indique o motivo da rejeição:</p>
+  `;
+  document.getElementById('modalAcaoFooter').innerHTML = `
+    <button class="header-btn header-btn-secondary" onclick="fecharModal('modalAcaoPedido')">Cancelar</button>
+    <button class="header-btn header-btn-primary" style="background: #dc2626;" onclick="confirmarRejeicao()">Confirmar Rejeição</button>
+  `;
+  abrirModal('modalAcaoPedido');
+}
+
+async function confirmarAprovacao() {
+  if (!pedidoAtual) return;
+  
+  try {
+    const comentario = document.getElementById('acaoComentario').value.trim();
+    await DataService.aprovarPedidoInventario(pedidoAtual.id, currentUser.id, comentario);
+    alert('Pedido aprovado com sucesso!');
+    fecharModal('modalAcaoPedido');
+    pedidoAtual = null;
+    await carregarPedidos();
+    atualizarKPIs();
+  } catch (error) {
+    console.error('[Backoffice] Erro ao aprovar pedido:', error);
+    alert('Erro ao aprovar pedido: ' + error.message);
+  }
+}
+
+async function confirmarRejeicao() {
+  if (!pedidoAtual) return;
+  
+  const comentario = document.getElementById('acaoComentario').value.trim();
+  if (!comentario) {
+    alert('Por favor indique o motivo da rejeição.');
+    return;
+  }
+  
+  try {
+    await DataService.rejeitarPedidoInventario(pedidoAtual.id, currentUser.id, comentario);
+    alert('Pedido rejeitado.');
+    fecharModal('modalAcaoPedido');
+    pedidoAtual = null;
+    await carregarPedidos();
+    atualizarKPIs();
+  } catch (error) {
+    console.error('[Backoffice] Erro ao rejeitar pedido:', error);
+    alert('Erro ao rejeitar pedido: ' + error.message);
+  }
+}
+
+function editarArtigoById(id) {
+  alert('Funcionalidade de edição em desenvolvimento.\n\nArtigo ID: ' + id);
+}
+
+function editarArtigo() {
+  alert('Funcionalidade de edição em desenvolvimento.');
+}
+
+function verAtribuicao(id) {
+  const atrib = atribuicoes.find(a => a.id === id);
+  if (!atrib) return;
+  
+  alert(`Atribuição:\n\nArtigo: ${atrib.artigos_inventario?.nome || 'N/A'}\nColaborador: ${atrib.colaboradores?.nome || 'N/A'}\nData: ${atrib.data_atribuicao || '-'}\nLocalização: ${atrib.localizacao || '-'}`);
+}
+
+function verPedidosPendentes() {
+  document.querySelector('.table-container:nth-of-type(2)').scrollIntoView({ behavior: 'smooth' });
+}
+
+function exportarRelatorio() {
+  alert('Funcionalidade de exportação em desenvolvimento.\n\nSerá gerado um relatório Excel com todos os dados de inventário.');
+}
+
+// ==========================================
+// UTILITÁRIOS
+// ==========================================
+
+function escapeHtml(text) {
+  if (!text) return '';
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+// Fechar modais ao clicar fora
+document.addEventListener('click', function(e) {
+  if (e.target.classList.contains('modal-overlay')) {
+    e.target.classList.remove('show');
+    document.body.style.overflow = '';
+  }
+});
+</script>
