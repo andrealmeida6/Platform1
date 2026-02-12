@@ -38,6 +38,7 @@ title: Novo Pedido de Inventário
 {% endraw %}
 
 <link rel="stylesheet" href="{{ '/web-files/css/formacao.css' | relative_url }}">
+<script src="{{ '/web-files/js/dataService.js' | relative_url }}"></script>
 
 <style>
 /* === NOVO PEDIDO INVENTÁRIO - Estrutura consistente === */
@@ -532,6 +533,12 @@ title: Novo Pedido de Inventário
   box-shadow: 0 6px 20px rgba(0,178,118,0.4);
 }
 
+.np-btn-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
 .np-btn-submit svg { width: 18px; height: 18px; }
 
 .np-btn-rascunho {
@@ -818,6 +825,15 @@ title: Novo Pedido de Inventário
 
 .btn-outro-artigo svg { width: 18px; height: 18px; }
 
+/* Loading state */
+.loading-spinner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  color: #64748b;
+}
+
 /* Responsive */
 @media (max-width: 1024px) {
   .np-form-layout { grid-template-columns: 1fr; }
@@ -1023,10 +1039,6 @@ title: Novo Pedido de Inventário
             <label for="unidadeOrganica" class="required">Unidade Orgânica</label>
             <select id="unidadeOrganica" onchange="atualizarResumo()">
               <option value="">Selecione...</option>
-              <option value="DRCP">DRCP - Direção Regional de Contratação Pública</option>
-              <option value="DSI">DSI - Direção de Sistemas de Informação</option>
-              <option value="DRH">DRH - Direção de Recursos Humanos</option>
-              <option value="DAF">DAF - Direção Administrativa e Financeira</option>
             </select>
           </div>
         </div>
@@ -1123,7 +1135,7 @@ title: Novo Pedido de Inventário
 
       <!-- Actions -->
       <div class="np-sidebar-actions">
-        <button type="button" class="np-btn-submit" onclick="submeterPedido()">
+        <button type="button" class="np-btn-submit" id="btnSubmeter" onclick="submeterPedido()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
           </svg>
@@ -1162,10 +1174,6 @@ title: Novo Pedido de Inventário
     <!-- Tabs de Categorias Principais -->
     <div class="modal-tabs-cat" id="modalTabsCat">
       <button class="modal-tab-cat active" data-categoria="todos" onclick="changeTabModal('todos')">Todos</button>
-      <button class="modal-tab-cat" data-categoria="informatica" onclick="changeTabModal('informatica')">💻 Informática</button>
-      <button class="modal-tab-cat" data-categoria="telemoveis" onclick="changeTabModal('telemoveis')">📱 Telemóveis e Telecomunicações</button>
-      <button class="modal-tab-cat" data-categoria="mobiliario" onclick="changeTabModal('mobiliario')">🪑 Mobiliário</button>
-      <button class="modal-tab-cat" data-categoria="economato" onclick="changeTabModal('economato')">📎 Economato</button>
     </div>
     
     <!-- Subcategorias -->
@@ -1174,7 +1182,9 @@ title: Novo Pedido de Inventário
     </div>
     
     <div class="modal-body-cat">
-      <div id="gridArtigos" class="artigos-grid"></div>
+      <div id="gridArtigos" class="artigos-grid">
+        <div class="loading-spinner">A carregar artigos...</div>
+      </div>
     </div>
     
     <div class="modal-footer-cat">
@@ -1232,76 +1242,100 @@ title: Novo Pedido de Inventário
  */
 {% endraw %}
 
-// Estrutura de categorias com subcategorias
-// Em Power Pages: seriam carregadas do FetchXML acima
-const categoriasConfig = {
-  informatica: {
-    nome: 'Informática',
-    subcategorias: [
-      { codigo: 'all', nome: 'Tudo' },
-      { codigo: 'ratos', nome: 'Ratos' },
-      { codigo: 'teclados', nome: 'Teclados' },
-      { codigo: 'monitores', nome: 'Monitores' },
-      { codigo: 'portateis', nome: 'Portáteis' },
-      { codigo: 'outros', nome: 'Outros' }
-    ]
-  },
-  telemoveis: {
-    nome: 'Telemóveis e Telecomunicações',
-    subcategorias: [
-      { codigo: 'all', nome: 'Tudo' },
-      { codigo: 'telemoveis', nome: 'Telemóveis' },
-      { codigo: 'telefones', nome: 'Telefones Fixos' },
-      { codigo: 'headsets', nome: 'Headsets' }
-    ]
-  },
-  mobiliario: { nome: 'Mobiliário', subcategorias: [] },
-  economato: { nome: 'Economato', subcategorias: [] }
-};
-
-// Catálogo de artigos (em Power Pages: viria do FetchXML)
-const catalogoArtigos = [
-  // Informática - Portáteis
-  { nome: 'Portátil Dell Latitude 5520 14" i5 16GB', categoria: 'Informática', subcategoria: 'portateis', codigo: 'INF-001' },
-  { nome: 'Portátil HP EliteBook 15" i7 32GB', categoria: 'Informática', subcategoria: 'portateis', codigo: 'INF-002' },
-  // Informática - Monitores
-  { nome: 'Monitor LG 27" 4K UltraHD', categoria: 'Informática', subcategoria: 'monitores', codigo: 'INF-005' },
-  { nome: 'Monitor Dell 24" Full HD', categoria: 'Informática', subcategoria: 'monitores', codigo: 'INF-006' },
-  // Informática - Ratos
-  { nome: 'Rato Logitech MX Master 3S', categoria: 'Informática', subcategoria: 'ratos', codigo: 'INF-RAT-001' },
-  { nome: 'Rato Microsoft Surface Arc', categoria: 'Informática', subcategoria: 'ratos', codigo: 'INF-RAT-002' },
-  // Informática - Teclados
-  { nome: 'Teclado Logitech K380 Wireless', categoria: 'Informática', subcategoria: 'teclados', codigo: 'INF-TEC-001' },
-  { nome: 'Teclado e Rato Wireless Logitech MK850', categoria: 'Informática', subcategoria: 'teclados', codigo: 'INF-TEC-002' },
-  // Informática - Outros
-  { nome: 'Webcam HD Logitech C920', categoria: 'Informática', subcategoria: 'outros', codigo: 'INF-OUT-001' },
-  { nome: 'Docking Station USB-C', categoria: 'Informática', subcategoria: 'outros', codigo: 'INF-OUT-002' },
-  // Telemóveis
-  { nome: 'Telemóvel Samsung Galaxy S23 128GB', categoria: 'Telemóveis', subcategoria: 'telemoveis', codigo: 'TEL-001' },
-  { nome: 'Telemóvel iPhone 14 256GB', categoria: 'Telemóveis', subcategoria: 'telemoveis', codigo: 'TEL-002' },
-  // Headsets
-  { nome: 'Headset USB Jabra Evolve2 65', categoria: 'Telemóveis', subcategoria: 'headsets', codigo: 'TEL-HEAD-001' },
-  { nome: 'Headset Poly Voyager Focus 2', categoria: 'Telemóveis', subcategoria: 'headsets', codigo: 'TEL-HEAD-002' },
-  // Telefones Fixos
-  { nome: 'Telefone Fixo Cisco IP Phone 8845', categoria: 'Telemóveis', subcategoria: 'telefones', codigo: 'TEL-FIX-001' },
-  // Mobiliário
-  { nome: 'Cadeira Ergonómica Herman Miller', categoria: 'Mobiliário', subcategoria: '', codigo: 'MOB-001' },
-  { nome: 'Secretária Ajustável em Altura 160x80cm', categoria: 'Mobiliário', subcategoria: '', codigo: 'MOB-002' },
-  { nome: 'Estante para Livros 5 Prateleiras', categoria: 'Mobiliário', subcategoria: '', codigo: 'MOB-003' },
-  { nome: 'Apoio para Monitor Ajustável', categoria: 'Mobiliário', subcategoria: '', codigo: 'MOB-004' },
-  // Economato
-  { nome: 'Papel A4 80g (Caixa 5 Resmas)', categoria: 'Economato', subcategoria: '', codigo: 'ECO-001' },
-  { nome: 'Canetas Esferográficas (Pack 10)', categoria: 'Economato', subcategoria: '', codigo: 'ECO-002' },
-  { nome: 'Marcadores Fluorescentes (Pack 4)', categoria: 'Economato', subcategoria: '', codigo: 'ECO-003' },
-  { nome: 'Bloco de Notas A5 Pautado', categoria: 'Economato', subcategoria: '', codigo: 'ECO-004' }
-];
+// ==========================================
+// VARIÁVEIS GLOBAIS
+// ==========================================
 
 let itemSelecionado = null;
 let ficheirosAnexados = [];
 let categoriaAtual = 'todos';
 let subcategoriaAtual = 'all';
 
-// Modal Catálogo
+// Dados carregados da base de dados
+let catalogoArtigos = [];
+let categoriasList = [];
+let departamentosList = [];
+
+// ID do colaborador atual (em produção viria da sessão)
+const COLABORADOR_ID_ATUAL = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
+
+// ==========================================
+// INICIALIZAÇÃO
+// ==========================================
+
+document.addEventListener('DOMContentLoaded', async function() {
+  await carregarDados();
+  atualizarResumo();
+  
+  // Verificar parâmetros URL
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('tipo') === 'devolucao') {
+    // Pré-selecionar tipo de pedido se necessário
+  }
+});
+
+async function carregarDados() {
+  try {
+    // Carregar artigos do catálogo
+    const artigos = await DataService.getArtigosInventario();
+    catalogoArtigos = artigos.map(a => ({
+      id: a.id,
+      codigo: a.codigo,
+      nome: a.nome,
+      descricao: a.descricao,
+      categoria: a.categorias_inventario?.nome || 'Sem Categoria',
+      categoria_id: a.categoria_id
+    }));
+    
+    // Carregar categorias
+    categoriasList = await DataService.getCategoriasInventario();
+    
+    // Carregar departamentos para o dropdown
+    departamentosList = await DataService.getDepartamentos();
+    preencherDropdownDepartamentos();
+    
+    // Atualizar tabs de categorias
+    atualizarTabsCategorias();
+    
+    console.log('[NovoPedido] Dados carregados:', catalogoArtigos.length, 'artigos,', categoriasList.length, 'categorias');
+  } catch (error) {
+    console.error('[NovoPedido] Erro ao carregar dados:', error);
+    showAlert('error', 'Erro ao carregar dados. Por favor recarregue a página.');
+  }
+}
+
+function preencherDropdownDepartamentos() {
+  const select = document.getElementById('unidadeOrganica');
+  select.innerHTML = '<option value="">Selecione...</option>';
+  
+  departamentosList.forEach(dep => {
+    const option = document.createElement('option');
+    option.value = dep.id;
+    option.textContent = dep.codigo ? `${dep.codigo} - ${dep.nome}` : dep.nome;
+    select.appendChild(option);
+  });
+}
+
+function atualizarTabsCategorias() {
+  const tabsContainer = document.getElementById('modalTabsCat');
+  
+  // Manter tab "Todos"
+  let html = '<button class="modal-tab-cat active" data-categoria="todos" onclick="changeTabModal(\'todos\')">Todos</button>';
+  
+  // Adicionar tabs para cada categoria principal
+  const categoriasPrincipais = categoriasList.filter(c => !c.categoria_pai_id);
+  categoriasPrincipais.forEach(cat => {
+    const icone = cat.icone || '📦';
+    html += `<button class="modal-tab-cat" data-categoria="${cat.id}" onclick="changeTabModal('${cat.id}')">${icone} ${cat.nome}</button>`;
+  });
+  
+  tabsContainer.innerHTML = html;
+}
+
+// ==========================================
+// MODAL CATÁLOGO
+// ==========================================
+
 function abrirModalCatalogo() {
   document.getElementById('modalCatalogo').classList.add('show');
   categoriaAtual = 'todos';
@@ -1329,16 +1363,21 @@ function changeTabModal(categoria) {
 function atualizarSubcategorias() {
   const subtabsContainer = document.getElementById('modalSubtabs');
   
-  // Verificar se categoria tem subcategorias
-  const config = categoriasConfig[categoriaAtual];
+  if (categoriaAtual === 'todos') {
+    subtabsContainer.classList.remove('show');
+    subtabsContainer.innerHTML = '';
+    return;
+  }
   
-  if (config && config.subcategorias && config.subcategorias.length > 0) {
+  // Verificar se categoria tem subcategorias
+  const subcategorias = categoriasList.filter(c => c.categoria_pai_id === categoriaAtual);
+  
+  if (subcategorias.length > 0) {
     subtabsContainer.classList.add('show');
     
-    let html = '';
-    config.subcategorias.forEach(sub => {
-      const activeClass = sub.codigo === subcategoriaAtual ? 'active' : '';
-      html += '<button class="subtab-cat-btn ' + activeClass + '" onclick="changeSubcategoria(\'' + sub.codigo + '\')">' + sub.nome + '</button>';
+    let html = '<button class="subtab-cat-btn active" onclick="changeSubcategoria(\'all\')">Tudo</button>';
+    subcategorias.forEach(sub => {
+      html += `<button class="subtab-cat-btn" onclick="changeSubcategoria('${sub.id}')">${sub.nome}</button>`;
     });
     subtabsContainer.innerHTML = html;
   } else {
@@ -1360,22 +1399,23 @@ function changeSubcategoria(subcategoria) {
 function aplicarFiltros() {
   const termo = document.getElementById('searchModal').value.toLowerCase();
   
-  let filtrados = catalogoArtigos;
+  let filtrados = [...catalogoArtigos];
   
   // Filtrar por categoria
   if (categoriaAtual !== 'todos') {
-    const catMap = {
-      informatica: 'Informática',
-      telemoveis: 'Telemóveis',
-      mobiliario: 'Mobiliário',
-      economato: 'Economato'
-    };
-    filtrados = filtrados.filter(a => a.categoria === catMap[categoriaAtual]);
+    filtrados = filtrados.filter(a => {
+      // Verificar se pertence à categoria ou a uma subcategoria dela
+      if (a.categoria_id === categoriaAtual) return true;
+      
+      // Verificar subcategorias
+      const cat = categoriasList.find(c => c.id === a.categoria_id);
+      return cat && cat.categoria_pai_id === categoriaAtual;
+    });
   }
   
   // Filtrar por subcategoria
-  if (subcategoriaAtual !== 'all' && (categoriaAtual === 'informatica' || categoriaAtual === 'telemoveis')) {
-    filtrados = filtrados.filter(a => a.subcategoria === subcategoriaAtual);
+  if (subcategoriaAtual !== 'all') {
+    filtrados = filtrados.filter(a => a.categoria_id === subcategoriaAtual);
   }
   
   // Filtrar por termo de pesquisa
@@ -1402,7 +1442,7 @@ function renderizarArtigos(artigos) {
   }
   
   grid.innerHTML = artigos.map(a => `
-    <div class="artigo-card" onclick="selecionarArtigo('${a.codigo}')">
+    <div class="artigo-card" onclick="selecionarArtigo('${a.id}')">
       <div class="artigo-card-nome">${a.nome}</div>
       <div class="artigo-card-codigo">${a.codigo}</div>
       <div class="artigo-card-categoria">${a.categoria}</div>
@@ -1410,8 +1450,8 @@ function renderizarArtigos(artigos) {
   `).join('');
 }
 
-function selecionarArtigo(codigo) {
-  const artigo = catalogoArtigos.find(a => a.codigo === codigo);
+function selecionarArtigo(id) {
+  const artigo = catalogoArtigos.find(a => a.id === id);
   if (!artigo) return;
   
   itemSelecionado = artigo;
@@ -1429,7 +1469,7 @@ function selecionarArtigo(codigo) {
 }
 
 function selecionarOutroArtigo() {
-  itemSelecionado = { codigo: 'CUSTOM', nome: 'Artigo Personalizado', categoria: 'Outro' };
+  itemSelecionado = { id: null, codigo: 'CUSTOM', nome: 'Artigo Personalizado', categoria: 'Outro' };
   
   document.getElementById('btnAbrirCatalogo').style.display = 'none';
   document.getElementById('itemSelecionado').classList.remove('show');
@@ -1447,11 +1487,18 @@ function removerItemSelecionado() {
   document.getElementById('itemSelecionado').classList.remove('show');
   document.getElementById('itemPersonalizadoSection').classList.remove('show');
   
+  // Limpar campos personalizados
+  document.getElementById('itemNomePersonalizado').value = '';
+  document.getElementById('itemDescricao').value = '';
+  
   atualizarResumo();
   validarFormulario();
 }
 
-// Alocação
+// ==========================================
+// ALOCAÇÃO
+// ==========================================
+
 function toggleAlocacao() {
   const tipo = document.querySelector('input[name="tipoAlocacao"]:checked').value;
   
@@ -1466,7 +1513,10 @@ function toggleAlocacao() {
   atualizarResumo();
 }
 
-// Upload
+// ==========================================
+// UPLOAD DE FICHEIROS
+// ==========================================
+
 function handleFileUpload(event) {
   const files = Array.from(event.target.files);
   
@@ -1521,7 +1571,10 @@ function removerFicheiro(index) {
   atualizarResumo();
 }
 
-// Resumo e Validação
+// ==========================================
+// RESUMO E VALIDAÇÃO
+// ==========================================
+
 function atualizarResumo() {
   let artigoTexto = '-';
   if (itemSelecionado) {
@@ -1590,22 +1643,118 @@ function validarFormulario() {
   return erros.length === 0;
 }
 
-// Ações
-function submeterPedido() {
+// ==========================================
+// RECOLHER DADOS DO FORMULÁRIO
+// ==========================================
+
+function recolherDadosFormulario() {
+  const tipoAlocacao = document.querySelector('input[name="tipoAlocacao"]:checked').value;
+  
+  const dados = {
+    tipo: 'Requisição',
+    solicitante_id: COLABORADOR_ID_ATUAL,
+    quantidade: parseInt(document.getElementById('quantidade').value) || 1,
+    tipo_alocacao: tipoAlocacao,
+    observacoes: document.getElementById('observacoes').value.trim() || null
+  };
+  
+  // Data pretendida
+  const dataPretendida = document.getElementById('dataPretendida').value;
+  if (dataPretendida) {
+    dados.data_pretendida = dataPretendida;
+  }
+  
+  // Artigo
+  if (itemSelecionado) {
+    if (itemSelecionado.codigo === 'CUSTOM') {
+      dados.artigo_personalizado_nome = document.getElementById('itemNomePersonalizado').value.trim();
+      dados.artigo_personalizado_descricao = document.getElementById('itemDescricao').value.trim() || null;
+    } else {
+      dados.artigo_id = itemSelecionado.id;
+    }
+  }
+  
+  // Alocação
+  if (tipoAlocacao === 'unidade') {
+    dados.unidade_organica_id = document.getElementById('unidadeOrganica').value || null;
+  } else if (tipoAlocacao === 'local') {
+    dados.local_especifico = document.getElementById('localEspecifico').value.trim() || null;
+  }
+  
+  return dados;
+}
+
+// ==========================================
+// AÇÕES PRINCIPAIS
+// ==========================================
+
+async function submeterPedido() {
   if (!validarFormulario()) {
     showAlert('error', 'Por favor, corrija os erros no formulário.');
     return;
   }
   
-  showAlert('success', 'Pedido submetido com sucesso!');
+  const btnSubmeter = document.getElementById('btnSubmeter');
+  btnSubmeter.disabled = true;
+  btnSubmeter.innerHTML = '<span>A submeter...</span>';
   
-  setTimeout(() => {
-    window.location.href = '{{ "/inventario" | relative_url }}';
-  }, 2000);
+  try {
+    const dados = recolherDadosFormulario();
+    dados.estado = 'Submetido';
+    
+    console.log('[NovoPedido] A submeter pedido:', dados);
+    
+    const resultado = await DataService.createPedidoInventario(dados);
+    
+    console.log('[NovoPedido] Pedido criado:', resultado);
+    
+    showAlert('success', `Pedido ${resultado.numero_pedido} submetido com sucesso!`);
+    
+    setTimeout(() => {
+      window.location.href = '{{ "/inventario" | relative_url }}';
+    }, 2000);
+    
+  } catch (error) {
+    console.error('[NovoPedido] Erro ao submeter pedido:', error);
+    showAlert('error', 'Erro ao submeter pedido: ' + error.message);
+    
+    btnSubmeter.disabled = false;
+    btnSubmeter.innerHTML = `
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+      </svg>
+      Submeter Pedido
+    `;
+  }
 }
 
-function guardarRascunho() {
-  showAlert('success', 'Rascunho guardado com sucesso!');
+async function guardarRascunho() {
+  // Validação mínima para rascunho
+  if (!itemSelecionado) {
+    showAlert('error', 'Selecione pelo menos um artigo para guardar como rascunho.');
+    return;
+  }
+  
+  try {
+    const dados = recolherDadosFormulario();
+    dados.estado = 'Rascunho';
+    
+    console.log('[NovoPedido] A guardar rascunho:', dados);
+    
+    const resultado = await DataService.createPedidoInventario(dados);
+    
+    console.log('[NovoPedido] Rascunho guardado:', resultado);
+    
+    showAlert('success', `Rascunho ${resultado.numero_pedido} guardado com sucesso!`);
+    
+    setTimeout(() => {
+      window.location.href = '{{ "/inventario" | relative_url }}';
+    }, 2000);
+    
+  } catch (error) {
+    console.error('[NovoPedido] Erro ao guardar rascunho:', error);
+    showAlert('error', 'Erro ao guardar rascunho: ' + error.message);
+  }
 }
 
 function cancelarPedido() {
@@ -1613,6 +1762,10 @@ function cancelarPedido() {
     window.location.href = '{{ "/inventario" | relative_url }}';
   }
 }
+
+// ==========================================
+// UTILITÁRIOS
+// ==========================================
 
 function showAlert(type, message) {
   const container = document.getElementById('alertContainer');
@@ -1628,17 +1781,6 @@ function showAlert(type, message) {
 document.addEventListener('click', function(e) {
   if (e.target.id === 'modalCatalogo') {
     fecharModalCatalogo();
-  }
-});
-
-// Inicialização
-document.addEventListener('DOMContentLoaded', function() {
-  atualizarResumo();
-  
-  // Verificar parâmetros URL
-  const params = new URLSearchParams(window.location.search);
-  if (params.get('tipo') === 'devolucao') {
-    // Pré-selecionar tipo de pedido se necessário
   }
 });
 </script>
