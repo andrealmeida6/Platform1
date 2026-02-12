@@ -30,6 +30,7 @@ title: Inventário
 
 <link rel="stylesheet" href="{{ '/web-files/css/formacao.css' | relative_url }}">
 <script src="{{ '/web-files/js/dataService.js' | relative_url }}"></script>
+<script src="{{ '/web-files/js/authService.js' | relative_url }}"></script>
 
 <style>
 /* === INVENTÁRIO PAGE === */
@@ -148,6 +149,19 @@ title: Inventário
   background: rgba(255, 255, 255, 0.25) !important;
   border-color: rgba(255, 255, 255, 0.5);
   transform: translateY(-2px);
+}
+
+/* Botão Gerir Inventário - Estilo especial para admin */
+.inventario-hero .hero-btn-admin {
+  background: rgba(255, 255, 255, 0.95) !important;
+  color: #7c3aed;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+}
+
+.inventario-hero .hero-btn-admin:hover {
+  background: #ffffff !important;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(124, 58, 237, 0.3);
 }
 
 /* Quick Stats */
@@ -701,6 +715,15 @@ title: Inventário
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
             Pedidos em Curso
           </button>
+          <!-- Botão Gerir Inventário - Visível apenas para Núcleo AFR -->
+          <a href="{{ '/backoffice-inventario' | relative_url }}" class="hero-btn hero-btn-admin" id="btnGerirInventario" style="display: none;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+              <path d="M2 17l10 5 10-5"/>
+              <path d="M2 12l10 5 10-5"/>
+            </svg>
+            Gerir Inventário
+          </a>
         </div>
       </div>
     </div>
@@ -918,31 +941,58 @@ var dadosEmCurso = [];
 var dadosHistorico = [];
 var todosPedidos = [];
 
+// Utilizador atual
+var currentUser = null;
+
 // Estados para classificação
 const ESTADOS_EM_CURSO = ['Rascunho', 'Submetido', 'Em Aprovação', 'Em Preparação', 'Pronto para Levantamento'];
 const ESTADOS_HISTORICO = ['Entregue', 'Devolvido', 'Indeferido', 'Cancelado'];
-
-// ID do colaborador atual - André Borges
-// Em produção, isto viria da sessão autenticada
-const COLABORADOR_ID_ATUAL = 'ab123456-7890-abcd-ef01-234567890abc';
 
 // ==========================================
 // INICIALIZAÇÃO
 // ==========================================
 
 document.addEventListener('DOMContentLoaded', async function() {
-  await carregarDados();
-  atualizarFiltroEstado('atribuidos');
+  await inicializar();
 });
+
+async function inicializar() {
+  try {
+    // Obter utilizador atual via AuthService
+    currentUser = await AuthService.getCurrentUser();
+    console.log('[Inventário] Utilizador atual:', currentUser?.nome, 'ID:', currentUser?.id);
+    
+    // Verificar se utilizador tem role "nucleo" para mostrar botão de gestão
+    if (currentUser && AuthService.isAdmin(currentUser)) {
+      const btnGerir = document.getElementById('btnGerirInventario');
+      if (btnGerir) {
+        btnGerir.style.display = 'inline-flex';
+        console.log('[Inventário] Botão Gerir Inventário visível (utilizador é admin)');
+      }
+    }
+    
+    // Carregar dados do inventário
+    await carregarDados();
+    atualizarFiltroEstado('atribuidos');
+    
+  } catch (error) {
+    console.error('[Inventário] Erro na inicialização:', error);
+  }
+}
 
 async function carregarDados() {
   try {
     console.log('[Inventário] A carregar dados...');
     
+    if (!currentUser || !currentUser.id) {
+      console.error('[Inventário] Utilizador não definido');
+      return;
+    }
+    
     // Carregar atribuições e pedidos em paralelo
     const [atribuicoes, pedidos] = await Promise.all([
-      DataService.getArtigosAtribuidosColaborador(COLABORADOR_ID_ATUAL),
-      DataService.getPedidosInventarioColaborador(COLABORADOR_ID_ATUAL)
+      DataService.getArtigosAtribuidosColaborador(currentUser.id),
+      DataService.getPedidosInventarioColaborador(currentUser.id)
     ]);
     
     console.log('[Inventário] Atribuições carregadas:', atribuicoes);
