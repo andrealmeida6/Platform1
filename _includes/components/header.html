@@ -37,6 +37,13 @@
         </svg>
         <span>Medicina</span>
       </a>
+      <a href="{{ '/finance-hub' | relative_url }}" class="nav-link {% if page.url contains 'finance-hub' or page.url contains 'relatorio-contas' %}active{% endif %}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="1" x2="12" y2="23"/>
+          <path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
+        </svg>
+        <span>Finance Hub</span>
+      </a>
       <a href="{{ '/backoffice' | relative_url }}" class="nav-link nav-link-admin {% if page.url contains 'backoffice' %}active{% endif %}" id="navBackoffice" style="display: none;">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="12" cy="12" r="3"/>
@@ -113,69 +120,32 @@
         </div>
         <div class="user-panel-section-title">Menu Rápido</div>
         <div class="user-actions">
-          <!-- Meu Perfil -->
           <button class="user-action-btn" onclick="openProfile()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"></path>
-              <circle cx="12" cy="7" r="4"></circle>
-            </svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
             Meu Perfil
           </button>
-          
-          <!-- Documentos em Assinatura -->
           <button class="user-action-btn" onclick="openDocumentosAssinatura()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"></path>
-              <polyline points="14 2 14 8 20 8"></polyline>
-              <path d="M12 18v-6"></path>
-              <path d="M9 15l3 3 3-3"></path>
-            </svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="M12 18v-6"></path><path d="M9 15l3 3 3-3"></path></svg>
             Documentos em Assinatura
           </button>
-          
-          <!-- Aprovação de Deslocações -->
           <button class="user-action-btn" onclick="openAprovacaoDeslocacoes()" id="btnAprovacoes" style="display: none;">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="20 6 9 17 4 12"></polyline>
-            </svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
             Aprovação de Deslocações
           </button>
-          
-          <!-- Pedidos de Deslocações -->
           <button class="user-action-btn" onclick="openPedidosDeslocacoes()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="10"></circle>
-              <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
-            </svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>
             Pedidos de Deslocações
           </button>
-          
-          <!-- Boletins de Itinerário -->
           <button class="user-action-btn" onclick="openBoletinsItinerario()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"></path>
-              <polyline points="14 2 14 8 20 8"></polyline>
-              <line x1="16" y1="13" x2="8" y2="13"></line>
-              <line x1="16" y1="17" x2="8" y2="17"></line>
-              <polyline points="10 9 9 9 8 9"></polyline>
-            </svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
             Boletins de Itinerário
           </button>
-          
-          <!-- Pedir Reembolsos -->
           <button class="user-action-btn" onclick="openPedirReembolsos()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
-              <line x1="1" y1="10" x2="23" y2="10"></line>
-            </svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
             Pedir Reembolsos
           </button>
-          
-          <!-- Medicina no Trabalho -->
           <button class="user-action-btn" onclick="openMedicinaTrabaho()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"></path>
-            </svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"></path></svg>
             Medicina no Trabalho
           </button>
         </div>
@@ -185,277 +155,23 @@
 </header>
 
 <script>
-// Variável para armazenar o ID do utilizador atual
 var loggedUserCurrentId = null;
-
-// Toggle do painel do utilizador
-function toggleUserPanel(event) {
-  event.stopPropagation();
-  var panel = document.getElementById('userPanel');
-  if (panel) {
-    panel.classList.toggle('show');
-  }
-}
-
-// Fechar painel quando clicar fora
-document.addEventListener('click', function(event) {
-  var panel = document.getElementById('userPanel');
-  var wrapper = document.querySelector('.header-user-wrapper');
-  if (panel && wrapper && !wrapper.contains(event.target)) {
-    panel.classList.remove('show');
-  }
-});
-
-// Funções de navegação do User Panel
-function openProfile() {
-  if (loggedUserCurrentId) {
-    window.location.href = '{{ "/perfil" | relative_url }}?id=' + loggedUserCurrentId;
-  }
-  closeUserPanel();
-}
-
-function openDocumentosAssinatura() {
-  // TODO: Implementar página de documentos em assinatura
-  window.location.href = '{{ "/documentos-assinatura" | relative_url }}';
-  closeUserPanel();
-}
-
-function openAprovacaoDeslocacoes() {
-  window.location.href = '{{ "/deslocacoes" | relative_url }}';
-  closeUserPanel();
-}
-
-function openPedidosDeslocacoes() {
-  window.location.href = '{{ "/deslocacoes" | relative_url }}';
-  closeUserPanel();
-}
-
-function openBoletinsItinerario() {
-  window.location.href = '{{ "/deslocacoes" | relative_url }}';
-  closeUserPanel();
-}
-
-function openPedirReembolsos() {
-  // Abrir modal de reembolso se existir, senão navegar
-  if (typeof openModal === 'function') {
-    openModal('modalReembolso');
-  } else {
-    window.location.href = '{{ "/reembolsos" | relative_url }}';
-  }
-  closeUserPanel();
-}
-
-function openMedicinaTrabaho() {
-  window.location.href = '{{ "/medicina-trabalho" | relative_url }}';
-  closeUserPanel();
-}
-
-function closeUserPanel() {
-  var panel = document.getElementById('userPanel');
-  if (panel) {
-    panel.classList.remove('show');
-  }
-}
-
-// Atualizar UI do header com dados do utilizador
-function updateHeaderUserUI(user) {
-  if (!user) return;
-  
-  console.log('[Header] A atualizar UI com:', user.nome);
-  
-  // Guardar ID do utilizador
-  loggedUserCurrentId = user.id;
-  
-  const userName = document.getElementById('userName');
-  const userRole = document.getElementById('userRole');
-  const userAvatar = document.getElementById('userAvatar');
-  const panelUserName = document.getElementById('panelUserName');
-  const panelUserRole = document.getElementById('panelUserRole');
-  
-  const nome = user.nome || 'Utilizador';
-  const roles = user.roles || [];
-  const roleNames = roles.map(r => r.codigo || r.nome).join(', ');
-  const rolePrimario = roles.length > 0 ? (roles[0].codigo || roles[0].nome) : 'Sem role';
-  
-  if (userName) {
-    userName.textContent = nome;
-  }
-  
-  if (userRole) {
-    userRole.textContent = roleNames || 'Sem role';
-  }
-  
-  if (userAvatar) {
-    const initials = nome.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
-    userAvatar.innerHTML = '<span>' + initials + '</span>';
-  }
-  
-  // Atualizar painel
-  if (panelUserName) {
-    panelUserName.textContent = nome;
-  }
-  
-  if (panelUserRole) {
-    panelUserRole.textContent = rolePrimario;
-  }
-  
-  // Mostrar botão de aprovações se tiver permissão
-  var btnAprovacoes = document.getElementById('btnAprovacoes');
-  if (btnAprovacoes) {
-    // Verificar se pode aprovar (dirigente, núcleo, admin)
-    var canApprove = roles.some(function(r) {
-      var codigo = (r.codigo || '').toLowerCase();
-      return codigo === 'nucleo' || codigo === 'afr_dirigente' || codigo === 'admin';
-    });
-    btnAprovacoes.style.display = canApprove ? 'flex' : 'none';
-  }
-}
-
-// Popula o seletor "Ver como"
-async function initViewAsSelector() {
-  // Aguardar que DataService esteja disponível
-  if (typeof DataService === 'undefined' || typeof AuthService === 'undefined') {
-    console.log('[Header] Aguardando serviços...');
-    setTimeout(initViewAsSelector, 100);
-    return;
-  }
-  
-  try {
-    console.log('[Header] Inicializando...');
-    
-    const realUser = await AuthService.getRealUser();
-    const currentUser = await AuthService.getCurrentUser();
-    
-    console.log('[Header] Utilizador atual:', currentUser?.nome);
-    
-    // Atualizar info do utilizador no header
-    if (currentUser) {
-      updateHeaderUserUI(currentUser);
-    }
-    
-    // Verificar se utilizador real pode usar "Ver como" (apenas admin)
-    if (realUser && AuthService.isAdmin(realUser)) {
-      const container = document.getElementById('viewAsContainer');
-      const select = document.getElementById('viewAsSelect');
-      const navBackoffice = document.getElementById('navBackoffice');
-      const navConfigTema = document.getElementById('navConfigTema');
-      
-      if (container && select) {
-        container.style.display = 'flex';
-        
-        // Carregar colaboradores
-        const colaboradores = await AuthService.getColaboradoresComRoles();
-        console.log('[Header] Colaboradores carregados:', colaboradores.length);
-        
-        // Limpar opções existentes (exceto a primeira)
-        while (select.options.length > 1) {
-          select.remove(1);
-        }
-        
-        colaboradores.forEach(function(c) {
-          var option = document.createElement('option');
-          option.value = c.id;
-          var roleNames = (c.roles || []).map(function(r) { return r.codigo; }).join(', ');
-          option.textContent = c.nome + ' (' + (roleNames || 'sem role') + ')';
-          if (AuthService.isViewAsActive() && currentUser && c.id === currentUser.id) {
-            option.selected = true;
-          }
-          select.appendChild(option);
-        });
-        
-        // Adicionar event listener
-        select.onchange = function() {
-          handleViewAsChange(this.value);
-        };
-        
-        // Mostrar indicador se "Ver como" está ativo
-        updateViewAsIndicator();
-      }
-      
-      // Mostrar link do backoffice
-      if (navBackoffice) {
-        navBackoffice.style.display = 'flex';
-      }
-      
-      // Mostrar link de configuração de tema
-      if (navConfigTema) {
-        navConfigTema.style.display = 'flex';
-      }
-    }
-    
-    // Mostrar backoffice se utilizador atual tem permissão
-    if (currentUser && AuthService.canAccessBackoffice(currentUser)) {
-      var navBackoffice = document.getElementById('navBackoffice');
-      if (navBackoffice) {
-        navBackoffice.style.display = 'flex';
-      }
-    }
-    
-    // Mostrar config tema se utilizador atual tem permissão de gestão de formações (ou admin)
-    if (currentUser && (AuthService.isAdmin(currentUser) || AuthService.canAccessFormacaoManagement(currentUser))) {
-      var navConfigTema = document.getElementById('navConfigTema');
-      if (navConfigTema) {
-        navConfigTema.style.display = 'flex';
-      }
-    }
-    
-    // Setup do botão clear
-    var clearBtn = document.getElementById('viewAsClear');
-    if (clearBtn) {
-      clearBtn.onclick = handleClearViewAs;
-    }
-    
-    console.log('[Header] Inicializado com sucesso');
-    
-  } catch (error) {
-    console.error('[Header] Erro ao inicializar:', error);
-  }
-}
-
-function updateViewAsIndicator() {
-  var indicator = document.getElementById('viewAsIndicator');
-  var clearBtn = document.getElementById('viewAsClear');
-  var viewAsName = document.getElementById('viewAsName');
-  
-  if (AuthService.isViewAsActive()) {
-    var viewAsUser = AuthService.getViewAsUser();
-    if (viewAsUser && indicator && viewAsName) {
-      indicator.style.display = 'flex';
-      viewAsName.textContent = viewAsUser.nome;
-    }
-    if (clearBtn) clearBtn.style.display = 'flex';
-  } else {
-    if (indicator) indicator.style.display = 'none';
-    if (clearBtn) clearBtn.style.display = 'none';
-  }
-}
-
-async function handleViewAsChange(colaboradorId) {
-  if (colaboradorId) {
-    await AuthService.setViewAs(colaboradorId);
-  } else {
-    AuthService.clearViewAs();
-  }
-  
-  // Recarregar página para aplicar novas permissões
-  window.location.reload();
-}
-
-function handleClearViewAs() {
-  AuthService.clearViewAs();
-  window.location.reload();
-}
-
-// Escutar evento de mudança de utilizador
-document.addEventListener('userChanged', function(event) {
-  console.log('[Header] Evento userChanged recebido');
-  if (event.detail && event.detail.user) {
-    updateHeaderUserUI(event.detail.user);
-    updateViewAsIndicator();
-  }
-});
-
-// Expor para uso global
+function toggleUserPanel(event) { event.stopPropagation(); var panel = document.getElementById('userPanel'); if (panel) panel.classList.toggle('show'); }
+document.addEventListener('click', function(event) { var panel = document.getElementById('userPanel'); var wrapper = document.querySelector('.header-user-wrapper'); if (panel && wrapper && !wrapper.contains(event.target)) panel.classList.remove('show'); });
+function openProfile() { if (loggedUserCurrentId) window.location.href = '{{ "/perfil" | relative_url }}?id=' + loggedUserCurrentId; closeUserPanel(); }
+function openDocumentosAssinatura() { window.location.href = '{{ "/documentos-assinatura" | relative_url }}'; closeUserPanel(); }
+function openAprovacaoDeslocacoes() { window.location.href = '{{ "/deslocacoes" | relative_url }}'; closeUserPanel(); }
+function openPedidosDeslocacoes() { window.location.href = '{{ "/deslocacoes" | relative_url }}'; closeUserPanel(); }
+function openBoletinsItinerario() { window.location.href = '{{ "/deslocacoes" | relative_url }}'; closeUserPanel(); }
+function openPedirReembolsos() { if (typeof openModal === 'function') openModal('modalReembolso'); else window.location.href = '{{ "/reembolsos" | relative_url }}'; closeUserPanel(); }
+function openMedicinaTrabaho() { window.location.href = '{{ "/medicina-trabalho" | relative_url }}'; closeUserPanel(); }
+function closeUserPanel() { var panel = document.getElementById('userPanel'); if (panel) panel.classList.remove('show'); }
+function updateHeaderUserUI(user) { if (!user) return; loggedUserCurrentId = user.id; var userName = document.getElementById('userName'); var userRole = document.getElementById('userRole'); var userAvatar = document.getElementById('userAvatar'); var panelUserName = document.getElementById('panelUserName'); var panelUserRole = document.getElementById('panelUserRole'); var nome = user.nome || 'Utilizador'; var roles = user.roles || []; var roleNames = roles.map(function(r){return r.codigo||r.nome}).join(', '); var rolePrimario = roles.length > 0 ? (roles[0].codigo || roles[0].nome) : 'Sem role'; if (userName) userName.textContent = nome; if (userRole) userRole.textContent = roleNames || 'Sem role'; if (userAvatar) { var initials = nome.split(' ').map(function(n){return n[0]}).slice(0,2).join('').toUpperCase(); userAvatar.innerHTML = '<span>' + initials + '</span>'; } if (panelUserName) panelUserName.textContent = nome; if (panelUserRole) panelUserRole.textContent = rolePrimario; var btnAprovacoes = document.getElementById('btnAprovacoes'); if (btnAprovacoes) { var canApprove = roles.some(function(r){ var codigo = (r.codigo||'').toLowerCase(); return codigo==='nucleo'||codigo==='afr_dirigente'||codigo==='admin'; }); btnAprovacoes.style.display = canApprove ? 'flex' : 'none'; } }
+async function initViewAsSelector() { if (typeof DataService === 'undefined' || typeof AuthService === 'undefined') { setTimeout(initViewAsSelector, 100); return; } try { var realUser = await AuthService.getRealUser(); var currentUser = await AuthService.getCurrentUser(); if (currentUser) updateHeaderUserUI(currentUser); if (realUser && AuthService.isAdmin(realUser)) { var container = document.getElementById('viewAsContainer'); var select = document.getElementById('viewAsSelect'); var navBackoffice = document.getElementById('navBackoffice'); var navConfigTema = document.getElementById('navConfigTema'); if (container && select) { container.style.display = 'flex'; var colaboradores = await AuthService.getColaboradoresComRoles(); while (select.options.length > 1) select.remove(1); colaboradores.forEach(function(c){ var option = document.createElement('option'); option.value = c.id; var rn = (c.roles||[]).map(function(r){return r.codigo}).join(', '); option.textContent = c.nome + ' (' + (rn||'sem role') + ')'; if (AuthService.isViewAsActive() && currentUser && c.id === currentUser.id) option.selected = true; select.appendChild(option); }); select.onchange = function(){ handleViewAsChange(this.value); }; updateViewAsIndicator(); } if (navBackoffice) navBackoffice.style.display = 'flex'; if (navConfigTema) navConfigTema.style.display = 'flex'; } if (currentUser && AuthService.canAccessBackoffice(currentUser)) { var nb = document.getElementById('navBackoffice'); if (nb) nb.style.display = 'flex'; } if (currentUser && (AuthService.isAdmin(currentUser) || AuthService.canAccessFormacaoManagement(currentUser))) { var nt = document.getElementById('navConfigTema'); if (nt) nt.style.display = 'flex'; } var clearBtn = document.getElementById('viewAsClear'); if (clearBtn) clearBtn.onclick = handleClearViewAs; } catch (error) { console.error('[Header] Erro:', error); } }
+function updateViewAsIndicator() { var indicator = document.getElementById('viewAsIndicator'); var clearBtn = document.getElementById('viewAsClear'); var viewAsName = document.getElementById('viewAsName'); if (AuthService.isViewAsActive()) { var viewAsUser = AuthService.getViewAsUser(); if (viewAsUser && indicator && viewAsName) { indicator.style.display = 'flex'; viewAsName.textContent = viewAsUser.nome; } if (clearBtn) clearBtn.style.display = 'flex'; } else { if (indicator) indicator.style.display = 'none'; if (clearBtn) clearBtn.style.display = 'none'; } }
+async function handleViewAsChange(colaboradorId) { if (colaboradorId) await AuthService.setViewAs(colaboradorId); else AuthService.clearViewAs(); window.location.reload(); }
+function handleClearViewAs() { AuthService.clearViewAs(); window.location.reload(); }
+document.addEventListener('userChanged', function(event) { if (event.detail && event.detail.user) { updateHeaderUserUI(event.detail.user); updateViewAsIndicator(); } });
 window.initViewAsSelector = initViewAsSelector;
 window.updateHeaderUserUI = updateHeaderUserUI;
 window.loggedUserCurrentId = loggedUserCurrentId;
