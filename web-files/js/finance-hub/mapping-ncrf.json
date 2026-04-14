@@ -1,0 +1,97 @@
+{
+  "versao": "1.0",
+  "normativo": "NCRF",
+  "balanco": {
+    "ativo_nao_corrente": [
+      { "id": "AFT", "nome": "Ativos fixos tangíveis", "contas_debito": ["431","432","433","434","435","436","437"], "contas_subtrair": ["438","439"] },
+      { "id": "PI", "nome": "Propriedades de investimento", "contas_debito": ["421","422","423","424","425","426","427","428"], "contas_subtrair": ["429"] },
+      { "id": "AI", "nome": "Ativos intangíveis", "contas_debito": ["441","442","443","444","445","446","447"], "contas_subtrair": ["448","449"] },
+      { "id": "IF", "nome": "Investimentos financeiros", "contas_debito": ["411","412","413","414","415","419"], "contas_subtrair": [] },
+      { "id": "AID", "nome": "Ativos por impostos diferidos", "contas_debito": ["2741"], "contas_subtrair": [] }
+    ],
+    "ativo_corrente": [
+      { "id": "INV", "nome": "Inventários", "contas_debito": ["32","33","34","35","36"], "contas_subtrair": ["325","329","339","349","359","369"] },
+      { "id": "CLI", "nome": "Clientes", "contas_debito": ["211","212","218"], "contas_subtrair": ["219"] },
+      { "id": "ADEST", "nome": "Adiantamentos a fornecedores", "contas_debito": ["228","229"], "contas_subtrair": [] },
+      { "id": "EOEP_A", "nome": "Estado e outros entes públicos", "contas_debito": ["2411","2412","2413","2414","243","2451","2461"], "contas_subtrair": [] },
+      { "id": "OAR", "nome": "Outras contas a receber", "contas_debito": ["263","268","269","278","2721"], "contas_subtrair": [] },
+      { "id": "DIF_A", "nome": "Diferimentos", "contas_debito": ["281"], "contas_subtrair": [] },
+      { "id": "AFNCD", "nome": "Ativos financeiros detidos para negociação", "contas_debito": ["14"], "contas_subtrair": [] },
+      { "id": "OAF", "nome": "Outros ativos financeiros", "contas_debito": ["1421","1422","143"], "contas_subtrair": [] },
+      { "id": "ANCD", "nome": "Ativos não correntes detidos para venda", "contas_debito": ["46"], "contas_subtrair": [] },
+      { "id": "CAIXA", "nome": "Caixa e depósitos bancários", "contas_debito": ["11","12","13"], "contas_subtrair": [] }
+    ],
+    "capital_proprio": [
+      { "id": "CR", "nome": "Capital realizado", "contas_credito": ["511","512"], "contas_subtrair": ["521","522"] },
+      { "id": "AP", "nome": "Ações (quotas) próprias", "contas_debito_negativo": ["521","522"], "contas_credito": [], "contas_subtrair": [] },
+      { "id": "OP", "nome": "Outros instrumentos de capital próprio", "contas_credito": ["53"], "contas_subtrair": [] },
+      { "id": "PE", "nome": "Prémios de emissão", "contas_credito": ["54"], "contas_subtrair": [] },
+      { "id": "RES", "nome": "Reservas", "contas_credito": ["551","552","553","554","555","556","557","558"], "contas_subtrair": [] },
+      { "id": "RT", "nome": "Resultados transitados", "tipo": "liquido", "contas_credito": ["56"], "contas_subtrair": [] },
+      { "id": "EXC_REAV", "nome": "Excedentes de revalorização", "contas_credito": ["58"], "contas_subtrair": [] },
+      { "id": "AJ_AF", "nome": "Ajustamentos em ativos financeiros", "tipo": "liquido", "contas_credito": ["571"], "contas_subtrair": [] },
+      { "id": "OAR_CP", "nome": "Outras variações no capital próprio", "tipo": "liquido", "contas_credito": ["59"], "contas_subtrair": [] },
+      { "id": "RLP", "nome": "Resultado líquido do período", "tipo": "calculado", "fonte": "dr" }
+    ],
+    "passivo_nao_corrente": [
+      { "id": "PNC_FIN", "nome": "Financiamentos obtidos", "contas_credito": ["2511","2512","2513","2521","2522"], "contas_subtrair": [] },
+      { "id": "PNC_ID", "nome": "Passivos por impostos diferidos", "contas_credito": ["2742"], "contas_subtrair": [] },
+      { "id": "PNC_PROV", "nome": "Provisões", "contas_credito": ["291","292","293","294","295","296","297","298"], "contas_subtrair": [] },
+      { "id": "PNC_OCP", "nome": "Outras contas a pagar", "contas_credito": ["237","2711","2712"], "contas_subtrair": [] }
+    ],
+    "passivo_corrente": [
+      { "id": "PC_FORN", "nome": "Fornecedores", "contas_credito": ["221","222","225"], "contas_subtrair": [] },
+      { "id": "PC_AD_CLI", "nome": "Adiantamentos de clientes", "contas_credito": ["218","276"], "contas_subtrair": [] },
+      { "id": "PC_EOEP", "nome": "Estado e outros entes públicos", "contas_credito": ["2421","2422","2431","2432","2441","2442","2443","245","246"], "contas_subtrair": [] },
+      { "id": "PC_FIN", "nome": "Financiamentos obtidos", "contas_credito": ["2311","2312","2313","2321","2322"], "contas_subtrair": [] },
+      { "id": "PC_OCP", "nome": "Outras contas a pagar", "contas_credito": ["238","262","268","2722","278"], "contas_subtrair": [] },
+      { "id": "PC_DIF", "nome": "Diferimentos", "contas_credito": ["282"], "contas_subtrair": [] }
+    ]
+  },
+  "demonstracao_resultados": [
+    { "id": "VN", "nome": "Vendas e serviços prestados", "contas_credito": ["71","72"], "tipo": "rendimento" },
+    { "id": "SUB_EXP", "nome": "Subsídios à exploração", "contas_credito": ["7511","7512"], "tipo": "rendimento" },
+    { "id": "GINV", "nome": "Ganhos/perdas imputados de subsidiárias", "contas_credito": ["7851","7852","6851","6852"], "tipo": "liquido" },
+    { "id": "VINV", "nome": "Variação nos inventários da produção", "contas_credito": ["73"], "tipo": "liquido" },
+    { "id": "TPE", "nome": "Trabalhos para a própria entidade", "contas_credito": ["74"], "tipo": "rendimento" },
+    { "id": "CMVMC", "nome": "Custo das mercadorias vendidas e das matérias consumidas", "contas_debito": ["61"], "tipo": "gasto" },
+    { "id": "FSE", "nome": "Fornecimentos e serviços externos", "contas_debito": ["62"], "tipo": "gasto" },
+    { "id": "GP", "nome": "Gastos com o pessoal", "contas_debito": ["63"], "tipo": "gasto" },
+    { "id": "IMP_PR", "nome": "Imparidade de inventários (perdas/reversões)", "contas_debito": ["651","652","653","654","655","656","657","658","659"], "contas_credito_reverter": ["7611","7612","7613","7614","7615","7616","7617","7618","7619"], "tipo": "gasto_liquido" },
+    { "id": "IMP_DA", "nome": "Imparidade de dívidas a receber (perdas/reversões)", "contas_debito": ["651","652"], "contas_credito_reverter": ["7621","7622"], "tipo": "gasto_liquido" },
+    { "id": "PROV", "nome": "Provisões (aumentos/reduções)", "contas_debito": ["671","672","673","674","675","676","677","678","679"], "contas_credito_reverter": ["7631","7632","7633","7634","7635","7636","7637","7638","7639","771"], "tipo": "gasto_liquido" },
+    { "id": "ORI", "nome": "Outros rendimentos e ganhos", "contas_credito": ["78"], "tipo": "rendimento" },
+    { "id": "OGP", "nome": "Outros gastos e perdas", "contas_debito": ["68"], "tipo": "gasto" },
+    { "id": "DA", "nome": "Gastos/reversões de depreciação e de amortização", "contas_debito": ["64"], "contas_credito_reverter": ["762","763"], "tipo": "gasto_liquido" },
+    { "id": "IMP_INV", "nome": "Imparidade de investimentos não depreciáveis/amortizáveis", "contas_debito": ["655","656"], "contas_credito_reverter": ["7625","7626"], "tipo": "gasto_liquido" },
+    { "id": "JRO", "nome": "Juros e rendimentos similares obtidos", "contas_credito": ["7911","7912","7913"], "tipo": "rendimento" },
+    { "id": "JGS", "nome": "Juros e gastos similares suportados", "contas_debito": ["6911","6912","6913"], "tipo": "gasto" },
+    { "id": "IRC", "nome": "Imposto sobre o rendimento do período", "contas_debito": ["8121"], "contas_credito_reverter": ["8122"], "tipo": "gasto_liquido" }
+  ],
+  "subtotais_dr": [
+    { "id": "EBITDA", "nome": "EBITDA", "formula": "VN + SUB_EXP + GINV + VINV + TPE - CMVMC - FSE - GP - IMP_PR - IMP_DA - PROV + ORI - OGP" },
+    { "id": "EBIT", "nome": "Resultado operacional (EBIT)", "formula": "EBITDA - DA - IMP_INV" },
+    { "id": "RAI", "nome": "Resultado antes de impostos", "formula": "EBIT + JRO - JGS" },
+    { "id": "RL", "nome": "Resultado líquido do período", "formula": "RAI - IRC" }
+  ],
+  "fluxos_caixa": {
+    "operacionais": { "base": "RL", "ajustamentos_nao_monetarios": [{ "id": "FC_DA", "nome": "Depreciações e amortizações", "fonte": "DA", "sinal": "+" },{ "id": "FC_IMP", "nome": "Imparidades", "fonte": "IMP_PR", "sinal": "+" },{ "id": "FC_PROV", "nome": "Provisões", "fonte": "PROV", "sinal": "+" }], "variacao_capital_circulante": [{ "id": "FC_INV", "nome": "Variação de inventários", "rubrica": "INV", "sinal": "inverso" },{ "id": "FC_CLI", "nome": "Variação de clientes", "rubrica": "CLI", "sinal": "inverso" },{ "id": "FC_FORN", "nome": "Variação de fornecedores", "rubrica": "PC_FORN", "sinal": "direto" },{ "id": "FC_EOEP", "nome": "Variação Estado e outros entes públicos", "rubrica_ativo": "EOEP_A", "rubrica_passivo": "PC_EOEP", "sinal": "liquido" },{ "id": "FC_OCC", "nome": "Outras variações do capital circulante", "rubrica_ativo": "OAR", "rubrica_passivo": "PC_OCP", "sinal": "liquido" }] },
+    "investimento": { "itens": [{ "id": "FC_AFT", "nome": "Ativos fixos tangíveis", "contas": ["43"], "tipo": "variacao" },{ "id": "FC_AI", "nome": "Ativos intangíveis", "contas": ["44"], "tipo": "variacao" },{ "id": "FC_IF", "nome": "Investimentos financeiros", "contas": ["41"], "tipo": "variacao" },{ "id": "FC_PI", "nome": "Propriedades de investimento", "contas": ["42"], "tipo": "variacao" }] },
+    "financiamento": { "itens": [{ "id": "FC_FIN", "nome": "Financiamentos obtidos", "contas": ["23","25"], "tipo": "variacao" },{ "id": "FC_CAP", "nome": "Realizações de capital", "contas": ["51","52","53","54"], "tipo": "variacao_cp" },{ "id": "FC_DIV", "nome": "Distribuições de dividendos", "contas": ["264"], "tipo": "variacao" }] },
+    "verificacao_caixa": ["11","12","13"]
+  },
+  "indicadores": [
+    { "id": "AUT_FIN", "nome": "Autonomia Financeira", "numerador": "capital_proprio", "denominador": "ativo_total", "formato": "percentagem" },
+    { "id": "SOLV", "nome": "Solvabilidade", "numerador": "capital_proprio", "denominador": "passivo_total", "formato": "percentagem" },
+    { "id": "LIQ_G", "nome": "Liquidez Geral", "numerador": "ativo_corrente", "denominador": "passivo_corrente", "formato": "racio" },
+    { "id": "LIQ_R", "nome": "Liquidez Reduzida", "numerador": "ativo_corrente_sem_inv", "denominador": "passivo_corrente", "formato": "racio" },
+    { "id": "EBITDA_IND", "nome": "EBITDA", "formula": "EBITDA", "formato": "valor" },
+    { "id": "MARG_EBITDA", "nome": "Margem EBITDA", "numerador": "EBITDA", "denominador": "VN", "formato": "percentagem" },
+    { "id": "MARG_LIQ", "nome": "Margem Líquida", "numerador": "RL", "denominador": "VN", "formato": "percentagem" },
+    { "id": "ROE", "nome": "ROE", "numerador": "RL", "denominador": "capital_proprio", "formato": "percentagem" },
+    { "id": "ROA", "nome": "ROA", "numerador": "EBIT", "denominador": "ativo_total", "formato": "percentagem" },
+    { "id": "PMR", "nome": "Prazo Médio de Recebimentos", "numerador": "CLI", "denominador": "VN_IVA", "multiplicador": 365, "formato": "dias" },
+    { "id": "PMP", "nome": "Prazo Médio de Pagamentos", "numerador": "PC_FORN", "denominador": "COMPRAS_IVA", "multiplicador": 365, "formato": "dias" },
+    { "id": "FM", "nome": "Fundo de Maneio", "formula": "ativo_corrente - passivo_corrente", "formato": "valor" }
+  ]
+}
