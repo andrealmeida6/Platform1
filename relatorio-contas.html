@@ -17,8 +17,8 @@ e Entity Forms para os campos de input.
 
 <!-- CDN: SheetJS para leitura de Excel -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<!-- CDN: docx.js para geração de Word -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/docx/8.5.0/docx.js"></script>
+<!-- CDN: docx.js para geração de Word (unpkg - recomendado pela documentação oficial) -->
+<script src="https://unpkg.com/docx@9.1.0/build/index.js"></script>
 
 <!-- Input de ficheiro FORA do drop zone para evitar propagação de eventos -->
 <input type="file" id="excelFile" accept=".xlsx,.xls" style="display: none;">
