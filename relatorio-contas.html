@@ -4,12 +4,7 @@ title: Gerador de Relatório e Contas
 ---
 
 {% raw %}
-<!-- Compatibilidade Power Pages:
-{% comment %}
-Em Power Pages, esta ferramenta utilizaria Web Resources para os ficheiros JS
-e Entity Forms para os campos de input.
-{% endcomment %}
--->
+<!-- Compatibilidade Power Pages -->
 {% endraw %}
 
 <meta name="baseurl" content="{{ site.baseurl }}">
@@ -17,10 +12,10 @@ e Entity Forms para os campos de input.
 
 <!-- CDN: SheetJS para leitura de Excel -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<!-- CDN: docx.js para geração de Word (unpkg - recomendado pela documentação oficial) -->
-<script src="https://unpkg.com/docx@9.1.0/build/index.js"></script>
+<!-- CDN: docx.js para geração de Word (jsdelivr - fiável e rápido) -->
+<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.js"></script>
 
-<!-- Input de ficheiro FORA do drop zone para evitar propagação de eventos -->
+<!-- Input de ficheiro FORA do drop zone -->
 <input type="file" id="excelFile" accept=".xlsx,.xls" style="display: none;">
 
 <div class="rc-page">
@@ -93,7 +88,7 @@ e Entity Forms para os campos de input.
     </div>
     <div class="rc-section">
       <h2 class="rc-section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Notas do Anexo (Input Manual)</h2>
-      <p style="font-size: 0.85rem; color: var(--text-secondary, #6b7280); margin: 0 0 1rem;">Campos em branco aparecerão como <span style="color: #ef4444; font-style: italic;">[A preencher]</span> no Word. Os textos são guardados no browser.</p>
+      <p style="font-size: 0.85rem; color: var(--text-secondary, #6b7280); margin: 0 0 1rem;">Campos em branco aparecerão como <span style="color: #ef4444; font-style: italic;">[A preencher]</span> no Word gerado.</p>
       <div class="rc-form-group" style="margin-bottom: 1rem;"><label>3. Descrição da Atividade</label><textarea class="rc-textarea" id="notaDescricaoAtividade" rows="3" placeholder="Breve descrição da atividade desenvolvida no período..."></textarea></div>
       <div class="rc-form-group" style="margin-bottom: 1rem;"><label>4. Eventos Relevantes do Período</label><textarea class="rc-textarea" id="notaEventosRelevantes" rows="3" placeholder="Acontecimentos com impacto relevante..."></textarea></div>
       <div class="rc-form-group" style="margin-bottom: 1rem;"><label>5. Eventos Após a Data de Balanço</label><textarea class="rc-textarea" id="notaEventosPosBalanco" rows="3" placeholder="Factos ocorridos após 31/12..."></textarea></div>

@@ -19,26 +19,41 @@ var RCApp = (function() {
         setupFormListeners();
         loadFromLocalStorage();
         showStep(1);
+        // Verificar se docx.js carregou
+        setTimeout(function() {
+            if (!window.docx) {
+                console.warn('[RC App] AVISO: docx.js não detectada após 5s. A geração de Word pode falhar.');
+            } else {
+                console.log('[RC App] docx.js detectada: v' + (window.docx.version || 'desconhecida'));
+            }
+        }, 5000);
     }
 
     function setupFileUpload() {
         var dropZone = document.getElementById('dropZone');
         var fileInput = document.getElementById('excelFile');
-        if (!dropZone || !fileInput) return;
-        dropZone.addEventListener('click', function() { fileInput.click(); });
-        dropZone.addEventListener('dragover', function(e) { e.preventDefault(); dropZone.classList.add('drag-over'); });
-        dropZone.addEventListener('dragleave', function() { dropZone.classList.remove('drag-over'); });
-        dropZone.addEventListener('drop', function(e) { e.preventDefault(); dropZone.classList.remove('drag-over'); if (e.dataTransfer.files.length > 0) handleFile(e.dataTransfer.files[0]); });
+        if (!dropZone || !fileInput) { console.error('[RC App] dropZone ou excelFile não encontrado!'); return; }
+        dropZone.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            fileInput.click();
+        });
+        dropZone.addEventListener('dragover', function(e) { e.preventDefault(); e.stopPropagation(); dropZone.classList.add('drag-over'); });
+        dropZone.addEventListener('dragleave', function(e) { e.preventDefault(); dropZone.classList.remove('drag-over'); });
+        dropZone.addEventListener('drop', function(e) { e.preventDefault(); e.stopPropagation(); dropZone.classList.remove('drag-over'); if (e.dataTransfer.files.length > 0) handleFile(e.dataTransfer.files[0]); });
         fileInput.addEventListener('change', function(e) { if (e.target.files.length > 0) handleFile(e.target.files[0]); });
+        console.log('[RC App] Upload configurado com sucesso');
     }
 
     function handleFile(file) {
+        console.log('[RC App] Ficheiro recebido:', file.name, file.size, 'bytes');
         var validExts = ['.xlsx', '.xls'];
         var ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
         if (validExts.indexOf(ext) === -1) { showMessage('Ficheiro inválido. Carregue um ficheiro Excel (.xlsx ou .xls).', 'error'); return; }
         showMessage('A processar ficheiro...', 'info');
         updateFileInfo(file.name, 'A ler...');
         ExcelReader.readFile(file).then(function(result) {
+            console.log('[RC App] Excel lido:', result.totalContas, 'contas,', result.errors.length, 'erros,', result.warnings.length, 'avisos');
             if (result.errors.length > 0) { showValidation(result.errors, result.warnings); updateFileInfo(file.name, 'Erros encontrados'); return; }
             state.balancete = result.data;
             state.hasComparativo = result.hasComparativo;
@@ -50,7 +65,7 @@ var RCApp = (function() {
             else { showMessage('Balancete carregado e validado com sucesso!', 'success'); }
             var btnProsseguir = document.getElementById('btnProsseguir');
             if (btnProsseguir) btnProsseguir.disabled = false;
-        }).catch(function(err) { showMessage(err.message, 'error'); updateFileInfo('', 'Erro'); });
+        }).catch(function(err) { console.error('[RC App] Erro leitura Excel:', err); showMessage(err.message, 'error'); updateFileInfo('', 'Erro'); });
     }
 
     function processarDados() {
@@ -73,7 +88,8 @@ var RCApp = (function() {
             renderPreview();
             if (avisos.length > 0) renderAvisos(avisos);
             showStep(2);
-        } catch (err) { console.error('[RC App] Erro:', err); showMessage('Erro ao processar: ' + err.message, 'error'); }
+            console.log('[RC App] Dados processados com sucesso. RL:', rlDR);
+        } catch (err) { console.error('[RC App] Erro ao processar:', err); showMessage('Erro ao processar: ' + err.message, 'error'); }
     }
 
     function renderPreview() {
@@ -170,17 +186,58 @@ var RCApp = (function() {
         container.style.display = 'block';
     }
 
+    /**
+     * Gera o ficheiro Word - com try-catch global e alert() como fallback
+     */
     function gerarWord() {
-        if (!state.balancoN || !state.drN) { showMessage('Processe os dados primeiro.', 'error'); return; }
-        showMessage('A gerar ficheiro Word...', 'info');
-        var notas = { descricao_atividade: getVal('notaDescricaoAtividade'), eventos_relevantes: getVal('notaEventosRelevantes'), eventos_pos_balanco: getVal('notaEventosPosBalanco'), passivos_contingentes: getVal('notaPassivosContingentes'), partes_relacionadas: getVal('notaPartesRelacionadas'), honorarios_roc: getVal('notaHonorariosROC'), outras_informacoes: getVal('notaOutrasInformacoes') };
-        var relatorioGestao = getVal('relatorioGestao');
-        saveToLocalStorage(notas, relatorioGestao);
-        var balancoClone = JSON.parse(JSON.stringify(state.balancoN));
-        balancoClone.capital_proprio.rubricas.forEach(function(r) { if (r.id === 'RLP') { balancoClone.capital_proprio.total -= r.valor || 0; r.valor = null; } });
-        balancoClone.cp_passivo_total = balancoClone.capital_proprio.total + balancoClone.passivo_total;
-        var dados = { empresa: state.empresa, balancoN: balancoClone, balancoAnt: state.balancoAnt, drN: state.drN, drAnt: state.drAnt, dacp: state.dacp, dfc: state.dfc, indicadores: state.indicadores, relatorioGestao: relatorioGestao, notas: notas };
-        WordGenerator.gerarEDescarregar(dados).then(function(fileName) { showMessage('Ficheiro "' + fileName + '" gerado com sucesso!', 'success'); }).catch(function(err) { console.error('[RC App] Erro Word:', err); showMessage('Erro ao gerar Word: ' + err.message, 'error'); });
+        console.log('[RC App] gerarWord() chamado. Estado:', state.balancoN ? 'processado' : 'NÃO processado');
+        
+        // Validação inicial com feedback visível
+        if (!state.balancoN || !state.drN) {
+            var msg = 'Ainda não processou os dados. Volte ao Passo 1, carregue o balancete Excel e clique em "Processar e Pré-visualizar".';
+            showMessage(msg, 'error');
+            alert(msg);
+            return;
+        }
+        
+        // Verificar se docx.js está disponível
+        if (!window.docx) {
+            var msgDocx = 'A biblioteca docx.js não foi carregada. Verifique a sua ligação à internet e recarregue a página.';
+            showMessage(msgDocx, 'error');
+            alert(msgDocx);
+            return;
+        }
+        
+        try {
+            showMessage('A gerar ficheiro Word... Aguarde.', 'info');
+            
+            var notas = { descricao_atividade: getVal('notaDescricaoAtividade'), eventos_relevantes: getVal('notaEventosRelevantes'), eventos_pos_balanco: getVal('notaEventosPosBalanco'), passivos_contingentes: getVal('notaPassivosContingentes'), partes_relacionadas: getVal('notaPartesRelacionadas'), honorarios_roc: getVal('notaHonorariosROC'), outras_informacoes: getVal('notaOutrasInformacoes') };
+            var relatorioGestao = getVal('relatorioGestao');
+            saveToLocalStorage(notas, relatorioGestao);
+            
+            var balancoClone = JSON.parse(JSON.stringify(state.balancoN));
+            balancoClone.capital_proprio.rubricas.forEach(function(r) { if (r.id === 'RLP') { balancoClone.capital_proprio.total -= r.valor || 0; r.valor = null; } });
+            balancoClone.cp_passivo_total = balancoClone.capital_proprio.total + balancoClone.passivo_total;
+            
+            var dados = { empresa: state.empresa, balancoN: balancoClone, balancoAnt: state.balancoAnt, drN: state.drN, drAnt: state.drAnt, dacp: state.dacp, dfc: state.dfc, indicadores: state.indicadores, relatorioGestao: relatorioGestao, notas: notas };
+            
+            WordGenerator.gerarEDescarregar(dados)
+                .then(function(fileName) {
+                    console.log('[RC App] Word gerado:', fileName);
+                    showMessage('Ficheiro "' + fileName + '" gerado com sucesso! Verifique os seus downloads.', 'success');
+                })
+                .catch(function(err) {
+                    console.error('[RC App] Erro na geração Word:', err);
+                    var errMsg = 'Erro ao gerar o ficheiro Word: ' + (err.message || err);
+                    showMessage(errMsg, 'error');
+                    alert(errMsg);
+                });
+        } catch (err) {
+            console.error('[RC App] Erro síncrono na geração Word:', err);
+            var errMsg = 'Erro inesperado ao gerar Word: ' + (err.message || err);
+            showMessage(errMsg, 'error');
+            alert(errMsg);
+        }
     }
 
     function showStep(step) {
@@ -191,14 +248,18 @@ var RCApp = (function() {
             var indicator = document.getElementById('stepIndicator' + i);
             if (indicator) { indicator.classList.toggle('active', i === step); indicator.classList.toggle('completed', i < step); }
         }
+        // Scroll to top quando muda de passo
+        window.scrollTo(0, 0);
     }
     function getVal(id) { var el = document.getElementById(id); return el ? el.value.trim() : ''; }
     function showMessage(msg, type) {
         var container = document.getElementById('messageContainer');
-        if (!container) return;
+        if (!container) { console.warn('[RC App] messageContainer não encontrado'); return; }
         container.innerHTML = '<div class="rc-alert rc-alert-' + type + '">' + msg + '</div>';
         container.style.display = 'block';
-        if (type === 'success' || type === 'info') setTimeout(function() { container.style.display = 'none'; }, 5000);
+        // Scroll para o topo para ver a mensagem
+        container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        if (type === 'success' || type === 'info') setTimeout(function() { container.style.display = 'none'; }, 8000);
     }
     function showValidation(errors, warnings) {
         var container = document.getElementById('validationResults');

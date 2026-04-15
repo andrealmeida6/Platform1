@@ -7,7 +7,11 @@ var WordGenerator = (function() {
     'use strict';
     var MARGIN = 1417, A4_W = 11906, A4_H = 16838, CW = 11906 - 1417 * 2;
     var D;
-    function initDocx() { D = window.docx; if (!D) throw new Error('docx.js não carregada'); }
+    function initDocx() {
+        D = window.docx;
+        if (!D) throw new Error('Biblioteca docx.js não carregada. Verifique a ligação à internet e recarregue a página.');
+        if (!D.Document || !D.Packer) throw new Error('Biblioteca docx.js carregada mas incompleta. Versão incompatível?');
+    }
 
     function fmtPT(val, dec) {
         if (val === null || val === undefined || isNaN(val)) return '-';
@@ -74,8 +78,7 @@ var WordGenerator = (function() {
         ch.push(para([text('(valores expressos em euros)', { size: 18, italics: true, color: '666666' })], { spacing: { after: 200 } }));
         var rows = [];
         rows.push(finRow('RUBRICAS', ex||'N', exA||'N-1', { header: true, colWidths: cw }));
-        var secs = [{k:'ativo_nao_corrente',t:'ATIVO NÃO CORRENTE'},{k:'ativo_corrente',t:'ATIVO CORRENTE'}];
-        secs.forEach(function(s) {
+        [{k:'ativo_nao_corrente',t:'ATIVO NÃO CORRENTE'},{k:'ativo_corrente',t:'ATIVO CORRENTE'}].forEach(function(s) {
             rows.push(finRow(s.t, '', '', { subtotal: true, shading: 'E8EEF5', colWidths: cw }));
             bN[s.k].rubricas.forEach(function(r) { var va = bA ? SNCMapper.getValorRubrica(bA, r.id) : null; if (r.valor !== 0 || (va && va !== 0)) rows.push(finRow(r.nome, r.valor, va, { indent: 1, colWidths: cw })); });
             rows.push(finRow('Total '+s.t.charAt(0)+s.t.slice(1).toLowerCase(), bN[s.k].total, bA ? bA[s.k].total : null, { subtotal: true, shading: 'F5F5F5', colWidths: cw }));
@@ -137,7 +140,7 @@ var WordGenerator = (function() {
         var cw = [Math.floor(CW*0.7), CW-Math.floor(CW*0.7)];
         var rows = [];
         rows.push(new D.TableRow({children:[cell('RUBRICAS',{width:cw[0],bold:true,shading:'2B5797',color:'FFFFFF',fontSize:18}),cell('Valor',{width:cw[1],bold:true,shading:'2B5797',color:'FFFFFF',alignment:D.AlignmentType.RIGHT,fontSize:18})]}));
-        function secRow(t,sh){return new D.TableRow({children:[cell(t,{width:cw[0],bold:true,shading:sh||'E8EEF5',fontSize:18}),cell('',{width:cw[1],shading:sh||'E8EEF5',fontSize:18})]});}
+        function secRow(t){return new D.TableRow({children:[cell(t,{width:cw[0],bold:true,shading:'E8EEF5',fontSize:18}),cell('',{width:cw[1],shading:'E8EEF5',fontSize:18})]});}
         function itemRow(n,v){return new D.TableRow({children:[cell('  '+n,{width:cw[0],fontSize:18}),cell(fmtPT(v),{width:cw[1],alignment:D.AlignmentType.RIGHT,fontSize:18})]});}
         function totRow(n,v){return new D.TableRow({children:[cell(n,{width:cw[0],bold:true,shading:'F5F5F5',fontSize:18}),cell(fmtPT(v),{width:cw[1],bold:true,shading:'F5F5F5',alignment:D.AlignmentType.RIGHT,fontSize:18})]});}
         rows.push(secRow('ATIVIDADES OPERACIONAIS'));
@@ -219,16 +222,25 @@ var WordGenerator = (function() {
         return new D.Document({ styles: { default: { document: { run: { font: 'Arial', size: 22 } } } }, sections: sections });
     }
 
+    /**
+     * Gera e descarrega o ficheiro Word
+     * IMPORTANTE: Envolvido em try-catch para retornar Promise rejeitada em vez de throw síncrono
+     */
     function gerarEDescarregar(dados) {
-        var doc = gerarDocumento(dados);
-        var fn = 'RelatorioContas_' + (dados.empresa.nif||'SemNIF') + '_' + (dados.empresa.exercicio||'Periodo') + '.docx';
-        return D.Packer.toBlob(doc).then(function(blob) {
-            var url = URL.createObjectURL(blob);
-            var a = document.createElement('a'); a.href = url; a.download = fn;
-            document.body.appendChild(a); a.click(); document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            return fn;
-        });
+        try {
+            var doc = gerarDocumento(dados);
+            var fn = 'RelatorioContas_' + (dados.empresa.nif||'SemNIF') + '_' + (dados.empresa.exercicio||'Periodo') + '.docx';
+            return D.Packer.toBlob(doc).then(function(blob) {
+                var url = URL.createObjectURL(blob);
+                var a = document.createElement('a'); a.href = url; a.download = fn;
+                document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                return fn;
+            });
+        } catch (err) {
+            // Retornar Promise rejeitada em vez de throw síncrono
+            return Promise.reject(err);
+        }
     }
 
     return { gerarDocumento: gerarDocumento, gerarEDescarregar: gerarEDescarregar, fmtPT: fmtPT };
