@@ -1,6 +1,6 @@
 /**
- * relatorio-contas-app.js v2
- * Orquestrador - alinhado com template RC profissional (33 notas)
+ * relatorio-contas-app.js v2.1
+ * Orquestrador - alertas melhorados + sugestão de Relatório de Gestão
  */
 var RCApp = (function() {
     'use strict';
@@ -10,7 +10,7 @@ var RCApp = (function() {
     var NOTAS_MANUAIS = ['nota1','nota4','nota6','nota10','nota13','nota17','nota20','nota31','nota32','nota33'];
 
     function init() {
-        console.log('[RC App v2] A inicializar...');
+        console.log('[RC App v2.1] A inicializar...');
         var baseUrl = document.querySelector('meta[name="baseurl"]');
         var base = baseUrl ? baseUrl.getAttribute('content') : '';
         SNCMapper.loadMapping(base + '/web-files/js/finance-hub/mapping-ncrf.json')
@@ -37,9 +37,9 @@ var RCApp = (function() {
         showMessage('A processar ficheiro...', 'info'); updateFileInfo(file.name, 'A ler...');
         ExcelReader.readFile(file).then(function(result) {
             console.log('[RC App] Lido:', result.totalContas, 'contas');
-            if (result.errors.length > 0) { showValidation(result.errors, result.warnings); updateFileInfo(file.name, 'Erros'); return; }
+            if (result.errors.length > 0) { showValidation(result.errors, result.warnings); updateFileInfo(file.name, 'Erros encontrados'); return; }
             state.balancete = result.data; state.hasComparativo = result.hasComparativo;
-            updateFileInfo(file.name, result.totalContas + ' contas | folha "' + result.folha + '"' + (result.hasComparativo ? ' | com comparativo' : ''));
+            updateFileInfo(file.name, result.totalContas + ' contas | folha \"' + result.folha + '\"' + (result.hasComparativo ? ' | com comparativo' : ''));
             var val = ExcelReader.validateBalancete(result.data);
             var warns = result.warnings.concat(val.warnings);
             if (!val.isValid) showValidation(val.errors, warns);
@@ -78,6 +78,114 @@ var RCApp = (function() {
         } catch (err) { console.error('[RC App] Erro:', err); showMessage('Erro: ' + err.message, 'error'); }
     }
 
+    // ============================================================
+    // GERADOR DE SUGESTÃO RELATÓRIO DE GESTÃO
+    // ============================================================
+    function gerarSugestaoRG() {
+        if (!state.drN || !state.balancoN) {
+            alert('Processe primeiro o balancete (Passo 1) para gerar a sugestão.');
+            return;
+        }
+        var emp = collectEmpresa();
+        var f = Calculator.formatPT;
+        var dr = state.drN, bN = state.balancoN;
+        var ex = emp.exercicio || 'N';
+        var nome = emp.denominacao || 'A Empresa';
+        var atividade = emp.atividade || 'a sua atividade';
+        var vn = dr.valores.VN || 0;
+        var cmvmc = dr.valores.CMVMC || 0;
+        var fse = dr.valores.FSE || 0;
+        var gp = dr.valores.GP || 0;
+        var ebitda = dr.subtotais.EBITDA;
+        var ebit = dr.subtotais.EBIT;
+        var rl = dr.subtotais.RL;
+        var ativo = bN.ativo_total;
+        var cp = bN.capital_proprio.total;
+        var passivo = bN.passivo_total;
+
+        // Calcular variações se houver comparativo
+        var temComp = state.hasComparativo && state.drAnt;
+        var vnAnt = temComp ? state.drAnt.valores.VN : 0;
+        var rlAnt = temComp ? state.drAnt.subtotais.RL : 0;
+        var varVN = vnAnt > 0 ? ((vn - vnAnt) / vnAnt * 100) : 0;
+        var varRL = rlAnt !== 0 ? ((rl - rlAnt) / Math.abs(rlAnt) * 100) : 0;
+        var ativoAnt = temComp && state.balancoAnt ? state.balancoAnt.ativo_total : 0;
+
+        // Indicadores
+        var margEBITDA = vn > 0 ? (ebitda / vn * 100) : 0;
+        var margLiq = vn > 0 ? (rl / vn * 100) : 0;
+        var autFin = ativo > 0 ? (cp / ativo * 100) : 0;
+
+        var texto = [];
+
+        // Parágrafo 1 - Introdução
+        texto.push('Exmos. Senhores Acionistas,');
+        texto.push('');
+        texto.push('Em conformidade com as disposições legais e estatutárias aplicáveis, o Conselho de Administração vem apresentar o Relatório de Gestão e as Demonstrações Financeiras referentes ao exercício findo em 31 de dezembro de ' + ex + '.');
+        texto.push('');
+
+        // Parágrafo 2 - Enquadramento
+        texto.push('ENQUADRAMENTO E ATIVIDADE');
+        texto.push('');
+        texto.push(nome + ' tem como atividade principal ' + atividade + '. No exercício de ' + ex + ', a empresa manteve o seu foco estratégico no desenvolvimento da atividade operacional' + (emp.num_colaboradores ? ', contando com uma equipa média de ' + emp.num_colaboradores + ' colaboradores' : '') + '.');
+        texto.push('');
+
+        // Parágrafo 3 - Análise da atividade
+        texto.push('ANÁLISE DA ATIVIDADE E RESULTADOS');
+        texto.push('');
+        var textoVN = 'O volume de negócios no exercício de ' + ex + ' ascendeu a ' + f(vn, 0) + ' euros';
+        if (temComp && vnAnt > 0) {
+            textoVN += ', o que representa ' + (varVN >= 0 ? 'um crescimento' : 'uma redução') + ' de ' + f(Math.abs(varVN), 1) + '% face ao exercício anterior (' + f(vnAnt, 0) + ' euros)';
+        }
+        textoVN += '.';
+        texto.push(textoVN);
+        texto.push('');
+
+        // Custos operacionais
+        texto.push('Os principais gastos operacionais incluem: custo das mercadorias vendidas e matérias consumidas de ' + f(cmvmc, 0) + ' euros, fornecimentos e serviços externos de ' + f(fse, 0) + ' euros e gastos com o pessoal de ' + f(gp, 0) + ' euros.');
+        texto.push('');
+
+        // EBITDA e resultado
+        texto.push('O EBITDA do exercício fixou-se em ' + f(ebitda, 0) + ' euros, correspondendo a uma margem EBITDA de ' + f(margEBITDA, 1) + '%. O resultado líquido do exercício foi de ' + f(rl, 0) + ' euros' + (temComp && rlAnt !== 0 ? ' (' + (varRL >= 0 ? '+' : '') + f(varRL, 1) + '% face a ' + ex.replace(/\d+$/, function(m) { return parseInt(m) - 1; }) + ')' : '') + ', traduzindo uma margem líquida de ' + f(margLiq, 1) + '%.');
+        texto.push('');
+
+        // Parágrafo 4 - Posição financeira
+        texto.push('POSIÇÃO FINANCEIRA');
+        texto.push('');
+        texto.push('Em 31 de dezembro de ' + ex + ', o ativo total da empresa ascendia a ' + f(ativo, 0) + ' euros' + (temComp && ativoAnt > 0 ? ' (face a ' + f(ativoAnt, 0) + ' euros no período anterior)' : '') + '. O capital próprio totalizava ' + f(cp, 0) + ' euros, correspondendo a uma autonomia financeira de ' + f(autFin, 1) + '%. O passivo total era de ' + f(passivo, 0) + ' euros.');
+        texto.push('');
+
+        // Parágrafo 5 - Proposta
+        texto.push('PROPOSTA DE APLICAÇÃO DE RESULTADOS');
+        texto.push('');
+        if (rl >= 0) {
+            texto.push('O Conselho de Administração propõe que o resultado líquido do exercício, no montante de ' + f(rl, 0) + ' euros, seja aplicado da seguinte forma:');
+            var reservaLegal = Math.round(rl * 0.05);
+            var restante = rl - reservaLegal;
+            texto.push('- Reserva legal: ' + f(reservaLegal, 0) + ' euros (5%)');
+            texto.push('- Resultados transitados: ' + f(restante, 0) + ' euros');
+        } else {
+            texto.push('Tendo o exercício encerrado com um resultado líquido negativo de ' + f(rl, 0) + ' euros, o Conselho de Administração propõe a sua transferência integral para resultados transitados.');
+        }
+        texto.push('');
+
+        // Parágrafo 6 - Agradecimentos
+        texto.push('AGRADECIMENTOS');
+        texto.push('');
+        texto.push('O Conselho de Administração agradece a todos os colaboradores, clientes, fornecedores e parceiros a confiança e o empenho demonstrado ao longo do exercício de ' + ex + '.');
+
+        // Colocar no textarea
+        var ta = document.getElementById('relatorioGestao');
+        if (ta) {
+            ta.value = texto.join('\n');
+            ta.style.minHeight = '300px';
+            saveToLocalStorage();
+        }
+    }
+
+    // ============================================================
+    // RENDER
+    // ============================================================
     function renderPreview() {
         renderTablePreview('previewBalanco', state.balancoN, state.balancoAnt, state.empresa.exercicio);
         renderDRPreview('previewDR', state.drN, state.drAnt, state.empresa.exercicio);
@@ -173,11 +281,14 @@ var RCApp = (function() {
             bClone.cp_passivo_total = bClone.capital_proprio.total + bClone.passivo_total;
             var dados = { empresa: state.empresa, balancoN: bClone, balancoAnt: state.balancoAnt, drN: state.drN, drAnt: state.drAnt, dacp: state.dacp, dfc: state.dfc, indicadores: state.indicadores, relatorioGestao: rg, notas: state.notas };
             WordGenerator.gerarEDescarregar(dados)
-                .then(function(fn) { showMessage('"'+fn+'" gerado! Verifique downloads.', 'success'); })
+                .then(function(fn) { showMessage('\"'+fn+'\" gerado! Verifique downloads.', 'success'); })
                 .catch(function(err) { var e = 'Erro Word: '+(err.message||err); showMessage(e, 'error'); alert(e); });
         } catch (err) { var e = 'Erro: '+(err.message||err); showMessage(e, 'error'); alert(e); }
     }
 
+    // ============================================================
+    // UI HELPERS
+    // ============================================================
     function showStep(step) {
         state.currentStep = step;
         for (var i = 1; i <= 3; i++) {
@@ -193,12 +304,47 @@ var RCApp = (function() {
         c.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         if (type==='success'||type==='info') setTimeout(function() { c.style.display = 'none'; }, 8000);
     }
+
+    /**
+     * Mostra validação: erros visíveis, avisos em secção colapsável
+     */
     function showValidation(errors, warnings) {
-        var c = document.getElementById('validationResults'); if (!c) return; var h = '';
-        errors.forEach(function(e) { h += '<div class="rc-alert rc-alert-error">'+e.mensagem+(e.detalhe?'<br><small>'+e.detalhe+'</small>':'')+'</div>'; });
-        warnings.forEach(function(w) { h += '<div class="rc-alert rc-alert-warning">'+w.mensagem+'</div>'; });
+        var c = document.getElementById('validationResults'); if (!c) return;
+        var h = '';
+        // Erros sempre visíveis
+        if (errors.length > 0) {
+            errors.forEach(function(e) {
+                h += '<div class="rc-alert rc-alert-error"><strong>Erro:</strong> '+e.mensagem+(e.detalhe?'<br><small>'+e.detalhe+'</small>':'')+'</div>';
+            });
+        }
+        // Avisos em secção colapsável
+        if (warnings.length > 0) {
+            var criticos = warnings.filter(function(w) { return w.critico; });
+            var info = warnings.filter(function(w) { return !w.critico; });
+            // Avisos críticos visíveis
+            if (criticos.length > 0) {
+                criticos.forEach(function(w) {
+                    h += '<div class="rc-alert rc-alert-warning"><strong>Aviso:</strong> '+w.mensagem+'</div>';
+                });
+            }
+            // Avisos informativos em details colapsável
+            if (info.length > 0) {
+                h += '<details class="rc-nota-group" style="margin-top:0.5rem;">';
+                h += '<summary><strong>Avisos informativos ('+info.length+')</strong> — clique para expandir</summary>';
+                h += '<div style="padding:8px 14px;">';
+                info.forEach(function(w) {
+                    h += '<div style="padding:4px 0;font-size:0.82rem;color:#92400e;">• '+w.mensagem+'</div>';
+                });
+                h += '</div></details>';
+            }
+        }
+        // Se não há erros, mostrar sucesso resumido
+        if (errors.length === 0 && warnings.length > 0) {
+            h = '<div class="rc-alert rc-alert-success" style="margin-bottom:0.5rem;"><strong>✓ Balancete válido</strong> — encontrados '+warnings.length+' aviso(s) informativos</div>' + h;
+        }
         c.innerHTML = h; c.style.display = 'block';
     }
+
     function updateFileInfo(name, info) {
         var n = document.getElementById('fileName'), i = document.getElementById('fileInfo');
         if (n) n.textContent = name; if (i) i.textContent = info;
@@ -225,6 +371,6 @@ var RCApp = (function() {
         } catch (e) {}
     }
 
-    return { init: init, processarDados: processarDados, gerarWord: gerarWord, showStep: showStep, state: state };
+    return { init: init, processarDados: processarDados, gerarWord: gerarWord, gerarSugestaoRG: gerarSugestaoRG, showStep: showStep, state: state };
 })();
 document.addEventListener('DOMContentLoaded', function() { RCApp.init(); });
