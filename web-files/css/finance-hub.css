@@ -53,6 +53,7 @@
 .rc-input, .rc-select, .rc-textarea { padding: 8px 12px; border: 1px solid var(--border-color, #d1d5db); border-radius: 8px; font-size: 0.9rem; color: var(--text-primary, #1a1a2e); background: var(--input-bg, #fff); transition: border-color 0.15s; }
 .rc-input:focus, .rc-select:focus, .rc-textarea:focus { outline: none; border-color: var(--primary, #2563eb); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
 .rc-textarea { min-height: 100px; resize: vertical; font-family: inherit; }
+.rc-textarea.nota-manual { min-height: 60px; }
 
 /* Drop Zone */
 .rc-drop-zone { border: 2px dashed var(--border-color, #d1d5db); border-radius: 12px; padding: 2rem; text-align: center; cursor: pointer; transition: all 0.2s; background: var(--bg-subtle, #f9fafb); }
@@ -75,6 +76,19 @@
 .rc-alert-warning { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; }
 .rc-alert-success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; }
 .rc-alert-info { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; }
+
+/* Nota Groups (details/summary) */
+.rc-nota-group { border: 1px solid var(--border-color, #e5e7eb); border-radius: 8px; margin-bottom: 0.75rem; overflow: hidden; }
+.rc-nota-group summary { padding: 10px 14px; cursor: pointer; background: var(--bg-subtle, #f9fafb); border-bottom: 1px solid transparent; font-size: 0.9rem; color: var(--text-primary, #374151); transition: all 0.15s; list-style: none; display: flex; align-items: center; gap: 8px; }
+.rc-nota-group summary::-webkit-details-marker { display: none; }
+.rc-nota-group summary::before { content: '▶'; font-size: 0.65rem; color: var(--text-secondary, #9ca3af); transition: transform 0.2s; flex-shrink: 0; }
+.rc-nota-group[open] summary::before { transform: rotate(90deg); }
+.rc-nota-group[open] summary { border-bottom-color: var(--border-color, #e5e7eb); background: #f0f4ff; }
+.rc-nota-group summary:hover { background: #eef2ff; }
+.rc-nota-group > :not(summary) { padding: 0 14px; }
+.rc-nota-group .rc-form-group { padding: 0 14px; }
+.rc-nota-group .rc-form-group:last-child { padding-bottom: 14px; }
+.rc-nota-group p { padding: 0 14px; }
 
 /* Preview Tables */
 .preview-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
