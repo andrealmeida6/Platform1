@@ -7,8 +7,7 @@ title: Gerador de Relatório e Contas
 <!-- Compatibilidade Power Pages:
 {% comment %}
 Em Power Pages, esta ferramenta utilizaria Web Resources para os ficheiros JS
-e Entity Forms para os campos de input. O processamento continuaria a ser 
-100% client-side com SheetJS e docx.js.
+e Entity Forms para os campos de input.
 {% endcomment %}
 -->
 {% endraw %}
@@ -20,6 +19,9 @@ e Entity Forms para os campos de input. O processamento continuaria a ser
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <!-- CDN: docx.js para geração de Word -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/docx/8.5.0/docx.js"></script>
+
+<!-- Input de ficheiro FORA do drop zone para evitar propagação de eventos -->
+<input type="file" id="excelFile" accept=".xlsx,.xls" style="display: none;">
 
 <div class="rc-page">
   <div class="rc-header">
@@ -60,7 +62,6 @@ e Entity Forms para os campos de input. O processamento continuaria a ser
     <div class="rc-section">
       <h2 class="rc-section-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Upload do Balancete de Verificação</h2>
       <div class="rc-drop-zone" id="dropZone">
-        <input type="file" id="excelFile" accept=".xlsx,.xls" style="display: none;">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
         <p>Arraste o ficheiro Excel ou clique para selecionar</p>
         <small>Formatos suportados: .xlsx, .xls</small>
@@ -124,9 +125,7 @@ function updateFileNamePreview() {
     var exercicio = document.getElementById('empExercicio');
     var preview = document.getElementById('fileNamePreview');
     if (preview && nif && exercicio) {
-        var n = nif.value.trim() || 'NIF';
-        var e = exercicio.value.trim() || 'Periodo';
-        preview.textContent = 'Ficheiro: RelatorioContas_' + n + '_' + e + '.docx';
+        preview.textContent = 'Ficheiro: RelatorioContas_' + (nif.value.trim()||'NIF') + '_' + (exercicio.value.trim()||'Periodo') + '.docx';
     }
 }
 document.addEventListener('DOMContentLoaded', function() {
